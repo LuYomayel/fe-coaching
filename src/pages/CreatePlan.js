@@ -13,7 +13,7 @@ import { showError } from '../utils/toastMessages';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const CreatePlan = () => {
+const CreatePlan = ({ isEdit, planId }) => {
   const [planName, setPlanName] = useState('');
   const [dayOfWeek, setDayOfWeek] = useState('');
   const [startTime, setStartTime] = useState(null);
@@ -45,6 +45,42 @@ const CreatePlan = () => {
   const navigate = useNavigate();
   const toast = useRef(null);
 
+  const [plan, setPlan] = useState({
+    planName: '',
+    dayOfWeek: '',
+    startTime: null,
+    endTime: null,
+    notes: '',
+    groups: [{
+      set: '',
+      rest: '',
+      groupNumber: 1,
+      exercises: [{
+        exercise: { name: '', id: '' },
+        videoUrl: '',
+        repetitions: '',
+        sets: '',
+        time: '',
+        weight: '',
+        restInterval: '',
+        tempo: '',
+        notes: '',
+        difficulty: '',
+        duration: '',
+        distance: ''
+      }]
+    }]
+  });
+
+  useEffect(() => {
+    if (isEdit && planId) {
+      fetch(`${apiUrl}/workout/${planId}`)
+        .then(response => response.json())
+        .then(data => setPlan(data))
+        .catch(error => console.error('Error fetching plan:', error));
+    }
+  }, [isEdit, planId]);
+  
   const exerciseProperties = [
     { label: 'Repetitions', value: 'repetitions' },
     { label: 'Sets', value: 'sets' },
@@ -85,7 +121,8 @@ const CreatePlan = () => {
         notes: '', 
         difficulty: '', 
         duration: '', 
-        distance: '' 
+        distance: '',
+        selectedProperties: []
       }] 
     }]);
   };
@@ -111,6 +148,7 @@ const CreatePlan = () => {
 
   const handleAddExercise = (groupIndex) => {
     const values = [...groups];
+    console.log(groupIndex)
     values[groupIndex].exercises.push({ 
       exercise: {name: '', id: ''}, 
       videoUrl: '', 
@@ -157,11 +195,11 @@ const CreatePlan = () => {
         return;
     }
     
-    if (!dayOfWeek.trim()) {
-          console.log('Here1')
-          showError(toast, 'Day of the week is required.');
-          return;
-        }
+    // if (!dayOfWeek.trim()) {
+    //       console.log('Here1')
+    //       showError(toast, 'Day of the week is required.');
+    //       return;
+    //     }
         
         if (groups.length === 0) {
           console.log('Here3')
@@ -203,16 +241,18 @@ const CreatePlan = () => {
   };
 
   return (
-    <div className="create-plan-container">
+    <div>
+      <h1>Create New Training Plan</h1>
+      <div className="create-plan-container">
       <Toast ref={toast} /> {/* Agregar Toast */}
-      
-        <Card title="Create New Training Plan">
+      <div className="form-section">
+        <Card title="Details">
           <form onSubmit={handleSubmit} className="p-fluid">
             <div className="p-field">
               <label htmlFor="planName">Plan Name:</label>
               <InputText id="planName" value={planName} onChange={(e) => setPlanName(e.target.value)} required />
             </div>
-            <div className="p-field">
+            {/* <div className="p-field">
               <label htmlFor="dayOfWeek">Day of Week:</label>
               <InputText id="dayOfWeek" value={dayOfWeek} onChange={(e) => setDayOfWeek(e.target.value)} required />
             </div>
@@ -223,60 +263,69 @@ const CreatePlan = () => {
             <div className="p-field">
               <label htmlFor="endTime">End Time:</label>
               <Calendar id="endTime" value={endTime} onChange={(e) => setEndTime(e.value)} timeOnly hourFormat="24" />
-            </div>
+            </div> */}
             <div className="p-field">
               <label htmlFor="notes">Notes:</label>
               <InputTextarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
             </div>
-            </form>
-            </Card>
-            <h2>Exercise Groups</h2>
-            {groups.map((group, groupIndex) => (
-              <Card key={groupIndex} className="create-plan-card" title={`Group ${group.groupNumber}`}>
-              <Fieldset key={groupIndex} legend={`Group ${group.groupNumber}`}>
-                <div className="p-field">
-                  <label htmlFor={`set${groupIndex}`}>Set:</label>
-                  <InputText id={`set${groupIndex}`} type="number" name="set" value={group.set} onChange={(e) => handleGroupChange(groupIndex, e)} />
-                </div>
-                <div className="p-field">
-                  <label htmlFor={`rest${groupIndex}`}>Rest (seconds):</label>
-                  <InputText id={`rest${groupIndex}`} type="number" name="rest" value={group.rest} onChange={(e) => handleGroupChange(groupIndex, e)} />
-                </div>
-                <div className="p-field">
-                  <label htmlFor={`groupNumber${groupIndex}`}>Group Number:</label>
-                  <InputText id={`groupNumber${groupIndex}`} type="number" name="groupNumber" value={group.groupNumber} onChange={(e) => handleGroupChange(groupIndex, e)} />
-                </div>
-                <h3>Exercises</h3>
-                {group.exercises.map((exercise, exerciseIndex) => (
-                <div key={exerciseIndex} className="p-fluid">
-                    <div className="p-field">
+          </form>
+        </Card>
+      </div>
+
+      <div className="groups-section">
+        <Card title="Exercise Groups" className="exercise-groups-card">
+        <div className="groups-container">
+        {groups.map((group, groupIndex) => (
+          <Card key={groupIndex} className="create-plan-card" >
+            <Fieldset legend={`Group ${group.groupNumber}`}>
+              <div className='fieldset-scroll'>
+              <div className="p-field">
+                <label htmlFor={`set${groupIndex}`}>Set:</label>
+                <InputText id={`set${groupIndex}`} type="number" name="set" value={group.set} onChange={(e) => handleGroupChange(groupIndex, e)} />
+              </div>
+              <div className="p-field">
+                <label htmlFor={`rest${groupIndex}`}>Rest (seconds):</label>
+                <InputText id={`rest${groupIndex}`} type="number" name="rest" value={group.rest} onChange={(e) => handleGroupChange(groupIndex, e)} />
+              </div>
+              <h3>Exercises</h3>
+              {group.exercises.map((exercise, exerciseIndex) => (
+                <div key={exerciseIndex} className="p-fluid exercise">
+                  <div className="p-field">
                     <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
                     <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter showClear required placeholder="Select an exercise" />
-                    </div>
-                    <div className="p-field">
+                  </div>
+                  <div className="p-field">
                     <label htmlFor={`videoUrl${groupIndex}-${exerciseIndex}`}>Video URL:</label>
                     <InputText id={`videoUrl${groupIndex}-${exerciseIndex}`} name="videoUrl" value={exercise.videoUrl} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
-                    </div>
-                    {exercise.selectedProperties.map((property, propertyIndex) => (
+                  </div>
+                  {exercise.selectedProperties.map((property, propertyIndex) => (
                     <div key={propertyIndex} className="p-field">
-                        <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
-                        <InputText id={`${property}${groupIndex}-${exerciseIndex}`} name={property} value={exercise[property]} onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, propertyIndex, e)} />
-                        <Button type="button" label="Remove Property" icon="pi pi-minus" onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, propertyIndex)} className='p-button-rounded p-button-lg p-button-danger'/>
+                      <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
+                      <InputText id={`${property}${groupIndex}-${exerciseIndex}`} name={property} value={exercise[property]} onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, propertyIndex, e)} />
+                      <Button type="button" label="Remove Property" icon="pi pi-minus" onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, propertyIndex)} className="p-button-rounded p-button-danger" />
                     </div>
-                    ))}
-                    <div className="p-field">
+                  ))}
+                  <div className="p-field">
                     <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
-                    <Dropdown id={`addProperty${groupIndex}-${exerciseIndex}`} options={exerciseProperties} onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)} placeholder="Select a property" />
-                    </div>
+                    <Dropdown filter={true} id={`addProperty${groupIndex}-${exerciseIndex}`} options={exerciseProperties} onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)} placeholder="Select a property" />
+                  </div>
                 </div>
-                ))}
-                
-                <Button type="button" label="Add Exercise" icon="pi pi-plus" onClick={() => handleAddExercise(groupIndex)} className="p-button-rounded p-button-lg p-button-success" />
-              </Fieldset>
-              </Card>
-            ))}
-            <Button type="button" label="Add Group" icon="pi pi-plus" onClick={handleAddGroup} className="p-button-info p-button-rounded p-button-lg" />
-            <Button type="submit" label="Create Plan" icon="pi pi-check" className="p-button-success p-button-rounded p-button-lg" />
+              ))}
+              {/* </div> */}
+              <Button type="button" label="Add Exercise" icon="pi pi-plus" onClick={() => handleAddExercise(groupIndex)} className="p-button-rounded p-button-success" />
+              </div>
+            </Fieldset>
+          </Card>
+        ))}
+        </div>
+        </Card>
+      </div>
+      
+      <div className="actions-section">
+        <Button type="button" label="Add Group" icon="pi pi-plus" onClick={handleAddGroup} className="p-button-rounded p-button-info p-button-lg" />
+        <Button type="submit" label="Create Plan" icon="pi pi-check" className="p-button-rounded p-button-success p-button-lg" onClick={handleSubmit}/>
+      </div>
+      </div>
     </div>
   );
 };

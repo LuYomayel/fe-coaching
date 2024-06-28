@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+
+import '../styles/PlanDetails.css';
+
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
@@ -37,7 +40,10 @@ const PlanDetails = ({ user }) => {
   useEffect(() => {
     fetch(`${apiUrl}/workout/clientId/${studentId}/planId/${planId}`)
       .then(response => response.json())
-      .then(data => setPlan(data))
+      .then(data => {
+        console.log(data)
+        setPlan(data)
+      })
       .catch(error => showError(toast, 'Error fetching plan details'));
 
     fetch(`${apiUrl}/exercise`)
@@ -191,136 +197,65 @@ const PlanDetails = ({ user }) => {
   if (!plan) return <p>Loading...</p>;
 
   return (
-    <div className="p-grid p-justify-center">
-      <Toast ref={toast} />
-      <div className="p-col-12 p-md-8">
-        <Card title="Plan Details">
-          <form onSubmit={handleSubmit} className="p-fluid">
-            <div className="p-field">
-              <label htmlFor="planName">Plan Name:</label>
-              {isEditing ? (
-                <InputText id="planName" name="planName" value={plan.planName} onChange={handleInputChange} required />
-              ) : (
-                <p>{plan.planName}</p>
-              )}
-            </div>
-            <div className="p-field">
-              <label htmlFor="dayOfWeek">Day of Week:</label>
-              {isEditing ? (
-                <InputText id="dayOfWeek" name="dayOfWeek" value={plan.dayOfWeek} onChange={handleInputChange} required />
-              ) : (
-                <p>{plan.dayOfWeek}</p>
-              )}
-            </div>
-            <div className="p-field">
-              <label htmlFor="startTime">Start Time:</label>
-              {isEditing ? (
-                <Calendar id="startTime" name="startTime" value={new Date(plan.startTime)} onChange={(e) => handleDateChange(e, 'startTime')} timeOnly hourFormat="24" />
-              ) : (
-                <p>{new Date(plan.startTime).toLocaleTimeString()}</p>
-              )}
-            </div>
-            <div className="p-field">
-              <label htmlFor="endTime">End Time:</label>
-              {isEditing ? (
-                <Calendar id="endTime" name="endTime" value={new Date(plan.endTime)} onChange={(e) => handleDateChange(e, 'endTime')} timeOnly hourFormat="24" />
-              ) : (
-                <p>{new Date(plan.endTime).toLocaleTimeString()}</p>
-              )}
-            </div>
-            <div className="p-field">
-              <label htmlFor="notes">Notes:</label>
-              {isEditing ? (
-                <InputTextarea id="notes" name="notes" value={plan.notes} onChange={handleInputChange} rows={3} />
-              ) : (
-                <p>{plan.notes}</p>
-              )}
-            </div>
-            <h2>Exercise Groups</h2>
-            {plan.groups.map((group, groupIndex) => (
-              <Fieldset key={groupIndex} legend={`Group ${group.groupNumber}`}>
-                <div className="p-field">
-                  <label htmlFor={`set${groupIndex}`}>Set:</label>
-                  {isEditing ? (
-                    <InputText id={`set${groupIndex}`} type="number" name="set" value={group.set} onChange={(e) => handleGroupChange(groupIndex, e)} />
-                  ) : (
-                    <p>{group.set}</p>
-                  )}
-                </div>
-                <div className="p-field">
-                  <label htmlFor={`rest${groupIndex}`}>Rest (seconds):</label>
-                  {isEditing ? (
-                    <InputText id={`rest${groupIndex}`} type="number" name="rest" value={group.rest} onChange={(e) => handleGroupChange(groupIndex, e)} />
-                  ) : (
-                    <p>{group.rest}</p>
-                  )}
-                </div>
-                <div className="p-field">
-                  <label htmlFor={`groupNumber${groupIndex}`}>Group Number:</label>
-                  {isEditing ? (
-                    <InputText id={`groupNumber${groupIndex}`} type="number" name="groupNumber" value={group.groupNumber} onChange={(e) => handleGroupChange(groupIndex, e)} />
-                  ) : (
-                    <p>{group.groupNumber}</p>
-                  )}
-                </div>
-                <h3>Exercises</h3>
-                {group.exercises.map((exercise, exerciseIndex) => (
-                  <div key={exerciseIndex} className="p-fluid">
-                    <div className="p-field">
-                      <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
-                      {isEditing ? (
-                        <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter showClear required placeholder="Select an exercise" />
-                      ) : (
-                        <p>{exercise.exercise.name}</p>
-                      )}
-                    </div>
-                    <div className="p-field">
-                      <label htmlFor={`videoUrl${groupIndex}-${exerciseIndex}`}>Video URL:</label>
-                      {isEditing ? (
-                        <InputText id={`videoUrl${groupIndex}-${exerciseIndex}`} name="videoUrl" value={exercise.videoUrl} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
-                      ) : (
-                        <p>{exercise.videoUrl}</p>
-                      )}
-                    </div>
-                    {(exercise.selectedProperties || []).map((property, propertyIndex) => (
-                    <div key={propertyIndex} className="p-field">
-                        <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
-                        {isEditing ? (
-                        <InputText id={`${property}${groupIndex}-${exerciseIndex}`} name={property} value={exercise[property]} onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, propertyIndex, e)} />
-                        ) : (
-                        <p>{exercise[property]}</p>
-                        )}
-                        {isEditing && (
-                        <Button type="button" label="Remove Property" icon="pi pi-minus" onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, propertyIndex)} />
-                        )}
-                    </div>
-                    ))}
-                    {isEditing && (
-                      <div className="p-field">
-                        <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
-                        <Dropdown id={`addProperty${groupIndex}-${exerciseIndex}`} options={exerciseProperties} onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)} placeholder="Select a property" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {isEditing && (
-                  <Button type="button" label="Add Exercise" icon="pi pi-plus" onClick={() => handleAddExercise(groupIndex)} className="p-button-info p-mb-3" />
-                )}
-              </Fieldset>
-            ))}
-            {isEditing && (
-              <Button type="button" label="Add Group" icon="pi pi-plus" onClick={handleAddGroup} className="p-button-info p-mb-3" />
-            )}
-            {isEditing && (
-              <Button type="submit" label="Save Plan" icon="pi pi-check" className="p-button-success" />
-            )}
-            {!isEditing && user && user.userType === 'coach' && (
-              <Button type="button" label="Edit Plan" icon="pi pi-pencil" onClick={() => setIsEditing(true)} />
-            )}
-          </form>
-        </Card>
-      </div>
+    <div className="student-plan-container">
+    <h1>Training Plan</h1>
+    <div className="plan-summary">
+      <Card>
+        <div className="plan-details">
+          <p><strong>Plan Name:</strong> {plan.planName}</p>
+          <p><strong>Day of Week:</strong> {plan.dayOfWeek}</p>
+          {/* <p><strong>Start Time:</strong> {new Date(plan.startTime).toLocaleTimeString()}</p> */}
+          {/* <p><strong>End Time:</strong> {new Date(plan.endTime).toLocaleTimeString()}</p> */}
+          <p><strong>Notes:</strong> {plan.notes}</p>
+        </div>
+      </Card>
     </div>
+
+    <div className="exercise-groups">
+      {plan.groups.map((group, groupIndex) => (
+        <div key={groupIndex} className="exercise-group">
+          <Card title={`Group ${group.groupNumber}`} className="group-card">
+            <p><strong>Set:</strong> {group.set}</p>
+            <p><strong>Rest (seconds):</strong> {group.rest}</p>
+          </Card>
+          <Fieldset legend="Exercises" className='exercises-card'>
+            <div className="exercises-container">
+              {group.exercises.map((exercise, exerciseIndex) => (
+                <div key={exerciseIndex} className="exercise-card">
+                  <Card>
+                    <div className='exercise-fields'>
+
+                      <div className='p-field exercise-field'>
+                          <label> 
+                            Exercise:
+                          </label>
+                          <p>{exercise.exercise.name}</p>
+                      </div>
+                      <div className='p-field exercise-field'>
+                        <label> 
+                          Video URL:
+                        </label>
+                        <p><a href={exercise.multimedia} >Watch Video</a></p>
+                      </div>
+                      {Object.keys(exercise).map((property, propertyIndex) => (
+                        (property !== 'exercise' && property !== 'id' && exercise[property] !== '') && (
+                          <div key={propertyIndex} className="p-field exercise-field">
+                            <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
+                            <p>{exercise[property]}</p>
+                          </div>
+                        )
+                      ))}
+                      </div>
+                  </Card>
+                </div>
+              ))}
+            </div>
+            </Fieldset>
+          
+        </div>
+      ))}
+    </div>
+  </div>
   );
 };
 
