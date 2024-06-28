@@ -1,25 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
-
-function App() {
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
+import Home from './pages/Home';
+import CreatePlan from './pages/CreatePlan';
+import StudentPlans from './pages/StudentPlans';
+import PlanDetails from './pages/PlanDetails'
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <PrimeReactProvider>
+    <Router>
+      <Routes>
+        
+        <Route path="/" element={<Home />} />
+        
+        <Route path="/plans/create-plan" element={<CreatePlan />} />
+        <Route path="/plans/:planId/:studentId" element={<PlanDetails />} />
+
+        <Route path="/students/:studentId/plans" element={<StudentPlans />} />
+
+      </Routes>
+    </Router>
+    </PrimeReactProvider>
   );
-}
+};
 
 export default App;
