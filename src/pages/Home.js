@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -33,7 +32,7 @@ const CoachHome = () => {
   };
 
   const handleNewPlan = () => {
-    navigate('/plans/create-plan')
+    navigate('/plans/create')
   }
 
   return (

@@ -13,7 +13,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/plans/create" element={<CreatePlan isEdit={false} />} />
-          <Route path="/plans/edit/:planId" element={<CreatePlan isEdit={true} />} />
+          <Route path="/plans/edit/:planId/:studentId" element={<CreatePlan isEdit={true} />} />
           <Route path="/plans/:planId/:studentId" element={<PlanDetails />} />
           <Route path="/students/:studentId/plans" element={<StudentPlans />} />
         </Routes>

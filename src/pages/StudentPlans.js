@@ -29,11 +29,11 @@ const StudentPlans = () => {
   };
 
   const handleRowClick = (planId) => {
-    navigate(`/plans/${planId}/${studentId}`);
+    navigate(`/plans/edit/${planId}/${studentId}`);
   };
 
   const onRowSelect = (event) => {
-    console.log(event.data)
+    console.log(event.data.id)
     handleRowClick(event.data.id);
   };
 

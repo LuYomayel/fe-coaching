@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
@@ -9,42 +9,15 @@ import { Card } from 'primereact/card';
 import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';  // Importar Toast
 import '../styles/CreatePlan.css';
-import { showError } from '../utils/toastMessages';
+import { showError, showSuccess } from '../utils/toastMessages';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const CreatePlan = ({ isEdit, planId }) => {
-  const [planName, setPlanName] = useState('');
-  const [dayOfWeek, setDayOfWeek] = useState('');
-  const [startTime, setStartTime] = useState(null);
-  const [endTime, setEndTime] = useState(null);
-  const [notes, setNotes] = useState('');
-  const [groups, setGroups] = useState([{ 
-    set: '', 
-    rest: '', 
-    groupNumber: 1, 
-    exercises: [
-        { 
-            exercise: {name: '', id: ''}, 
-            videoUrl: '', 
-            selectedProperties: [],
-            repetitions: '',
-            sets: '',
-            time: '',
-            weight: '',
-            restInterval: '',
-            tempo: '',
-            notes: '',
-            difficulty: '',
-            duration: '',
-            distance: '',
-         }
-    ] 
-        }]);
+const CreatePlan = ({ isEdit }) => {
   const [exercises, setExercises] = useState([]);
+  const { planId, studentId } = useParams();
   const navigate = useNavigate();
   const toast = useRef(null);
-
   const [plan, setPlan] = useState({
     planName: '',
     dayOfWeek: '',
@@ -57,7 +30,7 @@ const CreatePlan = ({ isEdit, planId }) => {
       groupNumber: 1,
       exercises: [{
         exercise: { name: '', id: '' },
-        videoUrl: '',
+        multimedia: '',
         repetitions: '',
         sets: '',
         time: '',
@@ -74,175 +47,173 @@ const CreatePlan = ({ isEdit, planId }) => {
 
   useEffect(() => {
     if (isEdit && planId) {
-      fetch(`${apiUrl}/workout/${planId}`)
+      console.log('estoy aca')
+      fetch(`${apiUrl}/workout/clientId/${studentId}/planId/${planId}`)
         .then(response => response.json())
-        .then(data => setPlan(data))
+        .then(data => {
+          setPlan(data)
+        })
         .catch(error => console.error('Error fetching plan:', error));
     }
-  }, [isEdit, planId]);
+  }, [isEdit, planId,studentId]);
   
-  const exerciseProperties = [
-    { label: 'Repetitions', value: 'repetitions' },
-    { label: 'Sets', value: 'sets' },
-    { label: 'Time', value: 'time' },
-    { label: 'Weight', value: 'weight' },
-    { label: 'Rest Interval', value: 'restInterval' },
-    { label: 'Tempo', value: 'tempo' },
-    { label: 'Notes', value: 'notes' },
-    { label: 'Difficulty', value: 'difficulty' },
-    { label: 'Duration', value: 'duration' },
-    { label: 'Distance', value: 'distance' },
-  ];
-
   useEffect(() => {
     fetch(`${apiUrl}/exercise`)
       .then(response => response.json())
       .then(data => {
+        console.log(data)
         const formattedExercises = data.map(exercise => ({ label: exercise.name, value: exercise.id }));
         setExercises(formattedExercises);
       })
+      // const dropdown = [{label: 'ejercicio', value: 1}, ]
       .catch(error => console.error('Error fetching exercises:', error));
   }, []);
+  
+  const getAvailableProperties = (exercise) => {
+    const propertiesToExclude = ['exercise', 'id', 'multimedia'];
+    return Object.keys(exercise).filter(property => !propertiesToExclude.includes(property) && exercise[property] === '');
+  };
 
   const handleAddGroup = () => {
-    setGroups([...groups, { 
-      set: '', 
-      rest: '', 
-      groupNumber: groups.length + 1, 
-      exercises: [{ 
-        exercise: {name: '', id: ''}, 
-        videoUrl: '', 
-        repetitions: '', 
-        sets: '', 
-        time: '', 
-        weight: '', 
-        restInterval: '', 
-        tempo: '', 
-        notes: '', 
-        difficulty: '', 
-        duration: '', 
-        distance: '',
-        selectedProperties: []
-      }] 
-    }]);
+    const newGroup = {
+      set: '',
+      rest: '',
+      groupNumber: plan.groups.length + 1,
+      exercises: [{
+        exercise: { name: '', id: '' },
+        multimedia: '',
+        repetitions: '',
+        sets: '',
+        time: '',
+        weight: '',
+        restInterval: '',
+        tempo: '',
+        notes: '',
+        difficulty: '',
+        duration: '',
+        distance: ''
+      }]
+    };
+    setPlan(prevState => ({ ...prevState, groups: [...prevState.groups, newGroup] }));
   };
 
   const handleGroupChange = (index, event) => {
-    const values = [...groups];
-    values[index][event.target.name] = event.target.value;
-    setGroups(values);
+    const { name, value } = event.target;
+    const updatedGroups = plan.groups.map((group, groupIndex) => (
+      groupIndex === index ? { ...group, [name]: value } : group
+    ));
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handleExerciseDropdownChange = (groupIndex, exerciseIndex, event) => {
-    const values = [...groups];
-    console.log(values[groupIndex].exercises[exerciseIndex].exercise.id, event.value)
-    values[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
-    setGroups(values);
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handleExerciseChange = (groupIndex, exerciseIndex, event) => {
-    const values = [...groups];
-    values[groupIndex].exercises[exerciseIndex][event.target.name] = event.target.value;
-    setGroups(values);
+    const { name, value } = event.target;
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises[exerciseIndex][name] = value;
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handleAddExercise = (groupIndex) => {
-    const values = [...groups];
-    console.log(groupIndex)
-    values[groupIndex].exercises.push({ 
-      exercise: {name: '', id: ''}, 
-      videoUrl: '', 
-      repetitions: '', 
-      sets: '', 
-      time: '', 
-      weight: '', 
-      restInterval: '', 
-      tempo: '', 
-      notes: '', 
-      difficulty: '', 
-      duration: '', 
-      distance: '', 
-      selectedProperties: [] 
-    });
-    setGroups(values);
+    const newExercise = {
+      exercise: { name: '', id: '' },
+      multimedia: '',
+      repetitions: '',
+      sets: '',
+      time: '',
+      weight: '',
+      restInterval: '',
+      tempo: '',
+      notes: '',
+      difficulty: '',
+      duration: '',
+      distance: ''
+    };
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises.push(newExercise);
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
-  const handlePropertyChange = (groupIndex, exerciseIndex, propertyIndex, event) => {
-    const values = [...groups];
-    values[groupIndex].exercises[exerciseIndex][values[groupIndex].exercises[exerciseIndex].selectedProperties[propertyIndex]] = event.target.value;
-    setGroups(values);
+  const handlePropertyChange = (groupIndex, exerciseIndex, property, event) => {
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises[exerciseIndex][property] = event.target.value;
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
-  
+
   const handleAddProperty = (groupIndex, exerciseIndex, event) => {
-    const values = [...groups];
     const property = event.value;
-    values[groupIndex].exercises[exerciseIndex].selectedProperties.push(property);
-    setGroups(values);
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises[exerciseIndex][property] = 0; // Agregar nueva propiedad con valor vacío
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
   
-  const handleRemoveProperty = (groupIndex, exerciseIndex, propertyIndex) => {
-    const values = [...groups];
-    values[groupIndex].exercises[exerciseIndex].selectedProperties.splice(propertyIndex, 1);
-    setGroups(values);
+  const handleRemoveProperty = (groupIndex, exerciseIndex, property) => {
+    const updatedGroups = [...plan.groups];
+    // delete updatedGroups[groupIndex].exercises[exerciseIndex][property]; // Eliminar propiedad
+    updatedGroups[groupIndex].exercises[exerciseIndex][property] = ''; // Agregar nueva propiedad con valor vacío
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+    console.log(plan)
+    
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     
-    if (!planName.trim()) {
+    if (!plan.planName.trim()) {
         console.log('Here1')
         showError(toast, 'Plan name is required.');
         return;
     }
+        
+    if (plan.groups.length === 0) {
+      console.log('Here3')
+      showError(toast, 'At least one group is required.');
+      return;
+    }
     
-    // if (!dayOfWeek.trim()) {
-    //       console.log('Here1')
-    //       showError(toast, 'Day of the week is required.');
-    //       return;
-    //     }
-        
-        if (groups.length === 0) {
-          console.log('Here3')
-          showError(toast, 'At least one group is required.');
-          return;
-        }
-        
-        for (const group of groups) {
-          console.log('Here4')
-        if (group.exercises.length === 0) {
-          showError(toast, 'Each group must have at least one exercise.');
-          return;
-        }
-  
-        for (const exercise of group.exercises) {
-            console.log('Here5')
-          if (!exercise.exercise.id) {
-            showError(toast, 'Each exercise must be selected.');
-            return;
-          }
-          if (!exercise.videoUrl.trim()) {
-            showError(toast, 'Video URL is required for each exercise.');
-            return;
-          }
-        }
-      }
+    for (const group of plan.groups) {
+      console.log('Here4')
+    if (group.exercises.length === 0) {
+      showError(toast, 'Each group must have at least one exercise.');
+      return;
+    }
 
-    const newPlan = { planName, dayOfWeek, startTime, endTime, notes, groups, coachId: 1 };
+    for (const exercise of plan.group.exercises) {
+        console.log('Here5')
+      if (!exercise.exercise.id) {
+        showError(toast, 'Each exercise must be selected.');
+        return;
+      }
+      if (!exercise.multimedia.trim()) {
+        showError(toast, 'Video URL is required for each exercise.');
+        return;
+      }
+    }
+    } 
+
     
-    fetch(`${apiUrl}/workout`, {
-      method: 'POST',
+    const requestMethod = isEdit ? 'PUT' : 'POST';
+    const url = isEdit ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout`;
+
+    fetch(url, {
+      method: requestMethod,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(newPlan),
+      body: JSON.stringify(plan),
     }).then(() => {
-      navigate('/');
+      // navigate('/');
+      showSuccess(toast, 'Parece que actualizaste algo')
     });
   };
 
   return (
     <div>
-      <h1>Create New Training Plan</h1>
+      <h1>{isEdit ? "Edit Training Plan" : "Create New Training Plan"}</h1>
       <div className="create-plan-container">
       <Toast ref={toast} /> {/* Agregar Toast */}
       <div className="form-section">
@@ -250,23 +221,50 @@ const CreatePlan = ({ isEdit, planId }) => {
           <form onSubmit={handleSubmit} className="p-fluid">
             <div className="p-field">
               <label htmlFor="planName">Plan Name:</label>
-              <InputText id="planName" value={planName} onChange={(e) => setPlanName(e.target.value)} required />
+              <InputText
+                id="planName"
+                value={plan.planName}
+                onChange={(e) => setPlan(prevState => ({ ...prevState, planName: e.target.value }))}
+                required
+              />
             </div>
-            {/* <div className="p-field">
+            <div className="p-field">
               <label htmlFor="dayOfWeek">Day of Week:</label>
-              <InputText id="dayOfWeek" value={dayOfWeek} onChange={(e) => setDayOfWeek(e.target.value)} required />
+              <InputText
+                id="dayOfWeek"
+                value={plan.dayOfWeek}
+                onChange={(e) => setPlan(prevState => ({ ...prevState, dayOfWeek: e.target.value }))}
+                required
+              />
             </div>
             <div className="p-field">
               <label htmlFor="startTime">Start Time:</label>
-              <Calendar id="startTime" value={startTime} onChange={(e) => setStartTime(e.value)} timeOnly hourFormat="24" />
+              <Calendar
+                id="startTime"
+                value={plan.startTime}
+                onChange={(e) => setPlan(prevState => ({ ...prevState, startTime: e.value }))}
+                timeOnly
+                hourFormat="24"
+              />
             </div>
             <div className="p-field">
               <label htmlFor="endTime">End Time:</label>
-              <Calendar id="endTime" value={endTime} onChange={(e) => setEndTime(e.value)} timeOnly hourFormat="24" />
-            </div> */}
+              <Calendar
+                id="endTime"
+                value={plan.endTime}
+                onChange={(e) => setPlan(prevState => ({ ...prevState, endTime: e.value }))}
+                timeOnly
+                hourFormat="24"
+              />
+            </div>
             <div className="p-field">
               <label htmlFor="notes">Notes:</label>
-              <InputTextarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+              <InputTextarea
+                id="notes"
+                value={plan.notes}
+                onChange={(e) => setPlan(prevState => ({ ...prevState, notes: e.target.value }))}
+                rows={3}
+              />
             </div>
           </form>
         </Card>
@@ -275,7 +273,7 @@ const CreatePlan = ({ isEdit, planId }) => {
       <div className="groups-section">
         <Card title="Exercise Groups" className="exercise-groups-card">
         <div className="groups-container">
-        {groups.map((group, groupIndex) => (
+        {plan.groups.map((group, groupIndex) => (
           <Card key={groupIndex} className="create-plan-card" >
             <Fieldset legend={`Group ${group.groupNumber}`}>
               <div className='fieldset-scroll'>
@@ -295,19 +293,39 @@ const CreatePlan = ({ isEdit, planId }) => {
                     <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter showClear required placeholder="Select an exercise" />
                   </div>
                   <div className="p-field">
-                    <label htmlFor={`videoUrl${groupIndex}-${exerciseIndex}`}>Video URL:</label>
-                    <InputText id={`videoUrl${groupIndex}-${exerciseIndex}`} name="videoUrl" value={exercise.videoUrl} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
+                    <label htmlFor={`multimedia${groupIndex}-${exerciseIndex}`}>Video URL:</label>
+                    <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
                   </div>
-                  {exercise.selectedProperties.map((property, propertyIndex) => (
-                    <div key={propertyIndex} className="p-field">
-                      <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
-                      <InputText id={`${property}${groupIndex}-${exerciseIndex}`} name={property} value={exercise[property]} onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, propertyIndex, e)} />
-                      <Button type="button" label="Remove Property" icon="pi pi-minus" onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, propertyIndex)} className="p-button-rounded p-button-danger" />
-                    </div>
-                  ))}
+                  {Object.keys(exercise).map((property, propertyIndex) => (
+                      (property !== 'exercise' && property !== 'id' && exercise[property] !== '') && (
+                        <div key={propertyIndex} className="p-field">
+                          <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
+                          <InputText
+                            id={`${property}${groupIndex}-${exerciseIndex}`}
+                            name={property}
+                            value={exercise[property]}
+                            onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
+                          />
+                          <Button
+                            type="button"
+                            label="Remove Property"
+                            icon="pi pi-minus"
+                            onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
+                            className="p-button-rounded p-button-danger"
+                          />
+                        </div>
+                      )
+                    ))}
                   <div className="p-field">
                     <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
-                    <Dropdown filter={true} id={`addProperty${groupIndex}-${exerciseIndex}`} options={exerciseProperties} onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)} placeholder="Select a property" />
+                    {/* <Dropdown filter={true} id={`addProperty${groupIndex}-${exerciseIndex}`} options={exerciseProperties} onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)} placeholder="Select a property" /> */}
+                    <Dropdown
+                            filter={true}
+                            id={`addProperty${groupIndex}-${exerciseIndex}`}
+                            options={getAvailableProperties(exercise).map(prop => ({ label: prop.charAt(0).toUpperCase() + prop.slice(1), value: prop }))}
+                            onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
+                            placeholder="Select a property"
+                          />
                   </div>
                 </div>
               ))}
