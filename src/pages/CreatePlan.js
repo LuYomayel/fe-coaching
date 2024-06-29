@@ -69,11 +69,12 @@ const CreatePlan = ({ isEdit }) => {
       .catch(error => console.error('Error fetching exercises:', error));
   }, []);
   
-  const getAvailableProperties = (exercise) => {
+  const getAvailableProperties = (exercise, parametro2, paramtro3) => {
     const propertiesToExclude = ['exercise', 'id', 'multimedia'];
     return Object.keys(exercise).filter(property => !propertiesToExclude.includes(property) && exercise[property] === '');
   };
 
+  
   const handleAddGroup = () => {
     const newGroup = {
       set: '',
