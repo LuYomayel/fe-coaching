@@ -1,24 +1,24 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { PrimeReactProvider } from 'primereact/api';
+// import { PrimeReactProvider } from 'primereact/api';
 import Home from './pages/Home';
 import CreatePlan from './pages/CreatePlan';
-import StudentPlans from './pages/StudentPlans';
+import StudentDetails from './pages/StudentDetails';
 import PlanDetails from './pages/PlanDetails';
-
+import { ToastProvider } from './utils/ToastContext';
 const App = () => {
   return (
-    <PrimeReactProvider>
+    <ToastProvider>
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/plans/create" element={<CreatePlan isEdit={false} />} />
-          <Route path="/plans/edit/:planId/:studentId" element={<CreatePlan isEdit={true} />} />
+          <Route path="/plans/edit/:planId" element={<CreatePlan isEdit={true} />} />
           <Route path="/plans/:planId/:studentId" element={<PlanDetails />} />
-          <Route path="/students/:studentId/plans" element={<StudentPlans />} />
+          <Route path="/students/:studentId/details" element={<StudentDetails />} />
         </Routes>
       </Router>
-    </PrimeReactProvider>
+    </ToastProvider>
   );
 };
 

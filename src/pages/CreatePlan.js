@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
@@ -7,17 +7,16 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Fieldset } from 'primereact/fieldset';
 import { Card } from 'primereact/card';
 import { Dropdown } from 'primereact/dropdown';
-import { Toast } from 'primereact/toast';  // Importar Toast
+import { useToast } from '../utils/ToastContext';
 import '../styles/CreatePlan.css';
-import { showError, showSuccess } from '../utils/toastMessages';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const CreatePlan = ({ isEdit }) => {
   const [exercises, setExercises] = useState([]);
-  const { planId, studentId } = useParams();
+  const { planId } = useParams();
   const navigate = useNavigate();
-  const toast = useRef(null);
+  const showToast = useToast();
   const [plan, setPlan] = useState({
     planName: '',
     dayOfWeek: '',
@@ -29,8 +28,7 @@ const CreatePlan = ({ isEdit }) => {
       rest: '',
       groupNumber: 1,
       exercises: [{
-        exercise: { name: '', id: '' },
-        multimedia: '',
+        exercise: { name: '', id: '', multimedia: '' },
         repetitions: '',
         sets: '',
         time: '',
@@ -47,29 +45,29 @@ const CreatePlan = ({ isEdit }) => {
 
   useEffect(() => {
     if (isEdit && planId) {
-      console.log('estoy aca')
-      fetch(`${apiUrl}/workout/clientId/${studentId}/planId/${planId}`)
+      fetch(`${apiUrl}/workout/${planId}`)
         .then(response => response.json())
         .then(data => {
+          console.log(data)
           setPlan(data)
         })
-        .catch(error => console.error('Error fetching plan:', error));
+        .catch(error => showToast('error', `${error.message}`, 'Error fetching plan details'));
     }
-  }, [isEdit, planId,studentId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, planId]);
   
   useEffect(() => {
     fetch(`${apiUrl}/exercise`)
       .then(response => response.json())
       .then(data => {
-        console.log(data)
         const formattedExercises = data.map(exercise => ({ label: exercise.name, value: exercise.id }));
         setExercises(formattedExercises);
       })
-      // const dropdown = [{label: 'ejercicio', value: 1}, ]
-      .catch(error => console.error('Error fetching exercises:', error));
+      .catch(error => showToast('error', `${error.message}`, 'Error fetching plan details'));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
-  const getAvailableProperties = (exercise, parametro2, paramtro3) => {
+  const getAvailableProperties = (exercise) => {
     const propertiesToExclude = ['exercise', 'id', 'multimedia'];
     return Object.keys(exercise).filter(property => !propertiesToExclude.includes(property) && exercise[property] === '');
   };
@@ -81,8 +79,7 @@ const CreatePlan = ({ isEdit }) => {
       rest: '',
       groupNumber: plan.groups.length + 1,
       exercises: [{
-        exercise: { name: '', id: '' },
-        multimedia: '',
+        exercise: { name: '', id: '', multimedia: '' },
         repetitions: '',
         sets: '',
         time: '',
@@ -113,16 +110,15 @@ const CreatePlan = ({ isEdit }) => {
   };
 
   const handleExerciseChange = (groupIndex, exerciseIndex, event) => {
-    const { name, value } = event.target;
+    const { value } = event.target;
     const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises[exerciseIndex][name] = value;
+    updatedGroups[groupIndex].exercises[exerciseIndex].exercise.multimedia = value;
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handleAddExercise = (groupIndex) => {
     const newExercise = {
-      exercise: { name: '', id: '' },
-      multimedia: '',
+      exercise: { name: '', id: '', multimedia: '' },
       repetitions: '',
       sets: '',
       time: '',
@@ -139,9 +135,9 @@ const CreatePlan = ({ isEdit }) => {
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
-  const handlePropertyChange = (groupIndex, exerciseIndex, property, event) => {
+  const handlePropertyChange = (groupIndex, exerciseIndex, property, value) => {
     const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises[exerciseIndex][property] = event.target.value;
+    updatedGroups[groupIndex].exercises[exerciseIndex][property] = value;
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
@@ -165,32 +161,28 @@ const CreatePlan = ({ isEdit }) => {
     event.preventDefault();
     
     if (!plan.planName.trim()) {
-        console.log('Here1')
-        showError(toast, 'Plan name is required.');
+        // showError(toast, 'Plan name is required.');
         return;
     }
         
     if (plan.groups.length === 0) {
-      console.log('Here3')
-      showError(toast, 'At least one group is required.');
+      // showError(toast, 'At least one group is required.');
       return;
     }
     
     for (const group of plan.groups) {
-      console.log('Here4')
     if (group.exercises.length === 0) {
-      showError(toast, 'Each group must have at least one exercise.');
+      // showError(toast, 'Each group must have at least one exercise.');
       return;
     }
 
-    for (const exercise of plan.group.exercises) {
-        console.log('Here5')
+    for (const exercise of group.exercises) {
       if (!exercise.exercise.id) {
-        showError(toast, 'Each exercise must be selected.');
+        // showError(toast, 'Each exercise must be selected.');
         return;
       }
-      if (!exercise.multimedia.trim()) {
-        showError(toast, 'Video URL is required for each exercise.');
+      if (!exercise.exercise.multimedia.trim()) {
+        // showError(toast, 'Video URL is required for each exercise.');
         return;
       }
     }
@@ -199,16 +191,19 @@ const CreatePlan = ({ isEdit }) => {
     
     const requestMethod = isEdit ? 'PUT' : 'POST';
     const url = isEdit ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout`;
-
     fetch(url, {
       method: requestMethod,
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(plan),
-    }).then(() => {
-      // navigate('/');
-      showSuccess(toast, 'Parece que actualizaste algo')
+    }).then((response) => {
+      if(isEdit){
+        showToast('success', `You have updated the plan ${plan.planName} with success!`, 'Plan updated!');
+      }else{
+        showToast('success', `You have created the plan ${plan.planName} with success!`, 'Plan created!');
+      }
+      navigate(`/`);
     });
   };
 
@@ -216,7 +211,6 @@ const CreatePlan = ({ isEdit }) => {
     <div>
       <h1>{isEdit ? "Edit Training Plan" : "Create New Training Plan"}</h1>
       <div className="create-plan-container">
-      <Toast ref={toast} /> {/* Agregar Toast */}
       <div className="form-section">
         <Card title="Details">
           <form onSubmit={handleSubmit} className="p-fluid">
@@ -295,17 +289,17 @@ const CreatePlan = ({ isEdit }) => {
                   </div>
                   <div className="p-field">
                     <label htmlFor={`multimedia${groupIndex}-${exerciseIndex}`}>Video URL:</label>
-                    <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
+                    <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
                   </div>
                   {Object.keys(exercise).map((property, propertyIndex) => (
-                      (property !== 'exercise' && property !== 'id' && exercise[property] !== '') && (
+                      (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '') && (
                         <div key={propertyIndex} className="p-field">
                           <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
                           <InputText
                             id={`${property}${groupIndex}-${exerciseIndex}`}
                             name={property}
                             value={exercise[property]}
-                            onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
+                            onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, property, e.target.value)}
                           />
                           <Button
                             type="button"
@@ -342,7 +336,7 @@ const CreatePlan = ({ isEdit }) => {
       
       <div className="actions-section">
         <Button type="button" label="Add Group" icon="pi pi-plus" onClick={handleAddGroup} className="p-button-rounded p-button-info p-button-lg" />
-        <Button type="submit" label="Create Plan" icon="pi pi-check" className="p-button-rounded p-button-success p-button-lg" onClick={handleSubmit}/>
+        <Button type="submit" label={isEdit ? 'Edit Plan' : 'Create Plan'} icon="pi pi-check" className="p-button-rounded p-button-success p-button-lg" onClick={handleSubmit}/>
       </div>
       </div>
     </div>
