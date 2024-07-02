@@ -7,7 +7,8 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog  } from 'primereact/dialog';
 import { useToast } from '../utils/ToastContext';
-import PlanDetails from './PlanDetails';
+import PlanDetails from '../dialogs/PlanDetails';
+import AssignPlanDialog from '../dialogs/AssignPlanDialog';
 import '../styles/Home.css';
 
 
@@ -21,24 +22,26 @@ const CoachHome = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isDialogVisible, setIsDialogVisible] = useState(false);
   const showToast = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${apiUrl}/subscription/coach/1`)
-      .then(response => response.json())
-      .then(data => {
-        setStudents(data)
-      })
-      .catch(error => showToast('error', `${error.message}`, 'Error fetching plan details'));
-
-      fetch(`${apiUrl}/workout`)
-      .then(response => response.json())
-      .then(data => {
-        setPlans(data);
-      })
-      .catch(error => showToast('error', `${error.message}`, 'Error fetching plan details'));
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      fetch(`${apiUrl}/subscription/coach/1`)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          setStudents(data);
+        })
+        .catch(error => showToast('error', `${error.message}`, 'Error fetching students'));
+    
+        fetch(`${apiUrl}/workout`)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          setPlans(data);
+        })
+        .catch(error => showToast('error', `${error.message}`, 'Error fetching plans'));
   }, [refreshKey]);
 
   // const handleRowClick = (studentId) => {
@@ -55,39 +58,15 @@ const CoachHome = () => {
     navigate('/plans/create')
   }
 
-  const handleAssignPlan = () => {
-    console.log(selectedPlans, selectedStudent)
-    const body = {
-      clientSubscription: selectedStudent,
-      workouts: selectedPlans
-    }
-    fetch(`${apiUrl}/workout/assignWorkout`, {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    }).then((response) => {
-      return response.json();
-    }).then( (data) => {
-      if(data.alreadyAssignedWorkouts){
-        showToast('warning', data.message, `${data.alreadyAssignedWorkouts.join(', ')}`)
-      }else{
-        showToast('success', data.message)
-      }
-      setRefreshKey(oldKey => oldKey+1)
-      setSelectedPlans([])
-      setSelectedStudent(null)
-    })
-  }
-
   const hidePlanDetails = () => {
     setPlanDetailsVisible(false);
     setSelectedPlan(null);
   };
 
   const handleViewPlanDetails = (plan) => {
-    setSelectedPlan(plan);
+    const workoutInstanceId = plan.workoutInstances.find(instances => instances.isTemplate == true).id
+    console.log(workoutInstanceId)
+    setSelectedPlan(workoutInstanceId);
     setPlanDetailsVisible(true);
   };
 
@@ -98,9 +77,10 @@ const CoachHome = () => {
   };
 
   const isRowSelectable = (event) => {
-    return selectedStudent ? 
-      !selectedStudent.workouts.find( workout => workout.id === event.data.id)
-    : true
+    // return selectedStudent ? 
+    //   !selectedStudent.workoutInstances.find( workout => workout.id === event.data.id)
+    // : 
+    return true
   }
   const viewPlanDetailsTemplate = (rowData) => {
     return <Button icon="pi pi-eye" onClick={() => handleViewPlanDetails(rowData)} />;
@@ -109,6 +89,19 @@ const CoachHome = () => {
   const viewStudentDetailsTemplate = (rowData) => {
     return <Button icon="pi pi-eye" onClick={() => handleViewStudentDetails(rowData)} />;
   };
+
+  const openAssignDialog = () => {
+    if (selectedStudent && selectedPlans.length > 0) {
+      setIsDialogVisible(true);
+    } else {
+      alert('Please select both a student and at least one plan');
+    }
+  };
+
+  const handleDialogHide = () => {
+    setIsDialogVisible(false);
+  };
+
 
   return (
     <div>
@@ -128,30 +121,35 @@ const CoachHome = () => {
         </div>
         <div>
           <h1>My Plans</h1> {/* Agregar un título para la segunda tabla */}
-          <DataTable value={plans} paginator rows={10} selectionMode="radiobutton" dataKey='id' selection={selectedPlans}
-          onSelectionChange={(e) => setSelectedPlans(e.value)} isDataSelectable={isRowSelectable} className='flex-grow-1'>
-          <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+          <DataTable value={plans}
+            paginator rows={10}  dataKey='id' 
+            onSelectionChange={(e) => setSelectedPlans(e.value)} isDataSelectable={isRowSelectable} className='flex-grow-1' selectionMode="radiobutton" selection={selectedPlans}
+          >
+            <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
             <Column field="planName" header="Plan Name" />
-            <Column field="startDate" header="Start Date" />
-            <Column field="endDate" header="End Date" />
-            <Column field="details" header="Details" />
             <Column body={viewPlanDetailsTemplate} header="View Details" />
           </DataTable>
         </div>
-        <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
-          {selectedPlan && <PlanDetails planId={selectedPlan.id} setPlanDetailsVisible={setPlanDetailsVisible} 
-          setRefreshKey={setRefreshKey}  />}
-        </Dialog>
+        
         <div className='actions-section'>
           {selectedStudent && selectedPlans.length > 0 && (
             <Button 
               label="Assign Plans" 
               icon="pi pi-check" 
               className="p-button-rounded p-button-lg p-button-secondary create-plan-button" 
-              onClick={handleAssignPlan} 
+              onClick={openAssignDialog} 
             />
           )}
           <Button label="Create New Plan" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary create-plan-button" onClick={handleNewPlan}/>
+
+          <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+            {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
+              setRefreshKey={setRefreshKey}  />}
+          </Dialog>
+
+          <Dialog header="Assign Plan" visible={isDialogVisible} style={{ width: '50vw' }} onHide={handleDialogHide}>
+            <AssignPlanDialog selectedStudent={selectedStudent} selectedPlans={selectedPlans} onClose={handleDialogHide} />
+          </Dialog>
         </div>
       </div>
     </div>

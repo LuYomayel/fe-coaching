@@ -23,22 +23,25 @@ const CreatePlan = ({ isEdit }) => {
     startTime: null,
     endTime: null,
     notes: '',
-    groups: [{
-      set: '',
-      rest: '',
-      groupNumber: 1,
-      exercises: [{
-        exercise: { name: '', id: '', multimedia: '' },
-        repetitions: '',
-        sets: '',
-        time: '',
-        weight: '',
-        restInterval: '',
-        tempo: '',
-        notes: '',
-        difficulty: '',
-        duration: '',
-        distance: ''
+    workoutInstances: [{
+      isTemplate: true,
+      groups: [{
+        set: '',
+        rest: '',
+        groupNumber: 1,
+        exercises: [{
+          exercise: { name: '', id: '', multimedia: '' },
+          repetitions: '',
+          sets: '',
+          time: '',
+          weight: '',
+          restInterval: '',
+          tempo: '',
+          notes: '',
+          difficulty: '',
+          duration: '',
+          distance: ''
+        }]
       }]
     }]
   });
@@ -74,10 +77,11 @@ const CreatePlan = ({ isEdit }) => {
 
   
   const handleAddGroup = () => {
+    console.log(plan)
     const newGroup = {
       set: '',
       rest: '',
-      groupNumber: plan.groups.length + 1,
+      groupNumber: plan.workoutInstances[0].groups.length + 1,
       exercises: [{
         exercise: { name: '', id: '', multimedia: '' },
         repetitions: '',
@@ -92,28 +96,79 @@ const CreatePlan = ({ isEdit }) => {
         distance: ''
       }]
     };
-    setPlan(prevState => ({ ...prevState, groups: [...prevState.groups, newGroup] }));
+  
+    setPlan(prevState => {
+      const updatedInstances = prevState.workoutInstances.map(instance => {
+        // if (instance.isTemplate) {
+        //   return {
+        //     ...instance,
+        //     groups: [...instance.groups, newGroup]
+        //   };
+        // }
+        // return instance;
+        return {
+              ...instance,
+              groups: [...instance.groups, newGroup]
+            };
+      });
+  
+      return { ...prevState, workoutInstances: updatedInstances };
+    });
   };
 
   const handleGroupChange = (index, event) => {
     const { name, value } = event.target;
-    const updatedGroups = plan.groups.map((group, groupIndex) => (
-      groupIndex === index ? { ...group, [name]: value } : group
-    ));
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+    setPlan(prevState => {
+      const updatedInstances = prevState.workoutInstances.map(instance => {
+        // if (instance.isTemplate) {
+        //   const updatedGroups = instance.groups.map((group, groupIndex) => (
+        //     groupIndex === index ? { ...group, [name]: value } : group
+        //   ));
+        //   return { ...instance, groups: updatedGroups };
+        // }
+        // return instance;
+        const updatedGroups = instance.groups.map((group, groupIndex) => (
+          groupIndex === index ? { ...group, [name]: value } : group
+        ));
+        return { ...instance, groups: updatedGroups };
+      });
+      return { ...prevState, workoutInstances: updatedInstances };
+    });
   };
 
   const handleExerciseDropdownChange = (groupIndex, exerciseIndex, event) => {
-    const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+    setPlan(prevState => {
+      const updatedInstances = prevState.workoutInstances.map(instance => {
+        // if (instance.isTemplate) {
+        //   const updatedGroups = [...instance.groups];
+        //   updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
+        //   return { ...instance, groups: updatedGroups };
+        // }
+        // return instance;
+        const updatedGroups = [...instance.groups];
+          updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
+          return { ...instance, groups: updatedGroups };
+      });
+      return { ...prevState, workoutInstances: updatedInstances };
+    });
   };
 
   const handleExerciseChange = (groupIndex, exerciseIndex, event) => {
     const { value } = event.target;
-    const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises[exerciseIndex].exercise.multimedia = value;
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+    setPlan(prevState => {
+      const updatedInstances = prevState.workoutInstances.map(instance => {
+        // if (instance.isTemplate) {
+        //   const updatedGroups = [...instance.groups];
+        //   updatedGroups[groupIndex].exercises[exerciseIndex].exercise.multimedia = value;
+        //   return { ...instance, groups: updatedGroups };
+        // }
+        // return instance;
+        const updatedGroups = [...instance.groups];
+          updatedGroups[groupIndex].exercises[exerciseIndex].exercise.multimedia = value;
+          return { ...instance, groups: updatedGroups };
+      });
+      return { ...prevState, workoutInstances: updatedInstances };
+    });
   };
 
   const handleAddExercise = (groupIndex) => {
@@ -130,31 +185,73 @@ const CreatePlan = ({ isEdit }) => {
       duration: '',
       distance: ''
     };
-    const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises.push(newExercise);
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+    setPlan(prevState => {
+      const updatedInstances = prevState.workoutInstances.map(instance => {
+        // if (instance.isTemplate) {
+        //   const updatedGroups = [...instance.groups];
+        //   updatedGroups[groupIndex].exercises.push(newExercise);
+        //   return { ...instance, groups: updatedGroups };
+        // }
+        // return instance;
+        const updatedGroups = [...instance.groups];
+          updatedGroups[groupIndex].exercises.push(newExercise);
+          return { ...instance, groups: updatedGroups };
+      });
+      return { ...prevState, workoutInstances: updatedInstances };
+    });
   };
 
   const handlePropertyChange = (groupIndex, exerciseIndex, property, value) => {
-    const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises[exerciseIndex][property] = value;
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+    setPlan(prevState => {
+      const updatedInstances = prevState.workoutInstances.map(instance => {
+        // if (instance.isTemplate) {
+        //   const updatedGroups = [...instance.groups];
+        //   updatedGroups[groupIndex].exercises[exerciseIndex][property] = value;
+        //   return { ...instance, groups: updatedGroups };
+        // }
+        // return instance;
+        const updatedGroups = [...instance.groups];
+          updatedGroups[groupIndex].exercises[exerciseIndex][property] = value;
+          return { ...instance, groups: updatedGroups };
+      });
+      return { ...prevState, workoutInstances: updatedInstances };
+    });
   };
 
   const handleAddProperty = (groupIndex, exerciseIndex, event) => {
     const property = event.value;
-    const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises[exerciseIndex][property] = 0; // Agregar nueva propiedad con valor vacío
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+    setPlan(prevState => {
+      const updatedInstances = prevState.workoutInstances.map(instance => {
+        // if (instance.isTemplate) {
+        //   const updatedGroups = [...instance.groups];
+        //   updatedGroups[groupIndex].exercises[exerciseIndex][property] = 0; // Agregar nueva propiedad con valor vacío
+        //   return { ...instance, groups: updatedGroups };
+        // }
+        // return instance;
+        const updatedGroups = [...instance.groups];
+          updatedGroups[groupIndex].exercises[exerciseIndex][property] = 0; // Agregar nueva propiedad con valor vacío
+          return { ...instance, groups: updatedGroups };
+      });
+      return { ...prevState, workoutInstances: updatedInstances };
+    });
   };
   
   const handleRemoveProperty = (groupIndex, exerciseIndex, property) => {
-    const updatedGroups = [...plan.groups];
-    // delete updatedGroups[groupIndex].exercises[exerciseIndex][property]; // Eliminar propiedad
-    updatedGroups[groupIndex].exercises[exerciseIndex][property] = ''; // Agregar nueva propiedad con valor vacío
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
-    console.log(plan)
-    
+    setPlan(prevState => {
+      const updatedInstances = prevState.workoutInstances.map(instance => {
+        // if (instance.isTemplate) {
+        //   const updatedGroups = [...instance.groups];
+        //   updatedGroups[groupIndex].exercises[exerciseIndex][property] = ''; // Agregar nueva propiedad con valor vacío
+        //   return { ...instance, groups: updatedGroups };
+        // }
+        // return instance;
+        const updatedGroups = [...instance.groups];
+          updatedGroups[groupIndex].exercises[exerciseIndex][property] = ''; // Agregar nueva propiedad con valor vacío
+          return { ...instance, groups: updatedGroups };
+      });
+      return { ...prevState, workoutInstances: updatedInstances };
+    });
+    console.log(plan);
   };
 
   const handleSubmit = (event) => {
@@ -165,12 +262,12 @@ const CreatePlan = ({ isEdit }) => {
         return;
     }
         
-    if (plan.groups.length === 0) {
+    if (plan.workoutInstances[0].groups.length === 0) {
       // showError(toast, 'At least one group is required.');
       return;
     }
     
-    for (const group of plan.groups) {
+    for (const group of plan.workoutInstances[0].groups) {
     if (group.exercises.length === 0) {
       // showError(toast, 'Each group must have at least one exercise.');
       return;
@@ -190,7 +287,7 @@ const CreatePlan = ({ isEdit }) => {
 
     
     const requestMethod = isEdit ? 'PUT' : 'POST';
-    const url = isEdit ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout`;
+    const url = isEdit ? `${apiUrl}/workout/template/${planId}` : `${apiUrl}/workout`;
     fetch(url, {
       method: requestMethod,
       headers: {
@@ -203,7 +300,7 @@ const CreatePlan = ({ isEdit }) => {
       }else{
         showToast('success', `You have created the plan ${plan.planName} with success!`, 'Plan created!');
       }
-      navigate(`/`);
+      // navigate(`/`);
     });
   };
 
@@ -268,7 +365,7 @@ const CreatePlan = ({ isEdit }) => {
       <div className="groups-section">
         <Card title="Exercise Groups" className="exercise-groups-card">
         <div className="groups-container">
-        {plan.groups.map((group, groupIndex) => (
+        {plan.workoutInstances[0].groups.map((group, groupIndex) => (
           <Card key={groupIndex} className="create-plan-card" >
             <Fieldset legend={`Group ${group.groupNumber}`}>
               <div className='fieldset-scroll'>

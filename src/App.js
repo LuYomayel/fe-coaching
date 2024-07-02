@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import CoachHome from './pages/CoachHome.js';
 import CreatePlan from './pages/CreatePlan';
 import StudentDetails from './pages/StudentDetails';
-import PlanDetails from './pages/PlanDetails';
+import PlanDetails from './dialogs/PlanDetails.js';
 import StudentHome from './pages/StudentHome.js';
 
 import { ToastProvider } from './utils/ToastContext';
