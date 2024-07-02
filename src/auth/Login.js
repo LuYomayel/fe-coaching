@@ -1,19 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import {jwtDecode} from 'jwt-decode';
-
+import { UserContext } from '../utils/UserContext';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if(token){
+      const decodedToken = jwtDecode(token)
+      setUser(decodedToken)
+      if(decodedToken.userType === 'client'){
+        navigate('/student')
+      }else{
+        navigate('/coach'); // Cambia esto por la ruta de tu dashboard
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const handleLogin = async () => {
     setLoading(true);
     try {
@@ -28,7 +42,8 @@ const Login = () => {
       if (data) {
         localStorage.setItem('token', data.access_token);
         const decodedToken = jwtDecode(data.access_token);
-        console.log(decodedToken)
+        setUser(decodedToken)
+        console.log(decodedToken.userType)
         if(decodedToken.userType === 'client'){
           navigate('/student')
         }else{

@@ -1,0 +1,10 @@
+.student-home-container {
+    padding: 20px;
+  }
+  
+  .student-home-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  

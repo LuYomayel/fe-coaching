@@ -1,0 +1,36 @@
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1a1a1a; /* Fondo oscuro para contraste */
+  color: #fff;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo a {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #fff; /* Texto blanco para contraste */
+  text-decoration: none;
+}
+
+.user-info .profile-picture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer; /* Añadir cursor de puntero */
+}
+
+.user-menu a {
+  color: #333; /* Texto de enlace */
+  text-decoration: none;
+  display: block;
+  padding: 8px 16px;
+}
+
+.user-menu a:hover {
+  background-color: #007bff; /* Fondo al pasar el ratón */
+  color: #fff; /* Texto blanco al pasar el ratón */
+}
