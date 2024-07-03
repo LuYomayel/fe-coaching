@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../utils/UserContext';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Chart } from 'primereact/chart';
+// import { Chart } from 'primereact/chart';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import PlanDetails from '../dialogs/PlanDetails';
@@ -13,49 +13,40 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const StudentHome = () => {
   const { user } = useContext(UserContext);
   const [workouts, setWorkouts] = useState([]);
-  const [progressData, setProgressData] = useState({});
+  // const [progressData, setProgressData] = useState({});
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
+  // eslint-disable-next-line
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
-    console.log(user)
+  const formatDate = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son indexados desde 0
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  
   useEffect(() => {
     // Fetch workouts for the student
     fetch(`${apiUrl}/workout/userId/${user.userId}`)
       .then(response => response.json())
       .then(data => {
-        console.log(data)
+        console.log(user.userId)
         const mappedData = data.filter(data => data.groups.length > 0)
         setWorkouts(mappedData)
       })
       .catch(error => console.error('Error fetching workouts:', error));
-
-    // Fetch progress data for the student
-//     fetch(`/api/progress?studentId=${user.id}`)
-//       .then(response => response.json())
-//       .then(data => {
-//         const progressData = {
-//           labels: data.labels,
-//           datasets: [
-//             {
-//               data: data.values,
-//               backgroundColor: ['#66BB6A', '#FFA726', '#EF5350'],
-//               hoverBackgroundColor: ['#81C784', '#FFB74D', '#E57373']
-//             }
-//           ]
-//         };
-//         setProgressData(progressData);
-//       })
-//       .catch(error => console.error('Error fetching progress data:', error));
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.id]);
 
   const viewPlanDetailsTemplate = (rowData) => {
-    return <Button icon="pi pi-eye" onClick={() => handleViewPlanDetails(rowData)} />;
+    return  <Button icon="pi pi-eye" onClick={() => handleViewPlanDetails(rowData)} />
   };
 
   const handleViewPlanDetails = (plan) => {
-    console.log(plan)
-    // return;
     setSelectedPlan(plan);
     setPlanDetailsVisible(true);
   };
@@ -73,8 +64,9 @@ const StudentHome = () => {
           <Card title="Your Training Plans">
             <DataTable value={workouts} paginator rows={5}>
               <Column field="workout.planName" header="Plan Name" />
-              <Column field="expectedStartDate" header="Start Date" />
-              <Column field="expectedEndDate" header="End Date" />
+              <Column field="instanceName" header="Start Date" />
+              <Column field="expectedStartDate" header="Start Date"  body={(rowData) => formatDate(rowData.expectedStartDate)}  />
+              <Column field="expectedEndDate" header="End Date"  body={(rowData) => formatDate(rowData.expectedStartDate)} />
               <Column field="status" header="Status" />
               <Column body={viewPlanDetailsTemplate} header="View Details" />
             </DataTable>

@@ -7,11 +7,13 @@ import { Fieldset } from 'primereact/fieldset';
 import { Card } from 'primereact/card';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
+import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey }) => {
   // const { planId, studentId } = useParams();
   const { user } = useContext(UserContext);
+  const { showConfirmationDialog } = useConfirmationDialog();
   const [plan, setPlan] = useState({
     groups: [{
       set: '',
@@ -42,53 +44,46 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey }) => {
   const showToast = useToast();
   const navigate = useNavigate();
   useEffect(() => {
-    // fetch(`${apiUrl}/workout/clientId/1/planId/${planId}`)
     fetch(`${apiUrl}/workout/${planId}`)
       .then(response => response.json())
       .then(data => {
         console.log(data)
-
         setPlan(data)
       })
-      .catch(error => showToast('error', `${error.message}`, 'Error fetching plan details'));
-// eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch(error => showToast('error',  'Error fetching plan details xd', `${error.message}`));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]);
 
   const handleEditPlan = () => {
     navigate(`/plans/edit/${planId}`)
   }
 
-  const handleClonePlan = () => {
-    fetch(`${apiUrl}/workout/copy/${planId}`, {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(plan),
-    }).then((response) => {
-      return response.json();
-    }).then(data => {
-      console.log(data)
-      setRefreshKey(prev => prev + 1); // Update the refresh key to re-fetch data
-      setPlanDetailsVisible(false); // Close the dialog
-      showToast('success', `You have copy the plan with success!`, 'Plan cloned!');  
-      navigate(`/`);
-    })
+  const handleDeletePlan = (plan) =>{
+    showConfirmationDialog({
+      message: "Are you sure you want to delete this plan?",
+      header: "Confirmation",
+      icon: "pi pi-exclamation-triangle",
+      accept: () => fetchDeletePlan(),
+      reject: () => console.log('Rejected')
+  });
   }
 
-  const handleDeletePlan = () => {
-    console.log(planId)
-    fetch(`${apiUrl}/workout/${planId}`, {
+  const fetchDeletePlan = () => {
+    const url = plan.isTemplate ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout/deleteInstance/${planId}`;
+    fetch(`${url}`, {
       method: "DELETE",
       headers: {
         'Content-Type': 'application/json',
       },
     })
-    .then(data => {
-      setRefreshKey(prev => prev + 1); // Update the refresh key to re-fetch data
-      setPlanDetailsVisible(false); // Close the dialog
-      showToast('success', `You have deleted the plan with success!`, 'Plan deleted!');  
-      navigate(`/`);
+    .then(response => {
+      if(response.ok){
+        setRefreshKey(prev => prev + 1); // Update the refresh key to re-fetch data
+        setPlanDetailsVisible(false); // Close the dialog
+        showToast('success', `You have deleted the plan with success!`, 'Plan deleted!');  
+      }else{
+        showToast('error', `Something wrong happend!`, response.error);  
+      }
     })
     .catch( (error) => console.log(error))
   }
@@ -114,10 +109,10 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey }) => {
       <Card>
         <div className="plan-details">
           <p><strong>Plan Name:</strong> {plan.workout.planName}</p>
-          <p><strong>Day of Week:</strong> {plan.dayOfWeek}</p>
+          <p><strong>Description:</strong> {plan.instanceName}</p>
           {/* <p><strong>Start Time:</strong> {new Date(plan.startTime).toLocaleTimeString()}</p> */}
           {/* <p><strong>End Time:</strong> {new Date(plan.endTime).toLocaleTimeString()}</p> */}
-          <p><strong>Notes:</strong> {plan.notes}</p>
+          <p><strong>Notes:</strong> {plan.personalizedNotes}</p>
         </div>
       </Card>
     </div>

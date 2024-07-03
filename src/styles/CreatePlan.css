@@ -1,6 +1,6 @@
 .create-plan-container {
     display: flex;
-    height: calc(100vh - 60px);
+    max-height: calc(100vh - 12rem);
     padding: 2rem;
     gap: 1rem;
     color: #fff;
@@ -55,7 +55,7 @@
 @media (max-width: 1400px) {
     .create-plan-container {
         flex-direction: column;
-        height: calc(100vh - 100px);
+        height: calc(100vh - 130px);
     }
 
     .form-section, .groups-section {
@@ -82,17 +82,14 @@ h1, h2, h3 {
 
 h1 {
     font-size: 2.5rem;
-    margin-bottom: 1.5rem;
 }
 
 h2 {
     font-size: 2rem;
-    margin-top: 2rem;
 }
 
 h3 {
     font-size: 1.5rem;
-    margin-top: 1.5rem;
 }
 
 label {

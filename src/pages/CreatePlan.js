@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Fieldset } from 'primereact/fieldset';
 import { Card } from 'primereact/card';
 import { Dropdown } from 'primereact/dropdown';
 import { useToast } from '../utils/ToastContext';
+import { UserContext } from '../utils/UserContext';
+import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import '../styles/CreatePlan.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -17,14 +18,32 @@ const CreatePlan = ({ isEdit }) => {
   const { planId } = useParams();
   const navigate = useNavigate();
   const showToast = useToast();
+  const { user } = useContext(UserContext);
+  const { showConfirmationDialog } = useConfirmationDialog();
   const [plan, setPlan] = useState({
-    planName: '',
-    dayOfWeek: '',
-    startTime: null,
-    endTime: null,
-    notes: '',
-    workoutInstances: [{
+      workout: {
+        id: '',
+        planName: '',
+        coach: {
+          id: '',
+          user: {
+            id:user.userId
+          }
+        }
+      },
       isTemplate: true,
+      dateAssigned: '',
+      dateCompleted: '',
+      expectedEndDate: '',
+      expectedStartDate: '',
+      feedback: '',
+      instanceName:'',
+      isRepeated: false,
+      personalizedNotes:'',
+      realEndDate:'',
+      realStartedDate:'',
+      repeatDays: [],
+      status:' ',
       groups: [{
         set: '',
         rest: '',
@@ -43,18 +62,21 @@ const CreatePlan = ({ isEdit }) => {
           distance: ''
         }]
       }]
-    }]
   });
+
+  const handleBack = () => {
+    navigate(-1)
+  }
 
   useEffect(() => {
     if (isEdit && planId) {
       fetch(`${apiUrl}/workout/${planId}`)
         .then(response => response.json())
         .then(data => {
-          console.log(data)
+          console.log('ID: ', data.isTemplate)
           setPlan(data)
         })
-        .catch(error => showToast('error', `${error.message}`, 'Error fetching plan details'));
+        .catch(error => showToast('error', 'Error fetching plan details' , `${error.message}`));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, planId]);
@@ -66,7 +88,7 @@ const CreatePlan = ({ isEdit }) => {
         const formattedExercises = data.map(exercise => ({ label: exercise.name, value: exercise.id }));
         setExercises(formattedExercises);
       })
-      .catch(error => showToast('error', `${error.message}`, 'Error fetching plan details'));
+      .catch(error => showToast('error', 'Error fetching plan details', `${error.message}`));
       // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
@@ -77,11 +99,10 @@ const CreatePlan = ({ isEdit }) => {
 
   
   const handleAddGroup = () => {
-    console.log(plan)
     const newGroup = {
       set: '',
       rest: '',
-      groupNumber: plan.workoutInstances[0].groups.length + 1,
+      groupNumber: plan.groups.length + 1,
       exercises: [{
         exercise: { name: '', id: '', multimedia: '' },
         repetitions: '',
@@ -97,78 +118,31 @@ const CreatePlan = ({ isEdit }) => {
       }]
     };
   
-    setPlan(prevState => {
-      const updatedInstances = prevState.workoutInstances.map(instance => {
-        // if (instance.isTemplate) {
-        //   return {
-        //     ...instance,
-        //     groups: [...instance.groups, newGroup]
-        //   };
-        // }
-        // return instance;
-        return {
-              ...instance,
-              groups: [...instance.groups, newGroup]
-            };
-      });
-  
-      return { ...prevState, workoutInstances: updatedInstances };
-    });
+    setPlan(prevState => ({
+      ...prevState,
+      groups: [...prevState.groups, newGroup]
+    }));
   };
 
   const handleGroupChange = (index, event) => {
     const { name, value } = event.target;
-    setPlan(prevState => {
-      const updatedInstances = prevState.workoutInstances.map(instance => {
-        // if (instance.isTemplate) {
-        //   const updatedGroups = instance.groups.map((group, groupIndex) => (
-        //     groupIndex === index ? { ...group, [name]: value } : group
-        //   ));
-        //   return { ...instance, groups: updatedGroups };
-        // }
-        // return instance;
-        const updatedGroups = instance.groups.map((group, groupIndex) => (
-          groupIndex === index ? { ...group, [name]: value } : group
-        ));
-        return { ...instance, groups: updatedGroups };
-      });
-      return { ...prevState, workoutInstances: updatedInstances };
-    });
+    const updatedGroups = plan.groups.map((group, groupIndex) => (
+      groupIndex === index ? { ...group, [name]: value } : group
+    ));
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handleExerciseDropdownChange = (groupIndex, exerciseIndex, event) => {
-    setPlan(prevState => {
-      const updatedInstances = prevState.workoutInstances.map(instance => {
-        // if (instance.isTemplate) {
-        //   const updatedGroups = [...instance.groups];
-        //   updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
-        //   return { ...instance, groups: updatedGroups };
-        // }
-        // return instance;
-        const updatedGroups = [...instance.groups];
-          updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
-          return { ...instance, groups: updatedGroups };
-      });
-      return { ...prevState, workoutInstances: updatedInstances };
-    });
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handleExerciseChange = (groupIndex, exerciseIndex, event) => {
     const { value } = event.target;
-    setPlan(prevState => {
-      const updatedInstances = prevState.workoutInstances.map(instance => {
-        // if (instance.isTemplate) {
-        //   const updatedGroups = [...instance.groups];
-        //   updatedGroups[groupIndex].exercises[exerciseIndex].exercise.multimedia = value;
-        //   return { ...instance, groups: updatedGroups };
-        // }
-        // return instance;
-        const updatedGroups = [...instance.groups];
-          updatedGroups[groupIndex].exercises[exerciseIndex].exercise.multimedia = value;
-          return { ...instance, groups: updatedGroups };
-      });
-      return { ...prevState, workoutInstances: updatedInstances };
-    });
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises[exerciseIndex].exercise.multimedia = value;
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handleAddExercise = (groupIndex) => {
@@ -185,109 +159,74 @@ const CreatePlan = ({ isEdit }) => {
       duration: '',
       distance: ''
     };
-    setPlan(prevState => {
-      const updatedInstances = prevState.workoutInstances.map(instance => {
-        // if (instance.isTemplate) {
-        //   const updatedGroups = [...instance.groups];
-        //   updatedGroups[groupIndex].exercises.push(newExercise);
-        //   return { ...instance, groups: updatedGroups };
-        // }
-        // return instance;
-        const updatedGroups = [...instance.groups];
-          updatedGroups[groupIndex].exercises.push(newExercise);
-          return { ...instance, groups: updatedGroups };
-      });
-      return { ...prevState, workoutInstances: updatedInstances };
-    });
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises.push(newExercise);
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handlePropertyChange = (groupIndex, exerciseIndex, property, value) => {
-    setPlan(prevState => {
-      const updatedInstances = prevState.workoutInstances.map(instance => {
-        // if (instance.isTemplate) {
-        //   const updatedGroups = [...instance.groups];
-        //   updatedGroups[groupIndex].exercises[exerciseIndex][property] = value;
-        //   return { ...instance, groups: updatedGroups };
-        // }
-        // return instance;
-        const updatedGroups = [...instance.groups];
-          updatedGroups[groupIndex].exercises[exerciseIndex][property] = value;
-          return { ...instance, groups: updatedGroups };
-      });
-      return { ...prevState, workoutInstances: updatedInstances };
-    });
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises[exerciseIndex][property] = value;
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
   const handleAddProperty = (groupIndex, exerciseIndex, event) => {
-    const property = event.value;
-    setPlan(prevState => {
-      const updatedInstances = prevState.workoutInstances.map(instance => {
-        // if (instance.isTemplate) {
-        //   const updatedGroups = [...instance.groups];
-        //   updatedGroups[groupIndex].exercises[exerciseIndex][property] = 0; // Agregar nueva propiedad con valor vacío
-        //   return { ...instance, groups: updatedGroups };
-        // }
-        // return instance;
-        const updatedGroups = [...instance.groups];
-          updatedGroups[groupIndex].exercises[exerciseIndex][property] = 0; // Agregar nueva propiedad con valor vacío
-          return { ...instance, groups: updatedGroups };
-      });
-      return { ...prevState, workoutInstances: updatedInstances };
-    });
+  const property = event.value;
+  const updatedGroups = [...plan.groups];
+  updatedGroups[groupIndex].exercises[exerciseIndex][property] = 0; // Agregar nueva propiedad con valor vacío
+  setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
-  
+    
   const handleRemoveProperty = (groupIndex, exerciseIndex, property) => {
-    setPlan(prevState => {
-      const updatedInstances = prevState.workoutInstances.map(instance => {
-        // if (instance.isTemplate) {
-        //   const updatedGroups = [...instance.groups];
-        //   updatedGroups[groupIndex].exercises[exerciseIndex][property] = ''; // Agregar nueva propiedad con valor vacío
-        //   return { ...instance, groups: updatedGroups };
-        // }
-        // return instance;
-        const updatedGroups = [...instance.groups];
-          updatedGroups[groupIndex].exercises[exerciseIndex][property] = ''; // Agregar nueva propiedad con valor vacío
-          return { ...instance, groups: updatedGroups };
-      });
-      return { ...prevState, workoutInstances: updatedInstances };
-    });
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises[exerciseIndex][property] = ''; // Agregar nueva propiedad con valor vacío
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
     console.log(plan);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event) =>{
     event.preventDefault();
-    
-    if (!plan.planName.trim()) {
-        // showError(toast, 'Plan name is required.');
-        return;
-    }
-        
-    if (plan.workoutInstances[0].groups.length === 0) {
-      // showError(toast, 'At least one group is required.');
-      return;
-    }
-    
-    for (const group of plan.workoutInstances[0].groups) {
-    if (group.exercises.length === 0) {
-      // showError(toast, 'Each group must have at least one exercise.');
+
+    if (!plan.workout.planName.trim()) {
+      showToast('error', 'Error', 'Plan name is required.');
       return;
     }
 
-    for (const exercise of group.exercises) {
-      if (!exercise.exercise.id) {
-        // showError(toast, 'Each exercise must be selected.');
+    if (plan.groups.length === 0) {
+      showToast('error', 'Error', 'At least one group is required.');
+      return;
+    }
+
+    for (const group of plan.groups) {
+      if (group.exercises.length === 0) {
+        showToast('error', 'Error', 'Each group must have at least one exercise.');
         return;
       }
-      if (!exercise.exercise.multimedia.trim()) {
-        // showError(toast, 'Video URL is required for each exercise.');
-        return;
+
+      for (const exercise of group.exercises) {
+        if (!exercise.exercise.id) {
+          showToast('error', 'Error',  'Each exercise must be selected.');
+          return;
+        }
+        if (!exercise.exercise.multimedia.trim()) {
+          showToast('error', 'Error','Video URL is required for each exercise.');
+          return;
+        }
       }
     }
-    } 
 
-    
+    showConfirmationDialog({
+      message: isEdit ? "Are you sure you want to edit this plan?" : "Are you sure you want to create this plan?",
+      header: "Confirmation",
+      icon: "pi pi-exclamation-triangle",
+      accept: () => fetchSubmit(),
+      reject: () => console.log('Rejected')
+  });
+  }
+
+  const fetchSubmit = () => {
     const requestMethod = isEdit ? 'PUT' : 'POST';
-    const url = isEdit ? `${apiUrl}/workout/template/${planId}` : `${apiUrl}/workout`;
+    const url = isEdit ? plan.isTemplate ? `${apiUrl}/workout/template/${planId}` : `${apiUrl}/workout/instance/${planId}` : `${apiUrl}/workout`;
     fetch(url, {
       method: requestMethod,
       headers: {
@@ -295,18 +234,30 @@ const CreatePlan = ({ isEdit }) => {
       },
       body: JSON.stringify(plan),
     }).then((response) => {
-      if(isEdit){
-        showToast('success', `You have updated the plan ${plan.planName} with success!`, 'Plan updated!');
+      if(response.ok){
+        if (isEdit) {
+          showToast('success', 'Plan updated!', `You have updated the plan ${plan.workout.planName} successfully!`);
+        } else {
+          showToast('success', 'Plan created!', `You have created the plan ${plan.workout.planName} successfully!`);
+        }
+        navigate(-1);
       }else{
-        showToast('success', `You have created the plan ${plan.planName} with success!`, 'Plan created!');
+        showToast('error', 'Something went wrong!', response.error)
       }
       // navigate(`/`);
     });
   };
 
   return (
-    <div>
-      <h1>{isEdit ? "Edit Training Plan" : "Create New Training Plan"}</h1>
+    <div className='pl-3 pr-3'>
+      <div className='flex align-items-center justify-content-between'>
+        <div>
+          <Button icon="pi pi-arrow-left" onClick={handleBack} />
+        </div>
+        <div><h1>{isEdit ? "Edit Training Plan" : "Create New Training Plan"}</h1></div>
+        <div>&nbsp;</div>
+      </div>
+      
       <div className="create-plan-container">
       <div className="form-section">
         <Card title="Details">
@@ -315,49 +266,31 @@ const CreatePlan = ({ isEdit }) => {
               <label htmlFor="planName">Plan Name:</label>
               <InputText
                 id="planName"
-                value={plan.planName}
-                onChange={(e) => setPlan(prevState => ({ ...prevState, planName: e.target.value }))}
-                required
+                value={plan.workout.planName}
+                onChange={(e) => setPlan(prevState => ({ ...prevState, workout: { ...prevState.workout, planName: e.target.value } }))}
+                disabled={plan.isTemplate ? false : true}
               />
             </div>
+            {isEdit &&
             <div className="p-field">
-              <label htmlFor="dayOfWeek">Day of Week:</label>
-              <InputText
-                id="dayOfWeek"
-                value={plan.dayOfWeek}
-                onChange={(e) => setPlan(prevState => ({ ...prevState, dayOfWeek: e.target.value }))}
-                required
+              <label htmlFor="notes">Description:</label>
+              <InputTextarea
+                id="instanceName"
+                value={plan.instanceName}
+                onChange={(e) => setPlan(prevState => ({ ...prevState, instanceName: e.target.value }))}
+                rows={3}
               />
-            </div>
-            <div className="p-field">
-              <label htmlFor="startTime">Start Time:</label>
-              <Calendar
-                id="startTime"
-                value={plan.startTime}
-                onChange={(e) => setPlan(prevState => ({ ...prevState, startTime: e.value }))}
-                timeOnly
-                hourFormat="24"
-              />
-            </div>
-            <div className="p-field">
-              <label htmlFor="endTime">End Time:</label>
-              <Calendar
-                id="endTime"
-                value={plan.endTime}
-                onChange={(e) => setPlan(prevState => ({ ...prevState, endTime: e.value }))}
-                timeOnly
-                hourFormat="24"
-              />
-            </div>
+            </div>}
+            {isEdit &&
             <div className="p-field">
               <label htmlFor="notes">Notes:</label>
               <InputTextarea
                 id="notes"
-                value={plan.notes}
-                onChange={(e) => setPlan(prevState => ({ ...prevState, notes: e.target.value }))}
+                value={plan.personalizedNotes}
+                onChange={(e) => setPlan(prevState => ({ ...prevState, personalizedNotes: e.target.value }))}
                 rows={3}
               />
-            </div>
+            </div>}
           </form>
         </Card>
       </div>
@@ -365,7 +298,7 @@ const CreatePlan = ({ isEdit }) => {
       <div className="groups-section">
         <Card title="Exercise Groups" className="exercise-groups-card">
         <div className="groups-container">
-        {plan.workoutInstances[0].groups.map((group, groupIndex) => (
+        {plan.groups.map((group, groupIndex) => (
           <Card key={groupIndex} className="create-plan-card" >
             <Fieldset legend={`Group ${group.groupNumber}`}>
               <div className='fieldset-scroll'>
@@ -418,6 +351,7 @@ const CreatePlan = ({ isEdit }) => {
                             onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
                             placeholder="Select a property"
                           />
+
                   </div>
                 </div>
               ))}

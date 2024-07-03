@@ -30,18 +30,17 @@ const CoachHome = () => {
       fetch(`${apiUrl}/subscription/coach/1`)
         .then(response => response.json())
         .then(data => {
-          console.log(data);
           setStudents(data);
         })
-        .catch(error => showToast('error', `${error.message}`, 'Error fetching students'));
+        .catch(error => showToast('error', 'Error fetching students', `${error.message}`));
     
         fetch(`${apiUrl}/workout`)
         .then(response => response.json())
         .then(data => {
-          console.log(data);
           setPlans(data);
         })
-        .catch(error => showToast('error', `${error.message}`, 'Error fetching plans'));
+        .catch(error => showToast('error', 'Error fetching plans' `${error.message}`));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
   // const handleRowClick = (studentId) => {
@@ -63,19 +62,6 @@ const CoachHome = () => {
     setSelectedPlan(null);
   };
 
-  const handleViewPlanDetails = (plan) => {
-    const workoutInstanceId = plan.workoutInstances.find(instances => instances.isTemplate == true).id
-    console.log(workoutInstanceId)
-    setSelectedPlan(workoutInstanceId);
-    setPlanDetailsVisible(true);
-  };
-
-  const handleViewStudentDetails = (student) => {
-    console.log(student)
-    navigate(`/students/${student.id}/details`)
-    
-  };
-
   const isRowSelectable = (event) => {
     // return selectedStudent ? 
     //   !selectedStudent.workoutInstances.find( workout => workout.id === event.data.id)
@@ -86,15 +72,27 @@ const CoachHome = () => {
     return <Button icon="pi pi-eye" onClick={() => handleViewPlanDetails(rowData)} />;
   };
 
+  const handleViewPlanDetails = (plan) => {
+    console.log(plan)
+    const workoutInstanceId = plan.workoutInstances.find(instances => instances.isTemplate === true).id
+    // console.log(workoutInstanceId)
+    setSelectedPlan(workoutInstanceId);
+    setPlanDetailsVisible(true);
+  };
+
   const viewStudentDetailsTemplate = (rowData) => {
     return <Button icon="pi pi-eye" onClick={() => handleViewStudentDetails(rowData)} />;
+  };
+
+  const handleViewStudentDetails = (student) => {
+    navigate(`/students/${student.id}/details`)
   };
 
   const openAssignDialog = () => {
     if (selectedStudent && selectedPlans.length > 0) {
       setIsDialogVisible(true);
     } else {
-      alert('Please select both a student and at least one plan');
+      showToast('error', 'Please select both a student and at least one plan');
     }
   };
 
@@ -102,12 +100,11 @@ const CoachHome = () => {
     setIsDialogVisible(false);
   };
 
-
   return (
     <div>
       <h1>DashBoard</h1>
-      <div className='flex align-content-center justify-content-between container'>
-        <div>
+      <div className='grid pr-3 pl-3'>
+        <div className='col-12 md:col-6 '>
           <h1>My Students</h1> 
           <DataTable value={students} paginator rows={10} selectionMode="radiobutton" dataKey='id' selection={selectedStudent} 
           onSelectionChange={(e) => setSelectedStudent(e.value)} onRowSelect={onRowSelect} className='flex-grow-1'>
@@ -116,10 +113,10 @@ const CoachHome = () => {
             <Column field="client.user.email" header="Email" />
             <Column field="client.fitnessGoal" header="Fitness Goal" />
             <Column field="client.activityLevel" header="Activity Level" />
-            <Column body={viewStudentDetailsTemplate} header="View Details" />
+            <Column body={viewStudentDetailsTemplate} header="View Details" alignHeader={'center'} />
           </DataTable>
         </div>
-        <div>
+        <div className='col-12 md:col-6'>
           <h1>My Plans</h1> {/* Agregar un título para la segunda tabla */}
           <DataTable value={plans}
             paginator rows={10}  dataKey='id' 
@@ -127,7 +124,7 @@ const CoachHome = () => {
           >
             <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
             <Column field="planName" header="Plan Name" />
-            <Column body={viewPlanDetailsTemplate} header="View Details" />
+            <Column body={viewPlanDetailsTemplate} header="View Details" alignHeader={'center'} />
           </DataTable>
         </div>
         

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { TabView, TabPanel } from 'primereact/tabview';
-import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
-import { ConfirmDialog } from 'primereact/confirmdialog';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
+import { useToast } from '../utils/ToastContext';
 const apiUrl = process.env.REACT_APP_API_URL;
 const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   const [currentPlans, setCurrentPlans] = useState(selectedPlans);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { showConfirmationDialog } = useConfirmationDialog();
+  const showToast = useToast();
   const [assignmentData, setAssignmentData] = useState(
     selectedPlans.map(plan => ({
       planId: plan.id,
@@ -19,9 +19,10 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
       expectedEndDate: null,
       notes: '',
       status: 'pending',
+      instanceName: '',
     }))
   );
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   const statusOptions = [
     { label: 'Pending', value: 'pending' },
@@ -36,7 +37,23 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   };
 
   const handleAssign = (index) => {
-    setShowConfirm(index);
+    const data = {
+      studentId: selectedStudent.id,
+      ...assignmentData[index],
+  };
+
+    if (!data.expectedStartDate || !data.expectedEndDate) {
+      showToast('error', 'Please fill in all required fields.')
+      return;
+    }
+
+    showConfirmationDialog({
+        message: "Are you sure you want to assign this plan?",
+        header: "Confirmation",
+        icon: "pi pi-exclamation-triangle",
+        accept: () => confirmAssign(index),
+        reject: () => console.log('Rejected u mf')
+    });
   };
 
   const confirmAssign = async (index) => {
@@ -44,54 +61,45 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
       studentId: selectedStudent.id,
       ...assignmentData[index],
     };
-
-    if (!data.expectedStartDate || !data.expectedEndDate) {
-      alert('Please fill in all required fields.');
-      return;
-    }
-    console.log(data)
-    // return
-    setLoading(true);
-    // Call the API to assign the plan
     const response = await fetch(`${apiUrl}/workout/assignWorkout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
     });
 
-    setLoading(false);
-
     if (response.ok) {
-      alert('Plan assigned successfully');
-      const newPlans = currentPlans.filter((_, i) => i !== index);
-      setCurrentPlans(newPlans);
-      setAssignmentData(assignmentData.filter((_, i) => i !== index));
-      if (newPlans.length === 0) {
-        onClose();
-      }
+        showToast('success', 'Plan assigned successfully');
+        const newPlans = currentPlans.filter((_, i) => i !== index);
+        setCurrentPlans(newPlans);
+        setAssignmentData(assignmentData.filter((_, i) => i !== index));
+        if (newPlans.length === 0) {
+          onClose();
+        }
     } else {
-      alert('Error assigning plan');
+        alert('Error assigning plan');
     }
-
-    setShowConfirm(false);
   };
 
   return (
     <div>
-      {loading && <ProgressSpinner />}
+      {/* {loading && <ProgressSpinner />} */}
       <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         {currentPlans.map((plan, index) => (
           <TabPanel key={index} header={plan.planName}>
             <div className="p-grid">
               <div className="p-col-6">
-                <label htmlFor={`expectedStartDate-${index}`}>Expected Start Date</label>
+                <label htmlFor={`expectedStartDate-${index}`}>Expected Start Date*</label>
                 <Calendar id={`expectedStartDate-${index}`} value={assignmentData[index].expectedStartDate} onChange={(e) => handleInputChange(index, 'expectedStartDate', e.value)} />
               </div>
               <div className="p-col-6">
-                <label htmlFor={`expectedEndDate-${index}`}>Expected End Date</label>
+                <label htmlFor={`expectedEndDate-${index}`}>Expected End Date*</label>
                 <Calendar id={`expectedEndDate-${index}`} value={assignmentData[index].expectedEndDate} onChange={(e) => handleInputChange(index, 'expectedEndDate', e.value)} />
+              </div>
+              <div className="p-col-12">
+                <label htmlFor={`notes-${index}`}>Description</label>
+                <InputTextarea id={`notes-${index}`} value={assignmentData[index].instanceName} onChange={(e) => handleInputChange(index, 'instanceName', e.target.value)} rows={3} />
               </div>
               <div className="p-col-12">
                 <label htmlFor={`notes-${index}`}>Notes</label>
@@ -106,8 +114,8 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
               <Button label="Cancel" icon="pi pi-times" className="p-button-danger" onClick={onClose} />
               <Button label="Assign" icon="pi pi-check" className="p-button-success" onClick={() => handleAssign(index)} />
             </div>
-            <ConfirmDialog visible={showConfirm === index} onHide={() => setShowConfirm(false)} message="Are you sure you want to assign this plan?"
-              header="Confirmation" icon="pi pi-exclamation-triangle" accept={() => confirmAssign(index)} reject={() => setShowConfirm(false)} />
+            {/* <ConfirmDialog visible={showConfirm === index} onHide={() => setShowConfirm(false)} message="Are you sure you want to assign this plan?"
+              header="Confirmation" icon="pi pi-exclamation-triangle" accept={() => confirmAssign(index)} reject={() => setShowConfirm(false)} /> */}
           </TabPanel>
         ))}
       </TabView>

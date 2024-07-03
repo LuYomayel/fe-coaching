@@ -9,7 +9,7 @@ import StudentHome from './pages/StudentHome.js';
 
 import { ToastProvider } from './utils/ToastContext';
 import { UserProvider } from './utils/UserContext.js';
-
+import { ConfirmationDialogProvider } from './utils/ConfirmationDialogContext.js';
 import Login from './auth/Login';
 
 import Header from './components/Header.js';
@@ -19,6 +19,7 @@ const App = () => {
   return (
     <UserProvider>
       <ToastProvider>
+      <ConfirmationDialogProvider>
         <Router>
           <Header/>
           <Routes>
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/student" element={<PrivateRoute element={StudentHome} requiredType="client" />} />
           </Routes>
         </Router>
+        </ConfirmationDialogProvider>
       </ToastProvider>
     </UserProvider>
   );
