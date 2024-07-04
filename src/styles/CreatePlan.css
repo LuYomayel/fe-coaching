@@ -110,10 +110,10 @@ input, .p-inputtext, .p-dropdown {
     border-radius: 5px;
 }
 
-.p-button {
+/* .p-button {
     display: block;
     margin: 1rem auto;
-}
+} */
 
 .p-button-rounded.p-button-sm {
     margin-top: 1rem;

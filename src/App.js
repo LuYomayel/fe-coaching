@@ -15,6 +15,7 @@ import Login from './auth/Login';
 import Header from './components/Header.js';
 import Unauthorized from './components/Unauthorized.js';
 import PrivateRoute from './auth/PrivateRoute.js';
+import TrainingPlanDetails from './pages/TrainingDetails.js';
 const App = () => {
   return (
     <UserProvider>
@@ -33,6 +34,7 @@ const App = () => {
             <Route path="/students/:studentId/details" element={<PrivateRoute element={StudentDetails} requiredType="coach" />} />
 
             <Route path="/student" element={<PrivateRoute element={StudentHome} requiredType="client" />} />
+            <Route path="/plans/start-session/:planId" element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />} />
           </Routes>
         </Router>
         </ConfirmationDialogProvider>

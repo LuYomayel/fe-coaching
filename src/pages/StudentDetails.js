@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+
 import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-// import { Chart } from 'primereact/chart';
+import { Chart } from 'primereact/chart';
 import { Dialog } from 'primereact/dialog';
+import { Timeline } from 'primereact/timeline';
+
 import { useToast } from '../utils/ToastContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import PlanDetails from '../dialogs/PlanDetails';
+
 import '../styles/StudentDetails.css';
+import { Fieldset } from 'primereact/fieldset';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -20,6 +25,17 @@ const StudentDetails = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activities, setActivities ] = useState([]);
+  const [progressData, setProgressData] = useState({
+    labels: ['Completed', 'Pending'],
+    datasets: [
+      {
+        data: [0, 0],
+        backgroundColor: ['green', 'red'],
+              hoverBackgroundColor: ['green', 'red']
+      }
+    ]
+  });
   const showToast = useToast();
   const { showConfirmationDialog } = useConfirmationDialog();
   const navigate = useNavigate();
@@ -30,12 +46,54 @@ const StudentDetails = () => {
       .then(data => {
         console.log(data)
         setStudent(data);
+
+        const completed = data.workoutInstances.filter(workout => workout.status === 'completed').length;
+        const pending = data.workoutInstances.filter(workout => workout.status === 'pending').length;
+
+        setProgressData({
+          labels: ['Completed', 'Pending'],
+          datasets: [
+            {
+              data: [completed, pending],
+              backgroundColor: ['green', 'red'],
+              hoverBackgroundColor: ['green', 'red']
+            }
+          ]
+        });
+
         setLoading(false);
       })
       .catch(error => {
         setLoading(false);
       });
+      console.log('student id: ', studentId)
+    fetch(`${apiUrl}/users/clientId/activities/${studentId}`)
+      .then( async (response) => {
+        const data = await response.json();
+        if(data.statusCode && data.statusCode !== 200){
+          showToast('error', 'Error fetching client activity', data.message)
+        }else{
+          console.log(data)
+          setActivities(data)
+        }
+      })
   }, [studentId, refreshKey]);
+
+  const customizedMarker = (item) => {
+    return (
+      <span className="custom-marker p-shadow-2" style={{ backgroundColor: '#FFCE56' }}>
+        <i className="pi pi-check" style={{ color: '#fff' }}></i>
+      </span>
+    );
+  };
+
+  const customizedContent = (item) => {
+    return (
+      <Card title={item.description}>
+        <p>{new Date(item.timestamp).toLocaleString()}</p>
+      </Card>
+    );
+  };
 
   const handleBack = () => {
     navigate(-1)
@@ -120,7 +178,7 @@ const StudentDetails = () => {
       
         <div className='container'>
           <h2>Current Training Plans</h2>
-          <DataTable value={student.workoutInstances} paginator rows={15} className="assigned-plans-table">
+          <DataTable value={student.workoutInstances.filter( workout => workout.status === 'pending')} paginator rows={5} className="assigned-plans-table">
             <Column field="workout.planName" header="Plan Name" />
             <Column field="instanceName" header="Description" />
             <Column field="personalizedNotes" header="Notes" />
@@ -136,31 +194,37 @@ const StudentDetails = () => {
               setRefreshKey={setRefreshKey}  />}
           </Dialog>
 
-          {/* <h2>Expired Training Plans</h2>
-          <DataTable value={student.workoutInstances.filter(plan => plan.status === 'completed')} paginator rows={5} className="expired-plans-table">
-            <Column field="planName" header="Plan Name" />
-            <Column field="dateAssigned" header="Date Assigned" />
-            <Column field="endDate" header="End Date" />
+          <h2>Completed Training Plans</h2>
+          <DataTable value={student.workoutInstances.filter( workout => workout.status === 'completed')} paginator rows={5} className="assigned-plans-table">
+            <Column field="workout.planName" header="Plan Name" />
+            <Column field="instanceName" header="Description" />
+            <Column field="personalizedNotes" header="Notes" />
+            <Column field="expectedStartDate" header="Expected Start Date" body={(rowData) => formatDate(rowData.expectedStartDate)} />
+            <Column field="expectedEndDate" header="Expected End Date" body={(rowData) => formatDate(rowData.expectedEndDate)} />
             <Column field="status" header="Status" />
-          </DataTable> */}
+            <Column field="progress" header="Progress" />
+            <Column body={viewPlanDetailsTemplate} header="Actions" />
+          </DataTable>
         </div>
 
         
         <div className=''>
-          <h2>Progress</h2>
-          <Card title="Progress Chart">
-            {/* <Chart type="pie" data={progressData} /> */}
-          </Card>
+          {/* <h2>Progress</h2> */}
+          <Fieldset legend="Progress Chart">
+            <Chart type="pie" data={progressData} />
+          </Fieldset>
 
-          <h2>Activity Summary</h2>
-          <Card title="Recent Activities">
-            {/* Aquí podrías mapear las actividades recientes del estudiante */}
-          </Card>
+          {/* <h2>Activity Summary</h2> */}
+          <Fieldset legend="Recent Activities">
+            <Timeline value={activities} opposite={(item) => item.description} 
+              content={(item) => <small className="text-color-secondary">{formatDate(item.timestamp)}</small>} align="alternate"/>
+            {/* <Timeline value={activities} align="alternate" marker={customizedMarker} content={customizedContent} /> */}
+          </Fieldset>
 
-          <h2>Notes and Comments</h2>
+          {/* <h2>Notes and Comments</h2>
           <Card title="Coach's Notes">
-            {/* Sección para agregar notas y comentarios del coach */}
-          </Card>
+            
+          </Card> */}
         </div>
       </div>
     </div>

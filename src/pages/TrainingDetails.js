@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import '../styles/PlanDetails.css';
 
@@ -19,8 +19,8 @@ import FinishTrainingDialog  from '../dialogs/FinishTrainingDialog';
 import CustomInput from '../components/CustomInput';
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining }) => {
-  // const { planId } = useParams();
+const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=true }) => {
+  const { planId } = useParams();
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
   const [exerciseProgress, setExerciseProgress] = useState({});
@@ -82,57 +82,44 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
     }));
   };
 
-  const handleDeletePlan = (plan) =>{
-    showConfirmationDialog({
-      message: "Are you sure you want to delete this plan?",
-      header: "Confirmation",
-      icon: "pi pi-exclamation-triangle",
-      accept: () => fetchDeletePlan(),
-      reject: () => console.log('Rejected')
-  });
-  }
-
-  const fetchDeletePlan = () => {
-    const url = plan.isTemplate ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout/deleteInstance/${planId}`;
-    fetch(`${url}`, {
-      method: "DELETE",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(response => {
-      if(response.ok){
-        setRefreshKey(prev => prev + 1); // Update the refresh key to re-fetch data
-        setPlanDetailsVisible(false); // Close the dialog
-        showToast('success', `You have deleted the plan with success!`, 'Plan deleted!');  
-      }else{
-        showToast('error', `Something wrong happend!`, response.error);  
-      }
-    })
-    .catch( (error) => console.log(error))
-  }
-
-  const submitFeedback = () => {
+  const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perceivedDifficulty, additionalNotes }) => {
     const exerciseFeedbackArray = Object.entries(exerciseProgress).map(([exerciseId, progress]) => ({
       exerciseId,
       ...progress,
-      userId: user.userId
     }));
+    const body = {
+        exerciseFeedbackArray,
+        userId: user.userId,
+        sessionTime,
+        generalFeedback,
+        energyLevel,
+        mood,
+        perceivedDifficulty,
+        additionalNotes
+    }
+    console.log(body)
+    // return
 
-    fetch(`${apiUrl}/plan/${planId}/feedback`, {
+    fetch(`${apiUrl}/workout/feedback/${planId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ exerciseFeedbacks: exerciseFeedbackArray, userId: user.userId })
+      body: JSON.stringify(body)
     })
       .then(response => response.json())
       .then(data => {
         console.log('Feedback submitted:', data);
-        setExerciseProgress({});
-        setFinishDialogVisible(false);
-        if (setRefreshKey) {
-          setRefreshKey(prev => prev + 1);
+        if(data.statusCode && data.statusCode !== 200){
+            showToast('error', data.message);
+        }else{
+            setExerciseProgress({});
+            setFinishDialogVisible(false);
+            if (setRefreshKey) {
+              setRefreshKey(prev => prev + 1);
+            }
+            showToast('success', 'Session finished!', 'Congratulations, you have finished your routine.')
+            navigate(-1)
         }
       })
       .catch(error => console.error('Error submitting feedback:', error));
@@ -148,11 +135,8 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
           <h1>Training Plan</h1>
         </div>
         <div className='flex gap-2'>
-          {(user.userType === 'coach') && 
-            <Button label="" icon='pi pi-trash' onClick={handleDeletePlan}/>
-          }
-          {user.userType === 'coach' && <Button label="" icon='pi pi-pencil' onClick={handleEditPlan}/>}
-          {/* <Button label="" icon='pi pi-clone' onClick={handleClonePlan}/> */}
+          
+          
         </div>
       </div>
     <div className="plan-summary">
@@ -177,22 +161,24 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
           <Card className='exercises-card'>
             <div className="flex flex-column">
               {group.exercises.map((exercise, exerciseIndex) => (
-                <div key={exerciseIndex} >
-                  <Card >
-                    <Fieldset legend={exercise.exercise.name} className='flex-grow-1 p-3'>
-                    <div className='exercise-fields'>
-                      {/* <div className='p-field exercise-field'>
-                          <label> 
-                            Exercise:
-                          </label>
-                          <p>{exercise.exercise ? exercise.exercise.name : '' }</p>
-                      </div> */}
-                      <div className='p-field exercise-field'>
-                        <label> 
-                          Video URL:
-                        </label>
-                        <p><a href={exercise.multimedia} >Watch Video</a></p>
-                      </div>
+                
+                <div key={exerciseIndex} className="exercise-card">
+                  <Splitter className='flex flex-row border border-solid border-gray-300'>
+                    <SplitterPanel className='p-3' size={80}>
+                        <Fieldset legend={exercise.exercise.name} className='p-3 h-full w-full' >
+                        <div className='exercise-fields'>
+                            {/* <div className='p-field exercise-field'>
+                                <label> 
+                                    Exercise:
+                                </label>
+                                <p>{exercise.exercise ? exercise.exercise.name : '' }</p>
+                            </div> */}
+                        <div className='p-field exercise-field'>
+                            <label> 
+                            Video URL:
+                            </label>
+                            <p><a href={exercise.multimedia} >Watch Video</a></p>
+                        </div>
                       {Object.keys(exercise).map((property, propertyIndex) => (
                         (property !== 'exercise' && property !== 'id' && exercise[property] !== '') && (
                           <div key={propertyIndex} className="p-field exercise-field">
@@ -203,7 +189,41 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
                       ))}
                       </div>
                       </Fieldset>
-                  </Card>
+                      </SplitterPanel>
+                      <SplitterPanel className='p-3' size={20}>
+                      {isTraining && (
+                        <div className="exercise-inputs">
+                          <div className="p-field-checkbox">
+                            <Checkbox
+                              inputId={`completed-${exercise.id}`}
+                              checked={exerciseProgress[exercise.id]?.completed || false}
+                              onChange={(e) => handleExerciseChange(exercise.id, 'completed', e.checked)}
+                            />
+                            <label htmlFor={`completed-${exercise.id}`}>Completed</label>
+                          </div>
+                          <div className="p-field">
+                            <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
+                            <CustomInput
+                                type="dropdown" // Change this to "slider" or "dropdown" to use different input types
+                                id={`rating-${exercise.id}`}
+                                value={exerciseProgress[exercise.id]?.rating || 0}
+                                onChange={(e) => handleExerciseChange(exercise.id, 'rating', e.value)}
+                              />
+                          </div>
+                          <div className="p-field">
+                            <label htmlFor={`comments-${exercise.id}`}>Comments</label>
+                            <InputTextarea
+                              id={`comments-${exercise.id}`}
+                              rows={3}
+                              value={exerciseProgress[exercise.id]?.comments || ''}
+                              onChange={(e) => handleExerciseChange(exercise.id, 'comments', e.target.value)}
+                              className="exercise-feedback-input"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      </SplitterPanel>
+                  </Splitter>
                   {exerciseIndex !== group.exercises.length-1 ? <div><Divider/></div> : <div></div>}
                 </div>
                 
@@ -228,4 +248,4 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
   );
 };
 
-export default PlanDetails;
+export default TrainingPlanDetails;

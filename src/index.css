@@ -37,3 +37,7 @@ p {
   max-width: 80%;
   margin: 0 auto;
 }
+
+.p-calendar-w-btn .p-datepicker-trigger.p-button {
+  background-color: var(--primary-color) !important; /* Usa la variable de color primario de tu tema */
+}

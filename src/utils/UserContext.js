@@ -9,7 +9,6 @@ export const UserProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (token) {
         const decodedUser = jwtDecode(token);
-        console.log(decodedUser.userType)
       setUser(decodedUser);
     }
   }, []);
