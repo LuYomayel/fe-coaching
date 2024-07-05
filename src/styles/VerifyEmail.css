@@ -1,0 +1,11 @@
+.verify-email-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .verify-email-container .p-card {
+    width: 400px;
+    text-align: center;
+  }

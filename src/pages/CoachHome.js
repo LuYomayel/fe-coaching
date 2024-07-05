@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
@@ -10,7 +10,7 @@ import { useToast } from '../utils/ToastContext';
 import PlanDetails from '../dialogs/PlanDetails';
 import AssignPlanDialog from '../dialogs/AssignPlanDialog';
 import '../styles/Home.css';
-
+import { UserContext } from '../utils/UserContext';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -24,20 +24,35 @@ const CoachHome = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isDialogVisible, setIsDialogVisible] = useState(false);
   const showToast = useToast();
+  const { user } = useContext(UserContext)
   const navigate = useNavigate();
 
   useEffect(() => {
-      fetch(`${apiUrl}/subscription/coach/1`)
+
+      fetch(`${apiUrl}/subscription/coach/userId/${user.userId}`)
         .then(response => response.json())
         .then(data => {
-          setStudents(data);
+          if(data.statusCode && data.statusCode !== 200){
+            if(data.message === "Coach not found") 
+              navigate('/complete-coach-profile')
+            else
+              showToast('error', 'Error getting the coach details', data.message)
+          }else{
+            console.log(data)
+            setStudents(data);
+          }
         })
         .catch(error => showToast('error', 'Error fetching students', `${error.message}`));
     
-        fetch(`${apiUrl}/workout`)
+        fetch(`${apiUrl}/workout/coach-workouts/userId/${user.userId}`)
         .then(response => response.json())
         .then(data => {
-          setPlans(data);
+          if(data.statusCode && data.statusCode !== 200){
+            showToast('error', 'Error fetching workouts')
+            console.log(data)
+          }else{
+            setPlans(data);
+          }
         })
         .catch(error => showToast('error', 'Error fetching plans' `${error.message}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,7 +121,7 @@ const CoachHome = () => {
       <div className='grid pr-3 pl-3'>
         <div className='col-12 md:col-6 '>
           <h1>My Students</h1> 
-          <DataTable value={students} paginator rows={10} selectionMode="radiobutton" dataKey='id' selection={selectedStudent} 
+          <DataTable value={(students || [])} paginator rows={10} selectionMode="radiobutton" dataKey='id' selection={selectedStudent} 
           onSelectionChange={(e) => setSelectedStudent(e.value)} onRowSelect={onRowSelect} className='flex-grow-1'>
             <Column selectionMode="single" headerStyle={{ width: '3rem' }}></Column>
             <Column field="client.user.name" header="Name" />

@@ -16,6 +16,10 @@ import Header from './components/Header.js';
 import Unauthorized from './components/Unauthorized.js';
 import PrivateRoute from './auth/PrivateRoute.js';
 import TrainingPlanDetails from './pages/TrainingDetails.js';
+import VerifyEmail from './auth/VerifyEmail.js';
+import CoachProfileForm from './pages/CoachProfileForm.js';
+import ForgotPassword from './auth/ForgotPassword.js';
+import ResetPassword from './auth/ResetPassword.js';
 const App = () => {
   return (
     <UserProvider>
@@ -25,6 +29,7 @@ const App = () => {
           <Header/>
           <Routes>
             <Route path="/" element={< Login />} />
+            <Route path="/login" element={< Login />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
 
             <Route path="/coach" element={<PrivateRoute element={CoachHome} requiredType="coach" />} />
@@ -35,6 +40,11 @@ const App = () => {
 
             <Route path="/student" element={<PrivateRoute element={StudentHome} requiredType="client" />} />
             <Route path="/plans/start-session/:planId" element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />} />
+
+            <Route path="/verify-email"element={< VerifyEmail />} />
+            <Route path="/complete-coach-profile" element={<CoachProfileForm />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </Router>
         </ConfirmationDialogProvider>

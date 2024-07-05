@@ -4,30 +4,34 @@ import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
-import {jwtDecode} from 'jwt-decode';
 import { UserContext } from '../utils/UserContext';
+import { useToast } from '../utils/ToastContext';
+import {jwtDecode} from 'jwt-decode';
+import '../index.css'
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Login = () => {
+  const showToast = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if(token){
-      const decodedToken = jwtDecode(token)
-      setUser(decodedToken)
-      if(decodedToken.userType === 'client'){
-        navigate('/student')
-      }else{
-        navigate('/coach'); // Cambia esto por la ruta de tu dashboard
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUser(decodedToken);
+      if (decodedToken.userType === 'client') {
+        navigate('/student');
+      } else {
+        navigate('/coach');
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [navigate, setUser]);
+
   const handleLogin = async () => {
     setLoading(true);
     try {
@@ -39,38 +43,95 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
-      if (data) {
+      if (data.access_token) {
         localStorage.setItem('token', data.access_token);
         const decodedToken = jwtDecode(data.access_token);
-        setUser(decodedToken)
-        console.log(decodedToken.userType)
-        if(decodedToken.userType === 'client'){
-          navigate('/student')
-        }else{
-          navigate('/coach'); // Cambia esto por la ruta de tu dashboard
+        setUser(decodedToken);
+        if (decodedToken.userType === 'client') {
+          navigate('/student');
+        } else {
+          navigate('/coach');
         }
-      } else {
-        
+      } else if(data.statusCode && data.statusCode === 401){
+        // Handle login error
+        showToast('error', 'Wrong credentials', 'Check your email and password then try again')
       }
     } catch (error) {
-      
+      // Handle login error
+    }
+    setLoading(false);
+  };
+
+  const handleSignUp = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${apiUrl}/auth/signUp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (data.access_token) {
+        localStorage.setItem('token', data.access_token);
+        const decodedToken = jwtDecode(data.access_token);
+        setUser(decodedToken);
+        if (decodedToken.userType === 'client') {
+          navigate('/student');
+        } else {
+          navigate('/coach');
+        }
+      }else if(data.statusCode && data.statusCode !== 200){
+        showToast('error', 'Error signing up', data.message)
+      } else {
+        // Handle signup error
+        console.log(data)
+      }
+    } catch (error) {
+      // Handle signup error
     }
     setLoading(false);
   };
 
   return (
-    <div className="login-container">
-      <Card title="Login">
-        <div className="p-field">
-          <label htmlFor="email">Email</label>
-          <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="p-field">
-          <label htmlFor="password">Password</label>
-          <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} toggleMask />
-        </div>
-        <Button label="Login" icon="pi pi-sign-in" loading={loading} onClick={handleLogin} />
-      </Card>
+    <div className='flex flex-column align-items-center justify-content-center'>
+      <div className='h1 p-5'>
+        <h1 className='h1'> Welcome! </h1>
+      </div>
+      <div className="login-container">
+        <Card title={isSignUp ? "Sign Up" : "Login"}>
+          <div className="p-field">
+            <label htmlFor="email">Email</label>
+            <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="p-field">
+            <label htmlFor="password">Password</label>
+            <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} toggleMask />
+          </div>
+          <div className='flex align-items-center justify-content-center gap-1 pt-4'>
+            {isSignUp ? (
+              <Button label="Sign Up" icon="pi pi-user" loading={loading} onClick={handleSignUp} />
+            ) : (
+              <Button label="Login" icon="pi pi-sign-in" loading={loading} onClick={handleLogin} />
+            )}
+            <Button
+              label={isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
+              className="p-button-text"
+              onClick={() => setIsSignUp(!isSignUp)}
+            />
+          </div>
+          {!isSignUp && (
+            <div className='flex align-items-center justify-content-center pt-2'>
+              <Button
+                label="Forgot Password?"
+                className="p-button-text"
+                onClick={() => navigate('/forgot-password')}
+              />
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 };
