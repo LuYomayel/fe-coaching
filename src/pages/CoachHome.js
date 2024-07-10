@@ -34,6 +34,8 @@ const CoachHome = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if(!user) 
+      console.log()
       fetch(`${apiUrl}/subscription/coach/userId/${user.userId}`)
         .then(async (response) => {
           if (!response.ok) {

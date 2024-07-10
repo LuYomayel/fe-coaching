@@ -17,7 +17,7 @@ const Header = () => {
   };
 
   if (!user) return null;
-
+  else if(user && !user.isVerified) return null;
   return (
     <header className="app-header p-d-flex p-jc-between p-ai-center p-shadow-2 p-p-3">
       <div className="logo">
@@ -33,7 +33,7 @@ const Header = () => {
         />
         <OverlayPanel ref={op} className="user-menu">
           <Link to={user.userType === 'client' ? '/student' : '/coach'} className="p-d-block p-py-2">Home</Link>
-          {/* <Link to="/profile" className="p-d-block p-py-2">Profile</Link> */}
+          <Link to={user.userType === 'client' ? '/student/profile' : '/coach/profile'} className="p-d-block p-py-2">Profile</Link>
           {user.userType === 'coach' ?(<Link to="/manage-students" className="p-d-block p-py-2">Clients</Link>) : <></>}
           {/* <Link to="/training-plans" className="p-d-block p-py-2">Training Plans</Link> */}
           {/* <Link to="/settings" className="p-d-block p-py-2">Settings</Link> */}

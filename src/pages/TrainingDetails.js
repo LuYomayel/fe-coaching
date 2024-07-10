@@ -15,8 +15,9 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import FinishTrainingDialog  from '../dialogs/FinishTrainingDialog';
-
+import { extractYouTubeVideoId } from '../utils/UtilFunctions';
 import CustomInput from '../components/CustomInput';
+import VideoDialog from '../dialogs/VideoDialog';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=true }) => {
@@ -25,6 +26,8 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
   const { showConfirmationDialog } = useConfirmationDialog();
   const [exerciseProgress, setExerciseProgress] = useState({});
   const [finishDialogVisible, setFinishDialogVisible] = useState(false);
+  const [videoDialogVisible, setVideoDialogVisible] = useState(false);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState('');
   const [plan, setPlan] = useState({
     groups: [{
       set: '',
@@ -69,10 +72,6 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]);
 
-  const handleEditPlan = () => {
-    navigate(`/plans/edit/${planId}`)
-  }
-
   const handleExerciseChange = (exerciseId, field, value) => {
     setExerciseProgress((prevProgress) => ({
       ...prevProgress,
@@ -82,6 +81,17 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
       }
     }));
   };
+
+  const handleVideoClick = (url) => {
+    try {
+        const videoId = extractYouTubeVideoId(url);
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        setCurrentVideoUrl(embedUrl);
+        setVideoDialogVisible(true);
+    } catch (error) {
+        showToast('error', 'Error', error.message)
+    }
+};
 
   const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perceivedDifficulty, additionalNotes }) => {
     const exerciseFeedbackArray = Object.entries(exerciseProgress).map(([exerciseId, progress]) => ({
@@ -123,7 +133,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
           setRefreshKey(prev => prev + 1);
         }
         showToast('success', 'Session finished!', 'Congratulations, you have finished your routine.')
-        navigate(-1)
+        navigate('/student')
       })
       .catch(error => showToast('error', 'Error', error.message));
   };
@@ -180,10 +190,21 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
                             <label> 
                             Video URL:
                             </label>
-                            <p><a href={exercise.multimedia} >Watch Video</a></p>
+                            <p>
+                              <a href="#/" onClick={() => handleVideoClick(exercise.exercise.multimedia)}>
+                                Watch video
+                              </a>
+                            </p>
                         </div>
                       {Object.keys(exercise).map((property, propertyIndex) => (
-                        (property !== 'exercise' && property !== 'id' && exercise[property] !== '') && (
+                        (
+                          property !== 'exercise' && 
+                          property !== 'id' && 
+                          exercise[property] !== '' && 
+                          property !== 'completed'&& 
+                          property !== 'rpe' && 
+                          property !== 'comments'
+                        ) && (
                           <div key={propertyIndex} className="p-field exercise-field">
                             <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
                             <p>{exercise[property]}</p>
@@ -247,6 +268,11 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
         onHide={() => setFinishDialogVisible(false)}
         submitFeedback={submitFeedback}
       />
+    <VideoDialog
+      visible={videoDialogVisible}
+      onHide={() => setVideoDialogVisible(false)}
+      videoUrl={currentVideoUrl}
+    />
   </div>
   );
 };

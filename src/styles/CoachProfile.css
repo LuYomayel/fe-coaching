@@ -1,0 +1,31 @@
+.p-tabview-panels{
+    padding: 3rem;
+}
+.current-subscription {
+    transform: scale(1.05);
+    box-shadow: 0 0 1rem rgba(255, 255, 255, 0.5);
+    background-color: #444444; /* Ajusta el color de fondo para que se vea diferente */
+}
+
+.subscription-card{
+    width: 20rem;
+    height: 30rem;
+    border-radius: 5%;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.subscription-card .p-card-title{
+    text-align: center;
+}
+
+.subscription-card .p-card-body{
+    height: 100%;
+}
+
+.subscription-card .p-card-content{
+    padding: 2rem;
+    height: 50%;
+}
+.subscription-plan-h2{
+    margin-bottom: 0;
+}

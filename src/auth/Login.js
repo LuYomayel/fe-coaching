@@ -23,10 +23,10 @@ const Login = () => {
     const token = localStorage.getItem('token');
     if (token) {
       const decodedToken = jwtDecode(token);
-      setUser(decodedToken);
       if(!decodedToken.isVerified){
         showToast('error', 'Verify your email prior loging in!', 'Check your email to verify it, please')
       }else{
+        setUser(decodedToken);
         if (decodedToken.userType === 'client') {
           navigate('/student');
         } else {
@@ -48,8 +48,8 @@ const Login = () => {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(errorData)
-        throw new Error(errorData.message || 'Something went wrong');
+        console.log(errorData.message)
+        throw new Error(errorData.message.message || 'Something went wrong');
       }
       const data = await response.json();
       if (data.access_token) {
