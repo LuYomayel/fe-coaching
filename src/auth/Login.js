@@ -24,10 +24,14 @@ const Login = () => {
     if (token) {
       const decodedToken = jwtDecode(token);
       setUser(decodedToken);
-      if (decodedToken.userType === 'client') {
-        navigate('/student');
-      } else {
-        navigate('/coach');
+      if(!decodedToken.isVerified){
+        showToast('error', 'Verify your email prior loging in!', 'Check your email to verify it, please')
+      }else{
+        if (decodedToken.userType === 'client') {
+          navigate('/student');
+        } else {
+          navigate('/coach');
+        }
       }
     }
   }, [navigate, setUser]);
@@ -42,22 +46,29 @@ const Login = () => {
         },
         body: JSON.stringify({ email, password }),
       });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log(errorData)
+        throw new Error(errorData.message || 'Something went wrong');
+      }
       const data = await response.json();
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
         const decodedToken = jwtDecode(data.access_token);
         setUser(decodedToken);
-        if (decodedToken.userType === 'client') {
-          navigate('/student');
-        } else {
-          navigate('/coach');
+        if(!decodedToken.isVerified){
+          showToast('error', 'Verify your email prior loging in!', 'Check your email to verify it, please')
+        }else{
+          if (decodedToken.userType === 'client') {
+            navigate('/student');
+          } else {
+            navigate('/coach');
+          }
         }
-      } else if(data.statusCode && data.statusCode === 401){
-        // Handle login error
-        showToast('error', 'Wrong credentials', 'Check your email and password then try again')
       }
     } catch (error) {
       // Handle login error
+      showToast('error', 'Error', error.message);
     }
     setLoading(false);
   };
@@ -72,24 +83,22 @@ const Login = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-      const data = await response.json();
-      if (data.access_token) {
-        localStorage.setItem('token', data.access_token);
-        const decodedToken = jwtDecode(data.access_token);
-        setUser(decodedToken);
-        if (decodedToken.userType === 'client') {
-          navigate('/student');
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log(errorData)
+        throw new Error(errorData.message || 'Something went wrong');
+      }
+      else{
+        const data = await response.json();
+        if(data.statusCode && data.statusCode !== 200){
+          showToast('error', 'Error signing up', data.message)
         } else {
-          navigate('/coach');
+          showToast('success', 'Check your email to continue!')
         }
-      }else if(data.statusCode && data.statusCode !== 200){
-        showToast('error', 'Error signing up', data.message)
-      } else {
-        // Handle signup error
-        console.log(data)
       }
     } catch (error) {
       // Handle signup error
+      showToast('error', 'Error', error.message);
     }
     setLoading(false);
   };

@@ -34,15 +34,18 @@ const ResetPassword = () => {
             },
             body: JSON.stringify(body),
         });
-        if (response.ok) {
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
+        }
+        else{
             showToast('success', 'Success', 'Password reset successfully');
             navigate('/login');
-        } else {
-            showToast('error', 'Error', 'Failed to reset password');
-        }
+        } 
     } catch (error) {
         console.log(error)
-         showToast('error', 'Error', 'An error occurred while resetting the password');
+        showToast('error', 'Error', error.message);
     }
     setLoading(false);
   };

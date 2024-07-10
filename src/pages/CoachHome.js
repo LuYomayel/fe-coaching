@@ -6,9 +6,11 @@ import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog  } from 'primereact/dialog';
+import { Card } from 'primereact/card';
 import { useToast } from '../utils/ToastContext';
 import PlanDetails from '../dialogs/PlanDetails';
 import AssignPlanDialog from '../dialogs/AssignPlanDialog';
+import NewStudentDialog from '../dialogs/NewStudentDialog';
 import '../styles/Home.css';
 import { UserContext } from '../utils/UserContext';
 
@@ -20,47 +22,47 @@ const CoachHome = () => {
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [selectedPlans, setSelectedPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
+
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [isDialogVisible, setIsDialogVisible] = useState(false);
+  const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
+
   const showToast = useToast();
   const { user } = useContext(UserContext)
   const navigate = useNavigate();
 
   useEffect(() => {
-
       fetch(`${apiUrl}/subscription/coach/userId/${user.userId}`)
-        .then(response => response.json())
-        .then(data => {
-          if(data.statusCode && data.statusCode !== 200){
-            if(data.message === "Coach not found") 
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.log(errorData)
+            if(errorData.message === 'Coach not found')
               navigate('/complete-coach-profile')
             else
-              showToast('error', 'Error getting the coach details', data.message)
-          }else{
-            console.log(data)
-            setStudents(data);
+              throw new Error(errorData.message || 'Something went wrong');
           }
+          const data = await response.json();
+          setStudents(data)
+
         })
         .catch(error => showToast('error', 'Error fetching students', `${error.message}`));
-    
-        fetch(`${apiUrl}/workout/coach-workouts/userId/${user.userId}`)
-        .then(response => response.json())
-        .then(data => {
-          if(data.statusCode && data.statusCode !== 200){
-            showToast('error', 'Error fetching workouts')
-            console.log(data)
-          }else{
-            setPlans(data);
+
+      fetch(`${apiUrl}/workout/coach-workouts/userId/${user.userId}`)
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.log(errorData)
+            throw new Error(errorData.message || 'Something went wrong');
           }
+          const data = await response.json()
+          setPlans(data);
         })
         .catch(error => showToast('error', 'Error fetching plans' `${error.message}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
-
-  // const handleRowClick = (studentId) => {
-  //   navigate(`/students/${studentId}/plans`);
-  // };
 
   const onRowSelect = (event) => {
     setSelectedStudent(event.value);
@@ -68,7 +70,6 @@ const CoachHome = () => {
   };
 
   const handleNewPlan = () => {
-    // console.log(selectedPlans, selectedStudent)
     navigate('/plans/create')
   }
 
@@ -78,9 +79,6 @@ const CoachHome = () => {
   };
 
   const isRowSelectable = (event) => {
-    // return selectedStudent ? 
-    //   !selectedStudent.workoutInstances.find( workout => workout.id === event.data.id)
-    // : 
     return true
   }
   const viewPlanDetailsTemplate = (rowData) => {
@@ -88,7 +86,6 @@ const CoachHome = () => {
   };
 
   const handleViewPlanDetails = (plan) => {
-    console.log(plan)
     const workoutInstanceId = plan.workoutInstances.find(instances => instances.isTemplate === true).id
     // console.log(workoutInstanceId)
     setSelectedPlan(workoutInstanceId);
@@ -115,16 +112,32 @@ const CoachHome = () => {
     setIsDialogVisible(false);
   };
 
+  const openNewStudentDialog = () => {
+    setIsNewStudentDialogVisible(true);
+  };
+  
+  const handleNewStudentDialogHide = () => {
+    setIsNewStudentDialogVisible(false);
+    setRefreshKey(prevKey => prevKey + 1); // Refresh the list after adding a new student
+  };
+
   return (
     <div>
       <h1>DashBoard</h1>
       <div className='grid pr-3 pl-3'>
         <div className='col-12 md:col-6 '>
-          <h1>My Students</h1> 
+          <h1>Active Students</h1> 
+          {/* {students.map(client => (
+            <Card key={client.id} title={client.name} subTitle={client.email} className="card">
+              <p><strong>Fitness Goal:</strong> {client.fitnessGoal}</p>
+              <p><strong>Activity Level:</strong> {client.activityLevel}</p>
+              <Button label="View Details" icon="pi pi-eye" className="p-button-rounded p-button-info" />
+            </Card>
+          ))} */}
           <DataTable value={(students || [])} paginator rows={10} selectionMode="radiobutton" dataKey='id' selection={selectedStudent} 
           onSelectionChange={(e) => setSelectedStudent(e.value)} onRowSelect={onRowSelect} className='flex-grow-1'>
             <Column selectionMode="single" headerStyle={{ width: '3rem' }}></Column>
-            <Column field="client.user.name" header="Name" />
+            <Column field="client.name" header="Name" />
             <Column field="client.user.email" header="Email" />
             <Column field="client.fitnessGoal" header="Fitness Goal" />
             <Column field="client.activityLevel" header="Activity Level" />
@@ -152,17 +165,21 @@ const CoachHome = () => {
               onClick={openAssignDialog} 
             />
           )}
-          <Button label="Create New Plan" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary create-plan-button" onClick={handleNewPlan}/>
-
-          <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
-            {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
-              setRefreshKey={setRefreshKey}  />}
-          </Dialog>
-
-          <Dialog header="Assign Plan" visible={isDialogVisible} style={{ width: '50vw' }} onHide={handleDialogHide}>
-            <AssignPlanDialog selectedStudent={selectedStudent} selectedPlans={selectedPlans} onClose={handleDialogHide} />
-          </Dialog>
+          <Button label="Add New Student" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary create-student-button" onClick={openNewStudentDialog} />
+          <Button label="Create New Plan" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary create-student-button" onClick={handleNewPlan}/>
         </div>
+
+        <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+          {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
+            setRefreshKey={setRefreshKey}  />}
+        </Dialog>
+
+        <Dialog header="Assign Plan" visible={isDialogVisible} style={{ width: '50vw' }} onHide={handleDialogHide}>
+          <AssignPlanDialog selectedStudent={selectedStudent} selectedPlans={selectedPlans} onClose={handleDialogHide} />
+        </Dialog>
+        <Dialog header="New Student" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>
+          <NewStudentDialog onClose={handleNewStudentDialogHide} setRefreshKey={setRefreshKey} />
+        </Dialog>
       </div>
     </div>
   );

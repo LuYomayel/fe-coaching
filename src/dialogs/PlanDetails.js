@@ -56,11 +56,13 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
   const navigate = useNavigate();
   useEffect(() => {
     fetch(`${apiUrl}/workout/${planId}`)
-      .then(response => response.json())
-      .then(data => {
-        if(data.statusCode && data.statusCode !== 200){
-          showToast('error', 'Error fetching plan details', data.message)
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
         }else {
+          const data = await response.json();
           setPlan(data)
         }
       })
@@ -100,43 +102,19 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
         'Content-Type': 'application/json',
       },
     })
-    .then(response => {
+    .then(async (response) => {
       if(response.ok){
         setRefreshKey(prev => prev + 1); // Update the refresh key to re-fetch data
         setPlanDetailsVisible(false); // Close the dialog
         showToast('success', `You have deleted the plan with success!`, 'Plan deleted!');  
       }else{
-        showToast('error', `Something wrong happend!`, response.error);  
+        const errorData = await response.json();
+        console.log(errorData)
+        throw new Error(errorData.message || 'Something went wrong');
       }
     })
-    .catch( (error) => console.log(error))
+    .catch( (error) => showToast('error', 'Error', error.message))
   }
-
-  const submitFeedback = () => {
-    const exerciseFeedbackArray = Object.entries(exerciseProgress).map(([exerciseId, progress]) => ({
-      exerciseId,
-      ...progress,
-      userId: user.userId
-    }));
-
-    fetch(`${apiUrl}/plan/${planId}/feedback`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ exerciseFeedbacks: exerciseFeedbackArray, userId: user.userId })
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Feedback submitted:', data);
-        setExerciseProgress({});
-        setFinishDialogVisible(false);
-        if (setRefreshKey) {
-          setRefreshKey(prev => prev + 1);
-        }
-      })
-      .catch(error => console.error('Error submitting feedback:', error));
-  };
 
   if (!plan) return <p>Loading...</p>;
 
@@ -159,10 +137,10 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
       <Card>
         <div className="plan-details">
           <p><strong>Plan Name:</strong> {plan.workout.planName}</p>
-          <p><strong>Description:</strong> {plan.instanceName}</p>
+          {!plan.isTemplate && <p><strong>Description:</strong> {plan.instanceName}</p>}
           {/* <p><strong>Start Time:</strong> {new Date(plan.startTime).toLocaleTimeString()}</p> */}
           {/* <p><strong>End Time:</strong> {new Date(plan.endTime).toLocaleTimeString()}</p> */}
-          <p><strong>Notes:</strong> {plan.personalizedNotes}</p>
+          {!plan.isTemplate &&<p><strong>Notes:</strong> {plan.personalizedNotes}</p>}
         </div>
       </Card>
     </div>
@@ -194,7 +172,14 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
                         <p><a href={exercise.multimedia} >Watch Video</a></p>
                       </div>
                       {Object.keys(exercise).map((property, propertyIndex) => (
-                        (property !== 'exercise' && property !== 'id' && exercise[property] !== '') && (
+                        (
+                          property !== 'exercise' && 
+                          property !== 'id' && 
+                          exercise[property] !== '' &&
+                          property !== 'comments' &&
+                          property !== 'rpe' &&
+                          property !== 'completed' 
+                        ) && (
                           <div key={propertyIndex} className="p-field exercise-field">
                             <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
                             <p>{exercise[property]}</p>
@@ -214,16 +199,6 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
         
       ))}
     </div>
-    <div className='actions-section'>
-      {isTraining && (
-        <Button label="Finish Training" onClick={() => setFinishDialogVisible(true)} />
-      )}
-    </div>
-    <FinishTrainingDialog
-        visible={finishDialogVisible}
-        onHide={() => setFinishDialogVisible(false)}
-        submitFeedback={submitFeedback}
-      />
   </div>
   );
 };

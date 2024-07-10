@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Fieldset } from 'primereact/fieldset';
 import { Card } from 'primereact/card';
+import { TabView, TabPanel } from 'primereact/tabview';
 import { Dropdown } from 'primereact/dropdown';
+
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
+        
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
@@ -71,9 +77,13 @@ const CreatePlan = ({ isEdit }) => {
   useEffect(() => {
     if (isEdit && planId) {
       fetch(`${apiUrl}/workout/${planId}`)
-        .then(response => response.json())
-        .then(data => {
-          console.log('ID: ', data.isTemplate)
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.log(errorData)
+            throw new Error(errorData.message || 'Something went wrong');
+          }
+          const data = await response.json();
           setPlan(data)
         })
         .catch(error => showToast('error', 'Error fetching plan details' , `${error.message}`));
@@ -83,8 +93,13 @@ const CreatePlan = ({ isEdit }) => {
   
   useEffect(() => {
     fetch(`${apiUrl}/exercise`)
-      .then(response => response.json())
-      .then(data => {
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
+        }
+        const data = await response.json();
         const formattedExercises = data.map(exercise => ({ label: exercise.name, value: exercise.id }));
         setExercises(formattedExercises);
       })
@@ -92,6 +107,13 @@ const CreatePlan = ({ isEdit }) => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
+  const viewNavContainer = () => {
+    return (
+      <div>
+        <Button icon="pi pi-times"  tooltip='Delete Subscription'/>
+      </div>
+    );
+  }
   const getAvailableProperties = (exercise) => {
     const propertiesToExclude = ['exercise', 'id', 'multimedia'];
     return Object.keys(exercise).filter(property => !propertiesToExclude.includes(property) && exercise[property] === '');
@@ -124,6 +146,11 @@ const CreatePlan = ({ isEdit }) => {
     }));
   };
 
+  const handleRemoveGroup = (groupIndex) => {
+    const updatedGroups = plan.groups.filter((_, index) => index !== groupIndex);
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+  };
+
   const handleGroupChange = (index, event) => {
     const { name, value } = event.target;
     const updatedGroups = plan.groups.map((group, groupIndex) => (
@@ -133,8 +160,10 @@ const CreatePlan = ({ isEdit }) => {
   };
 
   const handleExerciseDropdownChange = (groupIndex, exerciseIndex, event) => {
+    const selectedExercise = exercises.find(ex => ex.value === event.value);
     const updatedGroups = [...plan.groups];
     updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
+    updatedGroups[groupIndex].exercises[exerciseIndex].exercise.name = selectedExercise.label;
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
@@ -162,6 +191,17 @@ const CreatePlan = ({ isEdit }) => {
     const updatedGroups = [...plan.groups];
     updatedGroups[groupIndex].exercises.push(newExercise);
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+  };
+
+  const handleRemoveExercise = (groupIndex, exerciseIndex) => {
+    const updatedGroups = [...plan.groups];
+    updatedGroups[groupIndex].exercises = updatedGroups[groupIndex].exercises.filter((_, index) => index !== exerciseIndex);
+    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+  };
+
+  const handleTabClose = (e, groupIndex) => {
+    const exerciseIndex = e.index;
+    handleRemoveExercise(groupIndex, exerciseIndex);
   };
 
   const handlePropertyChange = (groupIndex, exerciseIndex, property, value) => {
@@ -208,14 +248,14 @@ const CreatePlan = ({ isEdit }) => {
           showToast('error', 'Error',  'Each exercise must be selected.');
           return;
         }
-        if (!exercise.exercise.multimedia.trim()) {
-          showToast('error', 'Error','Video URL is required for each exercise.');
-          return;
-        }
+        // if (!exercise.exercise.multimedia.trim()) {
+        //   showToast('error', 'Error','Video URL is required for each exercise.');
+        //   return;
+        // }
       }
     }
 
-    showConfirmationDialog({
+  showConfirmationDialog({
       message: isEdit ? "Are you sure you want to edit this plan?" : "Are you sure you want to create this plan?",
       header: "Confirmation",
       icon: "pi pi-exclamation-triangle",
@@ -271,7 +311,7 @@ const CreatePlan = ({ isEdit }) => {
                 disabled={plan.isTemplate ? false : true}
               />
             </div>
-            {isEdit &&
+            {isEdit && !plan.isTemplate &&
             <div className="p-field">
               <label htmlFor="notes">Description:</label>
               <InputTextarea
@@ -281,7 +321,7 @@ const CreatePlan = ({ isEdit }) => {
                 rows={3}
               />
             </div>}
-            {isEdit &&
+            {isEdit && !plan.isTemplate &&
             <div className="p-field">
               <label htmlFor="notes">Notes:</label>
               <InputTextarea
@@ -300,17 +340,19 @@ const CreatePlan = ({ isEdit }) => {
         <div className="groups-container">
         {plan.groups.map((group, groupIndex) => (
           <Card key={groupIndex} className="create-plan-card" >
-            <Fieldset legend={`Group ${group.groupNumber}`}>
+            <Fieldset legend={`Group ${group.groupNumber}`} toggleable onCollapse={() => handleRemoveGroup(groupIndex)} collapseIcon='pi pi-times'>
               <div className='fieldset-scroll'>
-              <div className="p-field">
-                <label htmlFor={`set${groupIndex}`}>Set:</label>
-                <InputText id={`set${groupIndex}`} type="number" name="set" value={group.set} onChange={(e) => handleGroupChange(groupIndex, e)} />
-              </div>
-              <div className="p-field">
-                <label htmlFor={`rest${groupIndex}`}>Rest (seconds):</label>
-                <InputText id={`rest${groupIndex}`} type="number" name="rest" value={group.rest} onChange={(e) => handleGroupChange(groupIndex, e)} />
-              </div>
-              <h3>Exercises</h3>
+                <div className='flex gap-2 '>
+                  <div className="p-field flex-grow-1">
+                    <label htmlFor={`set${groupIndex}`}>Set:</label>
+                    <InputText id={`set${groupIndex}`} type="number" name="set" value={group.set} onChange={(e) => handleGroupChange(groupIndex, e)} />
+                  </div>
+                  <div className="p-field flex-grow-1">
+                    <label htmlFor={`rest${groupIndex}`}>Rest (seconds):</label>
+                    <InputText id={`rest${groupIndex}`} type="number" name="rest" value={group.rest} onChange={(e) => handleGroupChange(groupIndex, e)} />
+                  </div>
+                </div>
+              {/* <h3>Exercises</h3>
               {group.exercises.map((exercise, exerciseIndex) => (
                 <div key={exerciseIndex} className="p-fluid exercise">
                   <div className="p-field">
@@ -338,12 +380,12 @@ const CreatePlan = ({ isEdit }) => {
                             onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
                             className="p-button-rounded p-button-danger"
                           />
+                          <Button type="button" label="Remove Exercise" icon="pi pi-minus" onClick={() => handleRemoveExercise(groupIndex, exerciseIndex)} className="p-button-rounded p-button-danger" />
                         </div>
                       )
                     ))}
                   <div className="p-field">
                     <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
-                    {/* <Dropdown filter={true} id={`addProperty${groupIndex}-${exerciseIndex}`} options={exerciseProperties} onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)} placeholder="Select a property" /> */}
                     <Dropdown
                             filter={true}
                             id={`addProperty${groupIndex}-${exerciseIndex}`}
@@ -354,9 +396,63 @@ const CreatePlan = ({ isEdit }) => {
 
                   </div>
                 </div>
-              ))}
+              ))} */}
+                <h3>Exercises</h3>
+                <div className='tabview-container'>
+                <TabView onTabClose={(e) => handleTabClose(e, groupIndex)} scrollable>
+                  {group.exercises.map((exercise, exerciseIndex) => (
+                    <TabPanel key={exerciseIndex} header={exercise.exercise.name || 'No Exercise'} closable>
+                      <div className="p-fluid exercise">
+                        <div className="p-field">
+                          <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
+                          <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter showClear required placeholder="Select an exercise" />
+                        </div>
+                        {/* <div className="p-field">
+                          <label htmlFor={`multimedia${groupIndex}-${exerciseIndex}`}>Video URL:</label>
+                          <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
+                        </div> */}
+                        {Object.keys(exercise).map((property, propertyIndex) => (
+                          (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '') && (
+                            <div key={propertyIndex} className="p-field">
+                                <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
+                                  <IconField>
+                                    <InputText
+                                      id={`${property}${groupIndex}-${exerciseIndex}`}
+                                      name={property}
+                                      value={exercise[property]}
+                                      onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, property, e.target.value)}
+                                    />
+                                    <InputIcon
+                                      // type="button"
+                                      className="pi pi-times input-icon-button"
+                                      tooltip='Remove property'
+                                      onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
+                                      // className="p-button-rounded p-button-danger"
+                                    />
+                                  </IconField>
+                              </div>
+                          )
+                        ))}
+                        <div className="p-field">
+                          <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
+                          <Dropdown
+                            filter={true}
+                            id={`addProperty${groupIndex}-${exerciseIndex}`}
+                            options={getAvailableProperties(exercise).map(prop => ({ label: prop.charAt(0).toUpperCase() + prop.slice(1), value: prop }))}
+                            onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
+                            placeholder="Select a property"
+                          />
+                        </div>
+                      </div>
+                    </TabPanel>
+                  ))}
+                </TabView>
+                </div>
               {/* </div> */}
-              <Button type="button" label="Add Exercise" icon="pi pi-plus" onClick={() => handleAddExercise(groupIndex)} className="p-button-rounded p-button-success" />
+              <div className='flex align-items-center justify-content-center'>
+                <Button type="button" label="Add Exercise" icon="pi pi-plus" onClick={() => handleAddExercise(groupIndex)} className="p-button-rounded p-button-success text-center" />
+              </div>
+              {/* <Button type="button" label="Remove Group" icon="pi pi-minus" onClick={() => handleRemoveGroup(groupIndex)} className="p-button-rounded p-button-danger" /> */}
               </div>
             </Fieldset>
           </Card>

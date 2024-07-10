@@ -1,13 +1,19 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { UserContext } from '../utils/UserContext';
+import { useToast } from '../utils/ToastContext';
+
 import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Chart } from 'primereact/chart';
+
 import PlanDetails from '../dialogs/PlanDetails';
-import { useNavigate } from 'react-router-dom';
+import { formatDate } from '../utils/UtilFunctions';
+
 import '../styles/StudentHome.css';
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -17,6 +23,7 @@ const StudentHome = () => {
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const showToast = useToast();
   const [progressData, setProgressData] = useState({
     labels: ['Completed', 'Pending'],
     datasets: [
@@ -28,22 +35,20 @@ const StudentHome = () => {
     ]
   });
   const navigate = useNavigate();
-  const formatDate = (value) => {
-    if (!value) return '';
-    const date = new Date(value);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
 
   useEffect(() => {
     fetch(`${apiUrl}/workout/userId/${user.userId}`)
-      .then(response => response.json())
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
+        }
+        return response.json()
+      })
       .then(data => {
         const mappedData = data.filter(data => data.groups.length > 0);
         setWorkouts(mappedData);
-
         const completed = mappedData.filter(workout => workout.status === 'completed').length;
         const pending = mappedData.filter(workout => workout.status === 'pending').length;
 
@@ -58,7 +63,7 @@ const StudentHome = () => {
           ]
         });
       })
-      .catch(error => console.error('Error fetching workouts:', error));
+      .catch(error => showToast('error', 'Error', error.message));
   }, [user.userId, refreshKey]);
 
   const viewActionButtons = (rowData) => {
@@ -79,8 +84,6 @@ const StudentHome = () => {
   };
 
   const handleStartTraining = (plan) => {
-    console.log(plan)
-    // return
     navigate(`/plans/start-session/${plan.id}`, { state: { isTraining: true, planId: plan.id } });
   };
   

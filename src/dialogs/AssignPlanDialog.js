@@ -61,25 +61,32 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
       studentId: selectedStudent.id,
       ...assignmentData[index],
     };
-    const response = await fetch(`${apiUrl}/workout/assignWorkout`, {
+    try {
+      const response = await fetch(`${apiUrl}/workout/assignWorkout`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-        showToast('success', 'Plan assigned successfully');
-        const newPlans = currentPlans.filter((_, i) => i !== index);
-        setCurrentPlans(newPlans);
-        setAssignmentData(assignmentData.filter((_, i) => i !== index));
-        if (newPlans.length === 0) {
-          onClose();
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
         }
-    } else {
-        alert('Error assigning plan');
+        else {
+            showToast('success', 'Plan assigned successfully');
+            const newPlans = currentPlans.filter((_, i) => i !== index);
+            setCurrentPlans(newPlans);
+            setAssignmentData(assignmentData.filter((_, i) => i !== index));
+            if (newPlans.length === 0) {
+              onClose();
+            }
+        }
+    } catch (error) {
+      showToast('error', 'Error', error.message);
     }
+    
   };
 
   return (

@@ -56,13 +56,14 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
   const navigate = useNavigate();
   useEffect(() => {
     fetch(`${apiUrl}/workout/${planId}`)
-      .then(response => response.json())
-      .then(data => {
-        if(data.statusCode && data.statusCode !== 200){
-          showToast('error', 'Error fetching plan details', data.message)
-        }else {
-          setPlan(data)
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
         }
+        const data = await response.json();
+        setPlan(data)
       })
       .catch(error => showToast('error',  'Error fetching plan details xd', `${error.message}`));
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -107,22 +108,24 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
       },
       body: JSON.stringify(body)
     })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Feedback submitted:', data);
-        if(data.statusCode && data.statusCode !== 200){
-            showToast('error', data.message);
-        }else{
-            setExerciseProgress({});
-            setFinishDialogVisible(false);
-            if (setRefreshKey) {
-              setRefreshKey(prev => prev + 1);
-            }
-            showToast('success', 'Session finished!', 'Congratulations, you have finished your routine.')
-            navigate(-1)
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
         }
+        return response.json();
       })
-      .catch(error => console.error('Error submitting feedback:', error));
+      .then(() => {
+        setExerciseProgress({});
+        setFinishDialogVisible(false);
+        if (setRefreshKey) {
+          setRefreshKey(prev => prev + 1);
+        }
+        showToast('success', 'Session finished!', 'Congratulations, you have finished your routine.')
+        navigate(-1)
+      })
+      .catch(error => showToast('error', 'Error', error.message));
   };
 
   if (!plan) return <p>Loading...</p>;

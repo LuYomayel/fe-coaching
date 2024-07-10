@@ -63,11 +63,12 @@ const CoachProfileForm = () => {
         navigate('/coach');
         showToast('success', 'Profile updated!', `Thanks for subscribing ${data.name}`)
       } else {
-        // Handle errors here
-        showToast('error', 'An unexpected error occured!')
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Something went wrong');
       }
     } catch (error) {
       // Handle errors here
+      showToast('error', 'Error', error.message);
     }
     setLoading(false);
   };

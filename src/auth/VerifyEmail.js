@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
+
+import { useToast } from '../utils/ToastContext';
 import '../styles/VerifyEmail.css'
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const VerifyEmail = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const showToast = useToast();
   const [status, setStatus] = useState('Verifying...');
 
   useEffect(() => {
@@ -26,15 +29,21 @@ const VerifyEmail = () => {
       const response = await fetch(`${apiUrl}/auth/verify-email?token=${token}`, {
         method: 'GET',
       });
-      const data = await response.json();
-      console.log(data)
-      if (response.ok) {
-        setStatus('Email verified successfully!');
-      } else {
+     
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log(errorData)
         setStatus('Email verification failed.');
+        throw new Error(errorData.message || 'Something went wrong');
+      }
+      else {
+        const data = await response.json();
+        console.log(data)
+        setStatus('Email verified successfully!');
       }
     } catch (error) {
       setStatus('An error occurred while verifying your email.');
+      showToast('error', 'Error', error.message);
     }
   };
 

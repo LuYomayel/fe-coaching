@@ -20,13 +20,16 @@ const ForgotPassword = () => {
         },
         body: JSON.stringify({ email }),
       });
-      if (response.ok) {
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log(errorData)
+        throw new Error(errorData.message || 'Something went wrong');
+      }
+      else{
         showToast('success', 'Success', 'Password reset link has been sent to your email.');
-      } else {
-        showToast('error', 'Error', 'Failed to send password reset link.');
       }
     } catch (error) {
-      showToast('error', 'Error', 'An error occurred while sending the password reset link.');
+      showToast('error', 'Error', error.message);
     }
     setLoading(false);
   };

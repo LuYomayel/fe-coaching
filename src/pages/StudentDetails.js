@@ -13,6 +13,8 @@ import { useToast } from '../utils/ToastContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import PlanDetails from '../dialogs/PlanDetails';
 
+import { formatDate } from '../utils/UtilFunctions';
+
 import '../styles/StudentDetails.css';
 import { Fieldset } from 'primereact/fieldset';
 
@@ -42,9 +44,15 @@ const StudentDetails = () => {
 
   useEffect(() => {
     fetch(`${apiUrl}/subscription/client/${studentId}`)
-      .then(response => response.json())
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
+        }
+        return response.json();
+      })
       .then(data => {
-        console.log(data)
         setStudent(data);
 
         const completed = data.workoutInstances.filter(workout => workout.status === 'completed').length;
@@ -65,18 +73,20 @@ const StudentDetails = () => {
       })
       .catch(error => {
         setLoading(false);
+        showToast('error', 'Error', error.message);
       });
-      console.log('student id: ', studentId)
+      // console.log('student id: ', studentId)
     fetch(`${apiUrl}/users/clientId/activities/${studentId}`)
       .then( async (response) => {
-        const data = await response.json();
-        if(data.statusCode && data.statusCode !== 200){
-          showToast('error', 'Error fetching client activity', data.message)
-        }else{
-          console.log(data)
-          setActivities(data)
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || 'Something went wrong');
         }
+        const data = await response.json();
+        setActivities(data)
       })
+      .catch(error => showToast('error', 'Error', error.message))
   }, [studentId, refreshKey]);
 
   const customizedMarker = (item) => {
@@ -99,15 +109,6 @@ const StudentDetails = () => {
     navigate(-1)
   }
   if (loading) return <p>Loading...</p>;
-
-  const formatDate = (value) => {
-    if (!value) return '';
-    const date = new Date(value);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son indexados desde 0
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
 
   const viewPlanDetailsTemplate = (rowData) => {
     return <div className='flex align-items-center gap-1'>
@@ -133,14 +134,17 @@ const StudentDetails = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-    }).then((response) => {
+    }).then(async (response) => {
       if(response.ok){
         showToast('success', 'Plan deleted!', `You have deleted the plan ${plan.workout.planName} successfully!`);
         setRefreshKey(old => old+1)
       }else{
-        showToast('error', 'Something unexpected happened!', response.error)
+        const errorData = await response.json();
+        console.log(errorData)
+        throw new Error(errorData.message || 'Something went wrong');
       }
-    });
+    })
+    .catch(error => showToast('error', 'Error', error.message))
   }
 
   const handleViewPlanDetails = (workoutInstance) => {
@@ -159,7 +163,7 @@ const StudentDetails = () => {
         <div>
           <Button icon="pi pi-arrow-left" onClick={handleBack} />
         </div>
-        <div><h1>{student.client.user.name}'s Details</h1></div>
+        <div><h1>{student.client.name}'s Details</h1></div>
         <div>&nbsp;</div>
       </div>
       
