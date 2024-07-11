@@ -10,7 +10,8 @@ import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Chart } from 'primereact/chart';
-
+import { Timeline } from 'primereact/timeline';
+import { Fieldset } from 'primereact/fieldset';
 import PlanDetails from '../dialogs/PlanDetails';
 import { formatDate } from '../utils/UtilFunctions';
 
@@ -24,6 +25,7 @@ const StudentHome = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const showToast = useToast();
+  const [activity, setActivity] = useState([]);
   const [progressData, setProgressData] = useState({
     labels: ['Completed', 'Pending'],
     datasets: [
@@ -66,6 +68,26 @@ const StudentHome = () => {
       .catch(error => showToast('error', 'Error', error.message));
   }, [user.userId, refreshKey]);
 
+  useEffect(() => {
+    // Fetch notifications and activity
+    // fetch(`${apiUrl}/notifications/user/${user.userId}`)
+    //   .then(response => response.json())
+    //   .then(data => setNotifications(data))
+    //   .catch(error => showToast('error', 'Error', error.message));
+
+    fetch(`${apiUrl}/users/userId/activities/${user.userId}`)
+      .then(async (response) => {
+        if(!response.ok){
+          const dataError = await response.json();
+          throw new Error(dataError.message || 'Something went wrong')
+        }
+        const data = await response.json();
+        console.log('DATA: ', data)
+        setActivity(data)
+      })
+      .catch(error => showToast('error', 'Error', error.message));
+  }, [user.userId, showToast]);
+
   const viewActionButtons = (rowData) => {
     return <div className='flex  gap-2'> 
       <Button icon="pi pi-eye" onClick={() => handleViewPlanDetails(rowData)} />
@@ -87,13 +109,17 @@ const StudentHome = () => {
     navigate(`/plans/start-session/${plan.id}`, { state: { isTraining: true, planId: plan.id } });
   };
   
-
   return (
     <div className="student-home-container">
       <h1>Welcome, {user.name}!</h1>
-      <div className="student-home-content p-grid">
-        <div></div>
-        <div className="p-col-12 p-md-6">
+      <div className="flex gap-5 ">
+        <div className='w-2'>
+          <Fieldset legend="Recent Activities">
+            <Timeline value={activity} opposite={(item) => item.description} 
+              content={(item) => <small className="text-color-secondary">{formatDate(item.timestamp)}</small>} align="alternate"/>
+          </Fieldset>
+        </div>
+        <div className="flex-grow-1">
           <Card title="Your Training Plans">
             <DataTable value={workouts} paginator rows={5}>
               <Column field="workout.planName" header="Plan Name" />
@@ -105,12 +131,11 @@ const StudentHome = () => {
             </DataTable>
           </Card>
         </div>
-        <div className="p-col-12 p-md-6">
-          <Card title="Progress">
+        <div className="">
+          <Fieldset legend="Progress">
             <Chart type="pie" data={progressData} />
-          </Card>
+          </Fieldset>
         </div>
-
         <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
           {selectedPlan && <PlanDetails planId={selectedPlan.id} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} />}
         </Dialog>

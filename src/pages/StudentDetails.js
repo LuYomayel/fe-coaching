@@ -167,8 +167,8 @@ const StudentDetails = () => {
         <div>&nbsp;</div>
       </div>
       
-      <div className='flex justify-content-between'>
-        <div>
+      <div className='flex justify-content-between gap-4'>
+        <div className='w-4'>
           <div className="flex flex-column">
             {/* <img src={student.profilePicture} alt="Profile" className="profile-picture" /> */}
             <h2>Personal Information</h2>
@@ -178,9 +178,14 @@ const StudentDetails = () => {
               <p><strong>Activity Level:</strong> {student.client.activityLevel}</p>
             </Card>
           </div>
+          <Fieldset legend="Recent Activities">
+            <Timeline value={activities} opposite={(item) => item.description} 
+              content={(item) => <small className="text-color-secondary">{formatDate(item.timestamp)}</small>} align="alternate"/>
+            {/* <Timeline value={activities} align="alternate" marker={customizedMarker} content={customizedContent} /> */}
+          </Fieldset>
         </div>
       
-        <div className='container'>
+        <div className='container flex-grow-1'>
           <h2>Current Training Plans</h2>
           <DataTable value={student.workoutInstances.filter( workout => workout.status === 'pending')} paginator rows={5} className="assigned-plans-table">
             <Column field="workout.planName" header="Plan Name" />
@@ -212,18 +217,14 @@ const StudentDetails = () => {
         </div>
 
         
-        <div className=''>
+        <div className='w-2'>
           {/* <h2>Progress</h2> */}
           <Fieldset legend="Progress Chart">
             <Chart type="pie" data={progressData} />
           </Fieldset>
 
           {/* <h2>Activity Summary</h2> */}
-          <Fieldset legend="Recent Activities">
-            <Timeline value={activities} opposite={(item) => item.description} 
-              content={(item) => <small className="text-color-secondary">{formatDate(item.timestamp)}</small>} align="alternate"/>
-            {/* <Timeline value={activities} align="alternate" marker={customizedMarker} content={customizedContent} /> */}
-          </Fieldset>
+          
 
           {/* <h2>Notes and Comments</h2>
           <Card title="Coach's Notes">

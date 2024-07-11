@@ -22,6 +22,7 @@ import CoachProfileForm from './pages/CoachProfileForm.js';
 import ForgotPassword from './auth/ForgotPassword.js';
 import ResetPassword from './auth/ResetPassword.js';
 import ManageStudents from './pages/ManageStudents.js';
+import ClientProfile from './pages/StudentProfile.js';
 const App = () => {
   return (
     <UserProvider>
@@ -43,6 +44,7 @@ const App = () => {
             <Route path="/manage-students" element={<PrivateRoute element={ManageStudents} requiredType="coach" />} />
 
             <Route path="/student" element={<PrivateRoute element={StudentHome} requiredType="client" />} />
+            <Route path="/student/profile" element={<PrivateRoute element={ClientProfile} requiredType="client" />} />
             <Route path="/plans/start-session/:planId" element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />} />
 
             <Route path="/verify-email"element={< VerifyEmail />} />

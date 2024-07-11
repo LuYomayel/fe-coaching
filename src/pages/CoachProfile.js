@@ -110,13 +110,13 @@ const CoachProfile = () => {
 
         fetch(`${apiUrl}/subscription/coach/${user.userId}`)
             .then(async (response) => {
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.log(errorData)
-                throw new Error(errorData.message || 'Something went wrong');
-            }
-            const data = await response.json();
-            setCurrentPlanId(data.subscriptionPlan.id)
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.log(errorData, response)
+                    throw new Error(errorData.message || 'Something went wrong');
+                }
+                const data = await response.json();
+                setCurrentPlanId(data.subscriptionPlan.id)
             })
             .catch(error => showToast('error', 'Error fetching plans' `${error.message}`));
 
