@@ -388,64 +388,69 @@ const CoachProfile = () => {
       };
 
     return (
-        <div className="coach-profile">
-            {coachInfo && (
-                <Card title="Coach Information" className="mb-4">
-                    <div className="p-grid">
-                        <div className="p-col-12 p-md-6">
-                        <p><strong>Name:</strong> {coachInfo.name}</p>
-                        <p><strong>Email:</strong> {coachInfo.user.email}</p>
-                        <p><strong>Biography:</strong> {coachInfo.bio}</p>
-                        <p><strong>Experience:</strong> {coachInfo.experience}</p>
-                        <p><strong>Training type:</strong> {coachInfo.trainingType.join(', ')}</p>
-                        {coachInfo.hasGym && 
-                            <p><strong>Gym Location:</strong> {coachInfo.gymLocation}</p>
-                        }
-                        </div>
-                    </div>
-                </Card>
-            )}
-
-            <TabView>
-                <TabPanel header="Coach Plans">
-                    <div className="flex gap-2 align-items-center justify-content-evenly flex-wrap">
-                        {coachPlans.map(plan => (
-                        <div key={plan.id} className="">
-                            {coachPlanTemplate(plan)}
-                        </div>
-                        ))}
-                    </div>
-                    {coachPlans.length < 4 && (
-                        <div className="flex justify-content-center mt-4">
-                            <Button label="Add New Plan" icon="pi pi-plus" className="p-button-rounded p-button-info" onClick={openCreatePlanDialog} />
-                        </div>
-                    )}
-                </TabPanel>
-                <TabPanel header="Exercises Library">
-                    <DataTable value={exercises}>
-                        <Column field="name" header="Exercise Name" />
-                        <Column field="multimedia" header="Video" body={videoBodyTemplate} />
-                        <Column field="exerciseType" header="Type" />
-                        <Column field="description" header="Description" />
-                        <Column field="equipmentNeeded" header="Equipment Needed" />
-
-                        <Column field="actions" header="Actions" body={(rowData) => actionsBodyTemplate(rowData)}/>
-                    </DataTable>
-                    <div className="flex justify-content-center mt-4">
-                        <Button label="Add New Exercise" icon="pi pi-plus" className="p-button-rounded p-button-info" onClick={openCreateExerciseDialog} />
-                    </div>
-                </TabPanel>
-                <TabPanel header="Subscription Plans">
-                    <div className="flex gap-2 align-items-center justify-content-between">
-                        {subscriptionPlans.map(plan => (
-                            <div key={plan.id}>
-                                {subscriptionTemplate(plan)}
+        <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto">
+            <h1>Coach Profile</h1>
+            <div className="flex flex-row gap-2 justify-content-between w-full">
+                <div className=' flex flex-column gap-3'>
+                {coachInfo && (
+                    <Card title="Coach Information" className="mb-4">
+                        <div className="p-grid">
+                            <div className="p-col-12 p-md-6">
+                            <p><strong>Name:</strong> {coachInfo.name}</p>
+                            <p><strong>Email:</strong> {coachInfo.user.email}</p>
+                            <p><strong>Biography:</strong> {coachInfo.bio}</p>
+                            <p><strong>Experience:</strong> {coachInfo.experience}</p>
+                            <p><strong>Training type:</strong> {coachInfo.trainingType.join(', ')}</p>
+                            {coachInfo.hasGym && 
+                                <p><strong>Gym Location:</strong> {coachInfo.gymLocation}</p>
+                            }
                             </div>
-                        ))}
-                    </div>
-                </TabPanel>
-            </TabView>
-            
+                        </div>
+                    </Card>
+                )}
+                </div>
+                <div className='w-10'>
+                    <TabView className='hola'>
+                        <TabPanel header="Coach Plans">
+                            <div className="flex gap-2 align-items-center justify-content-evenly flex-wrap">
+                                {coachPlans.map(plan => (
+                                <div key={plan.id} className="">
+                                    {coachPlanTemplate(plan)}
+                                </div>
+                                ))}
+                            </div>
+                            {coachPlans.length < 4 && (
+                                <div className="flex justify-content-center mt-4">
+                                    <Button label="Add New Plan" icon="pi pi-plus" className="p-button-rounded p-button-info" onClick={openCreatePlanDialog} />
+                                </div>
+                            )}
+                        </TabPanel>
+                        <TabPanel header="Exercises Library">
+                            <DataTable value={exercises}>
+                                <Column field="name" header="Exercise Name" />
+                                <Column field="multimedia" header="Video" body={videoBodyTemplate} />
+                                <Column field="exerciseType" header="Type" />
+                                <Column field="description" header="Description" />
+                                <Column field="equipmentNeeded" header="Equipment Needed" />
+
+                                <Column field="actions" header="Actions" body={(rowData) => actionsBodyTemplate(rowData)}/>
+                            </DataTable>
+                            <div className="flex justify-content-center mt-4">
+                                <Button label="Add New Exercise" icon="pi pi-plus" className="p-button-rounded p-button-info" onClick={openCreateExerciseDialog} />
+                            </div>
+                        </TabPanel>
+                        <TabPanel header="Subscription Plans">
+                            <div className="flex gap-2 align-items-center justify-content-between">
+                                {subscriptionPlans.map(plan => (
+                                    <div key={plan.id}>
+                                        {subscriptionTemplate(plan)}
+                                    </div>
+                                ))}
+                            </div>
+                        </TabPanel>
+                    </TabView>
+                </div>
+            </div>
             <Dialog header="Video" visible={videoDialogVisible} style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
                 <iframe
                 width="100%"

@@ -76,7 +76,7 @@ const CreatePlan = ({ isEdit }) => {
 
   useEffect(() => {
     if (isEdit && planId) {
-      fetch(`${apiUrl}/workout/${planId}`)
+      fetch(`${apiUrl}/workout/workout-instance/${planId}`)
         .then(async (response) => {
           if (!response.ok) {
             const errorData = await response.json();
@@ -412,7 +412,7 @@ const CreatePlan = ({ isEdit }) => {
                           <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
                         </div> */}
                         {Object.keys(exercise).map((property, propertyIndex) => (
-                          (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '') && (
+                          (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '' && property !== 'rpe' && property !== 'comments' && property !== 'completed') && (
                             <div key={propertyIndex} className="p-field">
                                 <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
                                   <IconField>

@@ -5,17 +5,21 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { InputIcon } from 'primereact/inputicon';
+import { IconField } from 'primereact/iconfield';
 import { Calendar } from 'primereact/calendar';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { MultiSelect } from 'primereact/multiselect';
 import { Dropdown } from 'primereact/dropdown';
 import { Chart } from 'primereact/chart';
-import { formatDate } from '../utils/UtilFunctions';
+import { formatDate, getSeverity, sortBySessionDate, updateStatus } from '../utils/UtilFunctions';
 import { Timeline } from 'primereact/timeline';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { TabPanel, TabView } from 'primereact/tabview';
 import '../styles/StudentProfile.css'
+import { Tag } from 'primereact/tag';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ClientProfile = () => {
@@ -31,6 +35,14 @@ const ClientProfile = () => {
   const { showConfirmationDialog } = useConfirmationDialog();
   const [refreshKey, setRefreshKey] = useState(0)
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'workout.planName': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS },
+    description: { operator: 'and', constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
+});
+  const [statuses] = useState(['current', 'expired', 'completed', 'pending']);
+  const [globalFilterValue, setGlobalFilterValue] = useState('');
   const [progressData, setProgressData] = useState({
     labels: ['Completed', 'Pending'],
     datasets: [
@@ -82,8 +94,8 @@ const ClientProfile = () => {
         }
         const data= await response.json();
         
-        setActivities(old => [...old, ...data])
-        setActivities(old => [...old, ...data])
+        // setActivities(old => [...old, ...data])
+        // setActivities(old => [...old, ...data])
         setActivities(old => [...old, ...data])
         
         setLoading(false)
@@ -101,40 +113,31 @@ const ClientProfile = () => {
           throw new Error(errorData.message || 'Something went wrong')
         }
         const data = await response.json();
-        console.log('Subscription: ', data)
+        console.log('Subscription: ', data.workoutInstances)
+        
         setSubscription(data)
+        const checkStatusWorkouts = updateStatus(data.workoutInstances)
+        const workoutsSorted = sortBySessionDate(checkStatusWorkouts)
+        setWorkouts(workoutsSorted)
+
+        const completed = workoutsSorted.filter(workout => workout.status === 'completed').length;
+        const pending = workoutsSorted.filter(workout => workout.status === 'pending').length;
+        const expired = workoutsSorted.filter(workout => workout.status === 'expired').length;
+
+        setProgressData({
+          labels: ['Completed', 'Pending', 'Expired'],
+          datasets: [
+            {
+              data: [completed, pending, expired],
+              backgroundColor: ['green', 'yellow', 'red'],
+              hoverBackgroundColor: ['green', 'yellow', 'red']
+            }
+          ]
+        });
         setLoading(false)
       })
       .catch(error => showToast('error', 'Error', error.message))
       .finally(() => setLoading(false))
-
-      fetch(`${apiUrl}/workout/userId/${user.userId}`)
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData)
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        return response.json()
-      })
-      .then(data => {
-        const mappedData = data.filter(data => data.groups.length > 0);
-        setWorkouts(mappedData);
-        const completed = mappedData.filter(workout => workout.status === 'completed').length;
-        const pending = mappedData.filter(workout => workout.status === 'pending').length;
-
-        setProgressData({
-          labels: ['Completed', 'Pending'],
-          datasets: [
-            {
-              data: [completed, pending],
-              backgroundColor: ['green', 'red'],
-              hoverBackgroundColor: ['green', 'red']
-            }
-          ]
-        });
-      })
-      .catch(error => showToast('error', 'Error', error.message));
   }, [user.userId, showToast, refreshKey]);
 
   const handleEditDialogOpen = () => {
@@ -198,6 +201,84 @@ const ClientProfile = () => {
   });
   } 
 
+  const setPlanDetails = (rowData) => {
+    return (
+      <p>Week {rowData.trainingSession.trainingWeek.weekNumber} - Day {rowData.trainingSession.dayNumber}</p>
+    )
+  }
+  const statusItemTemplate = (option) => {
+      return <span>{option}</span>;
+  };
+
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters['global'].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+};
+
+const renderHeader = () => {
+    return (
+        <div className="flex justify-content-end">
+          <IconField iconPosition="left">
+              <InputIcon className="pi pi-search" />
+              <InputText type="search" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
+          </IconField>
+            {/* <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
+            </span> */}
+        </div>
+    );
+};
+
+const statusBodyTemplate = (rowData) => {
+    return <Tag value={rowData.status} severity={getSeverity(rowData.status)} />;
+};
+
+const statusFilterTemplate = (options) => {
+    return (
+        <Dropdown
+            value={options.value}
+            options={statuses}
+            onChange={(e) => options.filterApplyCallback(e.value)}
+            itemTemplate={statusItemTemplate}
+            placeholder="Select a Status"
+            className="column-filter"
+            showClear
+            style={{ minWidth: '12rem' }}
+        />
+    );
+};
+
+const planNameFilterTemplate = (options) => {
+  return (
+      <InputText
+          value={options.value}
+          onChange={(e) => options.filterApplyCallback(e.target.value)}
+          placeholder="Search by name"
+          className="column-filter"
+          style={{ minWidth: '12rem' }}
+      />
+  );
+};
+
+const descriptionFilterTemplate = (options) => {
+  return (
+    <InputText
+      value={options.value}
+      onChange={(e) => options.filterApplyCallback(e.target.value)}
+      placeholder="Search by description"
+      className="column-filter"
+      style={{ minWidth: '12rem' }}
+    />
+  );
+};
+
+const header = renderHeader();
+
+  
   // if(loading) return null;
   return (
     <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto">
@@ -227,7 +308,7 @@ const ClientProfile = () => {
                 <label htmlFor="phone">Phone:</label>
                 <p id="phone">{personalInfo?.phoneNumber}</p>
               </div>
-              <Button label="Edit" icon="pi pi-pencil" onClick={handleEditDialogOpen} />
+              <Button label="Edit" icon="pi pi-pencil" className='p-button-rounded p-button-warning' onClick={handleEditDialogOpen} />
             </Card>
           </div>
           <div className="">
@@ -256,12 +337,27 @@ const ClientProfile = () => {
         <div className='w-10'>
           <TabView className='hola'>
             <TabPanel header="Workout History">
-              <DataTable value={workouts} paginator rows={5}>
-                  <Column field="workout.planName" header="Plan Name" />
-                  <Column field="instanceName" header="Instance Name" />
-                  <Column field="expectedStartDate" header="Start Date" body={(rowData) => formatDate(rowData.expectedStartDate)} />
-                  <Column field="expectedEndDate" header="End Date" body={(rowData) => formatDate(rowData.expectedEndDate)} />
-                  <Column field="status" header="Status" />
+              <DataTable 
+                value={workouts} 
+                paginator 
+                rows={6} 
+                filters={filters} 
+                globalFilterFields={['workout.planName', 'status']}
+                onFilter={(e) => setFilters(e.filters)}
+                emptyMessage="No workouts found."
+              >
+                <Column 
+                  field="workout.planName" 
+                  header="Plan Name" 
+                  sortable 
+                  filter 
+                  filterPlaceholder="Search by name" 
+                  filterElement={planNameFilterTemplate}
+                  />
+                <Column  header="Details"   body={setPlanDetails}/>
+                <Column field="trainingSession.sessionDate" header="Training Date" body={(rowData) => formatDate(rowData.trainingSession.sessionDate)} sortable  />
+                <Column field="realEndDate"header="Day Trained" body={(rowData) => formatDate(rowData.realEndDate)} sortable  />
+                <Column field="status" header="Status" body={statusBodyTemplate} sortable filter filterElement={statusFilterTemplate}  />
                   {/* <Column body={viewActionButtons} header="Actions" /> */}
               </DataTable>
             </TabPanel>
@@ -269,9 +365,40 @@ const ClientProfile = () => {
               <Chart type="pie" data={progressData} width='20rem' height='20rem'/>
             </TabPanel>
             <TabPanel header="User historial" className=''>
-              <DataTable value={activities} paginator rows={5}>
-                <Column field="timestamp" header="Date" body={(rowData) => formatDate(rowData.timestamp)} />
-                <Column field="description" header="Action" />
+              <DataTable 
+              value={activities} 
+              paginator 
+              rows={5}
+              filters={filters}
+              filterDisplay="menu"
+              globalFilterFields={['description']}
+              onFilter={(e) => setFilters(e.filters)}
+              emptyMessage="No activities found."
+              >
+                <Column 
+                  field="timestamp" 
+                  header="Date" 
+                  body={(rowData) => formatDate(rowData.timestamp)} 
+                  sortable
+                  filter
+                  filterField="timestamp"
+                  filterElement={(options) => (
+                    <Calendar
+                      value={options.value}
+                      onChange={(e) => options.filterApplyCallback(e.value)}
+                      dateFormat="yy-mm-dd"
+                      placeholder="Select Date"
+                      showIcon
+                    />
+                  )}
+                  />
+                <Column 
+                  field="description" 
+                  header="Action" 
+                  sortable
+                  filter
+                  filterElement={descriptionFilterTemplate}
+                  />
                   {/* <Column body={viewActionButtons} header="Actions" /> */}
               </DataTable>
               {/* <Timeline layout="horizontal" value={activities} opposite={(item) => item.description} 

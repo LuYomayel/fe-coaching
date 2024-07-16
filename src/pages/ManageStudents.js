@@ -148,9 +148,9 @@ const ManageStudents = () => {
       return (
         <div className='flex gap-2'>
           {/* <Button icon="pi pi-pencil" onClick={() => openStudentDetail(rowData)} tooltip='View details'/> */}
-          <Button icon="pi pi-dollar" onClick={() => openRegisterPaymentDialog(rowData)} tooltip='Register payment'/>
-          <Button icon="pi pi-times" onClick={() => deleteCancelSubscription(rowData.user.subscription.clientSubscription.id)} tooltip='Delete Subscription'/>
-          <Button icon="pi pi-trash" onClick={() => deleteClient(rowData.id)} tooltip='Delete Client'/>
+          <Button icon="pi pi-dollar" onClick={() => openRegisterPaymentDialog(rowData)} tooltip='Register payment' className='p-button-rounded p-button-success'/>
+          <Button icon="pi pi-times" onClick={() => deleteCancelSubscription(rowData.user.subscription.clientSubscription.id)} tooltip='Delete Subscription' className='p-button-rounded p-button-danger'/>
+          <Button icon="pi pi-trash" onClick={() => deleteClient(rowData.id)} tooltip='Delete Client' className='p-button-rounded p-button-danger'/>
         </div>
       );
     }else{
@@ -180,15 +180,17 @@ const ManageStudents = () => {
           className='p-button-rounded p-button-lg p-button-secondary create-plan-button'
         />
       </div>
-      <DataTable value={students} paginator rows={10} selectionMode="single" dataKey="id" onRowSelect={(e) => setSelectedStudent(e.value)}>
-        <Column field="name" header="Name" />
-        <Column header="Email" body={(e) => e.user.isVerified ? e.user.email : `${e.user.email} - No verificado`}/>
-        <Column body={viewSubscriptionStatus} header="Subscription" />
-        <Column body={(client) => formatDate(client.user.subscription.lastPaymentDate)} header="Last Payment" />
-        <Column body={(client) => formatDate(client.user.subscription.nextPaymentDate)} header="Next Payment" />
-        {/* <Column header="Subscription" body={viewSubscriptionStatus} /> */}
-        <Column body={studentActionsTemplate} header="Actions" />
-      </DataTable>
+      <div className='w-11 mx-auto'>
+        <DataTable value={students} paginator rows={10} selectionMode="single" dataKey="id" onRowSelect={(e) => setSelectedStudent(e.value)}>
+          <Column field="name" header="Name" />
+          <Column header="Email" body={(e) => e.user.isVerified ? e.user.email : `${e.user.email} - No verificado`}/>
+          <Column body={viewSubscriptionStatus} header="Subscription" />
+          <Column body={(client) => formatDate(client.user.subscription.lastPaymentDate)} header="Last Payment" />
+          <Column body={(client) => formatDate(client.user.subscription.nextPaymentDate)} header="Next Payment" />
+          {/* <Column header="Subscription" body={viewSubscriptionStatus} /> */}
+          <Column body={studentActionsTemplate} header="Actions" />
+        </DataTable>
+      </div>
 
       <Dialog header="New Student" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>
         <NewStudentDialog onClose={handleNewStudentDialogHide} />

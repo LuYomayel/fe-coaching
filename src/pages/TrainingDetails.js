@@ -58,7 +58,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
   const showToast = useToast();
   const navigate = useNavigate();
   useEffect(() => {
-    fetch(`${apiUrl}/workout/${planId}`)
+    fetch(`${apiUrl}/workout/workout-instance/${planId}`)
       .then(async (response) => {
         if (!response.ok) {
           const errorData = await response.json();
@@ -260,7 +260,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
     </div>
     <div className='actions-section'>
       {isTraining && (
-        <Button label="Finish Training" onClick={() => setFinishDialogVisible(true)} />
+        <Button iconPos='left' icon="pi pi-check" label="Finish Training" className='p-button-rounded p-button-success' onClick={() => setFinishDialogVisible(true)} />
       )}
     </div>
     <FinishTrainingDialog

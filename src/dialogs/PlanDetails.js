@@ -55,7 +55,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
   const showToast = useToast();
   const navigate = useNavigate();
   useEffect(() => {
-    fetch(`${apiUrl}/workout/${planId}`)
+    fetch(`${apiUrl}/workout/workout-instance/${planId}`)
       .then(async (response) => {
         if (!response.ok) {
           const errorData = await response.json();
@@ -126,10 +126,10 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, isTraining 
           <h1>Training Plan</h1>
         </div>
         <div className='flex gap-2'>
+          {user.userType === 'coach' && <Button label="" icon='pi pi-pencil' className='p-button-rounded p-button-warning'onClick={handleEditPlan}/>}
           {(user.userType === 'coach') && 
-            <Button label="" icon='pi pi-trash' onClick={handleDeletePlan}/>
+            <Button label="" icon='pi pi-trash'className='p-button-rounded p-button-danger' onClick={handleDeletePlan}/>
           }
-          {user.userType === 'coach' && <Button label="" icon='pi pi-pencil' onClick={handleEditPlan}/>}
           {/* <Button label="" icon='pi pi-clone' onClick={handleClonePlan}/> */}
         </div>
       </div>

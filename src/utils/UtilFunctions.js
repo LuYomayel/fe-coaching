@@ -23,4 +23,52 @@ const extractYouTubeVideoId = (url) => {
   }
   return videoId;
 };
-export { formatDate, isValidYouTubeUrl, extractYouTubeVideoId }
+
+const sortBySessionDate = (workouts) => {
+  return workouts.sort((a, b) => {
+    const dateA = new Date(a.trainingSession.sessionDate);
+    const dateB = new Date(b.trainingSession.sessionDate);
+    return dateA - dateB;
+  });
+}
+
+function updateStatus(workouts) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  workouts.forEach(workout => {
+    const sessionDate = new Date(workout.trainingSession.sessionDate);
+    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+
+    if (workout.status === 'pending') {
+      if (sessionDay < today) {
+        workout.status = 'expired';
+      } else if (sessionDay.getTime() === today.getTime()) {
+        workout.status = 'current';
+      }
+    }
+  });
+
+  return workouts;
+}
+
+const getSeverity = (status) => {
+  switch (status) {
+      case 'expired':
+          return 'danger';
+
+      case 'completed':
+          return 'success';
+
+      case 'current':
+          return 'info';
+
+      case 'pending':
+          return 'warning';
+
+      case 'renewal':
+          return null;
+  }
+};
+
+export { formatDate, isValidYouTubeUrl, extractYouTubeVideoId, sortBySessionDate, updateStatus, getSeverity }

@@ -12,6 +12,7 @@ import { Button } from 'primereact/button';
 import { Chart } from 'primereact/chart';
 import { Timeline } from 'primereact/timeline';
 import { Fieldset } from 'primereact/fieldset';
+import { TreeTable } from 'primereact/treetable';
 import PlanDetails from '../dialogs/PlanDetails';
 import { formatDate } from '../utils/UtilFunctions';
 
@@ -26,6 +27,7 @@ const StudentHome = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const showToast = useToast();
   const [activity, setActivity] = useState([]);
+  const [nodes, setNodes] = useState([]);
   const [progressData, setProgressData] = useState({
     labels: ['Completed', 'Pending'],
     datasets: [
@@ -39,42 +41,96 @@ const StudentHome = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${apiUrl}/workout/userId/${user.userId}`)
+    fetch(`${apiUrl}/workout/training-cycles/clientId/${user.userId}`)
       .then(async (response) => {
         if (!response.ok) {
           const errorData = await response.json();
-          console.log(errorData)
           throw new Error(errorData.message || 'Something went wrong');
         }
-        return response.json()
+        return response.json();
       })
-      .then(data => {
-        const mappedData = data.filter(data => data.groups.length > 0);
-        setWorkouts(mappedData);
-        const completed = mappedData.filter(workout => workout.status === 'completed').length;
-        const pending = mappedData.filter(workout => workout.status === 'pending').length;
-
-        setProgressData({
-          labels: ['Completed', 'Pending'],
-          datasets: [
-            {
-              data: [completed, pending],
-              backgroundColor: ['green', 'red'],
-              hoverBackgroundColor: ['green', 'red']
-            }
-          ]
-        });
+      .then(cycles => {
+        const nodes = cycles.map(cycle => ({
+          key: `cycle-${cycle.id}`,
+          data: {
+            type: 'cycle',
+            name: cycle.name,
+            startDate: cycle.startDate,
+            endDate: cycle.endDate,
+            clientId: cycle.client.id
+          },
+          children: cycle.trainingWeeks.map(week => ({
+            key: `week-${week.id}`,
+            data: {
+              type: 'week',
+              name: `Week - ${week.weekNumber}`,
+              weekNumber: week.weekNumber,
+              startDate: week.startDate,
+              endDate: week.endDate,
+            },
+            children: week.trainingSessions.map(session => ({
+              key: `session-${session.id}`,
+              data: {
+                sessionId: session.id,
+                name: `Day - ${session.dayNumber}`,
+                type: 'session',
+                dayNumber: session.dayNumber,
+                sessionDate: session.sessionDate,
+                startDate: session.sessionDate,
+                clientId: cycle.client.id
+              },
+              children: session.workoutInstances.map(workoutInstance => ({
+                key: `workoutInstance-${workoutInstance.id}`,
+                data: {
+                  type: 'workoutInstance',
+                  name: workoutInstance.workout.planName,
+                  instanceName: workoutInstance.instanceName,
+                  status: workoutInstance.status,
+                  sessionTime: workoutInstance.sessionTime,
+                  generalFeedback: workoutInstance.generalFeedback,
+                }
+              }))
+            }))
+          }))
+        }));
+        console.log(cycles);
+        setNodes(nodes);
       })
       .catch(error => showToast('error', 'Error', error.message));
   }, [user.userId, refreshKey]);
 
   useEffect(() => {
-    // Fetch notifications and activity
-    // fetch(`${apiUrl}/notifications/user/${user.userId}`)
-    //   .then(response => response.json())
-    //   .then(data => setNotifications(data))
-    //   .catch(error => showToast('error', 'Error', error.message));
+    // fetch(`${apiUrl}/workout/userId/${user.userId}`)
+    //   .then(async (response) => {
+    //     if (!response.ok) {
+    //       const errorData = await response.json();
+    //       console.log(errorData)
+    //       throw new Error(errorData.message || 'Something went wrong');
+    //     }
+    //     return response.json()
+    //   })
+    //   .then(data => {
+    //     console.log(data)
+    //     const mappedData = data.filter(data => data.groups.length > 0);
+    //     setWorkouts(mappedData);
+    //     const completed = mappedData.filter(workout => workout.status === 'completed').length;
+    //     const pending = mappedData.filter(workout => workout.status === 'pending').length;
 
+    //     setProgressData({
+    //       labels: ['Completed', 'Pending'],
+    //       datasets: [
+    //         {
+    //           data: [completed, pending],
+    //           backgroundColor: ['green', 'red'],
+    //           hoverBackgroundColor: ['green', 'red']
+    //         }
+    //       ]
+    //     });
+    //   })
+    //   .catch(error => showToast('error', 'Error', error.message));
+  }, [user.userId, refreshKey]);
+
+  useEffect(() => {
     fetch(`${apiUrl}/users/userId/activities/${user.userId}`)
       .then(async (response) => {
         if(!response.ok){
@@ -82,7 +138,7 @@ const StudentHome = () => {
           throw new Error(dataError.message || 'Something went wrong')
         }
         const data = await response.json();
-        console.log('DATA: ', data)
+        // console.log('DATA: ', data)
         setActivity(data)
       })
       .catch(error => showToast('error', 'Error', error.message));
@@ -105,15 +161,38 @@ const StudentHome = () => {
     setSelectedPlan(null);
   };
 
-  const handleStartTraining = (plan) => {
-    navigate(`/plans/start-session/${plan.id}`, { state: { isTraining: true, planId: plan.id } });
+  const handleStartTraining = (workoutInstanceId) => {
+    navigate(`/plans/start-session/${workoutInstanceId}`, { state: { isTraining: true, planId: workoutInstanceId } });
+  };
+
+  const dateBodyTemplate = (node, field) => {
+    return formatDate(node.data[field]);
   };
   
+  const actionTemplate = (node) => {
+    
+    if (node.data.type === 'workoutInstance') {
+      return (
+      <div className="flex gap-2">
+        <Button tooltip='View Details' className="p-button-rounded p-button-info" icon="pi pi-eye" onClick={() => handleViewPlanDetails(node.key.split('-')[1])} />
+        <Button tooltip='Start Training' className="p-button-rounded p-button-success" icon="pi pi-chart-bar" onClick={() => handleStartTraining(node.key.split('-')[1])} />
+      </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="student-home-container">
       <h1>Welcome, {user.name}!</h1>
       <div className="flex gap-5 ">
-        <div className='w-2'>
+          <TreeTable value={nodes}>
+            <Column field="name" header="Cycle Name" expander />
+            <Column field="startDate" header="Start Date" body={(node) => dateBodyTemplate(node, 'startDate')} />
+            <Column field="endDate" header="End Date" body={(node) => dateBodyTemplate(node, 'endDate')} />
+            <Column header="Actions" body={actionTemplate} />
+          </TreeTable>
+        {/* <div className='w-2'>
           <Fieldset legend="Recent Activities">
             <Timeline value={activity} opposite={(item) => item.description} 
               content={(item) => <small className="text-color-secondary">{formatDate(item.timestamp)}</small>} align="alternate"/>
@@ -135,9 +214,9 @@ const StudentHome = () => {
           <Fieldset legend="Progress">
             <Chart type="pie" data={progressData} />
           </Fieldset>
-        </div>
+        </div> */}
         <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
-          {selectedPlan && <PlanDetails planId={selectedPlan.id} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} />}
+          {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} />}
         </Dialog>
       </div>
     </div>
