@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -17,7 +16,6 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const ManageStudents = () => {
   const { user } = useContext(UserContext);
   const showToast = useToast();
-  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
@@ -71,11 +69,6 @@ const ManageStudents = () => {
     setRefreshKey(prevKey => prevKey + 1);
   };
 
-  const openStudentDetail = (student) => {
-    setSelectedStudent(student);
-    setIsStudentDetailVisible(true);
-  };
-
   const handleStudentDetailHide = () => {
     setIsStudentDetailVisible(false);
     setRefreshKey(prevKey => prevKey + 1);
@@ -92,7 +85,6 @@ const ManageStudents = () => {
           throw new Error(errorData.message || 'Something went wrong');
         }
       
-        const data = await response.json();
         setRefreshKey(old => old+1)
         showToast('success', 'Subscription deleted successfully');
 
@@ -136,10 +128,6 @@ const ManageStudents = () => {
       accept: () => handleDeleteUser(clientId),
       reject: () => console.log('Rejected u mf')
     });
-  }
-
-  const registerPayment = (clientId) => {
-    console.log(clientId)
   }
 
   const studentActionsTemplate = (rowData) => {

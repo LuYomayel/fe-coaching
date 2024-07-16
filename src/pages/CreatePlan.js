@@ -107,13 +107,7 @@ const CreatePlan = ({ isEdit }) => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
-  const viewNavContainer = () => {
-    return (
-      <div>
-        <Button icon="pi pi-times"  tooltip='Delete Subscription'/>
-      </div>
-    );
-  }
+
   const getAvailableProperties = (exercise) => {
     const propertiesToExclude = ['exercise', 'id', 'multimedia'];
     return Object.keys(exercise).filter(property => !propertiesToExclude.includes(property) && exercise[property] === '');
@@ -167,12 +161,6 @@ const CreatePlan = ({ isEdit }) => {
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
 
-  const handleExerciseChange = (groupIndex, exerciseIndex, event) => {
-    const { value } = event.target;
-    const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises[exerciseIndex].exercise.multimedia = value;
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
-  };
 
   const handleAddExercise = (groupIndex) => {
     const newExercise = {

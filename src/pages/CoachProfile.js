@@ -10,7 +10,6 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Dropdown } from 'primereact/dropdown';
 import { Checkbox } from 'primereact/checkbox';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { isValidYouTubeUrl, extractYouTubeVideoId } from '../utils/UtilFunctions';

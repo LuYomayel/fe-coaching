@@ -21,19 +21,24 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
   const [selectedClientId, setSelectedClientId] = useState(null);
   const { showConfirmationDialog } = useConfirmationDialog();
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
+    setLoading(true)
     fetch(`${apiUrl}/users/coach/allStudents/${user.userId}`)
       .then(async response => {
+        
         if(!response.ok){
           const errorData = await response.json();
           throw new Error(errorData.message || 'Something went wrong.')
         }
         const data = await response.json();
         setClients(data.map(client => ({ label: client.name, value: client.id })));
+        setLoading(false);
       })
-      .catch(error => showToast('error', 'Error', error.message));
-  }, [showToast]);
+      .catch(error => {
+        setLoading(false);
+        showToast('error', 'Error', error.message)
+      });
+  }, [showToast, user.userId]);
 
   const handleCreateCycle = async (body) => {
     try {

@@ -20,7 +20,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
         setWorkouts([...data])
       })
       .catch(error => showToast('error', 'Error', error.message));
-  }, [showToast]);
+  }, [showToast, user.userId]);
 
   const handleAssign = async () => {
     if (!selectedWorkout) {

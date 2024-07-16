@@ -5,8 +5,8 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import { InputIcon } from 'primereact/inputicon';
-import { IconField } from 'primereact/iconfield';
+
+
 import { Calendar } from 'primereact/calendar';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { UserContext } from '../utils/UserContext';
@@ -15,7 +15,6 @@ import { MultiSelect } from 'primereact/multiselect';
 import { Dropdown } from 'primereact/dropdown';
 import { Chart } from 'primereact/chart';
 import { formatDate, getSeverity, sortBySessionDate, updateStatus } from '../utils/UtilFunctions';
-import { Timeline } from 'primereact/timeline';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { TabPanel, TabView } from 'primereact/tabview';
 import '../styles/StudentProfile.css'
@@ -42,7 +41,7 @@ const ClientProfile = () => {
     description: { operator: 'and', constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
 });
   const [statuses] = useState(['current', 'expired', 'completed', 'pending']);
-  const [globalFilterValue, setGlobalFilterValue] = useState('');
+  
   const [progressData, setProgressData] = useState({
     labels: ['Completed', 'Pending'],
     datasets: [
@@ -210,28 +209,6 @@ const ClientProfile = () => {
       return <span>{option}</span>;
   };
 
-  const onGlobalFilterChange = (e) => {
-    const value = e.target.value;
-    let _filters = { ...filters };
-    _filters['global'].value = value;
-    setFilters(_filters);
-    setGlobalFilterValue(value);
-};
-
-const renderHeader = () => {
-    return (
-        <div className="flex justify-content-end">
-          <IconField iconPosition="left">
-              <InputIcon className="pi pi-search" />
-              <InputText type="search" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
-          </IconField>
-            {/* <span className="p-input-icon-left">
-                <i className="pi pi-search" />
-                <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
-            </span> */}
-        </div>
-    );
-};
 
 const statusBodyTemplate = (rowData) => {
     return <Tag value={rowData.status} severity={getSeverity(rowData.status)} />;
@@ -276,10 +253,10 @@ const descriptionFilterTemplate = (options) => {
   );
 };
 
-const header = renderHeader();
+
 
   
-  // if(loading) return null;
+  if(loading) return null;
   return (
     <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto">
       <h1>Client Profile</h1>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Dialog } from 'primereact/dialog';
-import { MultiSelect } from 'primereact/multiselect';
+
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
@@ -12,8 +12,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRefreshKey }) => {
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
-  const [selectedWorkouts, setSelectedWorkouts] = useState([]);
-  const [days, setDays] = useState([]);
+
   const [assignments, setAssignments] = useState([{ workoutId: null, dayOfWeek: null }]);
   const { user } = useContext(UserContext);
 
@@ -28,7 +27,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
         setWorkouts(data);
       })
       .catch(error => showToast('error', 'Error', error.message));
-  }, [showToast]);
+  }, [showToast, user.userId]);
 
 
 

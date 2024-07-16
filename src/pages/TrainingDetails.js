@@ -7,13 +7,13 @@ import { Fieldset } from 'primereact/fieldset';
 import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { InputNumber } from 'primereact/inputnumber';
+
 import { Divider } from 'primereact/divider';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
-import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
+
 import FinishTrainingDialog  from '../dialogs/FinishTrainingDialog';
 import { extractYouTubeVideoId } from '../utils/UtilFunctions';
 import CustomInput from '../components/CustomInput';
@@ -23,7 +23,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=true }) => {
   const { planId } = useParams();
   const { user } = useContext(UserContext);
-  const { showConfirmationDialog } = useConfirmationDialog();
+
   const [exerciseProgress, setExerciseProgress] = useState({});
   const [finishDialogVisible, setFinishDialogVisible] = useState(false);
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
