@@ -41,23 +41,6 @@ const CoachHome = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(user && user.userType === 'coach'){
-      fetch(`${apiUrl}/subscription/coach/${user.userId}`)
-        .then(async (response) => {
-            if (!response.ok) {
-                const errorData = await response.json();
-                if(errorData.message && errorData.message === 'Coach not found')
-                  navigate('/complete-coach-profile')
-                throw new Error(errorData.message || 'Something went wrong');
-            }
-        })
-        .catch(error => {
-          showToast('error', 'Error', error.message)
-        });
-
-    }
-  })
-  useEffect(() => {
         fetch(`${apiUrl}/workout/training-cycles/coachId/${user.userId}`)
         .then(async (response) => {
           if (!response.ok) {

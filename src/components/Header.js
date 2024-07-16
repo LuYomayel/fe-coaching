@@ -7,7 +7,7 @@ import { Button } from 'primereact/button';
 import '../styles/Header.css';
 
 const Header = () => {
-  const { user, setUser } = useContext(UserContext);
+  const { user, coach, client, setUser } = useContext(UserContext);
   const op = useRef(null);
   const navigate = useNavigate();
   const handleLogout = () => {
@@ -15,9 +15,11 @@ const Header = () => {
     setUser(null);
     navigate('/')
   };
-
+  console.log(user, coach, client)
   if (!user) return null;
   else if(user && !user.isVerified) return null;
+  else if(user && (!coach || !client)) return null;
+
   return (
     <header className="app-header p-d-flex p-jc-between p-ai-center p-shadow-2 p-p-3">
       <div className="logo">

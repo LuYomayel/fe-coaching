@@ -35,7 +35,7 @@ const App = () => {
             <Route path="/login" element={< Login />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
 
-            <Route path="/coach" element={<PrivateRoute element={CoachHome} requiredType="coach" />} />
+            <Route path="/coach" element={<PrivateRoute element={CoachHome} requiredType="coach"  />} />
             <Route path="/coach/profile" element={<PrivateRoute element={CoachProfile} requiredType="coach" />} />
             <Route path="/plans/create" element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={false} />} />
             <Route path="/plans/edit/:planId" element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />} />

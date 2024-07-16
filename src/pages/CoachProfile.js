@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from 'primereact/datatable';
@@ -21,6 +22,7 @@ const CoachProfile = () => {
     const { user } = useContext(UserContext);
     const { showConfirmationDialog } = useConfirmationDialog();
     const showToast = useToast();
+    const navigate = useNavigate();
 
     const [coachInfo, setCoachInfo] = useState(null);
     const [coachPlans, setCoachPlans] = useState([]);
@@ -55,18 +57,32 @@ const CoachProfile = () => {
     });
 
     useEffect(() => {
+        fetch(`${apiUrl}/subscription/coach/${user.userId}`)
+            .then(async (response) => {
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    if(errorData.message && errorData.message === 'Coach not found')
+                        return navigate('/complete-coach-profile')
+                    throw new Error(errorData.message || 'Something went wrong');
+                }
+                const data = await response.json();
+                setCurrentPlanId(data.subscriptionPlan.id)
+            })
+            .catch(error => showToast('error', 'Error' `${error.message}`));
         // Fetch coach information
         fetch(`${apiUrl}/users/coach/${user.userId}`)
-        .then(async (response) => {
-            if(!response.ok){
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Something went wrong')
-            }else{
-                const data = await response.json();
-                setCoachInfo(data)
-            }
-        })
-        .catch(error => showToast('error', 'Error', error.message));
+            .then(async (response) => {
+                if(!response.ok){
+                    const errorData = await response.json();
+                    if(errorData.message && errorData.message === 'Coach not found')
+                        return navigate('/complete-coach-profile')
+                    throw new Error(errorData.message || 'Something went wrong')
+                }else{
+                    const data = await response.json();
+                    setCoachInfo(data)
+                }
+            })
+            .catch(error => showToast('error', 'Error', error.message));
 
         // Fetch coach plans
         fetch(`${apiUrl}/users/coach/coachPlan/${user.userId}`)
@@ -106,18 +122,6 @@ const CoachProfile = () => {
                 }
             })
             .catch(error => showToast('error', 'Error', error.message));
-
-        fetch(`${apiUrl}/subscription/coach/${user.userId}`)
-            .then(async (response) => {
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.log(errorData, response)
-                    throw new Error(errorData.message || 'Something went wrong');
-                }
-                const data = await response.json();
-                setCurrentPlanId(data.subscriptionPlan.id)
-            })
-            .catch(error => showToast('error', 'Error fetching plans' `${error.message}`));
 
         fetch(`${apiUrl}/subscription/coach-subscription-plans`)
             .then(async (response) => {

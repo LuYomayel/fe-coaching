@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
 
 const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
-  const { user } = useContext(UserContext);
+  const { user, coach, client } = useContext(UserContext);
 
   if (!user) {
     return <Navigate to="/" />;
@@ -12,6 +12,8 @@ const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   if (requiredType && user.userType !== requiredType) {
     console.log('unauthorized', user.userType)
     return <Navigate to="/unauthorized" />;
+  }else if(requiredType && requiredType === 'coach' && !coach){
+    return <Navigate to="/complete-coach-profile" />;
   }
 
   return <Component {...rest} />;
