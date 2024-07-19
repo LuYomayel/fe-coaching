@@ -26,10 +26,10 @@ import ManageStudents from './pages/ManageStudents.js';
 import ClientProfile from './pages/StudentProfile.js';
 const App = () => {
   return (
-    <UserProvider>
-      <ToastProvider>
-        <ConfirmationDialogProvider>
-          <SpinnerProvider>
+    <SpinnerProvider>
+      <UserProvider>
+        <ToastProvider>
+          <ConfirmationDialogProvider>
             <Router>
               <Header/>
               <Routes>
@@ -55,10 +55,10 @@ const App = () => {
                 <Route path="/reset-password" element={<ResetPassword />} />
               </Routes>
             </Router>
-          </SpinnerProvider>
-        </ConfirmationDialogProvider>
-      </ToastProvider>
-    </UserProvider>
+          </ConfirmationDialogProvider>
+        </ToastProvider>
+      </UserProvider>
+    </SpinnerProvider>
   );
 };
 
