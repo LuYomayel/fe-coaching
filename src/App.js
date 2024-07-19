@@ -50,7 +50,7 @@ const App = () => {
                 <Route path="/plans/start-session/:planId" element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />} />
 
                 <Route path="/verify-email"element={< VerifyEmail />} />
-                <Route path="/complete-coach-profile" element={<CoachProfileForm />} />
+                <Route path="/complete-coach-profile" element={<PrivateRoute element={CoachProfileForm} requiredType="coach"  />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
               </Routes>
