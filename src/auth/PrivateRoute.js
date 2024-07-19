@@ -12,7 +12,7 @@ const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   if (requiredType && user.userType !== requiredType) {
     console.log('unauthorized', user.userType)
     return <Navigate to="/unauthorized" />;
-  }else if(requiredType && requiredType === 'coach' && !coach){
+  }else if(requiredType && requiredType === 'coach' && !coach && user){
     console.log('no coach', requiredType, coach)
     return <Navigate to="/complete-coach-profile" />;
   }

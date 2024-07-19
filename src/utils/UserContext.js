@@ -24,7 +24,7 @@ export const UserProvider = ({ children }) => {
                 setCoach(data)
               }
           })
-          .catch(error => console.log(error));
+          .catch(error => setCoach(null));
       }else{
         fetch(`${apiUrl}/users/client/${decodedUser.userId}`)
           .then(async (response) => {
@@ -35,7 +35,7 @@ export const UserProvider = ({ children }) => {
               setClient(data)
             }
           })
-          .catch(error => console.log(error));
+          .catch(error => setClient(null));
       }
     }else{
       setUser(null)
