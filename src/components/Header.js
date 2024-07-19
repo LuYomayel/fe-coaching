@@ -15,10 +15,10 @@ const Header = () => {
     setUser(null);
     navigate('/')
   };
-  console.log(user, coach, client)
+  // console.log(user, coach, client)
   if (!user) return null;
   else if(user && !user.isVerified) return null;
-  else if(user && (!coach || !client)) return null;
+  else if(user && (!coach && !client)) return null;
 
   return (
     <header className="app-header p-d-flex p-jc-between p-ai-center p-shadow-2 p-p-3">

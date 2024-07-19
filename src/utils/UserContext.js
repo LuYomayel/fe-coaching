@@ -11,7 +11,7 @@ export const UserProvider = ({ children }) => {
     if (token) {
       const decodedUser = jwtDecode(token);
       setUser(decodedUser);
-      console.log(decodedUser, apiUrl)
+      // console.log(decodedUser, apiUrl)
       setCoach(null)
       setClient(null)
       if(decodedUser.userType === 'coach'){
