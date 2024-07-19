@@ -6,6 +6,7 @@ import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
+import { useSpinner } from '../utils/GlobalSpinner';
 import {jwtDecode} from 'jwt-decode';
 import '../index.css'
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -14,7 +15,7 @@ const Login = () => {
   const showToast = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { setLoading, loading } = useSpinner();
   const [isSignUp, setIsSignUp] = useState(false);
   const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -52,6 +53,7 @@ const Login = () => {
         throw new Error(errorData.message.message || 'Something went wrong');
       }
       const data = await response.json();
+      setLoading(false);
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
         const decodedToken = jwtDecode(data.access_token);
@@ -69,8 +71,9 @@ const Login = () => {
     } catch (error) {
       // Handle login error
       showToast('error', 'Error', error.message);
+      setLoading(false);
     }
-    setLoading(false);
+    
   };
 
   const handleSignUp = async () => {
@@ -89,6 +92,7 @@ const Login = () => {
         throw new Error(errorData.message || 'Something went wrong');
       }
       else{
+        setLoading(false);
         const data = await response.json();
         if(data.statusCode && data.statusCode !== 200){
           showToast('error', 'Error signing up', data.message)
@@ -99,8 +103,11 @@ const Login = () => {
     } catch (error) {
       // Handle signup error
       showToast('error', 'Error', error.message);
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+    
   };
 
   return (
@@ -120,14 +127,15 @@ const Login = () => {
           </div>
           <div className='flex align-items-center justify-content-center gap-1 pt-4'>
             {isSignUp ? (
-              <Button label="Sign Up" icon="pi pi-user" loading={loading} onClick={handleSignUp} />
+              <Button label="Sign Up" icon="pi pi-user" loading={loading} onClick={handleSignUp}  />
             ) : (
-              <Button label="Login" icon="pi pi-sign-in" loading={loading} onClick={handleLogin} />
+              <Button label="Login" icon="pi pi-sign-in" loading={loading} onClick={handleLogin}  />
             )}
             <Button
               label={isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
               className="p-button-text"
               onClick={() => setIsSignUp(!isSignUp)}
+              
             />
           </div>
           {!isSignUp && (
