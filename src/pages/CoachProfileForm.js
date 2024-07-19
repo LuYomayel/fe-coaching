@@ -30,7 +30,7 @@ const CoachProfileForm = () => {
   const [subscriptionType, setSubscriptionType] = useState('freeTrial');
   const [loading, setLoading] = useState(false);
   const showToast = useToast();
-  const { user } = useContext(UserContext);
+  const { user, setCoach } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
@@ -60,6 +60,7 @@ const CoachProfileForm = () => {
 
       if (response.ok) {
         const data = await response.json();
+        setCoach(data);
         navigate('/coach');
         showToast('success', 'Profile updated!', `Thanks for subscribing ${data.name}`)
       } else {
