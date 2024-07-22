@@ -8,6 +8,9 @@ body {
   overflow: hidden;
 }
 
+.root{
+  /* height: 100vh; */
+}
 * {
   font-family: "Kanit", sans-serif;
 }
@@ -80,4 +83,9 @@ p {
 .global-spinner {
   width: 10rem;
   height: 10rem;
+}
+
+.body-container{
+  height: calc(100vh - 6rem);
+  /* overflow: auto; */
 }

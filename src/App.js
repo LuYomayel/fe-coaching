@@ -32,6 +32,7 @@ const App = () => {
           <ConfirmationDialogProvider>
             <Router>
               <Header/>
+              <div className='body-container'>
               <Routes>
                 <Route path="/" element={< Login />} />
                 <Route path="/login" element={< Login />} />
@@ -57,6 +58,7 @@ const App = () => {
 
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
+              </div>
             </Router>
           </ConfirmationDialogProvider>
         </ToastProvider>

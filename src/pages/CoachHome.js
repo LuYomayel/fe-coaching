@@ -207,7 +207,7 @@ const CoachHome = () => {
       <div className='w-11 mx-auto'>
         <div>
         <h1>Training Cycles</h1>
-          <TreeTable value={nodes}>
+          <TreeTable value={nodes} className='tree-table-container'>
             <Column field="name" header="Cycle Name" expander />
             <Column field="client" header="Client" />
             <Column field="startDate" header="Start Date" body={(node) => dateBodyTemplate(node, 'startDate')} />

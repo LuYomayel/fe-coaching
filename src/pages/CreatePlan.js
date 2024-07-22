@@ -16,6 +16,7 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import '../styles/CreatePlan.css';
+import { useSpinner } from '../utils/GlobalSpinner';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -26,6 +27,7 @@ const CreatePlan = ({ isEdit }) => {
   const showToast = useToast();
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
+  const { loading, setLoading } = useSpinner();
   const [plan, setPlan] = useState({
       workout: {
         id: '',
@@ -76,6 +78,7 @@ const CreatePlan = ({ isEdit }) => {
 
   useEffect(() => {
     if (isEdit && planId) {
+      setLoading(true)
       fetch(`${apiUrl}/workout/workout-instance/${planId}`)
         .then(async (response) => {
           if (!response.ok) {
@@ -86,7 +89,8 @@ const CreatePlan = ({ isEdit }) => {
           const data = await response.json();
           setPlan(data)
         })
-        .catch(error => showToast('error', 'Error fetching plan details' , `${error.message}`));
+        .catch(error => showToast('error', 'Error fetching plan details' , `${error.message}`))
+        .finally( () => setLoading(false))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, planId]);

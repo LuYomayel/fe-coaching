@@ -55,3 +55,15 @@
     background-color: #a626a4;
     border-color: #a626a4;
 }
+
+.p-treetable-wrapper{
+    max-height: 50rem;
+    overflow: auto;
+}
+
+.p-treetable .p-treetable-thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #2d2d2d; /* Ajusta según el color de fondo de tu tabla */
+  }
