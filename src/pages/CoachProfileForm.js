@@ -35,8 +35,8 @@ const CoachProfileForm = () => {
 
   useEffect( () => {
 
-    // if(user && coach)
-      // navigate('/coach')
+    if(user && coach)
+      navigate('/coach')
   }, [user, coach, navigate])
   const handleSubmit = async () => {
     // setLoading(false);
