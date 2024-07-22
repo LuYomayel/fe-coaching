@@ -16,6 +16,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { isValidYouTubeUrl, extractYouTubeVideoId } from '../utils/UtilFunctions';
 import '../styles/CoachProfile.css'
 import { MultiSelect } from 'primereact/multiselect';
+import PlanDetails from '../dialogs/PlanDetails';
 import { useSpinner } from '../utils/GlobalSpinner';
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -31,13 +32,20 @@ const CoachProfile = () => {
     const [bodyAreas, setBodyAreas] = useState([]);
     const [selectedBodyAreas, setSelectedBodyAreas] = useState([]);
     const [currentVideoUrl, setCurrentVideoUrl] = useState('');
-
+    const [workouts, setWorkouts] = useState([{
+        planName: '',
+        id: '',
+        workoutInstance: {},
+        coach: {}
+    }]);
     const [subscriptionPlans, setSubscriptionPlans] = useState([]);
     const [currentPlanId, setCurrentPlanId] = useState(null);
-    
+    const [selectedPlan, setSelectedPlan] = useState(null);
+
     const [videoDialogVisible, setVideoDialogVisible] = useState(false);
     const [createPlanDialogVisible, setCreatePlanDialogVisible] = useState(false);
     const [exerciseDialogVisible, setExerciseDialogVisible] = useState(false);
+    const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
 
     const [dialogMode, setDialogMode] = useState('create'); // 'create' or 'edit'
 
@@ -72,6 +80,22 @@ const CoachProfile = () => {
             }
             const subscriptionData = await subscriptionResponse.json();
             setCurrentPlanId(subscriptionData.subscriptionPlan.id);
+
+            const workoutsResponse = await fetch(`${apiUrl}/workout/coach-workouts/userId/${user.userId}`);
+            if (!workoutsResponse.ok) {
+              const errorData = await workoutsResponse.json();
+              throw new Error(errorData.message || 'Something went wrong');
+            }
+            const workoutData = await workoutsResponse.json();
+            const mappedWorkouts = workoutData.map(workout => {
+                const instance = workout.workoutInstances.find(instance => instance.isTemplate)
+                return {
+                    ...workout,
+                    workoutInstance: instance
+                }
+            })
+            console.log(mappedWorkouts)
+            setWorkouts(mappedWorkouts);
     
             const coachResponse = await fetch(`${apiUrl}/users/coach/${user.userId}`);
             if (!coachResponse.ok) {
@@ -380,6 +404,19 @@ const CoachProfile = () => {
         );
       };
 
+      const hidePlanDetails = () => {
+
+        setPlanDetailsVisible(false);
+        setSelectedPlan(null);
+      };
+    
+      const handleViewPlanDetails = (workoutInstanceId) => {
+        // const workoutInstanceId = plan.workoutInstances.find(instances => instances.isTemplate === true).id
+        setLoading(true)
+        setSelectedPlan(workoutInstanceId);
+        setPlanDetailsVisible(true);
+      };
+
     return (
         <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto">
             <h1>Coach Profile</h1>
@@ -404,6 +441,22 @@ const CoachProfile = () => {
                 </div>
                 <div className='w-10'>
                     <TabView className='hola'>
+                        <TabPanel header="Workouts">
+                        <DataTable value={workouts} paginator rows={10}>
+                            <Column field="planName" header="Name" />
+                            <Column field="workoutInstance.personalizedNotes" header="Description" />
+                            
+                            <Column
+                                body={(rowData) => (
+                                    <div className='flex gap-2'>
+                                        <Button tooltip='View Details' icon="pi pi-eye"    className="p-button-rounded p-button-info" onClick={() => handleViewPlanDetails(rowData.workoutInstance.id)} />
+                                        <Button tooltip='Edit'         icon="pi pi-pencil" className="p-button-rounded p-button-warning" onClick={() => navigate(`/plans/edit/${rowData.workoutInstance.id}`)} />
+                                    </div>
+                                )}
+                                header="Actions"
+                            />
+                        </DataTable>
+                        </TabPanel>
                         <TabPanel header="Coach Plans">
                             <div className="flex gap-2 align-items-center justify-content-evenly flex-wrap">
                                 {coachPlans.map(plan => (
@@ -527,6 +580,10 @@ const CoachProfile = () => {
                 </div>
             </Dialog>
 
+            <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+                {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
+                    setRefreshKey={setRefreshKey} setLoading={setLoading} />}
+            </Dialog>
         </div>
     );
 };
