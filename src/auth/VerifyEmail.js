@@ -38,7 +38,6 @@ const VerifyEmail = () => {
       }
       else {
         const data = await response.json();
-        console.log(data)
         setStatus('Email verified successfully!');
       }
     } catch (error) {

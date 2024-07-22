@@ -14,7 +14,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey }) => {
+const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading }) => {
   // const { planId } = useParams();
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
@@ -47,6 +47,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey }) => {
     notes: '',
   });
   const showToast = useToast();
+  const [loadingSubmit, setLoadingSubmit] = useState(false)
   const navigate = useNavigate();
   useEffect(() => {
     fetch(`${apiUrl}/workout/workout-instance/${planId}`)
@@ -60,7 +61,10 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey }) => {
           setPlan(data)
         }
       })
-      .catch(error => showToast('error',  'Error fetching plan details xd', `${error.message}`));
+      .catch(error => showToast('error',  'Error fetching plan details xd', `${error.message}`))
+      .finally( () => {
+        if(setLoading) setLoading(false)
+      })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]);
 
@@ -80,6 +84,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey }) => {
 
   const fetchDeletePlan = () => {
     const url = plan.isTemplate ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout/deleteInstance/${planId}`;
+    setLoadingSubmit(true)
     fetch(`${url}`, {
       method: "DELETE",
       headers: {
@@ -98,6 +103,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey }) => {
       }
     })
     .catch( (error) => showToast('error', 'Error', error.message))
+    .finally( () => setLoadingSubmit(false))
   }
 
   if (!plan) return <p>Loading...</p>;

@@ -15,7 +15,6 @@ const Header = () => {
     setUser(null);
     navigate('/')
   };
-  console.log(user, coach, client)
   if (!user) return null;
   else if(user && !user.isVerified) return null;
   else if(user && (!coach && !client)) return null;

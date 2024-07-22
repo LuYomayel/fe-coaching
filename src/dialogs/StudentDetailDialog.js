@@ -3,7 +3,9 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
+import { InputNumber } from 'primereact/inputnumber';
 import { useToast } from '../utils/ToastContext';
+import { validateStudentDetails } from '../utils/UtilFunctions';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentDetailDialog = ({ student, onClose }) => {
@@ -39,8 +41,16 @@ const StudentDetailDialog = ({ student, onClose }) => {
   ];
 
   const handleSaveStudent = async () => {
-    setLoading(true);
+    const body = { name, email, fitnessGoal: fitnessGoal.join(','), activityLevel, birthdate, gender, height, weight };
+    const { isValid, message } = validateStudentDetails(body);
+
+    if (!isValid) {
+      showToast('error', 'Error', message);
+      return;
+    }
+
     try {
+      setLoading(true);
       const response = await fetch(`${apiUrl}/students/${student.id}`, {
         method: 'PUT',
         headers: {
@@ -58,8 +68,9 @@ const StudentDetailDialog = ({ student, onClose }) => {
       }
     } catch (error) {
       showToast('error', 'Error', error.message);
+    } finally{
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -86,11 +97,11 @@ const StudentDetailDialog = ({ student, onClose }) => {
       </div>
       <div className="p-field">
         <label htmlFor="height">Height</label>
-        <InputText id="height" value={height} onChange={(e) => setHeight(e.target.value)} />
+        <InputNumber id="height" value={height} onChange={(e) => setHeight(e.target.value)} />
       </div>
       <div className="p-field">
         <label htmlFor="weight">Weight</label>
-        <InputText id="weight" value={weight} onChange={(e) => setWeight(e.target.value)} />
+        <InputNumber id="weight" value={weight} onChange={(e) => setWeight(e.target.value)} />
       </div>
       <div className="p-field">
         <label htmlFor="birthdate">Birthdate</label>

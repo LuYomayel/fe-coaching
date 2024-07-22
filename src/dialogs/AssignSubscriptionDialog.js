@@ -5,6 +5,7 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { Dropdown } from 'primereact/dropdown';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
+import { validateDates } from '../utils/UtilFunctions';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
@@ -14,14 +15,13 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
   const [endDate, setEndDate] = useState(null);
   const [loading, setLoading] = useState(false);
   const [coachPlans, setCoachPlans] =useState([]);
-  const [selectedCoachPlan, setSelectedCoachPlan] = useState([])
+  const [selectedCoachPlan, setSelectedCoachPlan] = useState()
   const { showConfirmationDialog } = useConfirmationDialog();
     useEffect( () => {    
       fetch(`${apiUrl}/users/coach/coachPlan/${user.userId}`)
           .then(async (response) => {
             const data = await response.json();
-            console.log(data)
-              setCoachPlans(data)
+            setCoachPlans(data)
           })
     }, [])
 
@@ -33,12 +33,15 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
       endDate,
       coachPlanId: selectedCoachPlan
     }
-    if(!startDate)
-      showToast('error', 'Error', 'Please select a Start date')
-    if(!endDate)
-      showToast('error', 'Error', 'Please select a End date')
+    const { isValid, message } = validateDates(startDate, endDate)
+
+    if (!isValid) {
+      showToast('error', 'Error', message);
+      return;
+    }
+
     if(!selectedCoachPlan)
-      showToast('error', 'Error', 'Please select a coach plan')
+      return showToast('error', 'Error', 'Please select a coach plan')
 
     showConfirmationDialog({
       message: "Are you sure you want to generate a subscription to this client?",
@@ -49,8 +52,8 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
     });
   }
   const handleAssignSubscription = async (body) => {
-    // setLoading(true);
     try {
+      setLoading(true);
       // return
       const response = await fetch(`${apiUrl}/subscription/client`, {
         method: 'POST',
@@ -71,8 +74,9 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
       } 
     } catch (error) {
       showToast('error', 'Error', error.message);
+    } finally{
+      setLoading(false);
     }
-    setLoading(false);
   };
 
 

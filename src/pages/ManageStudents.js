@@ -11,6 +11,7 @@ import NewStudentDialog from '../dialogs/NewStudentDialog';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { formatDate } from '../utils/UtilFunctions';
 import RegisterPaymentDialog from '../dialogs/RegisterPaymentDialog';
+import { useSpinner } from '../utils/GlobalSpinner';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ManageStudents = () => {
@@ -24,8 +25,10 @@ const ManageStudents = () => {
   const [isStudentDetailVisible, setIsStudentDetailVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const { showConfirmationDialog } = useConfirmationDialog();
+  const { setLoading } = useSpinner()
 
   useEffect(() => {
+    setLoading(true)
     fetch(`${apiUrl}/users/coach/allStudents/${user.userId}`)
       .then(response => response.json())
       .then(data => {
@@ -35,7 +38,8 @@ const ManageStudents = () => {
           setStudents(data);
         }
       })
-      .catch(error => showToast('error', 'Error fetching students', error.message));
+      .catch(error => showToast('error', 'Error fetching students', error.message))
+      .finally( () => setLoading(false))
   }, [refreshKey, user.userId, showToast]);
 
   const openNewStudentDialog = () => {
@@ -131,7 +135,7 @@ const ManageStudents = () => {
   }
 
   const studentActionsTemplate = (rowData) => {
-    // console.log(rowData)
+    // (rowData)
     if(rowData.user.subscription.status === 'Active' ){
       return (
         <div className='flex gap-2'>
@@ -190,7 +194,7 @@ const ManageStudents = () => {
       
       <Dialog header="Register Payment" visible={isRegisterPaymentDialogVisible} style={{ width: '50vw' }} onHide={handleRegisterPaymentDialogHide}>
         <RegisterPaymentDialog studentId={selectedStudent?.id} coachId={user.userId} onClose={handleRegisterPaymentDialogHide} 
-          oldSubscription={selectedStudent?.user.subscription} oldCoachPlan={selectedStudent?.user.subscription.clientSubscription.coachPlan}
+          oldSubscription={selectedStudent?.user.subscription} oldCoachPlan={selectedStudent?.user.subscription.clientSubscription?.coachPlan}
         />
       </Dialog>
 

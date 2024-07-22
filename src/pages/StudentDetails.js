@@ -17,13 +17,14 @@ import { formatDate } from '../utils/UtilFunctions';
 
 import '../styles/StudentDetails.css';
 import { Fieldset } from 'primereact/fieldset';
+import { useSpinner } from '../utils/GlobalSpinner';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentDetails = () => {
   const { studentId } = useParams();
   const [student, setStudent] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { loading, setLoading} = useSpinner();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -43,20 +44,20 @@ const StudentDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${apiUrl}/subscription/client/${studentId}`)
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData)
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const subscriptionResponse = await fetch(`${apiUrl}/subscription/client/${studentId}`);
+        if (!subscriptionResponse.ok) {
+          const errorData = await subscriptionResponse.json();
           throw new Error(errorData.message || 'Something went wrong');
         }
-        return response.json();
-      })
-      .then(data => {
-        setStudent(data);
+        const subscriptionData = await subscriptionResponse.json();
+        setStudent(subscriptionData);
 
-        const completed = data.workoutInstances.filter(workout => workout.status === 'completed').length;
-        const pending = data.workoutInstances.filter(workout => workout.status === 'pending').length;
+        const completed = subscriptionData.workoutInstances.filter(workout => workout.status === 'completed').length;
+        const pending = subscriptionData.workoutInstances.filter(workout => workout.status === 'pending').length;
 
         setProgressData({
           labels: ['Completed', 'Pending'],
@@ -69,24 +70,22 @@ const StudentDetails = () => {
           ]
         });
 
-        setLoading(false);
-      })
-      .catch(error => {
-        setLoading(false);
-        showToast('error', 'Error', error.message);
-      });
-      // console.log('student id: ', studentId)
-    fetch(`${apiUrl}/users/clientId/activities/${studentId}`)
-      .then( async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData)
+        const activitiesResponse = await fetch(`${apiUrl}/users/clientId/activities/${studentId}`);
+        if (!activitiesResponse.ok) {
+          const errorData = await activitiesResponse.json();
           throw new Error(errorData.message || 'Something went wrong');
         }
-        const data = await response.json();
-        setActivities(data)
-      })
-      .catch(error => showToast('error', 'Error', error.message))
+        const activitiesData = await activitiesResponse.json();
+        setActivities(activitiesData);
+
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [studentId, refreshKey]);
 
   const customizedMarker = (item) => {
@@ -200,7 +199,7 @@ const StudentDetails = () => {
 
           <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
             {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
-              setRefreshKey={setRefreshKey}  />}
+              setRefreshKey={setRefreshKey} setLoading={setLoading} />}
           </Dialog>
 
           <h2>Completed Training Plans</h2>

@@ -108,7 +108,6 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
         perceivedDifficulty,
         additionalNotes
     }
-    console.log(body)
     // return
 
     fetch(`${apiUrl}/workout/feedback/${planId}`, {

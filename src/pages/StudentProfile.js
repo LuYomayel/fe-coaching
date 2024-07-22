@@ -33,7 +33,7 @@ const ClientProfile = () => {
   const [activities, setActivities] = useState([])
   const { showConfirmationDialog } = useConfirmationDialog();
   const [refreshKey, setRefreshKey] = useState(0)
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     'workout.planName': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
@@ -82,7 +82,7 @@ const ClientProfile = () => {
         setLoading(false)
       })
       .catch(error => showToast('error', 'Error', error.message))
-      .finally(() => setLoading(true))
+      .finally(() => setLoading(false))
     // Fetch activities
     fetch(`${apiUrl}/users/userId/activities/${user.userId}`)
       .then(async (response) => {
@@ -100,7 +100,7 @@ const ClientProfile = () => {
         setLoading(false)
       })
       .catch(error => showToast('error', 'Error', error.message))
-      .finally(() => setLoading(true))
+      .finally(() => setLoading(false))
 
     // Fetch subscription details
     setLoading(true)
@@ -108,34 +108,45 @@ const ClientProfile = () => {
       .then(async (response) => {
         if(!response.ok){
           const errorData = await response.json();
+          console.log(errorData)
           setLoading(true)
           throw new Error(errorData.message || 'Something went wrong')
+        }else {
+          const data = await response.json();
+          
+          setSubscription(data)
+          const checkStatusWorkouts = updateStatus(data.workoutInstances)
+          const workoutsSorted = sortBySessionDate(checkStatusWorkouts)
+          setWorkouts(workoutsSorted)
+  
+          const completed = workoutsSorted.filter(workout => workout.status === 'completed').length;
+          const pending = workoutsSorted.filter(workout => workout.status === 'pending').length;
+          const expired = workoutsSorted.filter(workout => workout.status === 'expired').length;
+  
+          setProgressData({
+            labels: ['Completed', 'Pending', 'Expired'],
+            datasets: [
+              {
+                data: [completed, pending, expired],
+                backgroundColor: ['green', 'yellow', 'red'],
+                hoverBackgroundColor: ['green', 'yellow', 'red']
+              }
+            ]
+          });
+          setLoading(false)
         }
-        const data = await response.json();
-        console.log('Subscription: ', data.workoutInstances)
         
-        setSubscription(data)
-        const checkStatusWorkouts = updateStatus(data.workoutInstances)
-        const workoutsSorted = sortBySessionDate(checkStatusWorkouts)
-        setWorkouts(workoutsSorted)
-
-        const completed = workoutsSorted.filter(workout => workout.status === 'completed').length;
-        const pending = workoutsSorted.filter(workout => workout.status === 'pending').length;
-        const expired = workoutsSorted.filter(workout => workout.status === 'expired').length;
-
-        setProgressData({
-          labels: ['Completed', 'Pending', 'Expired'],
-          datasets: [
-            {
-              data: [completed, pending, expired],
-              backgroundColor: ['green', 'yellow', 'red'],
-              hoverBackgroundColor: ['green', 'yellow', 'red']
-            }
-          ]
-        });
-        setLoading(false)
       })
-      .catch(error => showToast('error', 'Error', error.message))
+      .catch(error => {
+        if(error.message === 'Client subscription not found'){
+          setWorkouts([])
+          setSubscription({})
+          showToast('error', 'Error', error.message)
+        }else{
+
+          showToast('error', 'Error', error.message)
+        }
+      })
       .finally(() => setLoading(false))
   }, [user.userId, showToast, refreshKey]);
 
@@ -256,7 +267,7 @@ const descriptionFilterTemplate = (options) => {
 
 
   
-  if(loading) return null;
+  // if(loading) return null;
   return (
     <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto">
       <h1>Client Profile</h1>

@@ -5,6 +5,7 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { Dropdown } from 'primereact/dropdown';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
+import { validateDates } from '../utils/UtilFunctions';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, oldCoachPlan }) => {
@@ -47,17 +48,14 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
       coachPlanId: selectedCoachPlan
     };
 
-    if (!startDate) {
-      showToast('error', 'Error', 'Please select a Start date');
-      return;
-    }
-    if (!paymentDate) {
-      showToast('error', 'Error', 'Please select a Payment date');
+    const { isValid, message } = validateDates(startDate, endDate)
+    if (!isValid) {
+      showToast('error', 'Error', message);
       return;
     }
 
-    if (!endDate) {
-      showToast('error', 'Error', 'Please select an End date');
+    if (!paymentDate) {
+      showToast('error', 'Error', 'Please select a Payment date');
       return;
     }
 
@@ -76,8 +74,8 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
   };
 
   const handleRegisterPayment = async (body) => {
-    setLoading(true);
     try {
+      setLoading(true);
       const response = await fetch(`${apiUrl}/subscription/update`, {
         method: 'PUT',
         headers: {
@@ -95,8 +93,9 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
       }
     } catch (error) {
       showToast('error', 'Error', error.message);
+    } finally{
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

@@ -6,6 +6,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
+import { validateDates } from '../utils/UtilFunctions';
 const apiUrl = process.env.REACT_APP_API_URL;
 const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   const [currentPlans, setCurrentPlans] = useState(selectedPlans);
@@ -22,7 +23,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
       instanceName: '',
     }))
   );
-  // const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const statusOptions = [
     { label: 'Pending', value: 'pending' },
@@ -40,10 +41,11 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
     const data = {
       studentId: selectedStudent.id,
       ...assignmentData[index],
-  };
+    };
 
-    if (!data.expectedStartDate || !data.expectedEndDate) {
-      showToast('error', 'Please fill in all required fields.')
+    const { isValid, message } = validateDates(data.expectedStartDate, data.expectedEndDate)
+    if (!isValid) {
+      showToast('error', 'Error', message);
       return;
     }
 
@@ -62,6 +64,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
       ...assignmentData[index],
     };
     try {
+      setLoading(true);
       const response = await fetch(`${apiUrl}/workout/assignWorkout`, {
         method: 'POST',
         headers: {
@@ -85,6 +88,8 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
         }
     } catch (error) {
       showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false);
     }
     
   };
@@ -119,7 +124,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
             </div>
             <div className="p-d-flex p-jc-between">
               <Button label="Cancel" icon="pi pi-times" className="p-button-danger" onClick={onClose} />
-              <Button label="Assign" icon="pi pi-check" className="p-button-success" onClick={() => handleAssign(index)} />
+              <Button label="Assign" icon="pi pi-check" className="p-button-success" onClick={() => handleAssign(index)} loading={loading}/>
             </div>
             {/* <ConfirmDialog visible={showConfirm === index} onHide={() => setShowConfirm(false)} message="Are you sure you want to assign this plan?"
               header="Confirmation" icon="pi pi-exclamation-triangle" accept={() => confirmAssign(index)} reject={() => setShowConfirm(false)} /> */}

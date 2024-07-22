@@ -15,7 +15,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
 
   const [assignments, setAssignments] = useState([{ workoutId: null, dayOfWeek: null }]);
   const { user } = useContext(UserContext);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     setAssignments([{ workoutId: null, dayOfWeek: null }])
   }, []);
@@ -45,8 +45,10 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
     const body = {
       assignments: assignments.filter(assignment => assignment.dayOfWeek !== null && assignment.workoutId !== null),
     };
-
+    if(body.assignments.length === 0)
+      return showToast('error', 'Error', 'Please assign at least one workout.')
     try {
+      setLoading(true);
       const response = await fetch(`${apiUrl}/workout/assign-cycle/${cycleId}/assign-workouts/${clientId}`, {
         method: 'POST',
         headers: {
@@ -65,6 +67,8 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
       setRefreshKey(old => old + 1);
     } catch (error) {
       showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -81,7 +85,6 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
   };
 
   const removeAssignment = (index) => {
-    console.log(index)
     const updatedAssignments = assignments.filter((assignments, i) => index !== i);
     setAssignments(updatedAssignments)
   }
@@ -115,7 +118,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
       ))}
       <div className="flex justify-content-between">
         <Button label="Add Assignment" icon="pi pi-plus" onClick={handleAddAssignment} className="p-button-secondary" />
-        <Button label="Assign Workouts" icon="pi pi-check" onClick={handleAssign} className="p-button-primary" />
+        <Button label="Assign Workouts" icon="pi pi-check" onClick={handleAssign} className="p-button-primary" loading={loading}/>
       </div>
     </Dialog>
   );

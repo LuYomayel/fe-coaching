@@ -22,7 +22,6 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
   const { showConfirmationDialog } = useConfirmationDialog();
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    setLoading(true)
     fetch(`${apiUrl}/users/coach/allStudents/${user.userId}`)
       .then(async response => {
         
@@ -31,17 +30,21 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
           throw new Error(errorData.message || 'Something went wrong.')
         }
         const data = await response.json();
-        setClients(data.map(client => ({ label: client.name, value: client.id })));
-        setLoading(false);
+        const dataFiltered = data.filter(client => client.user.subscription.status !== 'Inactive').map( client => ({ label: client.name, value: client.id }))
+
+        // setClients(data.map(client => {
+        //   return ({ label: client.name, value: client.id })
+        // }));
+        setClients(dataFiltered)
       })
       .catch(error => {
-        setLoading(false);
         showToast('error', 'Error', error.message)
       });
   }, [showToast, user.userId]);
 
   const handleCreateCycle = async (body) => {
     try {
+      setLoading(true)
       const response = await fetch(`${apiUrl}/workout/training-cycles`, {
         method: 'POST',
         headers: {
@@ -59,6 +62,8 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
       onHide();
     } catch (error) {
       showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 

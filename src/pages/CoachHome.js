@@ -18,6 +18,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { formatDate } from '../utils/UtilFunctions';
 import '../styles/Home.css';
 import { UserContext } from '../utils/UserContext';
+import { useSpinner } from '../utils/GlobalSpinner';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -39,65 +40,68 @@ const CoachHome = () => {
   const showToast = useToast();
   const { user } = useContext(UserContext)
   const navigate = useNavigate();
+  const { setLoading } = useSpinner();
 
   useEffect(() => {
-        fetch(`${apiUrl}/workout/training-cycles/coachId/${user.userId}`)
-        .then(async (response) => {
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Something went wrong');
-          }
-          return response.json();
-        })
-        .then(cycles => {
-          const nodes = cycles.map(cycle => ({
-            key: `cycle-${cycle.id}`,
+    setLoading(true)
+    fetch(`${apiUrl}/workout/training-cycles/coachId/${user.userId}`)
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Something went wrong');
+      }
+      return response.json();
+    })
+    .then(cycles => {
+      const nodes = cycles.map(cycle => ({
+        key: `cycle-${cycle.id}`,
+        data: {
+          type: 'cycle',
+          name: cycle.name,
+          client: cycle.client.name,
+          startDate: cycle.startDate,
+          endDate: cycle.endDate,
+          clientId: cycle.client.id
+        },
+        children: cycle.trainingWeeks.map(week => ({
+          key: `week-${week.id}`,
+          data: {
+            type: 'week',
+            name: `Week - ${week.weekNumber}`,
+            weekNumber: week.weekNumber,
+            startDate: week.startDate,
+            endDate: week.endDate,
+          },
+          children: week.trainingSessions.map(session => ({
+            key: `session-${session.id}`,
             data: {
-              type: 'cycle',
-              name: cycle.name,
-              client: cycle.client.name,
-              startDate: cycle.startDate,
-              endDate: cycle.endDate,
+              sessionId: session.id,
+              name: `Day - ${session.dayNumber}`,
+              type: 'session',
+              dayNumber: session.dayNumber,
+              sessionDate: session.sessionDate,
+              startDate: session.sessionDate,
               clientId: cycle.client.id
             },
-            children: cycle.trainingWeeks.map(week => ({
-              key: `week-${week.id}`,
+            children: session.workoutInstances.map(workoutInstance => ({
+              key: `workoutInstance-${workoutInstance.id}`,
               data: {
-                type: 'week',
-                name: `Week - ${week.weekNumber}`,
-                weekNumber: week.weekNumber,
-                startDate: week.startDate,
-                endDate: week.endDate,
-              },
-              children: week.trainingSessions.map(session => ({
-                key: `session-${session.id}`,
-                data: {
-                  sessionId: session.id,
-                  name: `Day - ${session.dayNumber}`,
-                  type: 'session',
-                  dayNumber: session.dayNumber,
-                  sessionDate: session.sessionDate,
-                  startDate: session.sessionDate,
-                  clientId: cycle.client.id
-                },
-                children: session.workoutInstances.map(workoutInstance => ({
-                  key: `workoutInstance-${workoutInstance.id}`,
-                  data: {
-                    type: 'workoutInstance',
-                    name: workoutInstance.workout.planName,
-                    instanceName: workoutInstance.instanceName,
-                    status: workoutInstance.status,
-                    sessionTime: workoutInstance.sessionTime,
-                    generalFeedback: workoutInstance.generalFeedback,
-                  }
-                }))
-              }))
+                type: 'workoutInstance',
+                name: workoutInstance.workout.planName,
+                instanceName: workoutInstance.instanceName,
+                status: workoutInstance.status,
+                sessionTime: workoutInstance.sessionTime,
+                generalFeedback: workoutInstance.generalFeedback,
+              }
             }))
-          }));
-          console.log(cycles);
-          setNodes(nodes);
-        })
-        .catch(error => showToast('error', 'Error', error.message));
+          }))
+        }))
+      }));
+      setNodes(nodes);
+    })
+    .catch(error => showToast('error', 'Error', error.message))
+    .finally(() => setLoading(false))
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
@@ -136,13 +140,14 @@ const CoachHome = () => {
   }
 
   const hidePlanDetails = () => {
+
     setPlanDetailsVisible(false);
     setSelectedPlan(null);
   };
 
   const handleViewPlanDetails = (workoutInstanceId) => {
     // const workoutInstanceId = plan.workoutInstances.find(instances => instances.isTemplate === true).id
-    console.log(workoutInstanceId)
+    setLoading(true)
     setSelectedPlan(workoutInstanceId);
     setPlanDetailsVisible(true);
   };
@@ -159,7 +164,6 @@ const CoachHome = () => {
   };
 
   const fetchDeletePlan = (workoutInstanceId) => {
-    console.log(workoutInstanceId)
     const url = `${apiUrl}/workout/deleteInstance/${workoutInstanceId}`;
     fetch(`${url}`, {
       method: "DELETE",
@@ -218,7 +222,7 @@ const CoachHome = () => {
 
         <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
           {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
-            setRefreshKey={setRefreshKey}  />}
+            setRefreshKey={setRefreshKey} setLoading={setLoading} />}
         </Dialog>
 
         <Dialog header="New Student" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>

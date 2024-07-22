@@ -13,9 +13,9 @@ const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   if (user.userType === 'coach' && !coach) {
     return <Navigate to="/complete-coach-profile" />;
   }
-  if (user.userType === 'client' && !client) {
-    return <Navigate to="/" />;
-  }
+  // if (user.userType === 'client' && !client) {
+  //   return <Navigate to="/" />;
+  // }
 
   return <Component {...rest} />;
 };

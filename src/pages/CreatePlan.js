@@ -209,7 +209,6 @@ const CreatePlan = ({ isEdit }) => {
     const updatedGroups = [...plan.groups];
     updatedGroups[groupIndex].exercises[exerciseIndex][property] = ''; // Agregar nueva propiedad con valor vacío
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
-    console.log(plan);
   };
 
   const handleSubmit = (event) =>{

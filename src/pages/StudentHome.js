@@ -16,7 +16,7 @@ import '../styles/StudentHome.css';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentHome = () => {
-  const { user } = useContext(UserContext);
+  const { user, client } = useContext(UserContext);
 
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -78,7 +78,6 @@ const StudentHome = () => {
             }))
           }))
         }));
-        console.log(cycles);
         setNodes(nodes);
       })
       .catch(error => showToast('error', 'Error', error.message));
@@ -117,7 +116,7 @@ const StudentHome = () => {
 
   return (
     <div className="student-home-container">
-      <h1>Welcome, {user.name}!</h1>
+      <h1>Welcome, {client.name}!</h1>
       <div className="flex gap-5 ">
           <TreeTable value={nodes}>
             <Column field="name" header="Cycle Name" expander />

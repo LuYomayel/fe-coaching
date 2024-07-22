@@ -46,8 +46,8 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
 
   const handleSaveStudent = async (body) => {
     
-    setLoading(true);
     try {
+      setLoading(true);
       const response = await fetch(`${apiUrl}/users/client`, {
         method: 'POST',
         headers: {
@@ -70,16 +70,16 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
     } catch (error) {
       setLoading(false);
       showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false);
     }
     
   };
 
   const onClickSaveStudent = async () =>{
     const body = { name, email, fitnessGoal, activityLevel, gender, weight, height,birthdate, coachId: user.userId };
-    console.log("Body xd: ", body)
     // Validación para comprobar si algún valor es nulo
     for (const [key, value] of Object.entries(body)) {
-      // console.log(value, key)
       if(key === 'fitnessGoal') {
         if(value.length === 0) 
           return showToast('error', 'Error', `${key} cannot be null or empty`);

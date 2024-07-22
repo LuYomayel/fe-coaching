@@ -10,12 +10,13 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-    const {user} = useContext(UserContext);
+  const[loading, setLoading] = useState(false)
+  const {user} = useContext(UserContext);
+
   useEffect(() => {
     fetch(`${apiUrl}/workout/coach-workouts/userId/${user.userId}`)
       .then(async response => {
         const data = await response.json();
-        // console.log(data)
         // setWorkouts(data.map(workout => ({ label: workout.name, value: workout.id })));
         setWorkouts([...data])
       })
@@ -33,9 +34,9 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       workoutId: selectedWorkout,
       clientId
     };
-    console.log('sessionId: ', body)
     // return;
     try {
+      setLoading(true)
       const response = await fetch(`${apiUrl}/workout/assign-session/${sessionId}`, {
         method: 'POST',
         headers: {
@@ -48,12 +49,13 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
         const errorData = await response.json();
         throw new Error(errorData.message || 'Something went wrong');
       }
-      console.log(response)
       showToast('success', 'Success', 'Workout assigned to session successfully');
       onHide();
       setRefreshKey(old=>old+1);
     } catch (error) {
       showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -72,7 +74,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
             />
         </div>
       </div>
-      <Button label="Assign" icon="pi pi-check" onClick={handleAssign} />
+      <Button label="Assign" icon="pi pi-check" onClick={handleAssign} loading={loading} />
     </Dialog>
   );
 };

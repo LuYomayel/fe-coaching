@@ -16,6 +16,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { isValidYouTubeUrl, extractYouTubeVideoId } from '../utils/UtilFunctions';
 import '../styles/CoachProfile.css'
 import { MultiSelect } from 'primereact/multiselect';
+import { useSpinner } from '../utils/GlobalSpinner';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const CoachProfile = () => {
@@ -23,7 +24,7 @@ const CoachProfile = () => {
     const { showConfirmationDialog } = useConfirmationDialog();
     const showToast = useToast();
     const navigate = useNavigate();
-
+    const { setLoading } = useSpinner();
     const [coachInfo, setCoachInfo] = useState(null);
     const [coachPlans, setCoachPlans] = useState([]);
     const [exercises, setExercises] = useState([]);
@@ -57,84 +58,74 @@ const CoachProfile = () => {
     });
 
     useEffect(() => {
-        fetch(`${apiUrl}/subscription/coach/${user.userId}`)
-            .then(async (response) => {
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    if(errorData.message && errorData.message === 'Coach not found')
-                        return navigate('/complete-coach-profile')
-                    throw new Error(errorData.message || 'Something went wrong');
-                }
-                const data = await response.json();
-                setCurrentPlanId(data.subscriptionPlan.id)
-            })
-            .catch(error => showToast('error', 'Error' `${error.message}`));
-        // Fetch coach information
-        fetch(`${apiUrl}/users/coach/${user.userId}`)
-            .then(async (response) => {
-                if(!response.ok){
-                    const errorData = await response.json();
-                    if(errorData.message && errorData.message === 'Coach not found')
-                        return navigate('/complete-coach-profile')
-                    throw new Error(errorData.message || 'Something went wrong')
-                }else{
-                    const data = await response.json();
-                    setCoachInfo(data)
-                }
-            })
-            .catch(error => showToast('error', 'Error', error.message));
-
-        // Fetch coach plans
-        fetch(`${apiUrl}/users/coach/coachPlan/${user.userId}`)
-            .then(async (response) => {
-                if(!response.ok){
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Something went wrong')
-                }else{
-                    const data = await response.json();
-                    setCoachPlans(data)
-                }
-            })
-            .catch(error => showToast('error', 'Error', error.message));
-
-        // Fetch exercises library
-        fetch(`${apiUrl}/exercise/coach/${user.userId}`)
-        .then(async (response) => {
-            if(!response.ok){
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Something went wrong')
-            }else{
-                const data = await response.json();
-                setExercises(data)
+        const fetchData = async () => {
+          try {
+            setLoading(true);
+    
+            const subscriptionResponse = await fetch(`${apiUrl}/subscription/coach/${user.userId}`);
+            if (!subscriptionResponse.ok) {
+              const errorData = await subscriptionResponse.json();
+              if (errorData.message && errorData.message === 'Coach not found') {
+                return navigate('/complete-coach-profile');
+              }
+              throw new Error(errorData.message || 'Something went wrong');
             }
-        })
-        .catch(error => showToast('error', 'Error', error.message));
-
-        fetch(`${apiUrl}/exercise/body-area`)
-            .then(async (response) => {
-                if(!response.ok){
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Something went wrong')
-                }else{
-                    const data = await response.json();
-                    const formatedbodyareas = data.map(bodyArea => ({ label: bodyArea.name, value: bodyArea.id }));
-                    setBodyAreas(formatedbodyareas)
-                }
-            })
-            .catch(error => showToast('error', 'Error', error.message));
-
-        fetch(`${apiUrl}/subscription/coach-subscription-plans`)
-            .then(async (response) => {
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.log(errorData)
-                throw new Error(errorData.message || 'Something went wrong');
+            const subscriptionData = await subscriptionResponse.json();
+            setCurrentPlanId(subscriptionData.subscriptionPlan.id);
+    
+            const coachResponse = await fetch(`${apiUrl}/users/coach/${user.userId}`);
+            if (!coachResponse.ok) {
+              const errorData = await coachResponse.json();
+              if (errorData.message && errorData.message === 'Coach not found') {
+                return navigate('/complete-coach-profile');
+              }
+              throw new Error(errorData.message || 'Something went wrong');
             }
-            const data = await response.json()
-            setSubscriptionPlans(data)
-            })
-            .catch(error => showToast('error', 'Error fetching plans' `${error.message}`));
-    }, [user.userId, showToast, refreshKey]);
+            const coachData = await coachResponse.json();
+            setCoachInfo(coachData);
+    
+            const coachPlansResponse = await fetch(`${apiUrl}/users/coach/coachPlan/${user.userId}`);
+            if (!coachPlansResponse.ok) {
+              const errorData = await coachPlansResponse.json();
+              throw new Error(errorData.message || 'Something went wrong');
+            }
+            const coachPlansData = await coachPlansResponse.json();
+            setCoachPlans(coachPlansData);
+    
+            const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${user.userId}`);
+            if (!exercisesResponse.ok) {
+              const errorData = await exercisesResponse.json();
+              throw new Error(errorData.message || 'Something went wrong');
+            }
+            const exercisesData = await exercisesResponse.json();
+            setExercises(exercisesData);
+    
+            const bodyAreasResponse = await fetch(`${apiUrl}/exercise/body-area`);
+            if (!bodyAreasResponse.ok) {
+              const errorData = await bodyAreasResponse.json();
+              throw new Error(errorData.message || 'Something went wrong');
+            }
+            const bodyAreasData = await bodyAreasResponse.json();
+            const formattedBodyAreas = bodyAreasData.map(bodyArea => ({ label: bodyArea.name, value: bodyArea.id }));
+            setBodyAreas(formattedBodyAreas);
+    
+            const subscriptionPlansResponse = await fetch(`${apiUrl}/subscription/coach-subscription-plans`);
+            if (!subscriptionPlansResponse.ok) {
+              const errorData = await subscriptionPlansResponse.json();
+              throw new Error(errorData.message || 'Something went wrong');
+            }
+            const subscriptionPlansData = await subscriptionPlansResponse.json();
+            setSubscriptionPlans(subscriptionPlansData);
+    
+          } catch (error) {
+            showToast('error', 'Error', error.message);
+          } finally {
+            setLoading(false);
+          }
+        };
+    
+        fetchData();
+      }, [user.userId, showToast, navigate, refreshKey]);
 
     const openCreateExerciseDialog = () => {
         setDialogMode('create');
@@ -201,7 +192,6 @@ const CoachProfile = () => {
             bodyArea: selectedBodyAreas,
             coachId: user.userId
         }
-        console.log(body)
         // return
         try {
             const response = await fetch(url, {
