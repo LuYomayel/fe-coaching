@@ -28,13 +28,6 @@
   color: #61dafb;
 }
 
-.global-spinner {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-}
 
 @keyframes App-logo-spin {
   from {

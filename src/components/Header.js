@@ -15,7 +15,7 @@ const Header = () => {
     setUser(null);
     navigate('/')
   };
-  // console.log(user, coach, client)
+  console.log(user, coach, client)
   if (!user) return null;
   else if(user && !user.isVerified) return null;
   else if(user && (!coach && !client)) return null;
@@ -23,7 +23,7 @@ const Header = () => {
   return (
     <header className="app-header p-d-flex p-jc-between p-ai-center p-shadow-2 p-p-3">
       <div className="logo">
-        <Link to={user.userType === 'client' ? '/student' : '/coach'} className="p-text-bold p-text-uppercase p-mr-3">MyFitnessApp</Link>
+        <Link to={user.userType === 'client' ? '/student' : '/coach'} className="p-text-bold p-text-uppercase p-mr-3">EaseTrain</Link>
       </div>
       <div className="p-d-flex p-ai-center user-info">
         <span className="p-mr-2">{user.name}</span>

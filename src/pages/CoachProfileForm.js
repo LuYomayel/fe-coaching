@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
@@ -30,9 +30,14 @@ const CoachProfileForm = () => {
   const [subscriptionType, setSubscriptionType] = useState('freeTrial');
   const [loading, setLoading] = useState(false);
   const showToast = useToast();
-  const { user, setCoach } = useContext(UserContext);
+  const { user, setCoach, coach } = useContext(UserContext);
   const navigate = useNavigate();
 
+  useEffect( () => {
+
+    // if(user && coach)
+      // navigate('/coach')
+  }, [user, coach, navigate])
   const handleSubmit = async () => {
     // setLoading(false);
     const body = {

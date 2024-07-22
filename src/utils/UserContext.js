@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
-import {jwtDecode} from 'jwt-decode';
-import {useSpinner} from './GlobalSpinner'
+import { jwtDecode } from 'jwt-decode';
+import { useSpinner } from './GlobalSpinner';
 
 export const UserContext = createContext();
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -12,63 +12,59 @@ export const UserProvider = ({ children }) => {
   const { setLoading } = useSpinner();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const decodedUser = jwtDecode(token);
-        setUser(decodedUser);
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedUser = jwtDecode(token);
+      setUser(decodedUser);
 
-        setLoading(true);
-        if (decodedUser.userType === 'coach') {
-          try {
-            const response = await fetch(`${apiUrl}/users/coach/${decodedUser.userId}`);
-            if (!response.ok) {
-              const dataResponse = await response.json();
-              throw new Error(`${dataResponse.message}`);
-            }
-            const data = await response.json();
-            setCoach(data);
-          } catch (error) {
-            console.log(error.message);
-            if(error.message === 'User not found'){
-              console.log('Entre aca')
-              setUser(null)
-              localStorage.removeItem('token')
-            }
-            setCoach(null);
-          } finally {
-            setLoading(false);
-          }
-        } else {
-          try {
-            const response = await fetch(`${apiUrl}/users/client/${decodedUser.userId}`);
-            if (!response.ok) {
-              const dataResponse = await response.json();
-              throw new Error(`${dataResponse.message}`);
-            }
-            const data = await response.json();
-            setClient(data);
-          } catch (error) {
-            if(error.message === 'User not found'){
-              console.log('Entre aca')
-              setUser(null)
-              localStorage.removeItem('token')
-            }
-            setClient(null);
-          } finally {
-            setLoading(false);
-          }
-        }
+      setLoading(true);
+      if (decodedUser.userType === 'coach') {
+        fetchCoachData(decodedUser.userId);
+      } else if (decodedUser.userType === 'client') {
+        fetchClientData(decodedUser.userId);
       } else {
-        setUser(null);
-        setCoach(null);
-        setClient(null);
+        setLoading(false);
       }
-    };
+    } else {
+      setUser(null);
+      setCoach(null);
+      setClient(null);
+    }
+  }, []);
 
-    fetchData();
-  }, [setLoading]);
+  const fetchCoachData = async (userId) => {
+    try {
+      const response = await fetch(`${apiUrl}/users/coach/${userId}`);
+      if (!response.ok) {
+        const dataResponse = await response.json();
+        throw new Error(`${dataResponse.message}`);
+      }
+      const data = await response.json();
+      setCoach(data);
+    } catch (error) {
+      console.log(error);
+      setCoach(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const fetchClientData = async (userId) => {
+    try {
+      const response = await fetch(`${apiUrl}/users/client/${userId}`);
+      if (!response.ok) {
+        const dataResponse = await response.json();
+        throw new Error(`${dataResponse.message}`);
+      }
+      const data = await response.json();
+      setClient(data);
+    } catch (error) {
+      console.log(error);
+      setClient(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient }}>

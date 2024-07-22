@@ -17,7 +17,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const { setLoading, loading } = useSpinner();
   const [isSignUp, setIsSignUp] = useState(false);
-  const { setUser } = useContext(UserContext);
+  const { setUser, setClient, setCoach } = useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,10 +61,26 @@ const Login = () => {
         if(!decodedToken.isVerified){
           showToast('error', 'Verify your email prior loging in!', 'Check your email to verify it, please')
         }else{
-          if (decodedToken.userType === 'client') {
-            navigate('/student');
-          } else {
-            navigate('/coach');
+          if (decodedToken.userType === 'coach') {
+            const coachResponse = await fetch(`${apiUrl}/users/coach/${decodedToken.userId}`);
+            if (coachResponse.ok) {
+              const coachData = await coachResponse.json();
+              setCoach(coachData);
+              navigate('/coach');
+            } else {
+              setCoach(null);
+              navigate('/complete-coach-profile');
+            }
+          } else if (decodedToken.userType === 'client') {
+            const clientResponse = await fetch(`${apiUrl}/users/client/${decodedToken.userId}`);
+            if (clientResponse.ok) {
+              const clientData = await clientResponse.json();
+              setClient(clientData);
+              navigate('/student');
+            } else {
+              setClient(null);
+              navigate('/');
+            }
           }
         }
       }

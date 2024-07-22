@@ -10,8 +10,8 @@ export const SpinnerProvider = ({ children }) => {
   return (
     <SpinnerContext.Provider value={{ loading, setLoading }}>
       {loading && (
-        <div className="global-spinner">
-          <ProgressSpinner />
+        <div className="global-spinner-container">
+          <ProgressSpinner className='global-spinner' />
         </div>
       )}
       {children}
