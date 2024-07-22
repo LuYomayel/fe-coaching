@@ -13,6 +13,7 @@ import PlanDetails from '../dialogs/PlanDetails';
 import { formatDate } from '../utils/UtilFunctions';
 
 import '../styles/StudentHome.css';
+import { useSpinner } from '../utils/GlobalSpinner';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentHome = () => {
@@ -23,9 +24,11 @@ const StudentHome = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const showToast = useToast();
   const [nodes, setNodes] = useState([]);
+  const { loading, setLoading } = useSpinner();
   const navigate = useNavigate();
 
   useEffect(() => {
+    setLoading(true)
     fetch(`${apiUrl}/workout/training-cycles/clientId/${user.userId}`)
       .then(async (response) => {
         if (!response.ok) {
@@ -80,10 +83,12 @@ const StudentHome = () => {
         }));
         setNodes(nodes);
       })
-      .catch(error => showToast('error', 'Error', error.message));
+      .catch(error => showToast('error', 'Error', error.message))
+      .finally(()=>setLoading(false))
   }, [user.userId, refreshKey, showToast]);
 
   const handleViewPlanDetails = (plan) => {
+    setLoading(true)
     setSelectedPlan(plan);
     setPlanDetailsVisible(true);
   };
@@ -107,7 +112,7 @@ const StudentHome = () => {
       return (
       <div className="flex gap-2">
         <Button tooltip='View Details' className="p-button-rounded p-button-info" icon="pi pi-eye" onClick={() => handleViewPlanDetails(node.key.split('-')[1])} />
-        <Button tooltip='Start Training' className="p-button-rounded p-button-success" icon="pi pi-chart-bar" onClick={() => handleStartTraining(node.key.split('-')[1])} />
+        {node.data.status !== 'completed' && (<Button tooltip='Start Training' className="p-button-rounded p-button-success" icon="pi pi-chart-bar" onClick={() => handleStartTraining(node.key.split('-')[1])} />)}
       </div>
       );
     }
@@ -126,7 +131,7 @@ const StudentHome = () => {
           </TreeTable>
        
         <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
-          {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} />}
+          {selectedPlan && <PlanDetails planId={selectedPlan} setLoading={setLoading} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} />}
         </Dialog>
       </div>
     </div>

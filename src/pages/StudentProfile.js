@@ -122,14 +122,15 @@ const ClientProfile = () => {
           const completed = workoutsSorted.filter(workout => workout.status === 'completed').length;
           const pending = workoutsSorted.filter(workout => workout.status === 'pending').length;
           const expired = workoutsSorted.filter(workout => workout.status === 'expired').length;
-  
+          const current = workoutsSorted.filter(workout => workout.status === 'current').length;
+          
           setProgressData({
-            labels: ['Completed', 'Pending', 'Expired'],
+            labels: ['Completed', 'Pending', 'Expired', 'Current'],
             datasets: [
               {
-                data: [completed, pending, expired],
-                backgroundColor: ['green', 'yellow', 'red'],
-                hoverBackgroundColor: ['green', 'yellow', 'red']
+                data: [completed, pending, expired, current],
+                backgroundColor: ['green', 'yellow', 'red', 'blue'],
+                hoverBackgroundColor: ['green', 'yellow', 'red', 'blue']
               }
             ]
           });

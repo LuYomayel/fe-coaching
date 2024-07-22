@@ -18,16 +18,18 @@ import FinishTrainingDialog  from '../dialogs/FinishTrainingDialog';
 import { extractYouTubeVideoId } from '../utils/UtilFunctions';
 import CustomInput from '../components/CustomInput';
 import VideoDialog from '../dialogs/VideoDialog';
+import { useSpinner } from '../utils/GlobalSpinner';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=true }) => {
   const { planId } = useParams();
   const { user } = useContext(UserContext);
-
+  const { setLoading } = useSpinner();
   const [exerciseProgress, setExerciseProgress] = useState({});
   const [finishDialogVisible, setFinishDialogVisible] = useState(false);
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [currentVideoUrl, setCurrentVideoUrl] = useState('');
+  const [isClientTraining, setIsClientTraining] = useState(isTraining)
   const [plan, setPlan] = useState({
     groups: [{
       set: '',
@@ -58,6 +60,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
   const showToast = useToast();
   const navigate = useNavigate();
   useEffect(() => {
+    setLoading(true)
     fetch(`${apiUrl}/workout/workout-instance/${planId}`)
       .then(async (response) => {
         if (!response.ok) {
@@ -66,9 +69,13 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
           throw new Error(errorData.message || 'Something went wrong');
         }
         const data = await response.json();
+        console.log(data)
+        if(data.status === 'completed')
+        setIsClientTraining(false)
         setPlan(data)
       })
-      .catch(error => showToast('error',  'Error fetching plan details xd', `${error.message}`));
+      .catch(error => showToast('error',  'Error fetching plan details xd', `${error.message}`))
+      .finally(() => setLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]);
 
@@ -137,7 +144,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
       .catch(error => showToast('error', 'Error', error.message));
   };
 
-  if (!plan) return <p>Loading...</p>;
+  
 
   return (
     <div className="student-plan-container">
@@ -155,10 +162,10 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
       <Card>
         <div className="plan-details">
           <p><strong>Plan Name:</strong> {plan.workout.planName}</p>
-          <p><strong>Description:</strong> {plan.instanceName}</p>
+          {!plan.isTemplate && (<p><strong>Status:</strong> {plan.status}</p>)}
           {/* <p><strong>Start Time:</strong> {new Date(plan.startTime).toLocaleTimeString()}</p> */}
           {/* <p><strong>End Time:</strong> {new Date(plan.endTime).toLocaleTimeString()}</p> */}
-          <p><strong>Notes:</strong> {plan.personalizedNotes}</p>
+          
         </div>
       </Card>
     </div>
@@ -214,7 +221,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
                       </Fieldset>
                       </SplitterPanel>
                       <SplitterPanel className='p-3' size={20}>
-                      {isTraining && (
+                      {isClientTraining && (
                         <div className="exercise-inputs">
                           <div className="p-field-checkbox">
                             <Checkbox
@@ -245,6 +252,37 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
                           </div>
                         </div>
                       )}
+                      {!isClientTraining && (
+                        <div className="exercise-inputs">
+                          <div className="p-field-checkbox">
+                            <Checkbox
+                              inputId={`completed-${exercise.id}`}
+                              checked={exercise.completed || false}
+                            />
+                            <label htmlFor={`completed-${exercise.id}`}>Completed</label>
+                          </div>
+                          <div className="p-field">
+                            <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
+                            <CustomInput
+                                type="dropdown" // Change this to "slider" or "dropdown" to use different input types
+                                id={`rating-${exercise.id}`}
+                                value={parseInt(exercise.rpe) || 0}
+                                disabled={true}
+                              />
+                          </div>
+                          <div className="p-field">
+                            <label htmlFor={`comments-${exercise.id}`}>Comments</label>
+                            <InputTextarea
+                              disabled
+                              id={`comments-${exercise.id}`}
+                              rows={3}
+                              value={exercise.comments || ''}
+                              onChange={(e) => handleExerciseChange(exercise.id, 'comments', e.target.value)}
+                              className="exercise-feedback-input"
+                            />
+                          </div>
+                        </div>
+                      )}
                       </SplitterPanel>
                   </Splitter>
                   {exerciseIndex !== group.exercises.length-1 ? <div><Divider/></div> : <div></div>}
@@ -258,7 +296,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
       ))}
     </div>
     <div className='actions-section'>
-      {isTraining && (
+      {isClientTraining && (
         <Button iconPos='left' icon="pi pi-check" label="Finish Training" className='p-button-rounded p-button-success' onClick={() => setFinishDialogVisible(true)} />
       )}
     </div>

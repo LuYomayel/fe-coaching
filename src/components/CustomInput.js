@@ -3,7 +3,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Slider } from 'primereact/slider';
 import { Dropdown } from 'primereact/dropdown';
 
-const CustomInput = ({ type, id, value, onChange }) => {
+const CustomInput = ({ type, id, value, onChange, disabled }) => {
   switch (type) {
     case 'number':
       return (
@@ -43,6 +43,7 @@ const CustomInput = ({ type, id, value, onChange }) => {
           onChange={onChange}
           className="exercise-feedback-input"
           placeholder="Select Difficulty"
+          disabled={disabled}
         />
       );
     default:

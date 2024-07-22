@@ -7,7 +7,11 @@ import { Fieldset } from 'primereact/fieldset';
 import { Card } from 'primereact/card';
 
 import { Divider } from 'primereact/divider';
-
+import { Splitter } from 'primereact/splitter';
+import { SplitterPanel } from 'primereact/splitter';
+import CustomInput from '../components/CustomInput';
+import { Checkbox } from 'primereact/checkbox';
+import { InputTextarea } from 'primereact/inputtextarea';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
@@ -98,7 +102,6 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
         showToast('success', `You have deleted the plan with success!`, 'Plan deleted!');  
       }else{
         const errorData = await response.json();
-        console.log(errorData)
         throw new Error(errorData.message || 'Something went wrong');
       }
     })
@@ -127,10 +130,11 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
       <Card>
         <div className="plan-details">
           <p><strong>Plan Name:</strong> {plan.workout.planName}</p>
-          {!plan.isTemplate && <p><strong>Description:</strong> {plan.instanceName}</p>}
+          {!plan.isTemplate && (<p><strong>Status:</strong> {plan.status}</p>)}
+          {/* {!plan.isTemplate && <p><strong>Description:</strong> {plan.instanceName}</p>} */}
           {/* <p><strong>Start Time:</strong> {new Date(plan.startTime).toLocaleTimeString()}</p> */}
           {/* <p><strong>End Time:</strong> {new Date(plan.endTime).toLocaleTimeString()}</p> */}
-          {!plan.isTemplate &&<p><strong>Notes:</strong> {plan.personalizedNotes}</p>}
+          {/* {!plan.isTemplate &&<p><strong>Notes:</strong> {plan.personalizedNotes}</p>} */}
         </div>
       </Card>
     </div>
@@ -146,7 +150,8 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
             <div className="flex flex-column">
               {group.exercises.map((exercise, exerciseIndex) => (
                 <div key={exerciseIndex} >
-                  <Card >
+                  <Splitter className='flex flex-row border border-solid border-gray-300'>
+                    <SplitterPanel className='p-3' size={80}>
                     <Fieldset legend={exercise.exercise.name} className='flex-grow-1 p-3'>
                     <div className='exercise-fields'>
                       {/* <div className='p-field exercise-field'>
@@ -178,7 +183,41 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                       ))}
                       </div>
                       </Fieldset>
-                  </Card>
+                      </SplitterPanel>
+                      <SplitterPanel className='p-3' size={20}>
+                      {!plan.isTemplate && (
+                        <div className="exercise-inputs">
+                          <div className="p-field-checkbox">
+                            <Checkbox
+                              inputId={`completed-${exercise.id}`}
+                              checked={exercise.completed || false}
+                            />
+                            <label htmlFor={`completed-${exercise.id}`}>Completed</label>
+                          </div>
+                          <div className="p-field">
+                            <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
+                            <CustomInput
+                                type="dropdown" // Change this to "slider" or "dropdown" to use different input types
+                                id={`rating-${exercise.id}`}
+                                value={parseInt(exercise.rpe) || 0}
+                                disabled={true}
+                              />
+                          </div>
+                          <div className="p-field">
+                            <label htmlFor={`comments-${exercise.id}`}>Comments</label>
+                            <InputTextarea
+                              disabled
+                              id={`comments-${exercise.id}`}
+                              rows={3}
+                              value={exercise.comments || ''}
+                              className="exercise-feedback-input"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      </SplitterPanel>
+                      </Splitter>
+                  
                   {exerciseIndex !== group.exercises.length-1 ? <div><Divider/></div> : <div></div>}
                 </div>
                 
