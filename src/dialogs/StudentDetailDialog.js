@@ -60,7 +60,7 @@ const StudentDetailDialog = ({ student, onClose }) => {
       });
       if (response.ok) {
         showToast('success', 'Success', 'Student details updated successfully');
-        onClose();
+        
       } else {
         const errorData = await response.json();
         console.log(errorData)
@@ -70,6 +70,7 @@ const StudentDetailDialog = ({ student, onClose }) => {
       showToast('error', 'Error', error.message);
     } finally{
       setLoading(false);
+      onClose();
     }
   };
 

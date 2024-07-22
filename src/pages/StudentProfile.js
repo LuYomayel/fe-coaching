@@ -19,6 +19,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { TabPanel, TabView } from 'primereact/tabview';
 import '../styles/StudentProfile.css'
 import { Tag } from 'primereact/tag';
+import { useSpinner } from '../utils/GlobalSpinner';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ClientProfile = () => {
@@ -33,7 +34,7 @@ const ClientProfile = () => {
   const [activities, setActivities] = useState([])
   const { showConfirmationDialog } = useConfirmationDialog();
   const [refreshKey, setRefreshKey] = useState(0)
-  const [loading, setLoading] = useState(true);
+  const { loading, setLoading } = useSpinner();
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     'workout.planName': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
@@ -66,89 +67,70 @@ const ClientProfile = () => {
     { label: 'Very active', value: 'very active' },
   ]
   useEffect(() => {
-    // Fetch personal information
-    setLoading(true)
-    fetch(`${apiUrl}/users/client/${user.userId}`)
-      .then(async (response) => {
-        if(!response.ok){
-          const errorData = await response.json();
-          setLoading(false)
-          throw new Error(errorData.message || 'Something went wrong.')
-        }
-        const data= await response.json();
-        setPersonalInfo(data)
-        setActivityLevel(data.activityLevel);
-        setFitnessGoal([data.fitnessGoal]);
-        setLoading(false)
-      })
-      .catch(error => showToast('error', 'Error', error.message))
-      .finally(() => setLoading(false))
-    // Fetch activities
-    fetch(`${apiUrl}/users/userId/activities/${user.userId}`)
-      .then(async (response) => {
-        if(!response.ok){
-          const errorData = await response.json();
-          setLoading(false)
-          throw new Error(errorData.message || 'Something went wrong.')
-        }
-        const data= await response.json();
-        
-        // setActivities(old => [...old, ...data])
-        // setActivities(old => [...old, ...data])
-        setActivities(old => [...old, ...data])
-        
-        setLoading(false)
-      })
-      .catch(error => showToast('error', 'Error', error.message))
-      .finally(() => setLoading(false))
+    const fetchData = async () => {
+      try {
+        setLoading(true);
 
-    // Fetch subscription details
-    setLoading(true)
-    fetch(`${apiUrl}/subscription/client-subscription/details/${user.userId}`)
-      .then(async (response) => {
-        if(!response.ok){
-          const errorData = await response.json();
-          console.log(errorData)
-          setLoading(true)
-          throw new Error(errorData.message || 'Something went wrong')
-        }else {
-          const data = await response.json();
-          
-          setSubscription(data)
-          const checkStatusWorkouts = updateStatus(data.workoutInstances)
-          const workoutsSorted = sortBySessionDate(checkStatusWorkouts)
-          setWorkouts(workoutsSorted)
-  
-          const completed = workoutsSorted.filter(workout => workout.status === 'completed').length;
-          const pending = workoutsSorted.filter(workout => workout.status === 'pending').length;
-          const expired = workoutsSorted.filter(workout => workout.status === 'expired').length;
-          const current = workoutsSorted.filter(workout => workout.status === 'current').length;
-          
-          setProgressData({
-            labels: ['Completed', 'Pending', 'Expired', 'Current'],
-            datasets: [
-              {
-                data: [completed, pending, expired, current],
-                backgroundColor: ['green', 'yellow', 'red', 'blue'],
-                hoverBackgroundColor: ['green', 'yellow', 'red', 'blue']
-              }
-            ]
-          });
-          setLoading(false)
+        // Fetch personal information
+        const personalInfoResponse = await fetch(`${apiUrl}/users/client/${user.userId}`);
+        if (!personalInfoResponse.ok) {
+          const errorData = await personalInfoResponse.json();
+          throw new Error(errorData.message || 'Something went wrong.');
         }
-        
-      })
-      .catch(error => {
-        if(error.message === 'Client subscription not found'){
-          setWorkouts([])
-          setSubscription({})
-          showToast('error', 'Error', error.message)
-        }else{
+        const personalInfoData = await personalInfoResponse.json();
+        setPersonalInfo(personalInfoData);
+        setActivityLevel(personalInfoData.activityLevel);
+        const goals = personalInfoData.fitnessGoal.split(',')
+        .map(goal => goal.trim()) // Eliminar espacios en blanco
+        .filter((value, index, self) => self.indexOf(value) === index); // Eliminar duplicados
 
-          showToast('error', 'Error', error.message)
+        setFitnessGoal(goals);
+        // Fetch activities
+        const activitiesResponse = await fetch(`${apiUrl}/users/userId/activities/${user.userId}`);
+        if (!activitiesResponse.ok) {
+          const errorData = await activitiesResponse.json();
+          throw new Error(errorData.message || 'Something went wrong.');
         }
-      })
-      .finally(() => setLoading(false))
+        const activitiesData = await activitiesResponse.json();
+        setActivities(activitiesData);
+
+        // Fetch subscription details
+        const subscriptionResponse = await fetch(`${apiUrl}/subscription/client-subscription/details/${user.userId}`);
+        if (!subscriptionResponse.ok) {
+          const errorData = await subscriptionResponse.json();
+          throw new Error(errorData.message || 'Something went wrong');
+        }
+        const subscriptionData = await subscriptionResponse.json();
+        setSubscription(subscriptionData);
+
+        const checkStatusWorkouts = updateStatus(subscriptionData.workoutInstances);
+        const workoutsSorted = sortBySessionDate(checkStatusWorkouts);
+        setWorkouts(workoutsSorted);
+
+        const completed = workoutsSorted.filter(workout => workout.status === 'completed').length;
+        const pending = workoutsSorted.filter(workout => workout.status === 'pending').length;
+        const expired = workoutsSorted.filter(workout => workout.status === 'expired').length;
+        const current = workoutsSorted.filter(workout => workout.status === 'current').length;
+
+        setProgressData({
+          labels: ['Completed', 'Pending', 'Expired', 'Current'],
+          datasets: [
+            {
+              data: [completed, pending, expired, current],
+              backgroundColor: ['green', 'yellow', 'red', 'blue'],
+              hoverBackgroundColor: ['green', 'yellow', 'red', 'blue']
+            }
+          ]
+        });
+
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [user.userId, showToast, refreshKey]);
 
   const handleEditDialogOpen = () => {
@@ -161,8 +143,8 @@ const ClientProfile = () => {
   };
 
   const handleSavePersonalInfo = async (body) => {
-    setLoading(true);
     try {
+      setLoading(true);
       const response = await fetch(`${apiUrl}/users/client/${personalInfo.id}`, {
         method: 'PUT',
         headers: {
@@ -177,14 +159,16 @@ const ClientProfile = () => {
         throw new Error(errorData.message || 'Something went wrong');
       }
       else{
-        setLoading(false);
         showToast('success', 'Success', 'Student updated successfully');
-        setEditDialogVisible(false);
-        setRefreshKey(old => old+1)
+        
       }
     } catch (error) {
       setLoading(false);
       showToast('error', 'Error', error.message);
+    }finally{
+      setLoading(false)
+      setEditDialogVisible(false);
+      setRefreshKey(old => old+1)
     }
     
   };
@@ -413,7 +397,7 @@ const descriptionFilterTemplate = (options) => {
             <InputText id="editPhone" value={personalInfo.phoneNumber} onChange={(e) => setPersonalInfo({ ...personalInfo, phoneNumber: e.target.value })} />
           </div>
         </div>
-        <Button label="Save" icon="pi pi-check" onClick={onClickSaveStudent} />
+        <Button label="Save" icon="pi pi-check" onClick={onClickSaveStudent} loading={loading} />
       </Dialog>
 
     </div>

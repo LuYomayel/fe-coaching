@@ -121,7 +121,7 @@ const StudentHome = () => {
 
   return (
     <div className="student-home-container">
-      <h1>Welcome, {client.name}!</h1>
+      <h1>Welcome, {client?.name || ''}!</h1>
       <div className="flex gap-5 ">
           <TreeTable value={nodes}>
             <Column field="name" header="Cycle Name" expander />
