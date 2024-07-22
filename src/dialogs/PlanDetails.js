@@ -185,7 +185,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                       </Fieldset>
                       </SplitterPanel>
                       <SplitterPanel className='p-3' size={20}>
-                      {!plan.isTemplate && (
+                      {!plan.isTemplate && plan.status === 'completed' (
                         <div className="exercise-inputs">
                           <div className="p-field-checkbox">
                             <Checkbox
