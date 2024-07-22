@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 // import { PrimeReactProvider } from 'primereact/api';
 import CoachHome from './pages/CoachHome.js';
 import CreatePlan from './pages/CreatePlan';
@@ -54,6 +54,8 @@ const App = () => {
                 <Route path="/complete-coach-profile" element={<CoachProfileForm/>} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+
+                <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Router>
           </ConfirmationDialogProvider>
