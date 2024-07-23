@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { Dialog  } from 'primereact/dialog';
 import { TreeTable } from 'primereact/treetable';
+import { Dropdown } from 'primereact/dropdown';
 import { useToast } from '../utils/ToastContext';
 import PlanDetails from '../dialogs/PlanDetails';
 
@@ -41,6 +42,42 @@ const CoachHome = () => {
   const { user } = useContext(UserContext)
   const navigate = useNavigate();
   const { setLoading } = useSpinner();
+  const [selectedMonth, setSelectedMonth] = useState(null);
+
+  const months = [
+    { label: 'January', value: 0 },
+    { label: 'February', value: 1 },
+    { label: 'March', value: 2 },
+    { label: 'April', value: 3 },
+    { label: 'May', value: 4 },
+    { label: 'June', value: 5 },
+    { label: 'July', value: 6 },
+    { label: 'August', value: 7 },
+    { label: 'September', value: 8 },
+    { label: 'October', value: 9 },
+    { label: 'November', value: 10 },
+    { label: 'December', value: 11 },
+  ];
+  
+  const handleMonthChange = (e) => {
+    setSelectedMonth(e.value);
+  };
+
+  const filteredNodes = nodes.filter(node => {
+    if (selectedMonth === null) return true; // No filtrar si no hay un mes seleccionado
+    const startDate = new Date(node.data.startDate);
+    return startDate.getMonth() === selectedMonth;
+  });
+
+  const monthFilterElement = (
+    <Dropdown 
+      value={selectedMonth} 
+      options={months} 
+      onChange={handleMonthChange} 
+      placeholder="Select a Month" 
+      className="month-dropdown" 
+    />
+  );
 
   useEffect(() => {
     setLoading(true)
@@ -207,10 +244,11 @@ const CoachHome = () => {
       <div className='w-11 mx-auto'>
         <div>
         <h1>Training Cycles</h1>
-          <TreeTable value={nodes} className='tree-table-container'>
-            <Column field="name" header="Cycle Name" expander />
-            <Column field="client" header="Client" />
-            <Column field="startDate" header="Start Date" body={(node) => dateBodyTemplate(node, 'startDate')} />
+          <TreeTable value={filteredNodes} rows={10} paginator className='tree-table-container'>
+            <Column field="name" sortable header="Cycle Name" expander />
+            <Column field="client" filter filterPlaceholder='Filter by Client Name' header="Client" />
+            <Column field="startDate" header="Start Date" body={(node) => dateBodyTemplate(node, 'startDate')} filter 
+          filterElement={monthFilterElement}/>
             <Column field="endDate" header="End Date" body={(node) => dateBodyTemplate(node, 'endDate')} />
             <Column header="Actions" body={actionTemplate} />
           </TreeTable>

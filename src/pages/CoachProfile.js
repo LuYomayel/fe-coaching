@@ -472,11 +472,11 @@ const CoachProfile = () => {
                             )}
                         </TabPanel>
                         <TabPanel header="Exercises Library">
-                            <DataTable value={exercises}>
-                                <Column field="name" header="Exercise Name" />
+                            <DataTable value={exercises} paginator rows={6}>
+                                <Column field="name" header="Exercise Name" style={{ width: '30%' }}/>
                                 <Column field="multimedia" header="Video" body={videoBodyTemplate} />
                                 <Column field="exerciseType" header="Type" />
-                                <Column field="description" header="Description" />
+                                <Column field="description" header="Description" style={{ width: '30%' }}/>
                                 <Column field="equipmentNeeded" header="Equipment Needed" />
 
                                 <Column field="actions" header="Actions" body={(rowData) => actionsBodyTemplate(rowData)}/>
