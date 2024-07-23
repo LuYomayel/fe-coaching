@@ -20,9 +20,20 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
   const [isMoodEnabled, setIsMoodEnabled] = useState(false);
   const [isPerceivedDifficultyEnabled, setIsPerceivedDifficultyEnabled] = useState(false);
 
+  const handleTimeChange = (e) => {
+    setSessionTime(e.value);
+  };
+
+  const formatTime = (date) => {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
   const handleSubmit = () => {
     submitFeedback({
-      sessionTime,
+      sessionTime: sessionTime ? formatTime(sessionTime) : null,
       generalFeedback,
       energyLevel: isEnergyLevelEnabled ? energyLevel : null,
       mood: isMoodEnabled ? mood : null,
@@ -39,8 +50,9 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
         <Calendar
           id="sessionTime"
           value={sessionTime}
-          onChange={(e) => setSessionTime(e.value)}
+          onChange={handleTimeChange}
           timeOnly
+          
           hourFormat="24"
           showIcon
           placeholder="Enter the duration of your session"

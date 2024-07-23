@@ -1,0 +1,11 @@
+/* Añadir este CSS para crear una grilla de gráficos */
+.charts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .charts-grid > div {
+    flex: 1 1 calc(33.333% - 16px); /* Ajusta el tamaño de los gráficos */
+    min-width: 200px;
+  }

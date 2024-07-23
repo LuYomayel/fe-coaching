@@ -24,6 +24,7 @@ import ForgotPassword from './auth/ForgotPassword.js';
 import ResetPassword from './auth/ResetPassword.js';
 import ManageStudents from './pages/ManageStudents.js';
 import ClientProfile from './pages/StudentProfile.js';
+import ClientDashboard from './pages/ClientDashboard.js';
 const App = () => {
   return (
     <SpinnerProvider>
@@ -45,6 +46,7 @@ const App = () => {
                 <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={PlanDetails} requiredType="coach" />} />
                 <Route path="/students/:studentId/details" element={<PrivateRoute element={StudentDetails} requiredType="coach" />} />
                 <Route path="/manage-students" element={<PrivateRoute element={ManageStudents} requiredType="coach" />} />
+                <Route path="/client-dashboard/:clientId" element={<PrivateRoute element={ClientDashboard} requiredType="coach" />} />
 
                 <Route path="/student" element={<PrivateRoute element={StudentHome} requiredType="client" />} />
                 <Route path="/student/profile" element={<PrivateRoute element={ClientProfile} requiredType="client" />} />

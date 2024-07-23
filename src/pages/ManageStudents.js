@@ -12,6 +12,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { formatDate } from '../utils/UtilFunctions';
 import RegisterPaymentDialog from '../dialogs/RegisterPaymentDialog';
 import { useSpinner } from '../utils/GlobalSpinner';
+import { useNavigate } from 'react-router-dom';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ManageStudents = () => {
@@ -26,7 +27,7 @@ const ManageStudents = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const { showConfirmationDialog } = useConfirmationDialog();
   const { setLoading } = useSpinner()
-
+  const navigate = useNavigate();
   useEffect(() => {
     setLoading(true)
     fetch(`${apiUrl}/users/coach/allStudents/${user.userId}`)
@@ -134,14 +135,20 @@ const ManageStudents = () => {
     });
   }
 
+  const handleViewDetails = (clientId) => {
+    navigate(`/client-dashboard/${clientId}`);
+  };
+
   const studentActionsTemplate = (rowData) => {
     // (rowData)
     if(rowData.user.subscription.status === 'Active' ){
+      console.log(rowData)
       return (
         <div className='flex gap-2'>
           {/* <Button icon="pi pi-pencil" onClick={() => openStudentDetail(rowData)} tooltip='View details'/> */}
           <Button icon="pi pi-dollar" onClick={() => openRegisterPaymentDialog(rowData)} tooltip='Register payment' className='p-button-rounded p-button-success'/>
           <Button icon="pi pi-times" onClick={() => deleteCancelSubscription(rowData.user.subscription.clientSubscription.id)} tooltip='Delete Subscription' className='p-button-rounded p-button-danger'/>
+          <Button icon="pi pi-eye" onClick={() => handleViewDetails(rowData.id)} tooltip='View Details' className='p-button-rounded p-button-info'/>
           <Button icon="pi pi-trash" onClick={() => deleteClient(rowData.id)} tooltip='Delete Client' className='p-button-rounded p-button-danger'/>
         </div>
       );
@@ -150,6 +157,7 @@ const ManageStudents = () => {
         <div className='flex gap-2'>
           {/* <Button icon="pi pi-pencil" onClick={() => openStudentDetail(rowData)} tooltip='View details'/> */}
           <Button icon="pi pi-calendar-plus" onClick={() => openSubscriptionDialog(rowData)} tooltip='Assign Subscription'/>
+          <Button icon="pi pi-eye" onClick={() => handleViewDetails(rowData.id)} tooltip='View Details' className='p-button-rounded p-button-info'/>
           <Button icon="pi pi-trash" onClick={() => deleteClient(rowData.id)} tooltip='Delete Client'/>
         </div>
       );
