@@ -1,11 +1,26 @@
 /* Añadir este CSS para crear una grilla de gráficos */
 .charts-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-  
-  .charts-grid > div {
-    flex: 1 1 calc(33.333% - 16px); /* Ajusta el tamaño de los gráficos */
-    min-width: 200px;
-  }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.charts-grid > div {
+  flex: 1 1 calc(33.333% - 16px); /* Ajusta el tamaño de los gráficos */
+  min-width: 200px;
+}
+
+.set-log {
+  background-color: #2c2c2c;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 5px;
+}
+
+.set-log p {
+  margin: 2px 0;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  vertical-align: top;
+}

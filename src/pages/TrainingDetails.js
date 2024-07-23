@@ -169,13 +169,15 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
 
 const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perceivedDifficulty, additionalNotes }) => {
   const exerciseFeedbackArray = Object.entries(exerciseProgress).map(([exerciseId, progress]) => {
-    const sets = progress.sets || [];
+    const sets = Object.values(progress.sets || {});
+    console.log(sets)
     const group = plan.groups.find(group => group.exercises.some(ex => ex.id == exerciseId));
     if (!group) {
       showToast('error', 'Error', 'Original exercise not found.');
       return null;
     }
     const originalExercise = group.exercises.find(ex => ex.id == exerciseId);
+    console.log(originalExercise)
     const allFieldsFilled = sets.every(set =>
       Object.keys(originalExercise).every(key =>
         originalExercise[key] == '' || set[key] != ''
