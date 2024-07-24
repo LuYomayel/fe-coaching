@@ -18,10 +18,13 @@ import '../styles/CoachProfile.css'
 import { MultiSelect } from 'primereact/multiselect';
 import PlanDetails from '../dialogs/PlanDetails';
 import { useSpinner } from '../utils/GlobalSpinner';
+
+import { FileUpload } from 'primereact/fileupload';
+        
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const CoachProfile = () => {
-    const { user } = useContext(UserContext);
+    const { user, coach } = useContext(UserContext);
     const { showConfirmationDialog } = useConfirmationDialog();
     const showToast = useToast();
     const navigate = useNavigate();
@@ -41,6 +44,7 @@ const CoachProfile = () => {
     const [subscriptionPlans, setSubscriptionPlans] = useState([]);
     const [currentPlanId, setCurrentPlanId] = useState(null);
     const [selectedPlan, setSelectedPlan] = useState(null);
+    const [file, setFile] = useState(null);
 
     const [videoDialogVisible, setVideoDialogVisible] = useState(false);
     const [createPlanDialogVisible, setCreatePlanDialogVisible] = useState(false);
@@ -57,7 +61,7 @@ const CoachProfile = () => {
         multimedia: '',
         exerciseType: '',
         equipmentNeeded: '',
-      });
+    });
     const [newPlan, setNewPlan] = useState({
         name: '',
         price: 0,
@@ -94,7 +98,7 @@ const CoachProfile = () => {
                     workoutInstance: instance
                 }
             })
-            console.log(mappedWorkouts)
+            // console.log(mappedWorkouts)
             setWorkouts(mappedWorkouts);
     
             const coachResponse = await fetch(`${apiUrl}/users/coach/${user.userId}`);
@@ -306,6 +310,52 @@ const CoachProfile = () => {
         }
     };
 
+    const onTemplateUpload = (e) => {
+    for (let file of e.files) {
+        console.log('Uploaded file:', file);
+    }
+    console.log({ severity: 'info', summary: 'Success', detail: 'File Uploaded' });
+    };
+
+    const onTemplateSelect = (e) => {
+    console.log('Selected file:', e.files);
+    };
+
+    const onTemplateError = (e) => {
+    console.error('Error during upload:', e);
+    console.log({ severity: 'error', summary: 'Error', detail: 'File Upload Failed' });
+    };
+
+    const onTemplateClear = () => {
+    console.log('FileUpload cleared');
+    };
+
+    const uploadHandler = async ({ files }) => {
+    const formData = new FormData();
+    formData.append('file', files[0]);
+    // console.log(formData, files[0], coach.id)
+    // return
+    try {
+        const response = await fetch(`${apiUrl}/exercise/import/${coach.id}`, {
+            method: 'POST',
+            body: formData,
+          });
+    
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+    
+          const result = await response.json();
+          onTemplateUpload({ files });
+          setRefreshKey(old => old+1)
+          showToast('success', 'Success', result.message)
+          console.log(result.duplicateExercises)
+          showToast('warn', `Duplicated Exercises: ${result.duplicatesCount}` , `${result.duplicateExercises.map(ex => `${ex.name} at row ${ex.row}`)}`)
+    } catch (error) {
+        onTemplateError(error);
+        console.error('Error during upload:', error);
+    }
+    };
     const confirmDeletePlan = async (planId) =>{
         showConfirmationDialog({
             message: "Are you sure you want to delete this plan?",
@@ -472,7 +522,32 @@ const CoachProfile = () => {
                             )}
                         </TabPanel>
                         <TabPanel header="Exercises Library">
-                            <DataTable value={exercises} paginator rows={6}>
+                             <div className="flex justify-content-between align-items-center gap-2">
+                                
+                                <div className="card">
+                                    <FileUpload 
+                                        name="file"
+                                        customUpload
+                                        uploadHandler={uploadHandler}
+                                        
+                                        
+                                        onSelect={onTemplateSelect}
+                                        onError={onTemplateError}
+                                        onClear={onTemplateClear}
+                                        multiple
+                                        accept=".xlsx"
+                                        maxFileSize={1000000}
+                                        emptyTemplate={<p className="m-0">Drag and drop files to here to upload and import exercises.</p>}
+                                        chooseLabel="Choose"
+                                        uploadLabel="Upload"
+                                        cancelLabel="Cancel"
+                                    />
+                                </div>
+                                <div>
+                                    <Button label="Add New Exercise" icon="pi pi-plus" className="p-button-rounded p-button-info" onClick={openCreateExerciseDialog} />
+                                </div>
+                            </div>
+                            <DataTable value={exercises} paginator rows={6} className='exercises-table'>
                                 <Column field="name" header="Exercise Name" style={{ width: '30%' }}/>
                                 <Column field="multimedia" header="Video" body={videoBodyTemplate} />
                                 <Column field="exerciseType" header="Type" />
@@ -481,9 +556,7 @@ const CoachProfile = () => {
 
                                 <Column field="actions" header="Actions" body={(rowData) => actionsBodyTemplate(rowData)}/>
                             </DataTable>
-                            <div className="flex justify-content-center mt-4">
-                                <Button label="Add New Exercise" icon="pi pi-plus" className="p-button-rounded p-button-info" onClick={openCreateExerciseDialog} />
-                            </div>
+                            
                         </TabPanel>
                         <TabPanel header="Subscription Plans">
                             <div className="flex gap-2 align-items-center justify-content-between">

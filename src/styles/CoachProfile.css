@@ -1,5 +1,5 @@
 .p-tabview-panels{
-    padding: 3rem;
+    padding: 1rem;
 }
 .current-subscription {
     transform: scale(1.05);
@@ -29,3 +29,4 @@
 .subscription-plan-h2{
     margin-bottom: 0;
 }
+

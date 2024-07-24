@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { Dialog  } from 'primereact/dialog';
 import { TreeTable } from 'primereact/treetable';
+import { Card } from 'primereact/card';
 import { Dropdown } from 'primereact/dropdown';
 import { useToast } from '../utils/ToastContext';
 import PlanDetails from '../dialogs/PlanDetails';
@@ -29,7 +30,7 @@ const CoachHome = () => {
 
   const [refreshKey, setRefreshKey] = useState(0);
   const [nodes, setNodes] = useState([]);
-
+  const [clients, setClients] = useState([]);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -78,7 +79,29 @@ const CoachHome = () => {
       className="month-dropdown" 
     />
   );
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const allStudentsResponse = await fetch(`${apiUrl}/users/coach/allStudents/${user.userId}`);
+          if (!allStudentsResponse.ok) {
+            const errorData = await allStudentsResponse.json();
+            throw new Error(errorData.message || 'Something went wrong');
+          }
+          const clients = await allStudentsResponse.json();
+          // console.log(clients)
+          setClients(clients)
 
+
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [])
   useEffect(() => {
     setLoading(true)
     fetch(`${apiUrl}/workout/training-cycles/coachId/${user.userId}`)
@@ -239,23 +262,47 @@ const CoachHome = () => {
     return formatDate(node.data[field]);
   };
 
+  const navigateToClientProfile = (clientId) => {
+    navigate(`/client-dashboard/${clientId}`);
+  };
+
+  const openNewStudentDialog = () => {
+    setIsNewStudentDialogVisible(true);
+  };
+
   return (
     <div className=''>
       <div className='w-11 mx-auto'>
         <div>
-        <h1>Training Cycles</h1>
-          <TreeTable value={filteredNodes} rows={10} paginator className='tree-table-container'>
+        <h1>My students</h1>
+          {/* <TreeTable value={filteredNodes} rows={10} paginator className='tree-table-container'>
             <Column field="name" sortable header="Cycle Name" expander />
             <Column field="client" filter filterPlaceholder='Filter by Client Name' header="Client" />
             <Column field="startDate" header="Start Date" body={(node) => dateBodyTemplate(node, 'startDate')} filter 
           filterElement={monthFilterElement}/>
             <Column field="endDate" header="End Date" body={(node) => dateBodyTemplate(node, 'endDate')} />
             <Column header="Actions" body={actionTemplate} />
-          </TreeTable>
+          </TreeTable> */}
+          <div className='students-grid-container'>
+            <div className="students-grid">
+              {clients.map(student => (
+                  <Card key={student.id} title={student.name} subTitle={`Plan: ${student.user.subscription.clientSubscription.coachPlan.name}`} className="student-card" onClick={() => navigateToClientProfile(student.id)}>
+                      <div className="p-card-content">
+                          <img src="/image.webp" alt="Profile" className="profile-image" />
+                          <p><strong>Subscription End Date:</strong> {formatDate(student.user.subscription.endDate)}</p>
+                          {/* <p><strong>Training Plan End Date:</strong> {new Date(student.user.subscription.clientSubscription.coachPlan.endDate).toLocaleDateString()}</p> */}
+                      </div>
+                      <Button label="View Profile" icon="pi pi-user" className="p-button-secondary" onClick={() => navigateToClientProfile(student.id)} />
+                  </Card>
+              ))}
+              </div>
+            </div>
         </div>
         <div className='actions-section'>
-          <Button label="Create Training Cycle" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-secondary "  onClick={showCreateCycleDialog} />
+          {/* <Button label="Create Training Cycle" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-secondary "  onClick={showCreateCycleDialog} /> */}
           <Button label="Create New Plan" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary " onClick={handleNewPlan}/>
+          <Button label="Add New Student" icon="pi pi-plus" onClick={openNewStudentDialog} className='p-button-rounded p-button-lg p-button-secondary'
+        />
         </div>
 
         <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>

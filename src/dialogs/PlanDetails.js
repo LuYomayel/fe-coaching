@@ -150,8 +150,74 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
             <div className="flex flex-column">
               {group.exercises.map((exercise, exerciseIndex) => (
                 <div key={exerciseIndex} >
-                  <Splitter className='flex flex-row border border-solid border-gray-300'>
-                    <SplitterPanel className='p-3' size={80}>
+                  {!plan.isTemplate && plan.status === 'completed' && (
+                    <Splitter className='flex flex-row border border-solid border-gray-300'>
+                      <SplitterPanel className='p-3' size={80}>
+                      <Fieldset legend={exercise.exercise.name} className='flex-grow-1 p-3'>
+                      <div className='exercise-fields'>
+                        {/* <div className='p-field exercise-field'>
+                            <label> 
+                              Exercise:
+                            </label>
+                            <p>{exercise.exercise ? exercise.exercise.name : '' }</p>
+                        </div> */}
+                        <div className='p-field exercise-field'>
+                          <label> 
+                            Video URL:
+                          </label>
+                          <p><a href={exercise.multimedia} >Watch Video</a></p>
+                        </div>
+                        {Object.keys(exercise).map((property, propertyIndex) => (
+                          (
+                            property !== 'exercise' && 
+                            property !== 'id' && 
+                            exercise[property] !== '' &&
+                            property !== 'comments' &&
+                            property !== 'rpe' &&
+                            property !== 'completed' 
+                          ) && (
+                            <div key={propertyIndex} className="p-field exercise-field">
+                              <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
+                              <p>{exercise[property]}</p>
+                            </div>
+                          )
+                        ))}
+                        </div>
+                        </Fieldset>
+                        </SplitterPanel>
+                          <SplitterPanel className='p-3' size={20}>
+                            <div className="exercise-inputs">
+                              <div className="p-field-checkbox">
+                                <Checkbox
+                                  inputId={`completed-${exercise.id}`}
+                                  checked={exercise.completed || false}
+                                />
+                                <label htmlFor={`completed-${exercise.id}`}>Completed</label>
+                              </div>
+                              <div className="p-field">
+                                <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
+                                <CustomInput
+                                    type="dropdown" // Change this to "slider" or "dropdown" to use different input types
+                                    id={`rating-${exercise.id}`}
+                                    value={parseInt(exercise.rpe) || 0}
+                                    disabled={true}
+                                  />
+                              </div>
+                              <div className="p-field">
+                                <label htmlFor={`comments-${exercise.id}`}>Comments</label>
+                                <InputTextarea
+                                  disabled
+                                  id={`comments-${exercise.id}`}
+                                  rows={3}
+                                  value={exercise.comments || ''}
+                                  className="exercise-feedback-input"
+                                />
+                              </div>
+                            </div>
+                          </SplitterPanel>
+                    </Splitter>
+                  )}
+                  {!plan.isTemplate && plan.status !== 'completed' && (
                     <Fieldset legend={exercise.exercise.name} className='flex-grow-1 p-3'>
                     <div className='exercise-fields'>
                       {/* <div className='p-field exercise-field'>
@@ -183,41 +249,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                       ))}
                       </div>
                       </Fieldset>
-                      </SplitterPanel>
-                      <SplitterPanel className='p-3' size={20}>
-                      {!plan.isTemplate && plan.status === 'completed' && (
-                        <div className="exercise-inputs">
-                          <div className="p-field-checkbox">
-                            <Checkbox
-                              inputId={`completed-${exercise.id}`}
-                              checked={exercise.completed || false}
-                            />
-                            <label htmlFor={`completed-${exercise.id}`}>Completed</label>
-                          </div>
-                          <div className="p-field">
-                            <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
-                            <CustomInput
-                                type="dropdown" // Change this to "slider" or "dropdown" to use different input types
-                                id={`rating-${exercise.id}`}
-                                value={parseInt(exercise.rpe) || 0}
-                                disabled={true}
-                              />
-                          </div>
-                          <div className="p-field">
-                            <label htmlFor={`comments-${exercise.id}`}>Comments</label>
-                            <InputTextarea
-                              disabled
-                              id={`comments-${exercise.id}`}
-                              rows={3}
-                              value={exercise.comments || ''}
-                              className="exercise-feedback-input"
-                            />
-                          </div>
-                        </div>
-                      )}
-                      </SplitterPanel>
-                      </Splitter>
-                  
+                  )}
                   {exerciseIndex !== group.exercises.length-1 ? <div><Divider/></div> : <div></div>}
                 </div>
                 

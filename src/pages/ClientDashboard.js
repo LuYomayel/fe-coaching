@@ -1,40 +1,112 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { Chart } from 'primereact/chart';
 import '../styles/ClientDashboard.css';
 import { Dropdown } from 'primereact/dropdown';
+import { Button } from 'primereact/button';
 import { formatDate, updateStatus } from '../utils/UtilFunctions';
 import { DataTable } from 'primereact/datatable';
+import { Dialog } from 'primereact/dialog';
 import { Column } from 'primereact/column';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Accordion, AccordionTab } from 'primereact/accordion';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import { UserContext } from '../utils/UserContext';
+import AssignWorkoutToCycleDialog from '../dialogs/AssignWorkoutToCycleDialog';
+import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialog';
+import PlanDetails from '../dialogs/PlanDetails';
+import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ClientDashboard = () => {
-    const { clientId } = useParams();
-    const showToast = useToast();
-    const { setLoading } = useSpinner();
-    const [workouts, setWorkouts] = useState([]);
-    const [adherenceData, setAdherenceData] = useState(null);
-    const [keyExercisesData, setKeyExercisesData] = useState(null);
-    const [intensityDistributionData, setIntensityDistributionData] = useState(null);
-    const [rpeFeedbackData, setRpeFeedbackData] = useState(null);
-    // const [bodyProgressData, setBodyProgressData] = useState(null); // Uncomment and process when data is available
-    // const [sessionConsistencyData, setSessionConsistencyData] = useState(null); // Uncomment and process when data is available
-    const [trainingCyclesData, setTrainingCyclesData] = useState(null);
-    const [goalsData, setGoalsData] = useState(null);
+  const { clientId } = useParams();
+  const showToast = useToast();
+  const { setLoading } = useSpinner();
+  const [workouts, setWorkouts] = useState([]);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  
+  const [adherenceData, setAdherenceData] = useState(null);
+  const [keyExercisesData, setKeyExercisesData] = useState(null);
+  const [intensityDistributionData, setIntensityDistributionData] = useState(null);
+  const [rpeFeedbackData, setRpeFeedbackData] = useState(null);
+  // const [bodyProgressData, setBodyProgressData] = useState(null); // Uncomment and process when data is available
+  // const [sessionConsistencyData, setSessionConsistencyData] = useState(null); // Uncomment and process when data is available
+  const [trainingCyclesData, setTrainingCyclesData] = useState(null);
+  const [goalsData, setGoalsData] = useState(null);
 
-    const [selectedExercise, setSelectedExercise] = useState(null);
-    const [exerciseOptions, setExerciseOptions] = useState([]);
-    const [chartData, setChartData] = useState(null);
-    const [selectedWorkout, setSelectedWorkout] = useState(null);
-    const [workoutOptions, setWorkoutOptions] = useState([]);
-    const [filteredWorkouts, setFilteredWorkouts] = useState([]);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [exerciseOptions, setExerciseOptions] = useState([]);
+  const [chartData, setChartData] = useState(null);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [workoutOptions, setWorkoutOptions] = useState([]);
+  const [filteredWorkouts, setFilteredWorkouts] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
 
+  const [assignCycleVisible, setAssignCycleVisible] = useState(false);
+  const [selectedCycleId, setSelectedCycleId] = useState(null);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [cycles, setCycles] = useState([]);
+  const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const calendarRef = useRef(null);
+  const [assignSessionVisible, setAssignSessionVisible] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(1);
+  const { user } = useContext(UserContext)
   useEffect(() => {
     setLoading(true);
+    fetch(`${apiUrl}/workout/training-cycles/coachId/${user.userId}`)
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Something went wrong');
+        }
+        return response.json();
+      })
+      .then(cycles => {
+        const events = cycles.flatMap(cycle => 
+          cycle.trainingWeeks.flatMap(week => 
+            week.trainingSessions.flatMap(session => {
+              const sessionEvents = session.workoutInstances.length > 0
+                ? session.workoutInstances.map(workoutInstance => ({
+                    title: workoutInstance.workout.planName,
+                    start: session.sessionDate,
+                    extendedProps: {
+                      status: workoutInstance.status,
+                      workoutInstanceId: workoutInstance.id,
+                      sessionId: session.id
+                    }
+                  }))
+                : [{
+                    title: 'no title',
+                    start: session.sessionDate,
+                    extendedProps: {
+                      sessionId: session.id
+                    }
+                  }];
+              
+              return sessionEvents;
+            })
+          )
+        );
+        
+        // console.log(events)
+        const cycleMap = cycles.map(cycle => {
+          const startDate = new Date(cycle.startDate);
+          const monthYear = `${startDate.getMonth() + 1}-${startDate.getFullYear()}`;
+          return { monthYear, id: cycle.id };
+        });
+        setCycles(cycleMap);
+        console.log(events, cycles)
+        setCalendarEvents(events);
+      })
+      .catch(error => showToast('error', 'Error', error.message))
+      .finally(() => setLoading(false));
+
     fetch(`${apiUrl}/workout/clientId/${clientId}`)
       .then(async (response) => {
         if (!response.ok) {
@@ -43,7 +115,7 @@ const ClientDashboard = () => {
           throw new Error(errorData.message || 'Something went wrong');
         }
         const data = await response.json();
-        console.log(data)
+        // console.log(data)
         setWorkouts(data);
         setAdherenceData(processDataForAdherenceChart(data));
         // setKeyExercisesData(processDataForKeyExercisesChart(data, 'Push-up')); // Example for 'Push-up'
@@ -62,13 +134,13 @@ const ClientDashboard = () => {
         const uniqueWorkouts = [...new Map(data.map(workout => [workout.workout.id, workout.workout])).values()];
         
         setWorkoutOptions(uniqueWorkouts.map(workout => ({ label: workout.planName, value: workout.id })));
-        console.log(uniqueWorkouts)
-        console.log(uniqueWorkouts.map(workout => ({ label: workout.planName, value: workout.id })))
+        // console.log(uniqueWorkouts)
+        // console.log(uniqueWorkouts.map(workout => ({ label: workout.planName, value: workout.id })))
         // setExerciseOptions(exercises);
       })
       .catch(error => showToast('error', 'Error fetching feedback', `${error.message}`))
       .finally(() => setLoading(false));
-  }, [clientId, showToast, setLoading]);
+  }, [clientId, showToast, setLoading, refreshKey]);
 
   useEffect(() => {
     if (selectedExercise) {
@@ -186,6 +258,7 @@ const ClientDashboard = () => {
                         {exercise.difficulty && <p>Difficulty: {exercise.difficulty}</p>}
                         {exercise.duration && <p>Duration: {exercise.duration}</p>}
                         {exercise.restInterval && <p>Rest Interval: {exercise.restInterval}</p>}
+                        
                       </div>
                       <div className="col">
                         <p><strong>Completed Set {setLog.setNumber}</strong></p>
@@ -198,6 +271,7 @@ const ClientDashboard = () => {
                         {setLog.difficulty && <p>Difficulty: {setLog.difficulty}</p>}
                         {setLog.duration && <p>Duration: {setLog.duration}</p>}
                         {setLog.restInterval && <p>Rest Interval: {setLog.restInterval}</p>}
+                        {exercise.rpe && <p>RPE: {exercise.rpe}</p>}
                       </div>
                     </div>
                   </div>
@@ -425,22 +499,163 @@ const ClientDashboard = () => {
     </div>
   );
 
+  const handleDateClick = (info) => {
+    const selectedDateWorkouts = workouts.filter(workout => new Date(workout.realEndDate).toLocaleDateString() === info.dateStr);
+    setFilteredWorkouts(selectedDateWorkouts);
+  };
+
+  const hideCreateCycleDialog = () => {
+    setRefreshKey(old => old+1)
+    setDialogVisible(false);
+  };
+
+  const handleOpenAssignCycle = (date) => {
+     const monthYear = getCurrentMonthYear();
+    // const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
+    const cycle = cycles.find(cycle => {
+      return cycle.monthYear == getCurrentMonthYear();
+    });
+    if (cycle) {
+      setSelectedCycleId(cycle.id);
+      setSelectedClient(clientId);
+      setAssignCycleVisible(true);
+    } else {
+      showToast('error', 'Error', 'No cycle found for the selected month');
+    }
+  };
+  
+  const hidePlanDetails = () => {
+
+    setPlanDetailsVisible(false);
+    setSelectedPlan(null);
+  };
+
+  const handleViewWorkoutDetails = (workoutInstanceId) => {
+    // Lógica para ver los detalles del entrenamiento
+    setLoading(true)
+    setSelectedPlan(workoutInstanceId);
+    setPlanDetailsVisible(true);
+  };
+
+  const renderEventContent = (eventInfo) => {
+    if (!eventInfo || !eventInfo.event) {
+      return null;
+    }
+  
+    const { title, extendedProps } = eventInfo.event;
+    const { status, workoutInstanceId, sessionId } = extendedProps || {};
+  
+    return (
+      <>
+        {title !== 'no title' && (
+          <>
+            <h3>
+                <Button 
+                tooltip="View Workout Details" 
+                icon="pi pi-eye" 
+                label={title}
+                className={`p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : 'info'}` }
+                onClick={() => handleViewWorkoutDetails(workoutInstanceId)} 
+              />
+            </h3>
+            {/* <span>Status: {status}</span> */}
+          </>
+        )}
+        {title === 'no title' && (
+          <div className=''>
+            <Button 
+              tooltip="Assign Workouts to Day" 
+              icon="pi pi-calendar-plus" 
+              label='Assign Workout'
+              className='p-button p-button-primary' 
+              onClick={() => handleAssignDayWorkout(sessionId)} 
+            />
+          </div>
+        )}
+      </>
+    );
+  };
+
+  const handleAssignDayWorkout = (sessionId) => {
+
+    setSelectedClient(clientId)
+    setSelectedSessionId(sessionId);
+    setAssignSessionVisible(true);
+  };
+
+  const getCurrentMonthYear = () => {
+    const calendarApi = calendarRef.current.getApi();
+    const currentDate = calendarApi.getDate();
+    const currentMonth = currentDate.getMonth() + 1; // getMonth() devuelve 0-11, así que sumamos 1
+    const currentYear = currentDate.getFullYear();
+    return `${currentMonth}-${currentYear}`;
+  };
+
+  const showCreateCycleDialog = () => {
+    setDialogVisible(true);
+  };
+
   return (
     <div className="grid grid-nogutter">
       <div className="col-12 mx-auto">
         <h1 className="panel-header">Client Dashboard</h1>
         <TabView className='mx-auto'>
-            <TabPanel header="Workout Details" >
-                <div className="grid">
-                    <div className="col-12">
-                        <Dropdown value={selectedWorkout} options={workoutOptions} onChange={(e) => setSelectedWorkout(e.value)} placeholder="Select a Workout" />
-                        <DataTable value={filteredWorkouts}>
-                            <Column body={(row) => formatDate(row.realEndDate)} header="Trained Date" style={{ width: '10%' }} />
-                            <Column field="workout.planName" header="Workout Name" style={{ width: '20%' }}/>
-                            <Column header="Details" body={renderSets} />
-                        </DataTable>
-                    </div>
-                </div>  
+          <TabPanel header="Workout Calendar">
+            <div className="flex align-items-center justify-content-between">
+              <div>
+                <h2>Calendar</h2>
+              </div>
+              <div className='flex gap-2'>
+              <Button 
+                tooltip="Assign Workouts to Cycle" 
+                icon="pi pi-refresh" 
+                label='Assign Workouts'
+                className='p-button-rounded p-button-success' 
+                onClick={() => handleOpenAssignCycle(new Date())} 
+              />
+              <Button label="Create Training Cycle" icon="pi pi-plus" className="p-button-rounded p-button-secondary "  onClick={showCreateCycleDialog} />
+              </div>
+            </div>
+            <FullCalendar
+                plugins={[dayGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                events={calendarEvents}
+                eventContent={renderEventContent}
+                ref={calendarRef}
+                fixedWeekCount={false}
+                eventMinHeight={1}
+            />
+             <AssignWorkoutToCycleDialog
+              visible={assignCycleVisible}
+              onHide={() => setAssignCycleVisible(false)}
+              cycleId={selectedCycleId}
+              clientId={selectedClient}
+              setRefreshKey={setRefreshKey} // Asegúrate de pasar una función real si necesitas refrescar datos
+            />
+            <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+              {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
+              setRefreshKey={setRefreshKey} setLoading={setLoading} />}
+            </Dialog>
+            <AssignWorkoutToSessionDialog
+              visible={assignSessionVisible}
+              onHide={() => setAssignSessionVisible(false)}
+              sessionId={selectedSessionId}
+              clientId={selectedClient}
+              setRefreshKey={setRefreshKey}
+            />
+            <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} />
+          </TabPanel>
+          <TabPanel header="Workout Details" >
+              <div className="grid">
+                <div className="col-12">
+                  <Dropdown value={selectedWorkout} options={workoutOptions} onChange={(e) => setSelectedWorkout(e.value)} placeholder="Select a Workout" />
+                  <DataTable value={filteredWorkouts}>
+                      <Column body={(row) => formatDate(row.realEndDate)} header="Trained Date" style={{ width: '10%' }} />
+                      <Column field="workout.planName" header="Workout Name" style={{ width: '20%' }}/>
+                      <Column header="Details" body={renderSets} />
+                  </DataTable>
+                </div>
+              </div>  
           </TabPanel>
           <TabPanel header="Exercise Progress">
             <div className="grid">
@@ -453,7 +668,6 @@ const ClientDashboard = () => {
               </div>
             </div>
           </TabPanel>
-          
         </TabView>
       </div>
     </div>
