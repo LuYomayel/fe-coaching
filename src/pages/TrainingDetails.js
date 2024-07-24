@@ -93,6 +93,18 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
   //   }));
   // };
 
+  useEffect(() => {
+    const savedProgress = localStorage.getItem(`exerciseProgress_${planId}`);
+    if (savedProgress) {
+      setExerciseProgress(JSON.parse(savedProgress));
+    }
+  }, [planId]);
+
+  const handleSaveProgress = () => {
+    localStorage.setItem(`exerciseProgress_${planId}`, JSON.stringify(exerciseProgress));
+    showToast('success', 'Progress Saved', 'Your progress has been saved successfully.');
+  };
+
   const handleExerciseChange = (exerciseId, setIndex, field, value) => {
     setExerciseProgress((prevProgress) => {
       if (typeof setIndex === 'number') {
@@ -259,12 +271,16 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
       </div>
     <div className="plan-summary">
       <Card>
-        <div className="plan-details">
-          <p><strong>Plan Name:</strong> {plan.workout.planName}</p>
-          {!plan.isTemplate && (<p><strong>Status:</strong> {plan.status}</p>)}
+        <div className="plan-details flex justify-content-between">
+          <div>
+            <p><strong>Plan Name:</strong> {plan.workout.planName}</p>
+            {!plan.isTemplate && (<p><strong>Status:</strong> {plan.status}</p>)}
+          </div>
           {/* <p><strong>Start Time:</strong> {new Date(plan.startTime).toLocaleTimeString()}</p> */}
           {/* <p><strong>End Time:</strong> {new Date(plan.endTime).toLocaleTimeString()}</p> */}
-          
+          <div>
+            
+          </div>
         </div>
       </Card>
     </div>
@@ -427,7 +443,10 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
     </div>
     <div className='actions-section'>
       {isClientTraining && (
-        <Button iconPos='left' icon="pi pi-check" label="Finish Training" className='p-button-rounded p-button-success' onClick={() => setFinishDialogVisible(true)} />
+        <div className='flex gap-2'>
+          <Button icon="pi pi-save" label="Save Progress" className='p-button-rounded p-button-info' onClick={handleSaveProgress} />
+          <Button iconPos='left' icon="pi pi-check" label="Finish Training" className='p-button-rounded p-button-success' onClick={() => setFinishDialogVisible(true)} />
+        </div>
       )}
     </div>
     <FinishTrainingDialog
