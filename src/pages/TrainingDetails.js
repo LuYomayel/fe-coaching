@@ -336,8 +336,8 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
               {group.exercises.map((exercise, exerciseIndex) => (
                 
                 <div key={exerciseIndex} className="exercise-card">
-                  <Splitter className='flex flex-row border border-solid border-gray-300'>
-                    <SplitterPanel className='p-3' size={80}>
+                  <Splitter className="flex flex-column md:flex-row border border-solid border-gray-300">
+                    <SplitterPanel className='p-3 w-full md:w-8' size={80}>
                         <Fieldset legend={exercise.exercise.name} className='p-3 h-full w-full' >
                         <div className='exercise-fields'>
                             {/* <div className='p-field exercise-field'>
@@ -375,7 +375,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
                       </div>
                       </Fieldset>
                       </SplitterPanel>
-                      <SplitterPanel className='p-3' size={20}>
+                      <SplitterPanel className='p-3 w-full md:w-4' size={20}>
                       {isClientTraining && (
                         <div className="exercise-inputs">
                         <div className="p-field-checkbox">
@@ -491,7 +491,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
         
       ))}
     </div>
-    <div className='actions-section'>
+    <div className='actions-section flex justify-content-center flex-wrap gap-2 mt-3'>
       {isClientTraining && (
         <div className='flex gap-2'>
           <Button icon="pi pi-save" label="Save Progress" className='p-button-rounded p-button-info' onClick={onClickSaveProgress} />

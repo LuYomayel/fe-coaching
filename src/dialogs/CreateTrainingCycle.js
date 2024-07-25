@@ -90,7 +90,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
   });
   }
   return (
-    <Dialog header="Create Training Cycle" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+    <Dialog header="Create Training Cycle" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
       <div className="p-field">
         <label htmlFor="cycleName">Cycle Name</label>
         <InputText id="cycleName" value={cycleName} onChange={(e) => setCycleName(e.target.value)} />

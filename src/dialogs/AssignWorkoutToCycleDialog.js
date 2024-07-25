@@ -89,7 +89,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
     setAssignments(updatedAssignments)
   }
   return (
-    <Dialog header="Assign Workouts to Cycle" visible={visible} onHide={onHide} style={{ width: '50vw' }}>
+    <Dialog header="Assign Workouts to Cycle" className="responsive-dialog" visible={visible} onHide={onHide} style={{ width: '50vw' }}>
       {assignments.map((assignment, index) => (
         <Card key={index} title={`Assignment ${index + 1}`} className="mb-3">
           <div className="p-field grid">

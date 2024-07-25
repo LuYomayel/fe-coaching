@@ -9,6 +9,8 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { TreeTable } from 'primereact/treetable';
+import listPlugin from '@fullcalendar/list'
+import timeGridPlugin from '@fullcalendar/timegrid';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -210,7 +212,7 @@ const StudentHome = () => {
                 tooltip="View Workout Details" 
                 icon="pi pi-eye" 
                 label={title}
-                className={`p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : status === 'current' ? 'info' : 'warning'}` }
+                className={`w-full lg:w-auto p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : status === 'current' ? 'info' : 'warning'}` }
                 onClick={() => handleViewWorkoutDetails(workoutInstanceId)} 
               />
             </h3>
@@ -224,26 +226,31 @@ const StudentHome = () => {
   return (
     <div className="student-home-container">
       <h1>Welcome, {client?.name || ''}!</h1>
-      {/* <div className="flex w-12 "> */}
-          {/* <TreeTable value={filteredNodes} rows={10} paginator >
-            <Column field="name" header="Cycle Name" expander sortable />
-            <Column field="startDate" header="Start Date" body={(node) => dateBodyTemplate(node, 'startDate')} filter 
-          filterElement={monthFilterElement} />
-            <Column field="endDate" header="End Date" body={(node) => dateBodyTemplate(node, 'endDate')} />
-            <Column header="Actions" body={actionTemplate} />
-          </TreeTable> */}
           <FullCalendar
-            className='calendar-student'
+            plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
+            initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
+            views={{
+              listMonth: { buttonText: 'List Month' }
+            }}
             height={'50rem'}
             viewClassNames={'calendar-student'}
-            plugins={[dayGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
             events={calendarEvents}
             eventContent={renderEventContent}
             ref={calendarRef}
             fixedWeekCount={false}
+            windowResize={(arg) => {
+              const calendarApi = calendarRef.current.getApi();
+              console.log(arg.view.type, window.innerWidth)
+              if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
+                console.log('Deberia cambiar a "listMonth"')
+                calendarApi.changeView('listMonth');
+              } else if (arg.view.type === 'listMonth' && window.innerWidth > 768) {
+                console.log('Deberia cambiar a "dayGridMonth"')
+                calendarApi.changeView('dayGridMonth');
+              }
+            }}
           />
-        <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+        <Dialog header="Plan Details" className="responsive-dialog"  visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
           {selectedPlan && <PlanDetails planId={selectedPlan} setLoading={setLoading} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} />}
         </Dialog>
       {/* </div> */}

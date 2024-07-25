@@ -20,3 +20,51 @@
 .set-log p {
   margin: 2px 0;
 }
+
+/* Full calendar specific styles */
+.my-fullcalendar .fc-toolbar-title {
+  font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .my-fullcalendar .fc-toolbar {
+      flex-direction: column;
+      align-items: flex-start;
+  }
+
+  .my-fullcalendar .fc-header-toolbar {
+      flex-direction: column;
+      align-items: flex-start;
+  }
+
+  .my-fullcalendar .fc-daygrid-event {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+  }
+}
+
+/* Adjust buttons in a row for larger screens and a column for smaller screens */
+.flex-column-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 992px) {
+  .flex-column-buttons {
+      flex-direction: row;
+      gap: 1rem;
+  }
+}
+
+/* Add padding and margins to make the layout more fluid */
+.panel-header {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.event-item {
+  display: flex;
+  flex-direction: column;
+}

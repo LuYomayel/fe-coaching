@@ -181,32 +181,31 @@ const ManageStudents = () => {
         />
       </div>
       <div className='w-11 mx-auto'>
-        <DataTable value={students} paginator rows={10} selectionMode="single" dataKey="id" onRowSelect={(e) => setSelectedStudent(e.value)}>
-          <Column field="name" header="Name" />
-          <Column header="Email" body={(e) => e.user.isVerified ? e.user.email : `${e.user.email} - No verificado`}/>
-          <Column body={viewSubscriptionStatus} header="Subscription" />
-          <Column body={(client) => formatDate(client.user.subscription.lastPaymentDate)} header="Last Payment" />
-          <Column body={(client) => formatDate(client.user.subscription.nextPaymentDate)} header="Next Payment" />
-          {/* <Column header="Subscription" body={viewSubscriptionStatus} /> */}
-          <Column body={studentActionsTemplate} header="Actions" />
+        <DataTable value={students} paginator rows={10} selectionMode="single" className="responsive-table" dataKey="id" onRowSelect={(e) => setSelectedStudent(e.value)}>
+          <Column field="name" header="Name" body={(e) => <span data-label="Name">{e.name}</span>} className="name-column" />
+          <Column header="Email" body={(e) => <span data-label="Email">{e.user.isVerified ? e.user.email : `${e.user.email} - No verificado`}</span>} className="email-column" />
+          <Column body={(e) => <span data-label="Subscription">{viewSubscriptionStatus(e)}</span>} header="Subscription" className="subscription-column" />
+          <Column body={(e) => <span data-label="Last Payment">{formatDate(e.user.subscription.lastPaymentDate)}</span>} header="Last Payment" className="last-payment-column" />
+          <Column body={(e) => <span data-label="Next Payment">{formatDate(e.user.subscription.nextPaymentDate)}</span>} header="Next Payment" className="next-payment-column" />
+          <Column body={(e) => <span data-label="Actions">{studentActionsTemplate(e)}</span>} header="Actions" className="actions-column" />
         </DataTable>
       </div>
 
-      <Dialog header="New Student" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>
+      <Dialog header="New Student" className="responsive-dialog" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>
         <NewStudentDialog onClose={handleNewStudentDialogHide} />
       </Dialog>
 
-      <Dialog header="Assign Subscription" visible={isSubscriptionDialogVisible} style={{ width: '50vw' }} onHide={handleSubscriptionDialogHide}>
+      <Dialog header="Assign Subscription" className="responsive-dialog" visible={isSubscriptionDialogVisible} style={{ width: '50vw' }} onHide={handleSubscriptionDialogHide}>
         <AssignSubscriptionDialog studentId={selectedStudent?.id} coachId={user.userId} onClose={handleSubscriptionDialogHide} />
       </Dialog>
       
-      <Dialog header="Register Payment" visible={isRegisterPaymentDialogVisible} style={{ width: '50vw' }} onHide={handleRegisterPaymentDialogHide}>
+      <Dialog header="Register Payment" className="responsive-dialog" visible={isRegisterPaymentDialogVisible} style={{ width: '50vw' }} onHide={handleRegisterPaymentDialogHide}>
         <RegisterPaymentDialog studentId={selectedStudent?.id} coachId={user.userId} onClose={handleRegisterPaymentDialogHide} 
           oldSubscription={selectedStudent?.user.subscription} oldCoachPlan={selectedStudent?.user.subscription.clientSubscription?.coachPlan}
         />
       </Dialog>
 
-      <Dialog header="Student Details" visible={isStudentDetailVisible} style={{ width: '50vw' }} onHide={handleStudentDetailHide}>
+      <Dialog header="Student Details" className="responsive-dialog" visible={isStudentDetailVisible} style={{ width: '50vw' }} onHide={handleStudentDetailHide}>
         <StudentDetailDialog student={selectedStudent} onClose={handleStudentDetailHide} />
       </Dialog>
     </div>

@@ -41,11 +41,12 @@
     width: 100%;
 }
 
-.fieldset-scroll{
+.fieldset-scroll {
     height: 32rem;
     overflow-y: auto;
     width: 30rem;
 }
+
 .exercises-container {
     display: flex;
     flex-wrap: wrap;
@@ -56,13 +57,26 @@
     margin-bottom: 0.5rem;
 }
 
+.input-icon-button {
+    cursor: pointer;
+}
 
+.actions-section {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem 0;
+}
 
-/* @media (max-width: 768px) { */
+/* Responsive Styles */
 @media (max-width: 768px) {
+    h1 {
+        margin: 0;
+    }
     .create-plan-container {
         flex-direction: column;
         height: calc(100vh - 130px);
+        padding: 0.5rem;
     }
 
     .form-section, .groups-section {
@@ -76,13 +90,68 @@
     .groups-container {
         grid-template-columns: 1fr;
     }
-    .create-plan-card{
+
+    .create-plan-card {
         max-width: 100%; /* Usar todo el ancho disponible en pantallas pequeñas */
         min-width: 100%; /* Asegurar que la tarjeta ocupe todo el ancho en pantallas pequeñas */
     }
+
     .actions-section {
         left: 50%;
         transform: translateX(-50%);
+    }
+
+    .responsive-container {
+        padding: 0.25rem;
+    }
+
+    .responsive-section {
+        width: 100%;
+    }
+
+    .responsive-card {
+        width: 100%;
+        padding: 0.25rem;
+    }
+
+    .responsive-card .p-card-body{
+        padding: 0.1rem;
+    }
+    .responsive-groups-container {
+        grid-template-columns: 1fr;
+    }
+
+    .responsive-fieldset-scroll {
+        width: 100%;
+    }
+    .responsive-actions-section {
+        flex-direction: row;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .responsive-button .p-button-label {
+        display: none;
+    }
+    .responsive-button .p-button {
+        margin: 0;
+    }
+    .responsive-button {
+        flex: 1 1 auto;
+        max-width: 2rem; /* Adjust the size to make the buttons circular */
+        height: 3rem; /* Adjust the height to make the buttons circular */
+        padding: .5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        border-radius: 50%;
+    }
+
+    .responsive-button .pi {
+        text-align: center;
+        font-size: 1.25rem; /* Adjust icon size if needed */
+        margin: 0;
     }
 }
 
@@ -110,25 +179,13 @@ input, .p-inputtext, .p-dropdown {
 }
 
 .exercise-group, .exercise {
-    /* margin-bottom: 2rem; */
-    padding: 1rem;
+    padding: 0.5rem;
     background-color: #2b2b2b;
     border-radius: 5px;
 }
 
-/* .p-button {
-    display: block;
-    margin: 1rem auto;
-} */
-
 .p-button-rounded.p-button-sm {
-    /* margin-top: 1rem; */
 }
 
 .p-button-rounded.p-button-lg {
-    /* margin-top: 2rem; */
-}
-
-.input-icon-button{
-    cursor: pointer;
 }

@@ -127,12 +127,12 @@ const Login = () => {
   };
 
   return (
-    <div className='flex flex-column align-items-center justify-content-center'>
-      <div className='h1 p-5'>
-        <h1 className='h1'> Welcome! </h1>
+    <div className="flex flex-column align-items-center justify-content-center">
+      <div className="h1 p-5">
+        <h1 className="h1"> Welcome! </h1>
       </div>
-      <div className="login-container">
-        <Card title={isSignUp ? "Sign Up" : "Login"}>
+      <div className="login-container responsive-card">
+        <Card title={isSignUp ? 'Sign Up' : 'Login'}>
           <div className="p-field">
             <label htmlFor="email">Email</label>
             <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -141,21 +141,20 @@ const Login = () => {
             <label htmlFor="password">Password</label>
             <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} toggleMask />
           </div>
-          <div className='flex align-items-center justify-content-center gap-1 pt-4'>
+          <div className="flex align-items-center justify-content-center gap-1 pt-4">
             {isSignUp ? (
-              <Button label="Sign Up" icon="pi pi-user" loading={loading} onClick={handleSignUp}  />
+              <Button label="Sign Up" icon="pi pi-user" loading={loading} onClick={handleSignUp} />
             ) : (
-              <Button label="Login" icon="pi pi-sign-in" loading={loading} onClick={handleLogin}  />
+              <Button label="Login" icon="pi pi-sign-in" loading={loading} onClick={handleLogin} />
             )}
             <Button
-              label={isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
+              label={isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
               className="p-button-text"
               onClick={() => setIsSignUp(!isSignUp)}
-              
             />
           </div>
           {!isSignUp && (
-            <div className='flex align-items-center justify-content-center pt-2'>
+            <div className="flex align-items-center justify-content-center pt-2">
               <Button
                 label="Forgot Password?"
                 className="p-button-text"

@@ -256,9 +256,9 @@ const descriptionFilterTemplate = (options) => {
   return (
     <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto">
       <h1>Client Profile</h1>
-      <div className="flex flex-row gap-2 justify-content-between w-full">
+      <div className="flex flex-column md:flex-row gap-2 justify-content-between w-full overflow-auto h-45">
 
-        <div className=' flex flex-column gap-3'>
+        <div className='flex flex-column gap-3 w-full md:w-3'>
           <div className="">
             <Card title="Personal Information">
               <div className="p-field">
@@ -307,7 +307,7 @@ const descriptionFilterTemplate = (options) => {
           </div>
         </div>
 
-        <div className='w-10'>
+        <div className='w-full md:w-8'>
           <TabView className='hola'>
             <TabPanel header="Workout History">
               <DataTable 
@@ -383,7 +383,7 @@ const descriptionFilterTemplate = (options) => {
        
       </div>
 
-      <Dialog header="Edit Personal Information" visible={editDialogVisible} style={{ width: '50vw' }} onHide={handleEditDialogClose}>
+      <Dialog header="Edit Personal Information" visible={editDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={handleEditDialogClose}>
         <div className="p-fluid">
           <div className="p-field">
             <label htmlFor="fitnessGoal">Fitness Goal</label>

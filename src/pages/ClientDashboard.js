@@ -5,6 +5,8 @@ import { useSpinner } from '../utils/GlobalSpinner';
 import { Chart } from 'primereact/chart';
 import '../styles/ClientDashboard.css';
 import { Dropdown } from 'primereact/dropdown';
+import listPlugin from '@fullcalendar/list'
+import timeGridPlugin from '@fullcalendar/timegrid';
 import { Button } from 'primereact/button';
 import { formatDate, updateStatus } from '../utils/UtilFunctions';
 import { DataTable } from 'primereact/datatable';
@@ -570,26 +572,23 @@ const ClientDashboard = () => {
     return (
       <>
         {title !== 'no title' && (
-          <>
-            <h3>
-                <Button 
-                tooltip="View Workout Details" 
-                icon="pi pi-eye" 
-                label={title}
-                className={`p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : status === 'current' ? 'info' : 'warning'}` }
-                onClick={() => handleViewWorkoutDetails(workoutInstanceId)} 
-              />
-            </h3>
-            {/* <span>Status: {status}</span> */}
-          </>
+          <div className="flex align-items-center justify-content-center">
+            <Button 
+              tooltip="View Workout Details" 
+              icon="pi pi-eye" 
+              label={title}
+              className={`p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : status === 'current' ? 'info' : 'warning'} w-full lg:w-auto`} 
+              onClick={() => handleViewWorkoutDetails(workoutInstanceId)} 
+            />
+          </div>
         )}
         {title === 'no title' && (
-          <div className=''>
+          <div className="flex align-items-center justify-content-center">
             <Button 
               tooltip="Assign Workouts to Day" 
               icon="pi pi-calendar-plus" 
-              label={(<div className='text-left p-0 m-0'><p>Assign Workout</p><small>{cycle}</small></div>)}
-              className='p-button p-button-primary' 
+              label={(<div className="text-left p-0 m-0"><p>Assign Workout</p><small>{cycle}</small></div>)}
+              className="p-button p-button-primary w-full lg:w-auto" 
               onClick={() => handleAssignDayWorkout(sessionId)} 
             />
           </div>
@@ -623,30 +622,46 @@ const ClientDashboard = () => {
         <h1 className="panel-header">Client Dashboard</h1>
         <TabView className='mx-auto'>
           <TabPanel header="Workout Calendar">
-            <div className="flex align-items-center justify-content-between">
+            <div className="flex flex-column lg:flex-row align-items-center justify-content-between">
               <div>
                 <h2>Calendar</h2>
               </div>
-              <div className='flex gap-2'>
+              <div className='flex gap-2 mt-2 lg:mt-0'>
               <Button 
                 tooltip="Assign Workouts to Cycle" 
                 icon="pi pi-refresh" 
                 label='Assign Workouts'
-                className='p-button-rounded p-button-success' 
+                className='p-button-rounded p-button-success w-full lg:w-auto' 
                 onClick={() => handleOpenAssignCycle(new Date())} 
               />
-              <Button label="Create Training Cycle" icon="pi pi-plus" className="p-button-rounded p-button-secondary "  onClick={showCreateCycleDialog} />
+              <Button label="Create Training Cycle" icon="pi pi-plus" className="p-button-rounded p-button-secondary w-full lg:w-auto"  onClick={showCreateCycleDialog} />
               </div>
             </div>
+            <div className="p-fluid"> 
             <FullCalendar
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
+                plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
+                initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
+                views={{
+                  listMonth: { buttonText: 'List Month' }
+                }}
                 events={calendarEvents}
                 eventContent={renderEventContent}
                 ref={calendarRef}
                 fixedWeekCount={false}
                 eventMinHeight={1}
-            />
+                windowResize={(arg) => {
+                  const calendarApi = calendarRef.current.getApi();
+                  console.log(arg.view.type, window.innerWidth)
+                  if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
+                    console.log('Deberia cambiar a "listMonth"')
+                    calendarApi.changeView('listMonth');
+                  } else if (arg.view.type === 'listMonth' && window.innerWidth > 768) {
+                    console.log('Deberia cambiar a "dayGridMonth"')
+                    calendarApi.changeView('dayGridMonth');
+                  }
+                }}
+              />
+            </div>
              <AssignWorkoutToCycleDialog
               visible={assignCycleVisible}
               onHide={() => setAssignCycleVisible(false)}
@@ -654,7 +669,7 @@ const ClientDashboard = () => {
               clientId={selectedClient}
               setRefreshKey={setRefreshKey} // Asegúrate de pasar una función real si necesitas refrescar datos
             />
-            <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+            <Dialog header="Plan Details" className="responsive-dialog"  visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
               {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
               setRefreshKey={setRefreshKey} setLoading={setLoading} />}
             </Dialog>

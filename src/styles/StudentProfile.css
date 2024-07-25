@@ -2,3 +2,10 @@
     max-height: 55rem;
     overflow-y: auto;
 }
+
+@media (max-width: 768px) {
+    .h-45{
+        height: 45rem;
+    }
+
+}

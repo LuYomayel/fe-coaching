@@ -31,13 +31,21 @@ p {
   padding: 0;
 }
 
+
 .actions-section {
   position: fixed;
   bottom: 1rem;
   right: 1rem;
-  /* transform: translateX(-50%); */
   display: flex;
+  flex-direction: column;
   gap: 1rem;
+}
+
+
+@media (min-width: 576px) {
+  .actions-section {
+      flex-direction: row;
+  }
 }
 
 .container{ 
@@ -85,4 +93,63 @@ p {
 .body-container{
   height: calc(100vh - 6rem);
   /* overflow: auto; */
+}
+.p-paginator {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  justify-items: center;
+}
+
+.p-paginator .p-dropdown {
+  width: 6rem;
+}
+
+.responsive-table .p-datatable {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .responsive-dialog {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0.5rem;
+  }
+  .responsive-card {
+    width: 100% !important;
+    padding: 1rem;
+  }
+  .responsive-table .p-datatable-thead {
+    display: none;
+  }
+
+  /* Each table row becomes a flex container */
+  .responsive-table .p-datatable-tbody > tr {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 1rem;
+    /* align-items: self-start; */
+  }
+
+  /* Each cell in the table row */
+  .responsive-table .p-datatable-tbody > tr > td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border: none;
+  }
+
+  /* Add labels to each cell before the actual content */
+  .responsive-table .p-datatable-tbody > tr > td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    flex: 1;
+  }
+}
+
+/* index.css or a dedicated CSS file for Login component */
+.login-container {
+  width: 400px;
 }

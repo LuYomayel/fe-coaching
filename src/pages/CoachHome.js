@@ -92,6 +92,14 @@ const CoachHome = () => {
           const clients = await allStudentsResponse.json();
           const clientsMapped = clients.filter( client => client.user.subscription.status === 'Active')
           setClients(clientsMapped)
+          // setClients(old => [...old, ...clientsMapped])
+          // setClients(old => [...old, ...clientsMapped])
+          // setClients(old => [...old, ...clientsMapped])
+          // setClients(old => [...old, ...clientsMapped])
+          // setClients(old => [...old, ...clientsMapped])
+          // setClients(old => [...old, ...clientsMapped])
+          // setClients(old => [...old, ...clientsMapped])
+          // setClients(old => [...old, ...clientsMapped])
       } catch (error) {
         showToast('error', 'Error', error.message);
       } finally {
@@ -269,21 +277,14 @@ const CoachHome = () => {
   };
 
   return (
-    <div className=''>
+    <div className='flex flex-column my-students-container'>
       <div className='w-11 mx-auto'>
-        <div>
+
         <h1>My students</h1>
-          {/* <TreeTable value={filteredNodes} rows={10} paginator className='tree-table-container'>
-            <Column field="name" sortable header="Cycle Name" expander />
-            <Column field="client" filter filterPlaceholder='Filter by Client Name' header="Client" />
-            <Column field="startDate" header="Start Date" body={(node) => dateBodyTemplate(node, 'startDate')} filter 
-          filterElement={monthFilterElement}/>
-            <Column field="endDate" header="End Date" body={(node) => dateBodyTemplate(node, 'endDate')} />
-            <Column header="Actions" body={actionTemplate} />
-          </TreeTable> */}
-          <div className='students-grid-container'>
-            <div className="students-grid">
+          <div className='students-container'>
+            <div className="flex flex-nowrap lg:flex-wrap overflow-x-auto lg:overflow-x-visible">
               {clients.map(student => (
+                <div className="flex-none w-full sm:w-auto sm:col-6 lg:col-4 xl:col-3 p-2">
                   <Card key={student.id} title={student.name} subTitle={`Plan: ${student.user.subscription.clientSubscription?.coachPlan?.name}`} className="student-card" onClick={() => navigateToClientProfile(student.id)}>
                       <div className="p-card-content">
                           <img src="/image.webp" alt="Profile" className="profile-image" />
@@ -292,23 +293,24 @@ const CoachHome = () => {
                       </div>
                       <Button label="View Profile" icon="pi pi-user" className="p-button-secondary" onClick={() => navigateToClientProfile(student.id)} />
                   </Card>
+                  </div>
               ))}
               </div>
             </div>
         </div>
-        <div className='actions-section'>
+        <div className="flex justify-content-center flex-wrap gap-2 mt-3 actions-section">
           {/* <Button label="Create Training Cycle" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-secondary "  onClick={showCreateCycleDialog} /> */}
-          <Button label="Create New Plan" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary " onClick={handleNewPlan}/>
-          <Button label="Add New Student" icon="pi pi-plus" onClick={openNewStudentDialog} className='p-button-rounded p-button-lg p-button-secondary'
+          <Button label="New Plan" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary " onClick={handleNewPlan}/>
+          <Button label="New Student" icon="pi pi-plus" onClick={openNewStudentDialog} className='p-button-rounded p-button-lg p-button-secondary'
         />
         </div>
 
-        <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+        <Dialog header="Plan Details" className="responsive-dialog" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
           {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
             setRefreshKey={setRefreshKey} setLoading={setLoading} />}
         </Dialog>
 
-        <Dialog header="New Student" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>
+        <Dialog header="New Student" className="responsive-dialog" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>
           <NewStudentDialog onClose={handleNewStudentDialogHide} setRefreshKey={setRefreshKey} />
         </Dialog>
         <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} />
@@ -327,7 +329,6 @@ const CoachHome = () => {
           setRefreshKey={setRefreshKey}
         />
       </div>
-    </div>
   );
 };
 

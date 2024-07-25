@@ -60,7 +60,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   };
 
   return (
-    <Dialog header="Assign Workout to Session" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+    <Dialog header="Assign Workout to Session" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
       <div className="p-fluid">
         <div className="p-field">
           <label htmlFor="workout">Workout</label>

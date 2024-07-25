@@ -553,28 +553,28 @@ const CoachProfile = () => {
     };
 
     return (
-        <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto">
+        <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto responsive-table">
             <h1>Coach Profile</h1>
-            <div className="flex flex-row gap-2 justify-content-between w-full">
-                <div className=' flex flex-column gap-3'>
-                {coachInfo && (
-                    <Card title="Coach Information" className="mb-4">
-                        <div className="p-grid">
-                            <div className="p-col-12 p-md-6">
-                            <p><strong>Name:</strong> {coachInfo.name}</p>
-                            <p><strong>Email:</strong> {coachInfo.user.email}</p>
-                            <p><strong>Biography:</strong> {coachInfo.bio}</p>
-                            <p><strong>Experience:</strong> {coachInfo.experience}</p>
-                            <p><strong>Training type:</strong> {coachInfo.trainingType.join(', ')}</p>
-                            {coachInfo.hasGym && 
-                                <p><strong>Gym Location:</strong> {coachInfo.gymLocation}</p>
-                            }
+            <div className="flex flex-column md:flex-row gap-2 justify-content-between w-full overflow-auto h-45">
+                <div className='flex flex-column gap-3 w-full md:w-3'>
+                    {coachInfo && (
+                        <Card title="Coach Information" className="mb-4">
+                            <div className="p-grid">
+                                <div className="p-col-12 p-md-6">
+                                <p><strong>Name:</strong> {coachInfo.name}</p>
+                                <p><strong>Email:</strong> {coachInfo.user.email}</p>
+                                <p><strong>Biography:</strong> {coachInfo.bio}</p>
+                                <p><strong>Experience:</strong> {coachInfo.experience}</p>
+                                <p><strong>Training type:</strong> {coachInfo.trainingType.join(', ')}</p>
+                                {coachInfo.hasGym && 
+                                    <p><strong>Gym Location:</strong> {coachInfo.gymLocation}</p>
+                                }
+                                </div>
                             </div>
-                        </div>
-                    </Card>
-                )}
+                        </Card>
+                    )}
                 </div>
-                <div className='w-11'>
+                <div className='w-full md:w-8'>
                     <TabView className='hola'>
                         <TabPanel header="Workouts">
                         <DataTable value={workouts} paginator rows={10}>
@@ -593,7 +593,8 @@ const CoachProfile = () => {
                         </DataTable>
                         </TabPanel>
                         <TabPanel header="Coach Plans">
-                            <div className="flex gap-2 align-items-center justify-content-evenly flex-wrap">
+                            {/* <div className="flex gap-2 align-items-center justify-content-evenly flex-wrap"> */}
+                            <div className="flex gap-2 align-items-center justify-content-between">
                                 {coachPlans.map(plan => (
                                 <div key={plan.id} className="">
                                     {coachPlanTemplate(plan)}
@@ -671,7 +672,7 @@ const CoachProfile = () => {
                     </TabView>
                 </div>
             </div>
-            <Dialog header="Video" visible={videoDialogVisible} style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
+            <Dialog header="Video" visible={videoDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
                 <iframe
                 width="100%"
                 height="400px"
@@ -683,7 +684,7 @@ const CoachProfile = () => {
                 />
             </Dialog>
 
-            <Dialog header="Create New Coach Plan" visible={createPlanDialogVisible} style={{ width: '50vw' }} onHide={closeCreatePlanDialog}>
+            <Dialog header="Create New Coach Plan" className="responsive-dialog" visible={createPlanDialogVisible} style={{ width: '50vw' }} onHide={closeCreatePlanDialog}>
                 <div className="p-fluid">
                     <div className="p-field">
                     <label htmlFor="name">Plan Name</label>
@@ -707,7 +708,7 @@ const CoachProfile = () => {
                 </div>
             </Dialog>
             
-            <Dialog header={dialogMode === 'create' ? "Create New Exercise" : "Edit Exercise"} visible={exerciseDialogVisible} style={{ width: '50vw' }} onHide={closeExerciseDialog}>
+            <Dialog header={dialogMode === 'create' ? "Create New Exercise" : "Edit Exercise"}  className="responsive-dialog" visible={exerciseDialogVisible} style={{ width: '50vw' }} onHide={closeExerciseDialog}>
                 <div className="p-fluid">
                     <div className="p-field">
                         <label htmlFor="name">{dialogMode === 'create' ? 'Exercise Name' : 'Edit Exercise Name'}</label>

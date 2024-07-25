@@ -363,9 +363,9 @@ const handleClearPlan = () => {
         <div>&nbsp;</div>
       </div>
       
-      <div className="create-plan-container">
-      <div className="form-section">
-        <Card title="Details">
+      <div className="create-plan-container responsive-container">
+      <div className="form-section responsive-section">
+      <Card title="Details" className="responsive-card">
           <form onSubmit={handleSubmit} className="p-fluid">
             <div className="p-field">
               <label htmlFor="planName">Plan Name:</label>
@@ -400,14 +400,14 @@ const handleClearPlan = () => {
         </Card>
       </div>
 
-      <div className="groups-section">
-        <Card title="Exercise Groups" className="exercise-groups-card">
-        <div className="groups-container">
+      <div className="groups-section responsive-section">
+      <Card title="Exercise Groups" className="exercise-groups-card responsive-card">
+      <div className="groups-container responsive-groups-container">
         {plan.groups.map((group, groupIndex) => (
-          <Card key={groupIndex} className="create-plan-card" >
+          <Card key={groupIndex} className="create-plan-card responsive-card" >
             <Fieldset legend={`Group ${group.groupNumber}`} toggleable onCollapse={() => handleRemoveGroup(groupIndex)} collapseIcon='pi pi-times'>
-              <div className='fieldset-scroll'>
-                <div className='flex gap-2 justify-content-center'>
+            <div className="fieldset-scroll responsive-fieldset-scroll">
+              <div className="flex gap-2 justify-content-center responsive-flex">
                   <div className="p-field ">
                     <label htmlFor={`set${groupIndex}`}>Set:</label>
                     <InputText id={`set${groupIndex}`} type="number" name="set" value={group.set} onChange={(e) => handleGroupChange(groupIndex, e)} />
@@ -417,53 +417,8 @@ const handleClearPlan = () => {
                     <InputText id={`rest${groupIndex}`} type="number" name="rest" value={group.rest} onChange={(e) => handleGroupChange(groupIndex, e)} />
                   </div>
                 </div>
-                {/* <h3>Exercises</h3>
-                {group.exercises.map((exercise, exerciseIndex) => (
-                  <div key={exerciseIndex} className="p-fluid exercise">
-                    <div className="p-field">
-                      <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
-                      <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter showClear required placeholder="Select an exercise" />
-                    </div>
-                    <div className="p-field">
-                      <label htmlFor={`multimedia${groupIndex}-${exerciseIndex}`}>Video URL:</label>
-                      <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
-                    </div>
-                    {Object.keys(exercise).map((property, propertyIndex) => (
-                        (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '') && (
-                          <div key={propertyIndex} className="p-field">
-                            <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
-                            <InputText
-                              id={`${property}${groupIndex}-${exerciseIndex}`}
-                              name={property}
-                              value={exercise[property]}
-                              onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, property, e.target.value)}
-                            />
-                            <Button
-                              type="button"
-                              label="Remove Property"
-                              icon="pi pi-minus"
-                              onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
-                              className="p-button-rounded p-button-danger"
-                            />
-                            <Button type="button" label="Remove Exercise" icon="pi pi-minus" onClick={() => handleRemoveExercise(groupIndex, exerciseIndex)} className="p-button-rounded p-button-danger" />
-                          </div>
-                        )
-                      ))}
-                    <div className="p-field">
-                      <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
-                      <Dropdown
-                              filter={true}
-                              id={`addProperty${groupIndex}-${exerciseIndex}`}
-                              options={getAvailableProperties(exercise).map(prop => ({ label: prop.charAt(0).toUpperCase() + prop.slice(1), value: prop }))}
-                              onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
-                              placeholder="Select a property"
-                            />
-
-                    </div>
-                  </div>
-                ))} */}
                 <h3>Exercises</h3>
-                <div className='tabview-container'>
+                <div className="tabview-container responsive-tabview-container">
                 <TabView onTabClose={(e) => handleTabClose(e, groupIndex)} scrollable>
                   {group.exercises.map((exercise, exerciseIndex) => (
                     <TabPanel key={exerciseIndex} header={exercise.exercise.name || 'No Exercise'} closable>
@@ -475,10 +430,6 @@ const handleClearPlan = () => {
                             itemTemplate={exerciseItemTemplate}
                           showClear required placeholder="Select an exercise" />
                         </div>
-                        {/* <div className="p-field">
-                          <label htmlFor={`multimedia${groupIndex}-${exerciseIndex}`}>Video URL:</label>
-                          <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
-                        </div> */}
                         {Object.keys(exercise).map((property, propertyIndex) => (
                           (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '' && property !== 'rpe' && property !== 'comments' && property !== 'completed') && (
                             <div key={propertyIndex} className="p-field">
@@ -491,11 +442,9 @@ const handleClearPlan = () => {
                                       onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, property, e.target.value)}
                                     />
                                     <InputIcon
-                                      // type="button"
                                       className="pi pi-times input-icon-button"
                                       tooltip='Remove property'
                                       onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
-                                      // className="p-button-rounded p-button-danger"
                                     />
                                   </IconField>
                               </div>
@@ -516,11 +465,9 @@ const handleClearPlan = () => {
                   ))}
                 </TabView>
                 </div>
-              {/* </div> */}
-              <div className='flex align-items-center justify-content-center'>
+                <div className="flex align-items-center justify-content-center">
                 <Button type="button" label="Add Exercise" icon="pi pi-plus" onClick={() => handleAddExercise(groupIndex)} className="p-button-rounded p-button-success text-center" />
               </div>
-              {/* <Button type="button" label="Remove Group" icon="pi pi-minus" onClick={() => handleRemoveGroup(groupIndex)} className="p-button-rounded p-button-danger" /> */}
               </div>
             </Fieldset>
           </Card>
@@ -529,10 +476,10 @@ const handleClearPlan = () => {
         </Card>
       </div>
       
-      <div className="actions-section">
-        <Button type="button" label="Clear Plan" icon="pi pi-trash" onClick={handleClearPlan} className="p-button-rounded p-button-danger p-button-lg" />
-        <Button type="button" label="Add Group" icon="pi pi-plus" onClick={handleAddGroup} className="p-button-rounded p-button-info p-button-lg" />
-        <Button type="submit" label={isEdit ? 'Edit Plan' : 'Create Plan'} icon="pi pi-check" className="p-button-rounded p-button-success p-button-lg" onClick={handleSubmit}/>
+      <div className="actions-section responsive-actions-section">
+          <Button type="button" label="Clear Plan" icon="pi pi-trash" onClick={handleClearPlan} className="p-button-rounded p-button-danger p-button-lg responsive-button" />
+          <Button type="button" label="Add Group" icon="pi pi-plus" onClick={handleAddGroup} className="p-button-rounded p-button-info p-button-lg responsive-button" />
+          <Button type="submit" label={isEdit ? 'Edit Plan' : 'Create Plan'} icon="pi pi-check" className="p-button-rounded p-button-success p-button-lg responsive-button" onClick={handleSubmit}/>
       </div>
       </div>
     </div>

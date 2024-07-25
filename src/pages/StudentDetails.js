@@ -197,7 +197,7 @@ const StudentDetails = () => {
             <Column body={viewPlanDetailsTemplate} header="Actions" />
           </DataTable>
 
-          <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+          <Dialog header="Plan Details" className="responsive-dialog" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
             {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
               setRefreshKey={setRefreshKey} setLoading={setLoading} />}
           </Dialog>
