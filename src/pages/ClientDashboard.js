@@ -56,10 +56,27 @@ const ClientDashboard = () => {
   const [assignSessionVisible, setAssignSessionVisible] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(1);
-  const { user } = useContext(UserContext)
+  const { user } = useContext(UserContext);
+
+  const updateStatusLocal = (workout, session) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const sessionDate = new Date(session.sessionDate);
+    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+    if (workout.status === 'pending') {
+      if (sessionDay < today) {
+        return 'expired';
+      } else if (sessionDay.getTime() === today.getTime()) {
+        return 'current';
+      }
+    }else {
+      return workout.status
+    }
+  }
+
   useEffect(() => {
     setLoading(true);
-    fetch(`${apiUrl}/workout/training-cycles/coachId/${user.userId}`)
+    fetch(`${apiUrl}/workout/training-cycles/client/clientId/${clientId}`)
       .then(async (response) => {
         if (!response.ok) {
           const errorData = await response.json();
@@ -72,20 +89,24 @@ const ClientDashboard = () => {
           cycle.trainingWeeks.flatMap(week => 
             week.trainingSessions.flatMap(session => {
               const sessionEvents = session.workoutInstances.length > 0
-                ? session.workoutInstances.map(workoutInstance => ({
+                ? session.workoutInstances.map(workoutInstance => {
+                  workoutInstance.status = updateStatusLocal(workoutInstance, session);
+                  return {
                     title: workoutInstance.workout.planName,
                     start: session.sessionDate,
                     extendedProps: {
                       status: workoutInstance.status,
                       workoutInstanceId: workoutInstance.id,
                       sessionId: session.id
-                    }
-                  }))
+                    }}
+                  }
+                  )
                 : [{
                     title: 'no title',
                     start: session.sessionDate,
                     extendedProps: {
-                      sessionId: session.id
+                      sessionId: session.id,
+                      cycle: cycle.name
                     }
                   }];
               
@@ -101,12 +122,13 @@ const ClientDashboard = () => {
           return { monthYear, id: cycle.id };
         });
         setCycles(cycleMap);
-        console.log(events, cycles)
+        // console.log(events, cycles)
         setCalendarEvents(events);
       })
       .catch(error => showToast('error', 'Error', error.message))
       .finally(() => setLoading(false));
 
+    // console.log(clientId)
     fetch(`${apiUrl}/workout/clientId/${clientId}`)
       .then(async (response) => {
         if (!response.ok) {
@@ -543,7 +565,7 @@ const ClientDashboard = () => {
     }
   
     const { title, extendedProps } = eventInfo.event;
-    const { status, workoutInstanceId, sessionId } = extendedProps || {};
+    const { status, workoutInstanceId, sessionId, cycle } = extendedProps || {};
   
     return (
       <>
@@ -554,7 +576,7 @@ const ClientDashboard = () => {
                 tooltip="View Workout Details" 
                 icon="pi pi-eye" 
                 label={title}
-                className={`p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : 'info'}` }
+                className={`p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : status === 'current' ? 'info' : 'warning'}` }
                 onClick={() => handleViewWorkoutDetails(workoutInstanceId)} 
               />
             </h3>
@@ -566,7 +588,7 @@ const ClientDashboard = () => {
             <Button 
               tooltip="Assign Workouts to Day" 
               icon="pi pi-calendar-plus" 
-              label='Assign Workout'
+              label={(<div className='text-left p-0 m-0'><p>Assign Workout</p><small>{cycle}</small></div>)}
               className='p-button p-button-primary' 
               onClick={() => handleAssignDayWorkout(sessionId)} 
             />

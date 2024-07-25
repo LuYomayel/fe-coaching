@@ -109,6 +109,10 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
     .finally( () => setLoadingSubmit(false))
   }
 
+  const handleStartTraining = () => {
+    navigate(`/plans/start-session/${plan.id}`, { state: { isTraining: true, planId: plan.id } });
+  };
+
   if (!plan) return <p>Loading...</p>;
 
   return (
@@ -123,6 +127,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
           {(user.userType === 'coach') && 
             <Button label="" icon='pi pi-trash'className='p-button-rounded p-button-danger' onClick={handleDeletePlan}/>
           }
+          {user.userType === 'client' && plan.status ==='pending' && <Button tooltip='Start Training' icon='pi pi-chart-bar' className='p-button-rounded p-button-succes' onClick={handleStartTraining}/>}
           {/* <Button label="" icon='pi pi-clone' onClick={handleClonePlan}/> */}
         </div>
       </div>

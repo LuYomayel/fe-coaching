@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { TabView, TabPanel } from 'primereact/tabview';
@@ -11,6 +11,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Checkbox } from 'primereact/checkbox';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { isValidYouTubeUrl, extractYouTubeVideoId } from '../utils/UtilFunctions';
@@ -19,6 +20,7 @@ import { MultiSelect } from 'primereact/multiselect';
 import PlanDetails from '../dialogs/PlanDetails';
 import { useSpinner } from '../utils/GlobalSpinner';
 
+import * as XLSX from 'xlsx';
 import { FileUpload } from 'primereact/fileupload';
         
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -45,11 +47,20 @@ const CoachProfile = () => {
     const [currentPlanId, setCurrentPlanId] = useState(null);
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [file, setFile] = useState(null);
-
+    const fileUploadRef = useRef(null);
+    const [numRows, setNumRows] = useState(0)
     const [videoDialogVisible, setVideoDialogVisible] = useState(false);
     const [createPlanDialogVisible, setCreatePlanDialogVisible] = useState(false);
     const [exerciseDialogVisible, setExerciseDialogVisible] = useState(false);
     const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const [filters, setFilters] = useState({
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+        exerciseType: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        description: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    });
 
     const [dialogMode, setDialogMode] = useState('create'); // 'create' or 'edit'
 
@@ -311,51 +322,92 @@ const CoachProfile = () => {
     };
 
     const onTemplateUpload = (e) => {
-    for (let file of e.files) {
-        console.log('Uploaded file:', file);
-    }
-    console.log({ severity: 'info', summary: 'Success', detail: 'File Uploaded' });
+        for (let file of e.files) {
+            console.log('Uploaded file:', file);
+        }
+        console.log({ severity: 'info', summary: 'Success', detail: 'File Uploaded' });
     };
 
     const onTemplateSelect = (e) => {
-    console.log('Selected file:', e.files);
+        setSelectedFile(e.files[0]);
+        console.log('Selected file:', e.files);
     };
 
     const onTemplateError = (e) => {
-    console.error('Error during upload:', e);
-    console.log({ severity: 'error', summary: 'Error', detail: 'File Upload Failed' });
+        console.error('Error during upload:', e);
+        console.log({ severity: 'error', summary: 'Error', detail: 'File Upload Failed' });
     };
 
     const onTemplateClear = () => {
-    console.log('FileUpload cleared');
+        setSelectedFile(null);
+        console.log('FileUpload cl  eared');
     };
 
-    const uploadHandler = async ({ files }) => {
-    const formData = new FormData();
-    formData.append('file', files[0]);
-    // console.log(formData, files[0], coach.id)
-    // return
-    try {
-        const response = await fetch(`${apiUrl}/exercise/import/${coach.id}`, {
-            method: 'POST',
-            body: formData,
-          });
-    
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-    
-          const result = await response.json();
-          onTemplateUpload({ files });
-          setRefreshKey(old => old+1)
-          showToast('success', 'Success', result.message)
-          console.log(result.duplicateExercises)
-          showToast('warn', `Duplicated Exercises: ${result.duplicatesCount}` , `${result.duplicateExercises.map(ex => `${ex.name} at row ${ex.row}`)}`)
-    } catch (error) {
-        onTemplateError(error);
-        console.error('Error during upload:', error);
+    const handleUpload = async (formData, files) => {
+        try {
+            setLoading(true)
+            const response = await fetch(`${apiUrl}/exercise/import/${coach.id}`, {
+                method: 'POST',
+                body: formData,
+              });
+        
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+        
+              const result = await response.json();
+              onTemplateUpload({ files });
+              setRefreshKey(old => old+1)
+              if(result.duplicateExercises.length > 0 ){
+                showToast('warn', `Exercises uploaded: ${result.registeredExercisesCount}. Duplicated Exercises: ${result.duplicatesCount}` , `${result.duplicateExercises.map(ex => `${ex.name} at row ${ex.row}`)}`, true)
+              }else {
+                showToast('success', 'Success', `${result.registeredExercisesCount.map(ex => `${ex.name} at row ${ex.row}`)}`)
+              }
+              console.log(result.duplicateExercises);
+              fileUploadRef.current.clear();
+        } catch (error) {
+            onTemplateError(error);
+            console.error('Error during upload:', error);
+        }finally{
+            setLoading(false)
+        }
     }
+    const uploadHandler = async ({ files }) => {
+        const formData = new FormData();
+        formData.append('file', files[0]);
+        const rowsCount = await readFile(files[0]);
+        // console.log(numRows)
+        // console.log(formData, files[0], coach.id)
+        // return
+        showConfirmationDialog({
+            message: `Are you sure you want to upload ${rowsCount} exercises?`,
+            header: "Confirmation",
+            icon: "pi pi-exclamation-triangle",
+            accept: () => handleUpload(formData, files),
+            reject: () => console.log('Rejected u mf')
+        });
+    
     };
+
+    const readFile = (file) => {
+        return new Promise((resolve, reject) => {
+            setLoading(true)
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const sheetData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                const sheetDataMapped = sheetData.filter(array => array.length > 0)
+                setNumRows(sheetDataMapped.length - 1); // Asumiendo que la primera fila es el encabezado
+                resolve(sheetDataMapped.length - 1);
+            };
+            reader.onerror = (error) => reject(error);
+            reader.readAsArrayBuffer(file);
+            setLoading(false)
+        });
+    };
+
     const confirmDeletePlan = async (planId) =>{
         showConfirmationDialog({
             message: "Are you sure you want to delete this plan?",
@@ -437,8 +489,8 @@ const CoachProfile = () => {
     const actionsBodyTemplate = (rowData) => {
         return (
           <>
-            <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-mr-2" onClick={() => openEditExerciseDialog(rowData)} />
-            <Button icon="pi pi-trash" className="p-button-rounded p-button-danger" onClick={() => {
+            <Button icon="pi pi-pencil" className="p-button-rounded p-button-success p-button-sm p-mr-2" onClick={() => openEditExerciseDialog(rowData)} />
+            <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-sm" onClick={() => {
                     
                     showConfirmationDialog({
                         message: "Are you sure you want to delete this exercise?",
@@ -467,6 +519,39 @@ const CoachProfile = () => {
         setPlanDetailsVisible(true);
       };
 
+      const nameFilterTemplate = (options) => {
+        return (
+            <InputText
+                value={options.value}
+                onChange={(e) => options.filterApplyCallback(e.target.value)}
+                placeholder="Search by name"
+                className="p-column-filter"
+            />
+        );
+    };
+    
+    const exerciseTypeFilterTemplate = (options) => {
+        return (
+            <InputText
+                value={options.value}
+                onChange={(e) => options.filterApplyCallback(e.target.value)}
+                placeholder="Search by type"
+                className="p-column-filter"
+            />
+        );
+    };
+    
+    const descriptionFilterTemplate = (options) => {
+        return (
+            <InputText
+                value={options.value}
+                onChange={(e) => options.filterApplyCallback(e.target.value)}
+                placeholder="Search by description"
+                className="p-column-filter"
+            />
+        );
+    };
+
     return (
         <div className="flex flex-column align-items-center justify-content-center w-11 mx-auto">
             <h1>Coach Profile</h1>
@@ -489,7 +574,7 @@ const CoachProfile = () => {
                     </Card>
                 )}
                 </div>
-                <div className='w-10'>
+                <div className='w-11'>
                     <TabView className='hola'>
                         <TabPanel header="Workouts">
                         <DataTable value={workouts} paginator rows={10}>
@@ -522,41 +607,57 @@ const CoachProfile = () => {
                             )}
                         </TabPanel>
                         <TabPanel header="Exercises Library">
-                             <div className="flex justify-content-between align-items-center gap-2">
-                                
-                                <div className="card">
-                                    <FileUpload 
-                                        name="file"
-                                        customUpload
-                                        uploadHandler={uploadHandler}
-                                        
-                                        
-                                        onSelect={onTemplateSelect}
-                                        onError={onTemplateError}
-                                        onClear={onTemplateClear}
-                                        multiple
-                                        accept=".xlsx"
-                                        maxFileSize={1000000}
-                                        emptyTemplate={<p className="m-0">Drag and drop files to here to upload and import exercises.</p>}
-                                        chooseLabel="Choose"
-                                        uploadLabel="Upload"
-                                        cancelLabel="Cancel"
-                                    />
-                                </div>
-                                <div>
-                                    <Button label="Add New Exercise" icon="pi pi-plus" className="p-button-rounded p-button-info" onClick={openCreateExerciseDialog} />
-                                </div>
-                            </div>
-                            <DataTable value={exercises} paginator rows={6} className='exercises-table'>
-                                <Column field="name" header="Exercise Name" style={{ width: '30%' }}/>
+                             
+                            <DataTable 
+                                value={exercises} 
+                                paginator 
+                                rows={10} 
+                                rowsPerPageOptions={[10, 20, 50, 100]}
+                                className='exercises-table'
+                                filters={filters}
+                                globalFilterFields={['name', 'exerciseType', 'description']}
+                                onFilter={(e) => setFilters(e.filters)}
+                                rowClassName={'row'}
+                            >
+                                <Column field="name" header="Exercise Name" style={{ width: '20%' }} filter  filterElement={nameFilterTemplate}/>
                                 <Column field="multimedia" header="Video" body={videoBodyTemplate} />
-                                <Column field="exerciseType" header="Type" />
-                                <Column field="description" header="Description" style={{ width: '30%' }}/>
+                                <Column field="exerciseType" header="Type" filter filterElement={exerciseTypeFilterTemplate} />
+                                <Column field="description" header="Description" style={{ width: '30%' }} filter filterElement={descriptionFilterTemplate}/>
                                 <Column field="equipmentNeeded" header="Equipment Needed" />
 
                                 <Column field="actions" header="Actions" body={(rowData) => actionsBodyTemplate(rowData)}/>
                             </DataTable>
-                            
+                            <div className="flex justify-content-center align-items-center gap-3 mt-2">
+                                    <FileUpload 
+                                        ref={fileUploadRef}
+                                        name="file"
+                                        mode='basic'
+                                        customUpload
+                                        uploadHandler={uploadHandler}
+                                        onSelect={onTemplateSelect}
+                                        onError={onTemplateError}
+                                        onClear={onTemplateClear}
+                                        accept=".xlsx"
+                                        maxFileSize={1000000}
+                                        chooseOptions={{ 
+                                            icon: selectedFile ? 'pi pi-fw pi-cloud-upload' : 'pi pi-fw pi-file', 
+                                            iconOnly: selectedFile ? true : false, 
+                                            className: 'custom-upload-btn p-button-success p-button-rounded p-button-outlined', 
+                                            label: selectedFile ? 'Upload' : 'Import exercises' 
+                                        }}
+                                        uploadOptions={{ icon: 'pi pi-fw pi-cloud-upload', iconOnly: true, className: 'custom-upload-btn p-button-success p-button-rounded p-button-outlined' }}
+                                        
+                                        // emptyTemplate={<p className="m-0">Drag and drop files to here to upload and import exercises.</p>}
+                                        // chooseLabel="Import Exercises"
+                                        // uploadLabel="Upload"
+                                        // cancelLabel="Cancel"
+                                        
+                                    />
+                                {/* </div> */}
+                                <div>
+                                    <Button label="Add New Exercise" icon="pi pi-plus" className="p-button-rounded p-button-info" onClick={openCreateExerciseDialog} />
+                                </div>
+                            </div>
                         </TabPanel>
                         <TabPanel header="Subscription Plans">
                             <div className="flex gap-2 align-items-center justify-content-between">

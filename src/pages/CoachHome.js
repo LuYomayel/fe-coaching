@@ -90,10 +90,8 @@ const CoachHome = () => {
             throw new Error(errorData.message || 'Something went wrong');
           }
           const clients = await allStudentsResponse.json();
-          // console.log(clients)
-          setClients(clients)
-
-
+          const clientsMapped = clients.filter( client => client.user.subscription.status === 'Active')
+          setClients(clientsMapped)
       } catch (error) {
         showToast('error', 'Error', error.message);
       } finally {
@@ -286,7 +284,7 @@ const CoachHome = () => {
           <div className='students-grid-container'>
             <div className="students-grid">
               {clients.map(student => (
-                  <Card key={student.id} title={student.name} subTitle={`Plan: ${student.user.subscription.clientSubscription.coachPlan.name}`} className="student-card" onClick={() => navigateToClientProfile(student.id)}>
+                  <Card key={student.id} title={student.name} subTitle={`Plan: ${student.user.subscription.clientSubscription?.coachPlan?.name}`} className="student-card" onClick={() => navigateToClientProfile(student.id)}>
                       <div className="p-card-content">
                           <img src="/image.webp" alt="Profile" className="profile-image" />
                           <p><strong>Subscription End Date:</strong> {formatDate(student.user.subscription.endDate)}</p>

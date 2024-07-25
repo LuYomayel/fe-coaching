@@ -58,7 +58,9 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
     //   const data = await response.json();
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(errorData)
+        if(errorData.message && errorData.message.message){
+          throw new Error(errorData.message.message.join(', ') || 'Something went wrong');
+        }
         throw new Error(errorData.message || 'Something went wrong');
       }
       else{
@@ -93,7 +95,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
       return showToast('error', 'Error', 'Birthdate can not be later than today')
     if(birthdate.getFullYear() - new Date().getFullYear() >= 0 && birthdate.getFullYear() - new Date().getFullYear() <= 10)
       showToast('warn', 'Warning', 'Client too young, check birthdate')
-
+    console.log(body)
     showConfirmationDialog({
       message: "Are you sure you want to create this student?",
       header: "Confirmation",

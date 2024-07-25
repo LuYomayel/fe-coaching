@@ -142,7 +142,7 @@ const ManageStudents = () => {
   const studentActionsTemplate = (rowData) => {
     // (rowData)
     if(rowData.user.subscription.status === 'Active' ){
-      console.log(rowData)
+      // console.log(rowData)
       return (
         <div className='flex gap-2'>
           {/* <Button icon="pi pi-pencil" onClick={() => openStudentDetail(rowData)} tooltip='View details'/> */}
@@ -156,9 +156,9 @@ const ManageStudents = () => {
       return (
         <div className='flex gap-2'>
           {/* <Button icon="pi pi-pencil" onClick={() => openStudentDetail(rowData)} tooltip='View details'/> */}
-          <Button icon="pi pi-calendar-plus" onClick={() => openSubscriptionDialog(rowData)} tooltip='Assign Subscription'/>
+          <Button icon="pi pi-calendar-plus" onClick={() => openSubscriptionDialog(rowData)} tooltip='Assign Subscription' className='p-button-rounded p-button-success'/>
           <Button icon="pi pi-eye" onClick={() => handleViewDetails(rowData.id)} tooltip='View Details' className='p-button-rounded p-button-info'/>
-          <Button icon="pi pi-trash" onClick={() => deleteClient(rowData.id)} tooltip='Delete Client'/>
+          <Button icon="pi pi-trash" onClick={() => deleteClient(rowData.id)} tooltip='Delete Client' className='p-button-rounded p-button-danger'/>
         </div>
       );
     }

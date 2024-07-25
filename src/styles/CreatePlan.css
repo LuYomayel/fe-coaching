@@ -123,11 +123,11 @@ input, .p-inputtext, .p-dropdown {
 } */
 
 .p-button-rounded.p-button-sm {
-    margin-top: 1rem;
+    /* margin-top: 1rem; */
 }
 
 .p-button-rounded.p-button-lg {
-    margin-top: 2rem;
+    /* margin-top: 2rem; */
 }
 
 .input-icon-button{

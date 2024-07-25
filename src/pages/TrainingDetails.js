@@ -100,10 +100,18 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
     }
   }, [planId]);
 
-  const handleSaveProgress = () => {
-    localStorage.setItem(`exerciseProgress_${planId}`, JSON.stringify(exerciseProgress));
+  useEffect(() => {
+    handleSaveProgress();
+  }, [exerciseProgress]);
+
+  const onClickSaveProgress = () => {
+    handleSaveProgress();
     showToast('success', 'Progress Saved', 'Your progress has been saved successfully.');
   };
+
+  const handleSaveProgress = () => {
+    localStorage.setItem(`exerciseProgress_${planId}`, JSON.stringify(exerciseProgress));
+  }
 
   const handleExerciseChange = (exerciseId, setIndex, field, value) => {
     setExerciseProgress((prevProgress) => {
@@ -131,6 +139,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
         };
       }
     });
+    handleSaveProgress();
   };
 
   const handleAllCompletedChange = (exerciseId) => {
@@ -166,6 +175,7 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
       }
       return newProgress;
     });
+    handleSaveProgress();
   };
 
   const handleVideoClick = (url) => {
@@ -227,7 +237,6 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
     additionalNotes
   };
 
-  console.log(body.sessionTime)
   fetch(`${apiUrl}/workout/feedback/${planId}`, {
     method: 'POST',
     headers: {
@@ -444,7 +453,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
     <div className='actions-section'>
       {isClientTraining && (
         <div className='flex gap-2'>
-          <Button icon="pi pi-save" label="Save Progress" className='p-button-rounded p-button-info' onClick={handleSaveProgress} />
+          <Button icon="pi pi-save" label="Save Progress" className='p-button-rounded p-button-info' onClick={onClickSaveProgress} />
           <Button iconPos='left' icon="pi pi-check" label="Finish Training" className='p-button-rounded p-button-success' onClick={() => setFinishDialogVisible(true)} />
         </div>
       )}

@@ -20,7 +20,3 @@
 .set-log p {
   margin: 2px 0;
 }
-
-.p-datatable .p-datatable-tbody > tr > td {
-  vertical-align: top;
-}

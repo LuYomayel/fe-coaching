@@ -6,8 +6,8 @@ const ToastContext = createContext();
 export const ToastProvider = ({ children }) => {
   const toastRef = useRef(null);
 
-  const showToast = (severity, summary, detail) => {
-    toastRef.current.show({ severity, summary, detail });
+  const showToast = (severity, summary, detail, sticky) => {
+    toastRef.current.show({ severity, summary, detail, sticky });
   };
 
   return (
