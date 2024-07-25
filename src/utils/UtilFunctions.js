@@ -24,6 +24,11 @@ const extractYouTubeVideoId = (url) => {
   return videoId;
 };
 
+const getYouTubeThumbnail = (url) => {
+  const videoId = extractYouTubeVideoId(url);
+  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+};
+
 const sortBySessionDate = (workouts) => {
   return workouts.sort((a, b) => {
     const dateA = new Date(a.trainingSession.sessionDate);
@@ -106,4 +111,4 @@ const validateStudentDetails = ({ name, email, fitnessGoal, activityLevel, birth
   return { isValid: true, message: '' };
 };
 
-export { formatDate, isValidYouTubeUrl, extractYouTubeVideoId, sortBySessionDate, updateStatus, getSeverity, validateDates, validateStudentDetails }
+export { formatDate, isValidYouTubeUrl, extractYouTubeVideoId, sortBySessionDate, updateStatus, getSeverity, validateDates, validateStudentDetails, getYouTubeThumbnail }

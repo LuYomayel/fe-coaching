@@ -14,7 +14,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Checkbox } from 'primereact/checkbox';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
-import { isValidYouTubeUrl, extractYouTubeVideoId } from '../utils/UtilFunctions';
+import { isValidYouTubeUrl, extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctions';
 import '../styles/CoachProfile.css'
 import { MultiSelect } from 'primereact/multiselect';
 import PlanDetails from '../dialogs/PlanDetails';
@@ -436,9 +436,9 @@ const CoachProfile = () => {
     };
     const videoBodyTemplate = (rowData) => {
         return (
-        <a href="#/" onClick={() => handleVideoClick(rowData.multimedia)}>
-            Watch video
-        </a>
+            <a href="#/" onClick={() => handleVideoClick(rowData.multimedia)}>
+                <img src={getYouTubeThumbnail(rowData.multimedia)} alt="Video thumbnail" style={{ width: '100px', cursor: 'pointer' }} />
+            </a>  
         );
     };
 

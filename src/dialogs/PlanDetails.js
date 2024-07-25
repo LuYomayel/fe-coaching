@@ -15,13 +15,16 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
-
+import { extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctions';
+import VideoDialog from './VideoDialog';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading }) => {
   // const { planId } = useParams();
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
+  const [videoDialogVisible, setVideoDialogVisible] = useState(false);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState('');
 
   const [plan, setPlan] = useState({
     groups: [{
@@ -75,6 +78,17 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
   const handleEditPlan = () => {
     navigate(`/plans/edit/${planId}`)
   }
+
+  const handleVideoClick = (url) => {
+    try {
+        const videoId = extractYouTubeVideoId(url);
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        setCurrentVideoUrl(embedUrl);
+        setVideoDialogVisible(true);
+    } catch (error) {
+        showToast('error', 'Error', error.message)
+    }
+  };
 
   const handleDeletePlan = (plan) =>{
     showConfirmationDialog({
@@ -170,7 +184,11 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                           <label> 
                             Video URL:
                           </label>
-                          <p><a href={exercise.multimedia} >Watch Video</a></p>
+                          <p>
+                          <a href="#/" onClick={() => handleVideoClick(exercise.exercise.multimedia)}>
+                              <img src={getYouTubeThumbnail(exercise.exercise.multimedia)} alt="Video thumbnail" style={{ width: '100px', cursor: 'pointer' }} />
+                            </a>
+                          </p>
                         </div>
                         {Object.keys(exercise).map((property, propertyIndex) => (
                           (
@@ -179,7 +197,8 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                             exercise[property] !== '' &&
                             property !== 'comments' &&
                             property !== 'rpe' &&
-                            property !== 'completed' 
+                            property !== 'completed' &&
+                            property !== 'completedNotAsPlanned' 
                           ) && (
                             <div key={propertyIndex} className="p-field exercise-field">
                               <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
@@ -198,6 +217,13 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                                   checked={exercise.completed || false}
                                 />
                                 <label htmlFor={`completed-${exercise.id}`}>Completed</label>
+                              </div>
+                              <div className="p-field-checkbox">
+                                <Checkbox
+                                  inputId={`completed-not-as-planned-${exercise.id}`}
+                                  checked={exercise.completedNotAsPlanned || false}
+                                />
+                                <label htmlFor={`completed-${exercise.id}`}>Completed Not as Planned</label>
                               </div>
                               <div className="p-field">
                                 <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
@@ -235,7 +261,11 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                         <label> 
                           Video URL:
                         </label>
-                        <p><a href={exercise.multimedia} >Watch Video</a></p>
+                        <p>
+                          <a href="#/" onClick={() => handleVideoClick(exercise.exercise.multimedia)}>
+                            <img src={getYouTubeThumbnail(exercise.exercise.multimedia)} alt="Video thumbnail" style={{ width: '100px', cursor: 'pointer' }} />
+                          </a>  
+                        </p>
                       </div>
                       {Object.keys(exercise).map((property, propertyIndex) => (
                         (
@@ -244,7 +274,8 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                           exercise[property] !== '' &&
                           property !== 'comments' &&
                           property !== 'rpe' &&
-                          property !== 'completed' 
+                          property !== 'completed' &&
+                          property !== 'completedNotAsPlanned' 
                         ) && (
                           <div key={propertyIndex} className="p-field exercise-field">
                             <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
@@ -265,6 +296,11 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
         
       ))}
     </div>
+    <VideoDialog
+      visible={videoDialogVisible}
+      onHide={() => setVideoDialogVisible(false)}
+      videoUrl={currentVideoUrl}
+    />
   </div>
   );
 };

@@ -341,7 +341,8 @@ const descriptionFilterTemplate = (options) => {
               <DataTable 
               value={activities} 
               paginator 
-              rows={5}
+              rows={10}
+              rowsPerPageOptions={[10,25,50]}
               filters={filters}
               filterDisplay="menu"
               globalFilterFields={['description']}

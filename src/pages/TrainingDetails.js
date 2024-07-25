@@ -15,7 +15,7 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 
 import FinishTrainingDialog  from '../dialogs/FinishTrainingDialog';
-import { extractYouTubeVideoId } from '../utils/UtilFunctions';
+import { extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctions';
 import CustomInput from '../components/CustomInput';
 import VideoDialog from '../dialogs/VideoDialog';
 import { useSpinner } from '../utils/GlobalSpinner';
@@ -142,41 +142,72 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
     handleSaveProgress();
   };
 
-  const handleAllCompletedChange = (exerciseId) => {
-    setExerciseProgress((prevProgress) => {
-      const newProgress = { ...prevProgress };
-  
-      // Encontrar el grupo que contiene el ejercicio
-      const group = plan.groups.find(group => group.exercises.some(ex => ex.id === exerciseId));
-      if (!group) return newProgress; // Salir si no se encuentra el grupo
-  
-      // Encontrar el ejercicio en el grupo
-      const exercise = group.exercises.find(ex => ex.id === exerciseId);
-      if (!exercise) return newProgress; // Salir si no se encuentra el ejercicio
-  
-      const numSets = parseInt(exercise.sets) || group.set;
-  
-      if (!newProgress[exerciseId]?.allCompleted) {
-        const sets = Array.from({ length: numSets }).map(() => ({
-          repetitions: exercise.repetitions,
-          weight: exercise.weight,
-          time: exercise.time,
-          distance: exercise.distance,
-          tempo: exercise.tempo,
-          notes: exercise.notes,
-          difficulty: exercise.difficulty,
-          duration: exercise.duration,
-          restInterval: exercise.restInterval
-        }));
-        newProgress[exerciseId] = { ...newProgress[exerciseId], allCompleted: true, sets };
-      } else {
-        delete newProgress[exerciseId].allCompleted;
-        delete newProgress[exerciseId].sets;
-      }
-      return newProgress;
-    });
-    handleSaveProgress();
-  };
+const handleAllCompletedChange = (exerciseId) => {
+  setExerciseProgress((prevProgress) => {
+    const newProgress = { ...prevProgress };
+
+    const group = plan.groups.find(group => group.exercises.some(ex => ex.id === exerciseId));
+    if (!group) return newProgress;
+
+    const exercise = group.exercises.find(ex => ex.id === exerciseId);
+    if (!exercise) return newProgress;
+
+    const numSets = parseInt(exercise.sets) || group.set;
+
+    if (!newProgress[exerciseId]?.allCompleted) {
+      const sets = Array.from({ length: numSets }).map(() => ({
+        repetitions: exercise.repetitions,
+        weight: exercise.weight,
+        time: exercise.time,
+        distance: exercise.distance,
+        tempo: exercise.tempo,
+        notes: exercise.notes,
+        difficulty: exercise.difficulty,
+        duration: exercise.duration,
+        restInterval: exercise.restInterval
+      }));
+      newProgress[exerciseId] = { ...newProgress[exerciseId], allCompleted: true, sets };
+    } else {
+      delete newProgress[exerciseId].allCompleted;
+      delete newProgress[exerciseId].sets;
+    }
+    return newProgress;
+  });
+  handleSaveProgress();
+};
+
+const handleCompletedChange = (exerciseId, isNotAsPlanned) => {
+  setExerciseProgress((prevProgress) => {
+    const newProgress = { ...prevProgress };
+
+    const group = plan.groups.find(group => group.exercises.some(ex => ex.id === exerciseId));
+    if (!group) return newProgress;
+
+    const exercise = group.exercises.find(ex => ex.id === exerciseId);
+    if (!exercise) return newProgress;
+
+    const numSets = parseInt(exercise.sets) || group.set;
+
+    if (isNotAsPlanned) {
+      const sets = Array.from({ length: numSets }).map(() => ({
+        repetitions: exercise.repetitions,
+        weight: exercise.weight,
+        time: exercise.time,
+        distance: exercise.distance,
+        tempo: exercise.tempo,
+        notes: exercise.notes,
+        difficulty: exercise.difficulty,
+        duration: exercise.duration,
+        restInterval: exercise.restInterval
+      }));
+      newProgress[exerciseId] = { ...newProgress[exerciseId], completedNotAsPlanned: true, completed: false, sets };
+    } else {
+      newProgress[exerciseId] = { ...newProgress[exerciseId], completed: true, completedNotAsPlanned: false };
+    }
+    return newProgress;
+  });
+  handleSaveProgress();
+};
 
   const handleVideoClick = (url) => {
     try {
@@ -192,14 +223,12 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
 const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perceivedDifficulty, additionalNotes }) => {
   const exerciseFeedbackArray = Object.entries(exerciseProgress).map(([exerciseId, progress]) => {
     const sets = Object.values(progress.sets || {});
-    console.log(sets)
     const group = plan.groups.find(group => group.exercises.some(ex => ex.id == exerciseId));
     if (!group) {
       showToast('error', 'Error', 'Original exercise not found.');
       return null;
     }
     const originalExercise = group.exercises.find(ex => ex.id == exerciseId);
-    console.log(originalExercise)
     const allFieldsFilled = sets.every(set =>
       Object.keys(originalExercise).every(key =>
         originalExercise[key] == '' || set[key] != ''
@@ -215,6 +244,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
       exerciseId,
       sets,
       completed: progress.completed,
+      completedNotAsPlanned: progress.completedNotAsPlanned,
       rating: progress.rating,
       comments: progress.comments
     };
@@ -322,7 +352,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
                             </label>
                             <p>
                               <a href="#/" onClick={() => handleVideoClick(exercise.exercise.multimedia)}>
-                                Watch video
+                                <img src={getYouTubeThumbnail(exercise.exercise.multimedia)} alt="Video thumbnail" style={{ width: '100px', cursor: 'pointer' }} />
                               </a>
                             </p>
                         </div>
@@ -333,7 +363,8 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
                           exercise[property] !== '' && 
                           property !== 'completed'&& 
                           property !== 'rpe' && 
-                          property !== 'comments'
+                          property !== 'comments' &&
+                          property !== 'completedNotAsPlanned'
                         ) && (
                           <div key={propertyIndex} className="p-field exercise-field">
                             <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
@@ -347,65 +378,68 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
                       <SplitterPanel className='p-3' size={20}>
                       {isClientTraining && (
                         <div className="exercise-inputs">
-                         <div className="p-field-checkbox">
+                        <div className="p-field-checkbox">
                           <Checkbox
-                            inputId={`all-completed-${exercise.id}`}
-                            checked={exerciseProgress[exercise.id]?.allCompleted || false}
-                            onChange={() => handleAllCompletedChange(exercise.id)}
+                            inputId={`completed-not-as-planned-${exercise.id}`}
+                            checked={exerciseProgress[exercise.id]?.completedNotAsPlanned || false}
+                            onChange={() => handleCompletedChange(exercise.id, true)}
                           />
-                          <label htmlFor={`all-completed-${exercise.id}`}>Completed All as Planned</label>
+                          <label htmlFor={`completed-not-as-planned-${exercise.id}`}>Completed Not as Planned</label>
                         </div>
-                        {Array.from({ length: parseInt(exercise.sets) || group.set || 1 }).map((_, setIndex) => (
-                          <div key={setIndex}>
-                            <h4>Set {setIndex + 1}</h4>
-                            {Object.keys(exercise).map((property) => (
-                              property !== 'exercise' && 
-                              property !== 'id' && 
-                              exercise[property] !== '' && 
-                              property !== 'completed' &&
-                              property !== 'rpe' &&
-                              property !== 'sets' &&
-                              property !== 'comments' && (
-                                <div key={property} className="p-field exercise-field">
-                                  <label htmlFor={`${property}-${exercise.id}-${setIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
-                                  <InputText
-                                    id={`${property}-${exercise.id}-${setIndex}`}
-                                    value={exerciseProgress[exercise.id]?.sets?.[setIndex]?.[property] || ''}
-                                    onChange={(e) => handleExerciseChange(exercise.id, setIndex, property, e.target.value)}
-                                  />
-                                </div>
-                              )
-                            ))}
-                          </div>
-                        ))}
-                          <div className="p-field-checkbox">
-                            <Checkbox
-                              inputId={`completed-${exercise.id}`}
-                              checked={exerciseProgress[exercise.id]?.completed || false}
-                              onChange={(e) => handleExerciseChange(exercise.id, null, 'completed', e.checked)}
-                            />
-                            <label htmlFor={`completed-${exercise.id}`}>Completed</label>
-                          </div>
-                          <div className="p-field">
-                            <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
-                            <CustomInput
-                                type="dropdown" // Change this to "slider" or "dropdown" to use different input types
-                                id={`rating-${exercise.id}`}
-                                value={exerciseProgress[exercise.id]?.rating || 0}
-                                onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
-                              />
-                          </div>
-                          <div className="p-field">
-                            <label htmlFor={`comments-${exercise.id}`}>Comments</label>
-                            <InputTextarea
-                              id={`comments-${exercise.id}`}
-                              rows={3}
-                              value={exerciseProgress[exercise.id]?.comments || ''}
-                              onChange={(e) => handleExerciseChange(exercise.id, null, 'comments', e.target.value)}
-                              className="exercise-feedback-input"
-                            />
-                          </div>
+                        {exerciseProgress[exercise.id]?.completedNotAsPlanned && (
+                          Array.from({ length: parseInt(exercise.sets) || group.set || 1 }).map((_, setIndex) => (
+                            <div key={setIndex}>
+                              <h4>Set {setIndex + 1}</h4>
+                              {Object.keys(exercise).map((property) => (
+                                property !== 'exercise' &&
+                                property !== 'id' &&
+                                exercise[property] !== '' &&
+                                property !== 'completed' &&
+                                property !== 'completedNotAsPlanned' &&
+                                property !== 'rpe' &&
+                                property !== 'sets' &&
+                                property !== 'comments' && (
+                                  <div key={property} className="p-field exercise-field">
+                                    <label htmlFor={`${property}-${exercise.id}-${setIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
+                                    <InputText
+                                      id={`${property}-${exercise.id}-${setIndex}`}
+                                      value={exerciseProgress[exercise.id]?.sets?.[setIndex]?.[property] || ''}
+                                      onChange={(e) => handleExerciseChange(exercise.id, setIndex, property, e.target.value)}
+                                    />
+                                  </div>
+                                )
+                              ))}
+                            </div>
+                          ))
+                        )}
+                        <div className="p-field-checkbox">
+                          <Checkbox
+                            inputId={`completed-${exercise.id}`}
+                            checked={exerciseProgress[exercise.id]?.completed || false}
+                            onChange={() => handleCompletedChange(exercise.id, false)}
+                          />
+                          <label htmlFor={`completed-${exercise.id}`}>Completed</label>
                         </div>
+                        <div className="p-field">
+                          <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
+                          <CustomInput
+                            type="dropdown"
+                            id={`rating-${exercise.id}`}
+                            value={exerciseProgress[exercise.id]?.rating || 0}
+                            onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
+                          />
+                        </div>
+                        <div className="p-field">
+                          <label htmlFor={`comments-${exercise.id}`}>Comments</label>
+                          <InputTextarea
+                            id={`comments-${exercise.id}`}
+                            rows={3}
+                            value={exerciseProgress[exercise.id]?.comments || ''}
+                            onChange={(e) => handleExerciseChange(exercise.id, null, 'comments', e.target.value)}
+                            className="exercise-feedback-input"
+                          />
+                        </div>
+                      </div>
                       )}
                       {!isClientTraining && (
                         <div className="exercise-inputs">
@@ -415,6 +449,13 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
                               checked={exercise.completed || false}
                             />
                             <label htmlFor={`completed-${exercise.id}`}>Completed</label>
+                          </div>
+                          <div className="p-field-checkbox">
+                            <Checkbox
+                              inputId={`completedNotAsPlanned-${exercise.id}`}
+                              checked={exercise.completedNotAsPlanned || false}
+                            />
+                            <label htmlFor={`completed-${exercise.id}`}>Completed Not As Planned</label>
                           </div>
                           <div className="p-field">
                             <label htmlFor={`rating-${exercise.id}`}>RPE: </label>
