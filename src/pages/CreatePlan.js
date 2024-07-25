@@ -160,7 +160,7 @@ const handleClearPlan = () => {
           throw new Error(errorData.message || 'Something went wrong');
         }
         const data = await response.json();
-        const formattedExercises = data.map(exercise => ({ label: exercise.name, value: exercise.id }));
+        const formattedExercises = data.map(exercise => ({ label: exercise.name, value: exercise.id, exerciseType: exercise.exerciseType }));
         setExercises(formattedExercises);
       })
       .catch(error => showToast('error', 'Error fetching plan details', `${error.message}`));
@@ -219,6 +219,15 @@ const handleClearPlan = () => {
     updatedGroups[groupIndex].exercises[exerciseIndex].exercise.id = event.value;
     updatedGroups[groupIndex].exercises[exerciseIndex].exercise.name = selectedExercise.label;
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+  };
+  
+  // Función para filtrar por nombre y tipo de ejercicio
+  const filterExercises = (e) => {
+    const query = e.query.toLowerCase();
+    return exercises.filter(ex => 
+      ex.label.toLowerCase().includes(query) || 
+      ex.exerciseType.toLowerCase().includes(query)
+    );
   };
 
 
@@ -310,6 +319,15 @@ const handleClearPlan = () => {
       reject: () => console.log('Rejected')
   });
   }
+
+  const exerciseItemTemplate = (option) => {
+    return (
+      <div>
+        <div>{option.label}</div>
+        <div style={{ fontSize: '0.8em', color: 'gray' }}>{option.exerciseType}</div>
+      </div>
+    );
+  };
 
   const fetchSubmit = () => {
     const requestMethod = isEdit ? 'PUT' : 'POST';
@@ -452,7 +470,10 @@ const handleClearPlan = () => {
                       <div className="p-fluid exercise">
                         <div className="p-field">
                           <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
-                          <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter showClear required placeholder="Select an exercise" />
+                          <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter 
+                            filterBy="label,exerciseType" // Solo muestra el nombre en el dropdown
+                            itemTemplate={exerciseItemTemplate}
+                          showClear required placeholder="Select an exercise" />
                         </div>
                         {/* <div className="p-field">
                           <label htmlFor={`multimedia${groupIndex}-${exerciseIndex}`}>Video URL:</label>
