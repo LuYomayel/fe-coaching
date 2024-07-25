@@ -18,6 +18,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import '../styles/CreatePlan.css';
 import { useSpinner } from '../utils/GlobalSpinner';
 
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const CreatePlan = ({ isEdit }) => {
@@ -28,14 +29,16 @@ const CreatePlan = ({ isEdit }) => {
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
   const { loading, setLoading } = useSpinner();
-  const [plan, setPlan] = useState({
+  const [plan, setPlan] = useState(() => {
+    const savedPlan = localStorage.getItem('unsavedPlan');
+    return savedPlan ? JSON.parse(savedPlan) : {
       workout: {
         id: '',
         planName: '',
         coach: {
           id: '',
           user: {
-            id:user.userId
+            id: user.userId
           }
         }
       },
@@ -45,13 +48,13 @@ const CreatePlan = ({ isEdit }) => {
       expectedEndDate: '',
       expectedStartDate: '',
       feedback: '',
-      instanceName:'',
+      instanceName: '',
       isRepeated: false,
-      personalizedNotes:'',
-      realEndDate:'',
-      realStartedDate:'',
+      personalizedNotes: '',
+      realEndDate: '',
+      realStartedDate: '',
       repeatDays: [],
-      status:' ',
+      status: ' ',
       groups: [{
         set: '',
         rest: '',
@@ -70,11 +73,64 @@ const CreatePlan = ({ isEdit }) => {
           distance: ''
         }]
       }]
+    };
   });
 
   const handleBack = () => {
     navigate(-1)
   }
+
+  useEffect(() => {
+    localStorage.setItem('unsavedPlan', JSON.stringify(plan));
+  }, [plan]);
+
+  // Función para limpiar el plan
+const handleClearPlan = () => {
+  setPlan({
+    workout: {
+      id: '',
+      planName: '',
+      coach: {
+        id: '',
+        user: {
+          id: user.userId
+        }
+      }
+    },
+    isTemplate: true,
+    dateAssigned: '',
+    dateCompleted: '',
+    expectedEndDate: '',
+    expectedStartDate: '',
+    feedback: '',
+    instanceName: '',
+    isRepeated: false,
+    personalizedNotes: '',
+    realEndDate: '',
+    realStartedDate: '',
+    repeatDays: [],
+    status: ' ',
+    groups: [{
+      set: '',
+      rest: '',
+      groupNumber: 1,
+      exercises: [{
+        exercise: { name: '', id: '', multimedia: '' },
+        repetitions: '',
+        sets: '',
+        time: '',
+        weight: '',
+        restInterval: '',
+        tempo: '',
+        notes: '',
+        difficulty: '',
+        duration: '',
+        distance: ''
+      }]
+    }]
+  });
+  localStorage.removeItem('unsavedPlan');
+};
 
   useEffect(() => {
     if (isEdit && planId) {
@@ -333,61 +389,61 @@ const CreatePlan = ({ isEdit }) => {
           <Card key={groupIndex} className="create-plan-card" >
             <Fieldset legend={`Group ${group.groupNumber}`} toggleable onCollapse={() => handleRemoveGroup(groupIndex)} collapseIcon='pi pi-times'>
               <div className='fieldset-scroll'>
-                <div className='flex gap-2 '>
-                  <div className="p-field flex-grow-1">
+                <div className='flex gap-2 justify-content-center'>
+                  <div className="p-field ">
                     <label htmlFor={`set${groupIndex}`}>Set:</label>
                     <InputText id={`set${groupIndex}`} type="number" name="set" value={group.set} onChange={(e) => handleGroupChange(groupIndex, e)} />
                   </div>
-                  <div className="p-field flex-grow-1">
+                  <div className="p-field ">
                     <label htmlFor={`rest${groupIndex}`}>Rest (seconds):</label>
                     <InputText id={`rest${groupIndex}`} type="number" name="rest" value={group.rest} onChange={(e) => handleGroupChange(groupIndex, e)} />
                   </div>
                 </div>
-              {/* <h3>Exercises</h3>
-              {group.exercises.map((exercise, exerciseIndex) => (
-                <div key={exerciseIndex} className="p-fluid exercise">
-                  <div className="p-field">
-                    <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
-                    <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter showClear required placeholder="Select an exercise" />
-                  </div>
-                  <div className="p-field">
-                    <label htmlFor={`multimedia${groupIndex}-${exerciseIndex}`}>Video URL:</label>
-                    <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
-                  </div>
-                  {Object.keys(exercise).map((property, propertyIndex) => (
-                      (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '') && (
-                        <div key={propertyIndex} className="p-field">
-                          <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
-                          <InputText
-                            id={`${property}${groupIndex}-${exerciseIndex}`}
-                            name={property}
-                            value={exercise[property]}
-                            onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, property, e.target.value)}
-                          />
-                          <Button
-                            type="button"
-                            label="Remove Property"
-                            icon="pi pi-minus"
-                            onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
-                            className="p-button-rounded p-button-danger"
-                          />
-                          <Button type="button" label="Remove Exercise" icon="pi pi-minus" onClick={() => handleRemoveExercise(groupIndex, exerciseIndex)} className="p-button-rounded p-button-danger" />
-                        </div>
-                      )
-                    ))}
-                  <div className="p-field">
-                    <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
-                    <Dropdown
-                            filter={true}
-                            id={`addProperty${groupIndex}-${exerciseIndex}`}
-                            options={getAvailableProperties(exercise).map(prop => ({ label: prop.charAt(0).toUpperCase() + prop.slice(1), value: prop }))}
-                            onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
-                            placeholder="Select a property"
-                          />
+                {/* <h3>Exercises</h3>
+                {group.exercises.map((exercise, exerciseIndex) => (
+                  <div key={exerciseIndex} className="p-fluid exercise">
+                    <div className="p-field">
+                      <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
+                      <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter showClear required placeholder="Select an exercise" />
+                    </div>
+                    <div className="p-field">
+                      <label htmlFor={`multimedia${groupIndex}-${exerciseIndex}`}>Video URL:</label>
+                      <InputText id={`multimedia${groupIndex}-${exerciseIndex}`} name="multimedia" value={exercise.exercise.multimedia} onChange={(e) => handleExerciseChange(groupIndex, exerciseIndex, e)} required />
+                    </div>
+                    {Object.keys(exercise).map((property, propertyIndex) => (
+                        (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '') && (
+                          <div key={propertyIndex} className="p-field">
+                            <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
+                            <InputText
+                              id={`${property}${groupIndex}-${exerciseIndex}`}
+                              name={property}
+                              value={exercise[property]}
+                              onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, property, e.target.value)}
+                            />
+                            <Button
+                              type="button"
+                              label="Remove Property"
+                              icon="pi pi-minus"
+                              onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
+                              className="p-button-rounded p-button-danger"
+                            />
+                            <Button type="button" label="Remove Exercise" icon="pi pi-minus" onClick={() => handleRemoveExercise(groupIndex, exerciseIndex)} className="p-button-rounded p-button-danger" />
+                          </div>
+                        )
+                      ))}
+                    <div className="p-field">
+                      <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
+                      <Dropdown
+                              filter={true}
+                              id={`addProperty${groupIndex}-${exerciseIndex}`}
+                              options={getAvailableProperties(exercise).map(prop => ({ label: prop.charAt(0).toUpperCase() + prop.slice(1), value: prop }))}
+                              onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
+                              placeholder="Select a property"
+                            />
 
+                    </div>
                   </div>
-                </div>
-              ))} */}
+                ))} */}
                 <h3>Exercises</h3>
                 <div className='tabview-container'>
                 <TabView onTabClose={(e) => handleTabClose(e, groupIndex)} scrollable>
@@ -453,6 +509,7 @@ const CreatePlan = ({ isEdit }) => {
       </div>
       
       <div className="actions-section">
+        <Button type="button" label="Clear Plan" icon="pi pi-trash" onClick={handleClearPlan} className="p-button-rounded p-button-danger p-button-lg" />
         <Button type="button" label="Add Group" icon="pi pi-plus" onClick={handleAddGroup} className="p-button-rounded p-button-info p-button-lg" />
         <Button type="submit" label={isEdit ? 'Edit Plan' : 'Create Plan'} icon="pi pi-check" className="p-button-rounded p-button-success p-button-lg" onClick={handleSubmit}/>
       </div>
