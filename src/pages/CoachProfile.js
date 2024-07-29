@@ -22,6 +22,9 @@ import { useSpinner } from '../utils/GlobalSpinner';
 
 import * as XLSX from 'xlsx';
 import { FileUpload } from 'primereact/fileupload';
+import { fetchCoachWorkouts } from '../services/workoutService';
+import { fetchCoach, fetchCoachPlans } from '../services/usersService';
+import { createOrUpdateCoachPlan, fetchCoachSubscription, fetchCoachSubscriptionPlans } from '../services/subscriptionService';
         
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -85,23 +88,10 @@ const CoachProfile = () => {
           try {
             setLoading(true);
     
-            const subscriptionResponse = await fetch(`${apiUrl}/subscription/coach/${user.userId}`);
-            if (!subscriptionResponse.ok) {
-              const errorData = await subscriptionResponse.json();
-              if (errorData.message && errorData.message === 'Coach not found') {
-                return navigate('/complete-coach-profile');
-              }
-              throw new Error(errorData.message || 'Something went wrong');
-            }
-            const subscriptionData = await subscriptionResponse.json();
+            const subscriptionData = await fetchCoachSubscription(user.userId);
             setCurrentPlanId(subscriptionData.subscriptionPlan.id);
 
-            const workoutsResponse = await fetch(`${apiUrl}/workout/coach-workouts/userId/${user.userId}`);
-            if (!workoutsResponse.ok) {
-              const errorData = await workoutsResponse.json();
-              throw new Error(errorData.message || 'Something went wrong');
-            }
-            const workoutData = await workoutsResponse.json();
+            const workoutData = await fetchCoachWorkouts(user.userId)
             const mappedWorkouts = workoutData.map(workout => {
                 const instance = workout.workoutInstances.find(instance => instance.isTemplate)
                 return {
@@ -112,23 +102,10 @@ const CoachProfile = () => {
             // console.log(mappedWorkouts)
             setWorkouts(mappedWorkouts);
     
-            const coachResponse = await fetch(`${apiUrl}/users/coach/${user.userId}`);
-            if (!coachResponse.ok) {
-              const errorData = await coachResponse.json();
-              if (errorData.message && errorData.message === 'Coach not found') {
-                return navigate('/complete-coach-profile');
-              }
-              throw new Error(errorData.message || 'Something went wrong');
-            }
-            const coachData = await coachResponse.json();
-            setCoachInfo(coachData);
+            const data = await fetchCoach(user.userId)
+            setCoachInfo(data);
     
-            const coachPlansResponse = await fetch(`${apiUrl}/users/coach/coachPlan/${user.userId}`);
-            if (!coachPlansResponse.ok) {
-              const errorData = await coachPlansResponse.json();
-              throw new Error(errorData.message || 'Something went wrong');
-            }
-            const coachPlansData = await coachPlansResponse.json();
+            const coachPlansData = await fetchCoachPlans(user.userId);
             setCoachPlans(coachPlansData);
     
             const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${user.userId}`);
@@ -148,15 +125,13 @@ const CoachProfile = () => {
             const formattedBodyAreas = bodyAreasData.map(bodyArea => ({ label: bodyArea.name, value: bodyArea.id }));
             setBodyAreas(formattedBodyAreas);
     
-            const subscriptionPlansResponse = await fetch(`${apiUrl}/subscription/coach-subscription-plans`);
-            if (!subscriptionPlansResponse.ok) {
-              const errorData = await subscriptionPlansResponse.json();
-              throw new Error(errorData.message || 'Something went wrong');
-            }
-            const subscriptionPlansData = await subscriptionPlansResponse.json();
+            const subscriptionPlansData = await fetchCoachSubscriptionPlans();
             setSubscriptionPlans(subscriptionPlansData);
     
           } catch (error) {
+            if (error.message === 'Coach not found') {
+                navigate('/complete-coach-profile');
+            }
             showToast('error', 'Error', error.message);
           } finally {
             setLoading(false);
@@ -296,26 +271,19 @@ const CoachProfile = () => {
     }
     const handleCreatePlan = async () => {
         try {
-            const url = dialogMode === 'create' ? `${apiUrl}/subscription/coach/coachPlan` : `${apiUrl}/subscription/coach/coachPlan/${newPlan.id}`;
-            const method = dialogMode === 'create' ? 'POST' : 'PUT';
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({...newPlan, coachId: user.userId}),
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Something went wrong');
-            }
+            const data = await createOrUpdateCoachPlan(newPlan, newPlan.id, user.userId, dialogMode);
             if (dialogMode === 'create') {
-                showToast('success', 'Success', 'New plan created successfully');
+                if(data)
+                    showToast('success', 'Success', 'New plan created successfully');
             } else {
-                showToast('success', 'Success', 'Plan updated successfully');
+                if(data)
+                    showToast('success', 'Success', 'Plan updated successfully');
+                else{
+                    showToast('error', 'Error', 'Plan not updated');
+                }
             }
             closeCreatePlanDialog();
-            setRefreshKey(old=> old+1)
+            setRefreshKey(old => old + 1);
         } catch (error) {
             showToast('error', 'Error', error.message);
         }
@@ -684,7 +652,7 @@ const CoachProfile = () => {
                 />
             </Dialog>
 
-            <Dialog header="Create New Coach Plan" className="responsive-dialog" visible={createPlanDialogVisible} style={{ width: '50vw' }} onHide={closeCreatePlanDialog}>
+            <Dialog header={dialogMode === 'create' ? "Create New Coach Plan" : "Edit Coach Plan"} className="responsive-dialog" visible={createPlanDialogVisible} style={{ width: '50vw' }} onHide={closeCreatePlanDialog}>
                 <div className="p-fluid">
                     <div className="p-field">
                     <label htmlFor="name">Plan Name</label>

@@ -6,6 +6,8 @@ import { UserContext } from '../utils/UserContext';
 import { Dropdown } from 'primereact/dropdown';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { validateDates } from '../utils/UtilFunctions';
+import { fetchCoachPlans } from '../services/usersService';
+import { assignSubscription } from '../services/subscriptionService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
@@ -18,11 +20,18 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
   const [selectedCoachPlan, setSelectedCoachPlan] = useState()
   const { showConfirmationDialog } = useConfirmationDialog();
     useEffect( () => {    
-      fetch(`${apiUrl}/users/coach/coachPlan/${user.userId}`)
-          .then(async (response) => {
-            const data = await response.json();
-            setCoachPlans(data)
-          })
+      const loadCoachPlans = async () => {
+        try {
+          const plans = await fetchCoachPlans(user.userId);
+          setCoachPlans(plans);
+        } catch (error) {
+          showToast('error', 'Error', error.message);
+        }
+      };
+    
+      if (user && user.userId) {
+        loadCoachPlans();
+      }
     }, [])
 
   const assingSubscription = () => {
@@ -54,27 +63,12 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
   const handleAssignSubscription = async (body) => {
     try {
       setLoading(true);
-      // return
-      const response = await fetch(`${apiUrl}/subscription/client`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log(errorData)
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-      else{
-        // const data = await response.json();
-        showToast('success', 'Success', 'Subscription assigned successfully');
-        onClose();
-      } 
+      await assignSubscription(body);
+      showToast('success', 'Success', 'Subscription assigned successfully');
+      onClose();  // Assuming onClose is a function to close a modal or similar
     } catch (error) {
       showToast('error', 'Error', error.message);
-    } finally{
+    } finally {
       setLoading(false);
     }
   };

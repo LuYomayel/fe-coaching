@@ -20,6 +20,7 @@ import { formatDate, updateStatus } from '../utils/UtilFunctions';
 
 import '../styles/StudentHome.css';
 import { useSpinner } from '../utils/GlobalSpinner';
+import { fetchTrainingCyclesForClientByUserId } from '../services/workoutService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentHome = () => {
@@ -97,64 +98,50 @@ const StudentHome = () => {
   }
   useEffect(() => {
     setLoading(true)
-    fetch(`${apiUrl}/workout/training-cycles/client/userId/${user.userId}`)
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        return response.json();
-      })
-      .then(cycles => {
-        const events = cycles.flatMap(cycle => 
-          cycle.trainingWeeks.flatMap(week => 
-            week.trainingSessions.flatMap(session => {
-              const sessionEvents = session.workoutInstances.length > 0
-                ? session.workoutInstances.map(workoutInstance => {
-                  workoutInstance.status = updateStatus(workoutInstance, session)
-                  // const now = new Date();
-                  // const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                  // const sessionDate = new Date(session.sessionDate);
-                  // const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
-                  // if (workoutInstance.status === 'pending') {
-                  //   if (sessionDay < today) {
-                  //     workoutInstance.status = 'expired';
-                  //   } else if (sessionDay.getTime() === today.getTime()) {
-                  //     workoutInstance.status = 'current';
-                  //   }
-                  // }
-                  return {
-                    title: workoutInstance.workout.planName,
-                    start: session.sessionDate,
-                    extendedProps: {
-                      status: workoutInstance.status,
-                      workoutInstanceId: workoutInstance.id,
-                      sessionId: session.id
-                    }}
-                  })
-                : [{
-                    title: 'no title',
-                    start: session.sessionDate,
-                    extendedProps: {
-                      sessionId: session.id
-                    }
-                  }];
-              
-              return sessionEvents;
-            })
-          )
-        );
-        const cycleMap = cycles.map(cycle => {
-          const startDate = new Date(cycle.startDate);
-          const monthYear = `${startDate.getMonth() + 1}-${startDate.getFullYear()}`;
-          return { monthYear, id: cycle.id };
-        });
-        setCycles(cycleMap);
-        // console.log(events, cycles)
-        setCalendarEvents(events);
-      })
-      .catch(error => showToast('error', 'Error', error.message))
-      .finally(()=>setLoading(false))
+    fetchTrainingCyclesForClientByUserId(user.userId)
+    .then(cycles => {
+      const events = cycles.flatMap(cycle => 
+        cycle.trainingWeeks.flatMap(week => 
+          week.trainingSessions.flatMap(session => {
+            const sessionEvents = session.workoutInstances.length > 0
+              ? session.workoutInstances.map(workoutInstance => {
+                workoutInstance.status = updateStatus(workoutInstance, session)
+                return {
+                  title: workoutInstance.workout.planName,
+                  start: session.sessionDate,
+                  extendedProps: {
+                    status: workoutInstance.status,
+                    workoutInstanceId: workoutInstance.id,
+                    sessionId: session.id
+                  }
+                }
+              })
+              : [{
+                  title: 'no title',
+                  start: session.sessionDate,
+                  extendedProps: {
+                    sessionId: session.id
+                  }
+                }];
+            
+            return sessionEvents;
+          })
+        )
+      );
+      const cycleMap = cycles.map(cycle => {
+        const startDate = new Date(cycle.startDate);
+        const monthYear = `${startDate.getMonth() + 1}-${startDate.getFullYear()}`;
+        return { monthYear, id: cycle.id };
+      });
+      setCycles(cycleMap);
+      setCalendarEvents(events);
+    })
+    .catch(error => {
+      showToast('error', 'Error', error.message);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
   }, [user.userId, refreshKey, showToast]);
 
   const handleViewPlanDetails = (plan) => {

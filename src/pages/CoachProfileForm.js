@@ -10,6 +10,7 @@ import { RadioButton } from 'primereact/radiobutton';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import '../styles/CoachProfileForm.css'
+import { updateCoach } from '../services/usersService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const trainingTypes = [
@@ -54,26 +55,12 @@ const CoachProfileForm = () => {
     // console.log(body, )
     // return
     try {
-      const response = await fetch(`${apiUrl}/users/coach/${user.userId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCoach(data);
-        navigate('/coach');
-        showToast('success', 'Profile updated!', `Thanks for subscribing ${data.name}`)
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      }
+      const token = localStorage.getItem('token'); // Assume the token is stored in local storage
+      const data = await updateCoach(user.userId, body, token);
+      setCoach(data);
+      navigate('/coach');
+      showToast('success', 'Profile updated!', `Thanks for subscribing ${data.name}`);
     } catch (error) {
-      // Handle errors here
       showToast('error', 'Error', error.message);
     }
     setLoading(false);

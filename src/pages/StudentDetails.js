@@ -18,6 +18,9 @@ import { formatDate } from '../utils/UtilFunctions';
 import '../styles/StudentDetails.css';
 import { Fieldset } from 'primereact/fieldset';
 import { useSpinner } from '../utils/GlobalSpinner';
+import { deleteWorkoutPlan } from '../services/workoutService';
+import { fetchClientActivities } from '../services/usersService';
+import { fetchSubscriptionForStudent } from '../services/subscriptionService';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -48,12 +51,7 @@ const StudentDetails = () => {
       try {
         setLoading(true);
 
-        const subscriptionResponse = await fetch(`${apiUrl}/subscription/client/${studentId}`);
-        if (!subscriptionResponse.ok) {
-          const errorData = await subscriptionResponse.json();
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        const subscriptionData = await subscriptionResponse.json();
+        const subscriptionData = await fetchSubscriptionForStudent(studentId);
         setStudent(subscriptionData);
 
         const completed = subscriptionData.workoutInstances.filter(workout => workout.status === 'completed').length;
@@ -70,12 +68,7 @@ const StudentDetails = () => {
           ]
         });
 
-        const activitiesResponse = await fetch(`${apiUrl}/users/clientId/activities/${studentId}`);
-        if (!activitiesResponse.ok) {
-          const errorData = await activitiesResponse.json();
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        const activitiesData = await activitiesResponse.json();
+        const activitiesData = await fetchClientActivities(studentId);
         setActivities(activitiesData);
 
       } catch (error) {
@@ -127,23 +120,13 @@ const StudentDetails = () => {
   });
   }
 
-  const fetchDeletePlan = (plan) => {
-    fetch(`${apiUrl}/workout/deleteInstance/${plan.id}`, {
-      method: "DELETE",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then(async (response) => {
-      if(response.ok){
-        showToast('success', 'Plan deleted!', `You have deleted the plan ${plan.workout.planName} successfully!`);
-        setRefreshKey(old => old+1)
-      }else{
-        const errorData = await response.json();
-        console.log(errorData)
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-    })
-    .catch(error => showToast('error', 'Error', error.message))
+  const fetchDeletePlan = async (plan) => {
+    try {
+      const data = await deleteWorkoutPlan(plan.id, false);
+      showToast('success', 'Plan deleted!', `You have deleted the plan ${plan.workout.planName} successfully!`);
+    } catch (error) {
+      showToast('error', 'Error', error.message)
+    }
   }
 
   const handleViewPlanDetails = (workoutInstance) => {

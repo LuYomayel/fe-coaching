@@ -9,6 +9,7 @@ import { MultiSelect } from 'primereact/multiselect';
 import { InputNumber } from 'primereact/inputnumber';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
+import { saveStudent } from '../services/usersService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const NewStudentDialog = ({ onClose, setRefreshKey }) => {
@@ -48,29 +49,11 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
     
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/users/client`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body)
-      });
-    //   const data = await response.json();
-      if (!response.ok) {
-        const errorData = await response.json();
-        if(errorData.message && errorData.message.message){
-          throw new Error(errorData.message.message.join(', ') || 'Something went wrong');
-        }
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-      else{
-        setLoading(false);
-        showToast('success', 'Success', 'Student added successfully');
-        onClose();
-        setRefreshKey(old => old+1)
-      }
+      const data = await saveStudent(body);
+      showToast('success', 'Success', 'Student added successfully');
+      onClose(); // Close modal or navigation function
+      setRefreshKey(old => old + 1); // Trigger refetch of data
     } catch (error) {
-      setLoading(false);
       showToast('error', 'Error', error.message);
     } finally {
       setLoading(false);

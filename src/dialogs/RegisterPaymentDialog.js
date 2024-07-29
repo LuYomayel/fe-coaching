@@ -6,6 +6,8 @@ import { UserContext } from '../utils/UserContext';
 import { Dropdown } from 'primereact/dropdown';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { validateDates } from '../utils/UtilFunctions';
+import { fetchCoachPlans } from '../services/usersService';
+import { registerPayment } from '../services/subscriptionService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, oldCoachPlan }) => {
@@ -30,15 +32,18 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     setEndDate(newEndDate);
     setPaymentDate(new Date());
     setSelectedCoachPlan(oldCoachPlan.id);
-
-    fetch(`${apiUrl}/users/coach/coachPlan/${user.userId}`)
-      .then(async (response) => {
-        const data = await response.json();
-        setCoachPlans(data);
-      });
+    const loadCoachPlans = async () => {
+      try {
+        const data = await fetchCoachPlans(user.userId);
+        setCoachPlans(data)
+      } catch (error) {
+        showToast('error', 'Error', error.message)
+      }
+    }
+    loadCoachPlans();
   }, [user.userId, oldSubscription, oldCoachPlan]);
 
-  const registerPayment = () => {
+  const onClickRegisterPayment = () => {
     const body = {
       coachId,
       clientId: studentId,
@@ -76,24 +81,12 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
   const handleRegisterPayment = async (body) => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/subscription/update`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      } else {
-        showToast('success', 'Success', 'Payment registered and subscription updated successfully');
-        onClose();
-      }
+      await registerPayment(body);
+      showToast('success', 'Success', 'Payment registered and subscription updated successfully');
+      onClose();  // Assuming onClose closes a modal or dialog
     } catch (error) {
       showToast('error', 'Error', error.message);
-    } finally{
+    } finally {
       setLoading(false);
     }
   };
@@ -116,7 +109,7 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
         <label htmlFor="coachPlan">Select Plan</label>
         <Dropdown id="coachPlan" options={coachPlans} optionLabel="name" optionValue="id" value={selectedCoachPlan} onChange={(e) => setSelectedCoachPlan(e.value)} />
       </div>
-      <Button label="Register Payment" icon="pi pi-dollar" loading={loading} onClick={registerPayment} />
+      <Button label="Register Payment" icon="pi pi-dollar" loading={loading} onClick={onClickRegisterPayment} />
     </div>
   );
 };

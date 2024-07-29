@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { validateDates } from '../utils/UtilFunctions';
+import { assignWorkout } from '../services/workoutService';
 const apiUrl = process.env.REACT_APP_API_URL;
 const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   const [currentPlans, setCurrentPlans] = useState(selectedPlans);
@@ -65,27 +66,9 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
     };
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/workout/assignWorkout`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData)
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        else {
-            showToast('success', 'Plan assigned successfully');
-            const newPlans = currentPlans.filter((_, i) => i !== index);
-            setCurrentPlans(newPlans);
-            setAssignmentData(assignmentData.filter((_, i) => i !== index));
-            if (newPlans.length === 0) {
-              onClose();
-            }
-        }
+      const result = await assignWorkout(data);
+      showToast('success', 'Plan assigned successfully');
+      onClose(); // Asumiendo que onClose hace algo relevante después de una asignación exitosa
     } catch (error) {
       showToast('error', 'Error', error.message);
     } finally {

@@ -22,6 +22,7 @@ import AssignWorkoutToCycleDialog from '../dialogs/AssignWorkoutToCycleDialog';
 import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialog';
 import PlanDetails from '../dialogs/PlanDetails';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
+import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId } from '../services/workoutService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ClientDashboard = () => {
@@ -78,91 +79,32 @@ const ClientDashboard = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${apiUrl}/workout/training-cycles/client/clientId/${clientId}`)
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        return response.json();
-      })
-      .then(cycles => {
-        const events = cycles.flatMap(cycle => 
-          cycle.trainingWeeks.flatMap(week => 
-            week.trainingSessions.flatMap(session => {
-              const sessionEvents = session.workoutInstances.length > 0
-                ? session.workoutInstances.map(workoutInstance => {
-                  workoutInstance.status = updateStatusLocal(workoutInstance, session);
-                  return {
-                    title: workoutInstance.workout.planName,
-                    start: session.sessionDate,
-                    extendedProps: {
-                      status: workoutInstance.status,
-                      workoutInstanceId: workoutInstance.id,
-                      sessionId: session.id
-                    }}
-                  }
-                  )
-                : [{
-                    title: 'no title',
-                    start: session.sessionDate,
-                    extendedProps: {
-                      sessionId: session.id,
-                      cycle: cycle.name
-                    }
-                  }];
-              
-              return sessionEvents;
-            })
-          )
-        );
-        
-        // console.log(events)
-        const cycleMap = cycles.map(cycle => {
-          const startDate = new Date(cycle.startDate);
-          const monthYear = `${startDate.getMonth() + 1}-${startDate.getFullYear()}`;
-          return { monthYear, id: cycle.id };
-        });
+    fetchTrainingCyclesByClient(clientId)
+      .then(({ events, cycleMap }) => {
         setCycles(cycleMap);
-        // console.log(events, cycles)
         setCalendarEvents(events);
       })
-      .catch(error => showToast('error', 'Error', error.message))
+      .catch(error => showToast('error', 'Error fetching training cycles', error.message))
       .finally(() => setLoading(false));
 
-    // console.log(clientId)
-    fetch(`${apiUrl}/workout/clientId/${clientId}`)
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData);
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        const data = await response.json();
-        // console.log(data)
+      fetchWorkoutsByClientId(clientId)
+      .then(data => {
         setWorkouts(data);
-        setAdherenceData(processDataForAdherenceChart(data));
-        // setKeyExercisesData(processDataForKeyExercisesChart(data, 'Push-up')); // Example for 'Push-up'
-        // setIntensityDistributionData(processDataForIntensityDistributionChart(data));
-        // setRpeFeedbackData(processDataForRpeFeedbackChart(data));
-        // setTrainingCyclesData(processDataForTrainingCyclesChart(data));
-        // setGoalsData(processDataForGoalsChart(data.goals)); // Assuming goals are part of the response
+        // Process data for display or additional computations here
         const exercises = [...new Map(data.flatMap(workout => 
-            workout.groups.flatMap(group => 
-              group.exercises.map(ex => [ex.exercise.id, { id: ex.exercise.id, name: ex.exercise.name }])
-            )
-            ).map(entry => [entry[0], entry[1]]))].map(entry => entry[1]);
-  
-            const formattedExercises = exercises.map(ex => ({ label: ex.name, value: ex.id }));
-        setExerciseOptions(formattedExercises);
+          workout.groups.flatMap(group => 
+            group.exercises.map(ex => [ex.exercise.id, { id: ex.exercise.id, name: ex.exercise.name }])
+          )
+        ).map(entry => [entry[0], entry[1]]))].map(entry => entry[1]);
+
+        setExerciseOptions(exercises.map(ex => ({ label: ex.name, value: ex.id })));
+
         const uniqueWorkouts = [...new Map(data.map(workout => [workout.workout.id, workout.workout])).values()];
-        
         setWorkoutOptions(uniqueWorkouts.map(workout => ({ label: workout.planName, value: workout.id })));
-        // console.log(uniqueWorkouts)
-        // console.log(uniqueWorkouts.map(workout => ({ label: workout.planName, value: workout.id })))
-        // setExerciseOptions(exercises);
       })
-      .catch(error => showToast('error', 'Error fetching feedback', `${error.message}`))
+      .catch(error => {
+        showToast('error', 'Error fetching client workouts', error.message);
+      })
       .finally(() => setLoading(false));
   }, [clientId, showToast, setLoading, refreshKey]);
 

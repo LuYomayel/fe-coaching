@@ -4,6 +4,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
+import { assignSession, fetchCoachWorkouts } from '../services/workoutService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey }) => {
@@ -14,13 +15,16 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   const {user} = useContext(UserContext);
 
   useEffect(() => {
-    fetch(`${apiUrl}/workout/coach-workouts/userId/${user.userId}`)
-      .then(async response => {
-        const data = await response.json();
-        // setWorkouts(data.map(workout => ({ label: workout.name, value: workout.id })));
-        setWorkouts([...data])
-      })
-      .catch(error => showToast('error', 'Error', error.message));
+    const loadWorkouts = async () => {
+      try {
+        const workoutsData = await fetchCoachWorkouts(user.userId);
+        setWorkouts([...workoutsData])
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      }
+    };
+
+    loadWorkouts();
   }, [showToast, user.userId]);
 
   const handleAssign = async () => {
@@ -37,19 +41,8 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
     // return;
     try {
       setLoading(true)
-      const response = await fetch(`${apiUrl}/workout/assign-session/${sessionId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-      showToast('success', 'Success', 'Workout assigned to session successfully');
+      const result = await assignSession(sessionId, body);
+      showToast('success', 'Session assigned successfully');
       onHide();
       setRefreshKey(old=>old+1);
     } catch (error) {

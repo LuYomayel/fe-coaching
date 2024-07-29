@@ -20,6 +20,7 @@ import CustomInput from '../components/CustomInput';
 import VideoDialog from '../dialogs/VideoDialog';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { InputText } from 'primereact/inputtext';
+import { fetchWorkoutInstance, submitFeedback } from '../services/workoutService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=true }) => {
@@ -63,25 +64,22 @@ const TrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey, isTraining=
   const navigate = useNavigate();
   useEffect(() => {
     setLoading(true)
-    fetch(`${apiUrl}/workout/workout-instance/${planId}`)
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData)
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        const data = await response.json();
-        console.log(data)
-        if(data.status === 'completed')
-        setIsClientTraining(false)
-        setPlan(data)
-      })
-      .catch(error => showToast('error',  'Error fetching plan details xd', `${error.message}`))
-      .finally(() => setLoading(false))
+    const fetchInstances = async () => {
+      try {
 
-      
+        const data = await fetchWorkoutInstance(planId);
+        if(data.status === 'completed')
+          setIsClientTraining(false)
+        setPlan(data)
+      } catch (error) {
+        showToast('error',  'Error fetching plan details xd', `${error.message}`)
+      } finally{
+        setLoading(false)
+      }
+    }
+    fetchInstances()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planId]);
+  }, [planId, showToast, setLoading]);
 
   // const handleExerciseChange = (exerciseId, field, value) => {
   //   setExerciseProgress((prevProgress) => ({
@@ -220,7 +218,7 @@ const handleCompletedChange = (exerciseId, isNotAsPlanned) => {
     }
 };
 
-const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perceivedDifficulty, additionalNotes }) => {
+const onClickSubmitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perceivedDifficulty, additionalNotes }) => {
   const exerciseFeedbackArray = Object.entries(exerciseProgress).map(([exerciseId, progress]) => {
     const sets = Object.values(progress.sets || {});
     const group = plan.groups.find(group => group.exercises.some(ex => ex.id == exerciseId));
@@ -239,7 +237,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
       showToast('error', 'Error', 'All relevant fields must be filled out.');
       return null;
     }
-
+    
     return {
       exerciseId,
       sets,
@@ -250,7 +248,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
     };
   }).filter(feedback => feedback !== null);
 
-
+  console.log('Estelopg:',exerciseFeedbackArray)
   if (exerciseFeedbackArray.length === 0) {
     showToast('error', 'Error', 'No valid feedback to submit.');
     return;
@@ -267,21 +265,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
     additionalNotes
   };
 
-  fetch(`${apiUrl}/workout/feedback/${planId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log(errorData);
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-      return response.json();
-    })
+  submitFeedback(planId, body)
     .then(() => {
       setExerciseProgress({});
       setFinishDialogVisible(false);
@@ -291,7 +275,10 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
       showToast('success', 'Session finished!', 'Congratulations, you have finished your routine.');
       navigate('/student');
     })
-    .catch(error => showToast('error', 'Error', error.message));
+    .catch(error => {
+      showToast('error', 'Error', error.message);
+      setFinishDialogVisible(false); // Ensure to turn off the loading indicator on error as well
+    });
 };
 
   
@@ -502,7 +489,7 @@ const submitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perce
     <FinishTrainingDialog
         visible={finishDialogVisible}
         onHide={() => setFinishDialogVisible(false)}
-        submitFeedback={submitFeedback}
+        submitFeedback={onClickSubmitFeedback}
       />
     <VideoDialog
       visible={videoDialogVisible}

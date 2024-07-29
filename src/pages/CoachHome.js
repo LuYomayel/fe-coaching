@@ -21,6 +21,8 @@ import { formatDate } from '../utils/UtilFunctions';
 import '../styles/Home.css';
 import { UserContext } from '../utils/UserContext';
 import { useSpinner } from '../utils/GlobalSpinner';
+import { deletePlan, fetchTrainingCyclesByCoachId } from '../services/workoutService';
+import { fetchCoachStudents } from '../services/usersService';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -84,14 +86,11 @@ const CoachHome = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const allStudentsResponse = await fetch(`${apiUrl}/users/coach/allStudents/${user.userId}`);
-          if (!allStudentsResponse.ok) {
-            const errorData = await allStudentsResponse.json();
-            throw new Error(errorData.message || 'Something went wrong');
-          }
-          const clients = await allStudentsResponse.json();
-          const clientsMapped = clients.filter( client => client.user.subscription.status === 'Active')
-          setClients(clientsMapped)
+
+        const data = await fetchCoachStudents(user.userId);
+        
+        const clientsMapped = data.filter( client => client.user.subscription.status === 'Active')
+        setClients(clientsMapped)
           // setClients(old => [...old, ...clientsMapped])
           // setClients(old => [...old, ...clientsMapped])
           // setClients(old => [...old, ...clientsMapped])
@@ -110,63 +109,58 @@ const CoachHome = () => {
   }, [])
   useEffect(() => {
     setLoading(true)
-    fetch(`${apiUrl}/workout/training-cycles/coachId/${user.userId}`)
-    .then(async (response) => {
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-      return response.json();
-    })
-    .then(cycles => {
-      const nodes = cycles.map(cycle => ({
-        key: `cycle-${cycle.id}`,
-        data: {
-          type: 'cycle',
-          name: cycle.name,
-          client: cycle.client.name,
-          startDate: cycle.startDate,
-          endDate: cycle.endDate,
-          clientId: cycle.client.id
-        },
-        children: cycle.trainingWeeks.map(week => ({
-          key: `week-${week.id}`,
+    fetchTrainingCyclesByCoachId(user.userId)
+      .then(cycles => {
+        const nodes = cycles.map(cycle => ({
+          key: `cycle-${cycle.id}`,
           data: {
-            type: 'week',
-            name: `Week - ${week.weekNumber}`,
-            weekNumber: week.weekNumber,
-            startDate: week.startDate,
-            endDate: week.endDate,
+            type: 'cycle',
+            name: cycle.name,
+            client: cycle.client.name,
+            startDate: cycle.startDate,
+            endDate: cycle.endDate,
+            clientId: cycle.client.id
           },
-          children: week.trainingSessions.map(session => ({
-            key: `session-${session.id}`,
+          children: cycle.trainingWeeks.map(week => ({
+            key: `week-${week.id}`,
             data: {
-              sessionId: session.id,
-              name: `Day - ${session.dayNumber}`,
-              type: 'session',
-              dayNumber: session.dayNumber,
-              sessionDate: session.sessionDate,
-              startDate: session.sessionDate,
-              clientId: cycle.client.id
+              type: 'week',
+              name: `Week - ${week.weekNumber}`,
+              weekNumber: week.weekNumber,
+              startDate: week.startDate,
+              endDate: week.endDate,
             },
-            children: session.workoutInstances.map(workoutInstance => ({
-              key: `workoutInstance-${workoutInstance.id}`,
+            children: week.trainingSessions.map(session => ({
+              key: `session-${session.id}`,
               data: {
-                type: 'workoutInstance',
-                name: workoutInstance.workout.planName,
-                instanceName: workoutInstance.instanceName,
-                status: workoutInstance.status,
-                sessionTime: workoutInstance.sessionTime,
-                generalFeedback: workoutInstance.generalFeedback,
-              }
+                sessionId: session.id,
+                name: `Day - ${session.dayNumber}`,
+                type: 'session',
+                dayNumber: session.dayNumber,
+                sessionDate: session.sessionDate,
+                startDate: session.sessionDate,
+                clientId: cycle.client.id
+              },
+              children: session.workoutInstances.map(workoutInstance => ({
+                key: `workoutInstance-${workoutInstance.id}`,
+                data: {
+                  type: 'workoutInstance',
+                  name: workoutInstance.workout.planName,
+                  instanceName: workoutInstance.instanceName,
+                  status: workoutInstance.status,
+                  sessionTime: workoutInstance.sessionTime,
+                  generalFeedback: workoutInstance.generalFeedback,
+                }
+              }))
             }))
           }))
-        }))
-      }));
-      setNodes(nodes);
-    })
-    .catch(error => showToast('error', 'Error', error.message))
-    .finally(() => setLoading(false))
+        }));
+        setNodes(nodes);
+      })
+      .catch(error => {
+        showToast('error', 'Error fetching training cycles', error.message);
+      })
+      .finally(() => setLoading(false));
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
@@ -229,25 +223,19 @@ const CoachHome = () => {
   });
   };
 
-  const fetchDeletePlan = (workoutInstanceId) => {
-    const url = `${apiUrl}/workout/deleteInstance/${workoutInstanceId}`;
-    fetch(`${url}`, {
-      method: "DELETE",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(async (response) => {
-      if(response.ok){
+  const fetchDeletePlan = async (workoutInstanceId) => {
+    setLoading(true);
+    try {
+      const success = await deletePlan(workoutInstanceId);
+      if (success) {
         setRefreshKey(prev => prev + 1); // Update the refresh key to re-fetch data
-        showToast('success', `You have deleted the plan with success!`, 'Plan deleted!');  
-      }else{
-        const errorData = await response.json();
-        console.log(errorData)
-        throw new Error(errorData.message || 'Something went wrong');
+        showToast('success', 'You have deleted the plan with success!', 'Plan deleted!');
       }
-    })
-    .catch( (error) => showToast('error', 'Error', error.message))
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleNewStudentDialogHide = () => {

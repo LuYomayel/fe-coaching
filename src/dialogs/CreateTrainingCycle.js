@@ -6,8 +6,10 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
-import { Checkbox } from 'primereact/checkbox';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
+import { InputNumber } from 'primereact/inputnumber';
+import { createTrainingCycle } from '../services/workoutService';
+import { fetchCoachStudents } from '../services/usersService';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -16,49 +18,39 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
   const showToast = useToast();
   const [cycleName, setCycleName] = useState('');
   const [startDate, setStartDate] = useState(null);
-  const [isMonthly, setIsMonthly] = useState(false);
+  const [durationInMonths, setDurationInMonths] = useState(null);
+  const [durationInWeeks, setDurationInWeeks] = useState(null);
   const [clients, setClients] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState(null);
   const { showConfirmationDialog } = useConfirmationDialog();
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    fetch(`${apiUrl}/users/coach/allStudents/${user.userId}`)
-      .then(async response => {
-        
-        if(!response.ok){
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Something went wrong.')
-        }
-        const data = await response.json();
-        const dataFiltered = data.filter(client => client.user.subscription.status !== 'Inactive').map( client => ({ label: client.name, value: client.id }))
-
-        // setClients(data.map(client => {
-        //   return ({ label: client.name, value: client.id })
-        // }));
-        setClients(dataFiltered)
-      })
-      .catch(error => {
-        showToast('error', 'Error', error.message)
-      });
+    const loadCoachStudents = async () => {
+      try {
+        const students = await fetchCoachStudents(user.userId);
+        const activeStudents = students
+          .filter(client => client.user.subscription.status !== 'Inactive')
+          .map(client => ({
+            label: client.name,
+            value: client.id
+          }));
+        setClients(activeStudents);
+      } catch (error) {
+        showToast('error', 'Error fetching students', error.message);
+      }
+    };
+  
+    if (user && user.userId) {
+      loadCoachStudents();
+    }
   }, [showToast, user.userId]);
 
   const handleCreateCycle = async (body) => {
     try {
       setLoading(true)
-      const response = await fetch(`${apiUrl}/workout/training-cycles`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-
-      showToast('success', 'Success', 'Training cycle created successfully');
+      const result = await createTrainingCycle(body);
+      showToast('success', 'Training cycle created successfully!');
+      console.log('Created cycle:', result); // Example of handling the received data
       onHide();
     } catch (error) {
       showToast('error', 'Error', error.message);
@@ -67,18 +59,33 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
     }
   };
 
+  const onDurationMonthChange = (e) => {
+    setDurationInMonths(e.value);
+    setDurationInWeeks(null); // Clear weeks when months is set
+  };
+
+  const onDurationWeekChange = (e) => {
+    setDurationInWeeks(e.value);
+    setDurationInMonths(null); // Clear months when weeks is set
+  };
+
   const clickCreateCycle =() => {
     if (!cycleName || !startDate || !selectedClientId) {
       showToast('error', 'Error', 'All fields are required');
       return;
     }
 
+    if (!durationInMonths && !durationInWeeks) {
+      showToast('error', 'Error', 'Please enter a duration in weeks or months');
+      return;
+    }
     const body = {
       name: cycleName,
       coachId: user.userId,
       startDate,
-      isMonthly,
-      clientId: selectedClientId
+      clientId: selectedClientId,
+      durationInMonths,
+      durationInWeeks
     };
 
     showConfirmationDialog({
@@ -99,9 +106,13 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
         <label htmlFor="startDate">Start Date</label>
         <Calendar id="startDate" value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
       </div>
-      <div className="p-field-checkbox">
-        <Checkbox inputId="isMonthly" checked={isMonthly} onChange={(e) => setIsMonthly(e.checked)} />
-        <label htmlFor="isMonthly">Is Monthly</label>
+      <div className="p-field">
+        <label htmlFor="durationInMonths">Duration in Months</label>
+        <InputNumber id="durationInMonths" value={durationInMonths} onValueChange={onDurationMonthChange} mode="decimal" min={1} max={12} />
+      </div>
+      <div className="p-field">
+        <label htmlFor="durationInWeeks">Duration in Weeks</label>
+        <InputNumber id="durationInWeeks" value={durationInWeeks} onValueChange={onDurationWeekChange} mode="decimal" min={1} max={52} />
       </div>
       <div className="p-field">
           <label htmlFor="client">Client</label>

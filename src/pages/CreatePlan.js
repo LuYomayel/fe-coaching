@@ -17,6 +17,7 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import '../styles/CreatePlan.css';
 import { useSpinner } from '../utils/GlobalSpinner';
+import { fetchWorkoutInstance, submitPlan } from '../services/workoutService';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -31,7 +32,8 @@ const CreatePlan = ({ isEdit }) => {
   const { loading, setLoading } = useSpinner();
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
-    return savedPlan ? JSON.parse(savedPlan) : {
+
+    return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
       workout: {
         id: '',
         planName: '',
@@ -81,75 +83,77 @@ const CreatePlan = ({ isEdit }) => {
   }
 
   useEffect(() => {
-    localStorage.setItem('unsavedPlan', JSON.stringify(plan));
-  }, [plan]);
+    if(!isEdit){
+      localStorage.setItem('unsavedPlan', JSON.stringify(plan));
+    }
+  }, [plan, isEdit]);
 
   // Función para limpiar el plan
-const handleClearPlan = () => {
-  setPlan({
-    workout: {
-      id: '',
-      planName: '',
-      coach: {
+  const handleClearPlan = () => {
+    setPlan({
+      workout: {
         id: '',
-        user: {
-          id: user.userId
+        planName: '',
+        coach: {
+          id: '',
+          user: {
+            id: user.userId
+          }
         }
-      }
-    },
-    isTemplate: true,
-    dateAssigned: '',
-    dateCompleted: '',
-    expectedEndDate: '',
-    expectedStartDate: '',
-    feedback: '',
-    instanceName: '',
-    isRepeated: false,
-    personalizedNotes: '',
-    realEndDate: '',
-    realStartedDate: '',
-    repeatDays: [],
-    status: ' ',
-    groups: [{
-      set: '',
-      rest: '',
-      groupNumber: 1,
-      exercises: [{
-        exercise: { name: '', id: '', multimedia: '' },
-        repetitions: '',
-        sets: '',
-        time: '',
-        weight: '',
-        restInterval: '',
-        tempo: '',
-        notes: '',
-        difficulty: '',
-        duration: '',
-        distance: ''
+      },
+      isTemplate: true,
+      dateAssigned: '',
+      dateCompleted: '',
+      expectedEndDate: '',
+      expectedStartDate: '',
+      feedback: '',
+      instanceName: '',
+      isRepeated: false,
+      personalizedNotes: '',
+      realEndDate: '',
+      realStartedDate: '',
+      repeatDays: [],
+      status: ' ',
+      groups: [{
+        set: '',
+        rest: '',
+        groupNumber: 1,
+        exercises: [{
+          exercise: { name: '', id: '', multimedia: '' },
+          repetitions: '',
+          sets: '',
+          time: '',
+          weight: '',
+          restInterval: '',
+          tempo: '',
+          notes: '',
+          difficulty: '',
+          duration: '',
+          distance: ''
+        }]
       }]
-    }]
-  });
-  localStorage.removeItem('unsavedPlan');
-};
+    });
+    localStorage.removeItem('unsavedPlan');
+  };
 
   useEffect(() => {
-    if (isEdit && planId) {
-      setLoading(true)
-      fetch(`${apiUrl}/workout/workout-instance/${planId}`)
-        .then(async (response) => {
-          if (!response.ok) {
-            const errorData = await response.json();
-            console.log(errorData)
-            throw new Error(errorData.message || 'Something went wrong');
-          }
-          const data = await response.json();
-          setPlan(data)
-        })
-        .catch(error => showToast('error', 'Error fetching plan details' , `${error.message}`))
-        .finally( () => setLoading(false))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEdit, planId]);
+    const fetchPlanDetails = async () => {
+      if (isEdit && planId) {
+        setLoading(true);
+        try {
+          const data = await fetchWorkoutInstance(planId)
+          // const data = await response.json();
+          setPlan(data);
+        } catch (error) {
+          showToast('error', 'Error fetching plan details', `${error.message}`);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchPlanDetails();
+  }, [isEdit, planId, setLoading, setPlan]);
   
   useEffect(() => {
     fetch(`${apiUrl}/exercise`)
@@ -329,28 +333,18 @@ const handleClearPlan = () => {
     );
   };
 
-  const fetchSubmit = () => {
-    const requestMethod = isEdit ? 'PUT' : 'POST';
-    const url = isEdit ? plan.isTemplate ? `${apiUrl}/workout/template/${planId}` : `${apiUrl}/workout/instance/${planId}` : `${apiUrl}/workout`;
-    fetch(url, {
-      method: requestMethod,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(plan),
-    }).then((response) => {
-      if(response.ok){
-        if (isEdit) {
-          showToast('success', 'Plan updated!', `You have updated the plan ${plan.workout.planName} successfully!`);
-        } else {
-          showToast('success', 'Plan created!', `You have created the plan ${plan.workout.planName} successfully!`);
-        }
-        navigate(-1);
-      }else{
-        showToast('error', 'Something went wrong!', response.error)
+  const fetchSubmit = async () => {
+    try {
+      const result = await submitPlan(plan, planId, isEdit);
+      if (isEdit) {
+        showToast('success', 'Plan updated!', `You have updated the plan ${plan.workout.planName} successfully!`);
+      } else {
+        showToast('success', 'Plan created!', `You have created the plan ${plan.workout.planName} successfully!`);
       }
-      // navigate(`/`);
-    });
+      navigate(-1); // Assuming navigate is from react-router-dom and is appropriately imported
+    } catch (error) {
+      showToast('error', 'Something went wrong!', error.message);
+    }
   };
 
   return (
@@ -376,7 +370,7 @@ const handleClearPlan = () => {
                 disabled={plan.isTemplate ? false : true}
               />
             </div>
-            {isEdit && !plan.isTemplate &&
+            {/* {isEdit && !plan.isTemplate &&
             <div className="p-field">
               <label htmlFor="notes">Description:</label>
               <InputTextarea
@@ -385,8 +379,8 @@ const handleClearPlan = () => {
                 onChange={(e) => setPlan(prevState => ({ ...prevState, instanceName: e.target.value }))}
                 rows={3}
               />
-            </div>}
-            {isEdit && !plan.isTemplate &&
+            </div>} */}
+            {/* {isEdit && !plan.isTemplate &&
             <div className="p-field">
               <label htmlFor="notes">Notes:</label>
               <InputTextarea
@@ -395,7 +389,7 @@ const handleClearPlan = () => {
                 onChange={(e) => setPlan(prevState => ({ ...prevState, personalizedNotes: e.target.value }))}
                 rows={3}
               />
-            </div>}
+            </div>} */}
           </form>
         </Card>
       </div>
@@ -431,7 +425,7 @@ const handleClearPlan = () => {
                           showClear required placeholder="Select an exercise" />
                         </div>
                         {Object.keys(exercise).map((property, propertyIndex) => (
-                          (property !== 'exercise' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '' && property !== 'rpe' && property !== 'comments' && property !== 'completed') && (
+                          (property !== 'exercise' && property !== 'completedNotAsPlanned' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '' && property !== 'rpe' && property !== 'comments' && property !== 'completed') && (
                             <div key={propertyIndex} className="p-field">
                                 <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
                                   <IconField>

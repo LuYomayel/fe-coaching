@@ -9,6 +9,7 @@ import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import {jwtDecode} from 'jwt-decode';
 import '../index.css'
+import { fetchClient, fetchCoach } from '../services/usersService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Login = () => {
@@ -61,26 +62,30 @@ const Login = () => {
         if(!decodedToken.isVerified){
           showToast('error', 'Verify your email prior loging in!', 'Check your email to verify it, please')
         }else{
-          if (decodedToken.userType === 'coach') {
-            const coachResponse = await fetch(`${apiUrl}/users/coach/${decodedToken.userId}`);
-            if (coachResponse.ok) {
-              const coachData = await coachResponse.json();
-              setCoach(coachData);
-              navigate('/coach');
-            } else {
-              setCoach(null);
-              navigate('/complete-coach-profile');
+          try {
+            if (decodedToken.userType === 'coach') {
+              try {
+                const coachData = await fetchCoach(decodedToken.userId);
+                setCoach(coachData);
+                navigate('/coach');
+              } catch (error) {
+                console.error(error);
+                setCoach(null);
+                navigate('/complete-coach-profile');
+              }
+            } else if (decodedToken.userType === 'client') {
+              try {
+                const clientData = await fetchClient(decodedToken.userId);
+                setClient(clientData);
+                navigate('/student');
+              } catch (error) {
+                console.error(error);
+                setClient(null);
+                navigate('/');
+              }
             }
-          } else if (decodedToken.userType === 'client') {
-            const clientResponse = await fetch(`${apiUrl}/users/client/${decodedToken.userId}`);
-            if (clientResponse.ok) {
-              const clientData = await clientResponse.json();
-              setClient(clientData);
-              navigate('/student');
-            } else {
-              setClient(null);
-              navigate('/');
-            }
+          } catch (error) {
+            showToast('error', 'Error', error.message);
           }
         }
       }

@@ -17,6 +17,7 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctions';
 import VideoDialog from './VideoDialog';
+import { deleteWorkoutPlan, fetchWorkoutInstance } from '../services/workoutService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading }) => {
@@ -57,21 +58,22 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
   const [loadingSubmit, setLoadingSubmit] = useState(false)
   const navigate = useNavigate();
   useEffect(() => {
-    fetch(`${apiUrl}/workout/workout-instance/${planId}`)
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData)
-          throw new Error(errorData.message || 'Something went wrong');
-        }else {
-          const data = await response.json();
-          setPlan(data)
-        }
-      })
-      .catch(error => showToast('error',  'Error fetching plan details xd', `${error.message}`))
-      .finally( () => {
-        if(setLoading) setLoading(false)
-      })
+    const getPlanDetails = async () => {
+      setLoading(true);
+      try {
+        const planDetails = await fetchWorkoutInstance(planId);
+        console.log(planDetails)
+        setPlan(planDetails);
+      } catch (error) {
+        showToast('error', 'Error fetching plan details xd', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (planId) {
+      getPlanDetails();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]);
 
@@ -101,26 +103,21 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
   }
 
   const fetchDeletePlan = () => {
-    const url = plan.isTemplate ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout/deleteInstance/${planId}`;
-    setLoadingSubmit(true)
-    fetch(`${url}`, {
-      method: "DELETE",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(async (response) => {
-      if(response.ok){
-        setRefreshKey(prev => prev + 1); // Update the refresh key to re-fetch data
-        setPlanDetailsVisible(false); // Close the dialog
-        showToast('success', `You have deleted the plan with success!`, 'Plan deleted!');  
-      }else{
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-    })
-    .catch( (error) => showToast('error', 'Error', error.message))
-    .finally( () => setLoadingSubmit(false))
+    setLoadingSubmit(true);
+    deleteWorkoutPlan(planId, plan.isTemplate)
+      .then(() => {
+        showToast('success', 'Plan deleted', 'You have deleted the plan with success!');
+        setPlanDetailsVisible(false); // Cerrar el diálogo de detalles del plan
+        setRefreshKey(old => old+1)
+        // Aquí puedes manejar cualquier lógica adicional de actualización de UI
+      })
+      .catch((error) => {
+        showToast('error', 'Error', error.message);
+      })
+      .finally(() => {
+        setLoadingSubmit(false);
+      });
+    
   }
 
   const handleStartTraining = () => {
@@ -137,7 +134,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
           <h1>Training Plan</h1>
         </div>
         <div className='flex gap-2'>
-          {user.userType === 'coach' && <Button label="" icon='pi pi-pencil' className='p-button-rounded p-button-warning'onClick={handleEditPlan}/>}
+          {user.userType === 'coach' && plan.status !== 'completed' && <Button label="" icon='pi pi-pencil' className='p-button-rounded p-button-warning'onClick={handleEditPlan}/>}
           {(user.userType === 'coach') && 
             <Button label="" icon='pi pi-trash'className='p-button-rounded p-button-danger' onClick={handleDeletePlan}/>
           }
@@ -286,10 +283,49 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
                       </div>
                       </Fieldset>
                   )}
+                  {plan.isTemplate && (
+                    <Fieldset legend={exercise.exercise.name} className='flex-grow-1 p-3'>
+                    <div className='exercise-fields'>
+                      {/* <div className='p-field exercise-field'>
+                          <label> 
+                            Exercise:
+                          </label>
+                          <p>{exercise.exercise ? exercise.exercise.name : '' }</p>
+                      </div> */}
+                      <div className='p-field exercise-field'>
+                        <label> 
+                          Video URL:
+                        </label>
+                        <p>
+                          <a href="#/" onClick={() => handleVideoClick(exercise.exercise.multimedia)}>
+                            <img src={getYouTubeThumbnail(exercise.exercise.multimedia)} alt="Video thumbnail" style={{ width: '100px', cursor: 'pointer' }} />
+                          </a>  
+                        </p>
+                      </div>
+                      {Object.keys(exercise).map((property, propertyIndex) => (
+                        (
+                          property !== 'exercise' && 
+                          property !== 'id' && 
+                          exercise[property] !== '' &&
+                          property !== 'comments' &&
+                          property !== 'rpe' &&
+                          property !== 'completed' &&
+                          property !== 'completedNotAsPlanned' 
+                        ) && (
+                          <div key={propertyIndex} className="p-field exercise-field">
+                            <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
+                            <p>{exercise[property]}</p>
+                          </div>
+                        )
+                      ))}
+                      </div>
+                      </Fieldset>
+                  )}
                   {exerciseIndex !== group.exercises.length-1 ? <div><Divider/></div> : <div></div>}
                 </div>
                 
               ))}
+                  
             </div>
             </Card>
         </div>

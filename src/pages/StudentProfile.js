@@ -20,6 +20,8 @@ import { TabPanel, TabView } from 'primereact/tabview';
 import '../styles/StudentProfile.css'
 import { Tag } from 'primereact/tag';
 import { useSpinner } from '../utils/GlobalSpinner';
+import { fetchClient, fetchClientActivities, updatePersonalInfo } from '../services/usersService';
+import { fetchSubscriptionDetails } from '../services/subscriptionService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ClientProfile = () => {
@@ -72,35 +74,20 @@ const ClientProfile = () => {
         setLoading(true);
 
         // Fetch personal information
-        const personalInfoResponse = await fetch(`${apiUrl}/users/client/${user.userId}`);
-        if (!personalInfoResponse.ok) {
-          const errorData = await personalInfoResponse.json();
-          throw new Error(errorData.message || 'Something went wrong.');
-        }
-        const personalInfoData = await personalInfoResponse.json();
-        setPersonalInfo(personalInfoData);
-        setActivityLevel(personalInfoData.activityLevel);
-        const goals = personalInfoData.fitnessGoal.split(',')
+        const dataClient = await fetchClient(user.userId);      
+        setPersonalInfo(dataClient);
+        setActivityLevel(dataClient.activityLevel);
+        const goals = dataClient.fitnessGoal.split(',')
         .map(goal => goal.trim()) // Eliminar espacios en blanco
         .filter((value, index, self) => self.indexOf(value) === index); // Eliminar duplicados
 
         setFitnessGoal(goals);
         // Fetch activities
-        const activitiesResponse = await fetch(`${apiUrl}/users/userId/activities/${user.userId}`);
-        if (!activitiesResponse.ok) {
-          const errorData = await activitiesResponse.json();
-          throw new Error(errorData.message || 'Something went wrong.');
-        }
-        const activitiesData = await activitiesResponse.json();
-        setActivities(activitiesData);
+        const dataActivities = await fetchClientActivities(user.userId);
+        setActivities(dataActivities);
 
         // Fetch subscription details
-        const subscriptionResponse = await fetch(`${apiUrl}/subscription/client-subscription/details/${user.userId}`);
-        if (!subscriptionResponse.ok) {
-          const errorData = await subscriptionResponse.json();
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        const subscriptionData = await subscriptionResponse.json();
+        const subscriptionData = await fetchSubscriptionDetails(user.userId);
         setSubscription(subscriptionData);
 
         const checkStatusWorkouts = updateStatus(subscriptionData.workoutInstances);
@@ -145,32 +132,15 @@ const ClientProfile = () => {
   const handleSavePersonalInfo = async (body) => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/users/client/${personalInfo.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body)
-      });
-    //   const data = await response.json();
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log(errorData)
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-      else{
-        showToast('success', 'Success', 'Student updated successfully');
-        
-      }
-    } catch (error) {
-      setLoading(false);
-      showToast('error', 'Error', error.message);
-    }finally{
-      setLoading(false)
+      await updatePersonalInfo(personalInfo.id, body);
+      showToast('success', 'Success', 'Student updated successfully');
+      setRefreshKey(old => old + 1);
       setEditDialogVisible(false);
-      setRefreshKey(old => old+1)
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false);
     }
-    
   };
 
   const onClickSaveStudent = async () =>{

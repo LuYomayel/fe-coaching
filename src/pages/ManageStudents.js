@@ -13,6 +13,8 @@ import { formatDate } from '../utils/UtilFunctions';
 import RegisterPaymentDialog from '../dialogs/RegisterPaymentDialog';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useNavigate } from 'react-router-dom';
+import { deleteClient, fetchCoachStudents } from '../services/usersService';
+import { cancelSubscription } from '../services/subscriptionService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ManageStudents = () => {
@@ -30,17 +32,18 @@ const ManageStudents = () => {
   const navigate = useNavigate();
   useEffect(() => {
     setLoading(true)
-    fetch(`${apiUrl}/users/coach/allStudents/${user.userId}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.statusCode && data.statusCode !== 200) {
-          showToast('error', 'Error fetching students', data.message);
-        } else {
-          setStudents(data);
-        }
-      })
-      .catch(error => showToast('error', 'Error fetching students', error.message))
-      .finally( () => setLoading(false))
+    const loadAllStudents = async () => {
+      try {
+        const data = await fetchCoachStudents(user.userId)
+        setStudents(data)
+      } catch (error) {
+        showToast('error', 'Error fetching students', error.message)
+      }
+      finally{
+        setLoading(false)
+      }
+    }
+    loadAllStudents();
   }, [refreshKey, user.userId, showToast]);
 
   const openNewStudentDialog = () => {
@@ -80,39 +83,30 @@ const ManageStudents = () => {
   };
 
   const handleCancelSubscription = (clientSubscriptionId) => {
-    fetch(`${apiUrl}/subscription/clientSubscription/${clientSubscriptionId}`,{
-      method: 'DELETE'
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData)
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-      
-        setRefreshKey(old => old+1)
-        showToast('success', 'Subscription deleted successfully');
+    cancelSubscription(clientSubscriptionId)
+        .then(() => {
+            setRefreshKey(old => old + 1);
+            showToast('success', 'Subscription deleted successfully');
+        })
+        .catch((error) => {
+            console.log(error);
+            showToast('error', 'Error', error.message);
+        });
+};
 
-      }).catch( (error) => {
-        console.log(error)
-        showToast('error', 'Error', error.message);
-      })
-  }  
-
-  const handleDeleteUser = (clientId) => {
-    fetch(`${apiUrl}/users/client/${clientId}`,{
-      method: 'DELETE'
-    })
-      .then(async (response) => {
-        if(response.ok){
-          showToast('success', 'Client successfuly deleted!')
-          setRefreshKey(old => old+1)
-        }else{
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Something went wrong')
-        }
-      })
-      .catch( error => showToast('error', 'Error', error.message))
+  const handleDeleteUser = async (clientId) => {
+    try {
+      setLoading(true)
+      const isDeleted = await deleteClient(clientId);
+      if (isDeleted) {
+        showToast('success', 'Client successfully deleted!');
+        setRefreshKey(old => old + 1);
+      }
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false)
+    }
   } 
 
   const deleteCancelSubscription = (clientSubscriptionId) => {
@@ -125,7 +119,7 @@ const ManageStudents = () => {
     });
   }
 
-  const deleteClient = (clientId) => {
+  const deleteClientConfirm = (clientId) => {
     showConfirmationDialog({
       message: "Are you sure you want to delete this client?",
       header: "Confirmation",
@@ -149,7 +143,7 @@ const ManageStudents = () => {
           <Button icon="pi pi-dollar" onClick={() => openRegisterPaymentDialog(rowData)} tooltip='Register payment' className='p-button-rounded p-button-success'/>
           <Button icon="pi pi-times" onClick={() => deleteCancelSubscription(rowData.user.subscription.clientSubscription.id)} tooltip='Delete Subscription' className='p-button-rounded p-button-danger'/>
           <Button icon="pi pi-eye" onClick={() => handleViewDetails(rowData.id)} tooltip='View Details' className='p-button-rounded p-button-info'/>
-          <Button icon="pi pi-trash" onClick={() => deleteClient(rowData.id)} tooltip='Delete Client' className='p-button-rounded p-button-danger'/>
+          <Button icon="pi pi-trash" onClick={() => deleteClientConfirm(rowData.id)} tooltip='Delete Client' className='p-button-rounded p-button-danger'/>
         </div>
       );
     }else{
@@ -158,7 +152,7 @@ const ManageStudents = () => {
           {/* <Button icon="pi pi-pencil" onClick={() => openStudentDetail(rowData)} tooltip='View details'/> */}
           <Button icon="pi pi-calendar-plus" onClick={() => openSubscriptionDialog(rowData)} tooltip='Assign Subscription' className='p-button-rounded p-button-success'/>
           <Button icon="pi pi-eye" onClick={() => handleViewDetails(rowData.id)} tooltip='View Details' className='p-button-rounded p-button-info'/>
-          <Button icon="pi pi-trash" onClick={() => deleteClient(rowData.id)} tooltip='Delete Client' className='p-button-rounded p-button-danger'/>
+          <Button icon="pi pi-trash" onClick={() => deleteClientConfirm(rowData.id)} tooltip='Delete Client' className='p-button-rounded p-button-danger'/>
         </div>
       );
     }

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useSpinner } from './GlobalSpinner';
+import { fetchClient, fetchCoach } from '../services/usersService';
 
 export const UserContext = createContext();
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -34,12 +35,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchCoachData = async (userId) => {
     try {
-      const response = await fetch(`${apiUrl}/users/coach/${userId}`);
-      if (!response.ok) {
-        const dataResponse = await response.json();
-        throw new Error(`${dataResponse.message}`);
-      }
-      const data = await response.json();
+      const data = await fetchCoach(userId)
       setCoach(data);
     } catch (error) {
       console.log(error);
@@ -51,12 +47,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchClientData = async (userId) => {
     try {
-      const response = await fetch(`${apiUrl}/users/client/${userId}`);
-      if (!response.ok) {
-        const dataResponse = await response.json();
-        throw new Error(`${dataResponse.message}`);
-      }
-      const data = await response.json();
+      const data = await fetchClient(userId)
       setClient(data);
     } catch (error) {
       console.log(error);

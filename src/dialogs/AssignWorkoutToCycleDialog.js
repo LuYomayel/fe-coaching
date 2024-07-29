@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
+import { assignWorkoutsToCycle, fetchCoachWorkouts } from '../services/workoutService';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -21,12 +22,16 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
   }, []);
 
   useEffect(() => {
-    fetch(`${apiUrl}/workout/coach-workouts/userId/${user.userId}`)
-      .then(async response => {
-        const data = await response.json();
-        setWorkouts(data);
-      })
-      .catch(error => showToast('error', 'Error', error.message));
+    const loadWorkouts = async () => {
+      try {
+        const workoutsData = await fetchCoachWorkouts(user.userId);
+        setWorkouts(workoutsData);
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      }
+    };
+
+    loadWorkouts();
   }, [showToast, user.userId]);
 
 
@@ -49,26 +54,14 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
       return showToast('error', 'Error', 'Please assign at least one workout.')
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/workout/assign-cycle/${cycleId}/assign-workouts/${clientId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-
+      await assignWorkoutsToCycle(cycleId, clientId, body);
       showToast('success', 'Success', 'Workouts assigned to cycle successfully');
       onHide();
       setRefreshKey(old => old + 1);
     } catch (error) {
       showToast('error', 'Error', error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
