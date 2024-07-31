@@ -50,6 +50,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, cycleId, clientId, setRef
     const body = {
       assignments: assignments.filter(assignment => assignment.dayOfWeek !== null && assignment.workoutId !== null),
     };
+    console.log(body)
     if(body.assignments.length === 0)
       return showToast('error', 'Error', 'Please assign at least one workout.')
     try {

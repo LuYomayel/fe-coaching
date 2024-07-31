@@ -31,9 +31,11 @@ const fetchTrainingCyclesByClient = async (clientId) => {
             const sessionEvents = session.workoutInstances.length > 0
               ? session.workoutInstances.map(workoutInstance => {
                 workoutInstance.status = updateStatusLocal(workoutInstance, session);
+                if(new Date(session.sessionDate).getMonth() === 2)
+                 console.log(getDayMonthYear(session).toISOString().split('T')[0])
                 return {
                   title: workoutInstance.workout.planName,
-                  start: session.sessionDate,
+                  start: getDayMonthYear(session).toISOString().split('T')[0],
                   extendedProps: {
                     status: workoutInstance.status,
                     workoutInstanceId: workoutInstance.id,
@@ -43,7 +45,7 @@ const fetchTrainingCyclesByClient = async (clientId) => {
                 )
               : [{
                   title: 'no title', // Default title when no workouts are scheduled
-                  start: session.sessionDate,
+                  start: getDayMonthYear(session).toISOString().split('T')[0],
                   extendedProps: {
                     sessionId: session.id,
                     cycle: cycle.name
@@ -144,6 +146,15 @@ const updateStatusLocal = (workout, session) => {
       return workout.status
     }
 }
+
+const getDayMonthYear = (session) => {
+  const sessionDate = new Date(session.sessionDate);
+  const year = sessionDate.getFullYear();
+  const month = sessionDate.getMonth(); // 0-based
+  const day = sessionDate.getDate();
+
+  return new Date(year, month, day); // Esto crea una fecha sin hora
+};
 
 const submitPlan = async (plan, planId, isEdit) => {
     

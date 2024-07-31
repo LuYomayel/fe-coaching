@@ -153,3 +153,12 @@ p {
 .login-container {
   width: 400px;
 }
+
+.fc-h-event{
+  background-color: transparent;
+  border: none;
+  display: flex;
+  align-items: start;
+  
+}
+

@@ -81,6 +81,7 @@ const ClientDashboard = () => {
     setLoading(true);
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleMap }) => {
+        console.log(events)
         setCycles(cycleMap);
         setCalendarEvents(events);
       })
@@ -540,7 +541,7 @@ const ClientDashboard = () => {
   };
 
   const handleAssignDayWorkout = (sessionId) => {
-
+    console.log(sessionId)
     setSelectedClient(clientId)
     setSelectedSessionId(sessionId);
     setAssignSessionVisible(true);
@@ -579,18 +580,21 @@ const ClientDashboard = () => {
               <Button label="Create Training Cycle" icon="pi pi-plus" className="p-button-rounded p-button-secondary w-full lg:w-auto"  onClick={showCreateCycleDialog} />
               </div>
             </div>
-            <div className="p-fluid"> 
+            <div className="p-fluid w-10 mx-auto"> 
             <FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
                 initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
                 views={{
                   listMonth: { buttonText: 'List Month' }
                 }}
+                // timeZone='local'
                 events={calendarEvents}
                 eventContent={renderEventContent}
                 ref={calendarRef}
                 fixedWeekCount={false}
-                eventMinHeight={1}
+                height={'45rem'}
+                eventClassNames='events-class'
+                viewClassNames='nueva-clase'
                 windowResize={(arg) => {
                   const calendarApi = calendarRef.current.getApi();
                   console.log(arg.view.type, window.innerWidth)
