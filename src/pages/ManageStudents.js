@@ -185,21 +185,21 @@ const ManageStudents = () => {
         </DataTable>
       </div>
 
-      <Dialog header="New Student" className="responsive-dialog" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>
-        <NewStudentDialog onClose={handleNewStudentDialogHide} />
+      <Dialog draggable={false}  resizable={false} header="New Student" className="responsive-dialog" visible={isNewStudentDialogVisible} style={{ width: '50vw' }} onHide={handleNewStudentDialogHide}>
+        <NewStudentDialog onClose={handleNewStudentDialogHide} setRefreshKey={setRefreshKey} />
       </Dialog>
 
-      <Dialog header="Assign Subscription" className="responsive-dialog" visible={isSubscriptionDialogVisible} style={{ width: '50vw' }} onHide={handleSubscriptionDialogHide}>
+      <Dialog draggable={false}  resizable={false} header="Assign Subscription" className="responsive-dialog" visible={isSubscriptionDialogVisible} style={{ width: '50vw' }} onHide={handleSubscriptionDialogHide}>
         <AssignSubscriptionDialog studentId={selectedStudent?.id} coachId={user.userId} onClose={handleSubscriptionDialogHide} />
       </Dialog>
       
-      <Dialog header="Register Payment" className="responsive-dialog" visible={isRegisterPaymentDialogVisible} style={{ width: '50vw' }} onHide={handleRegisterPaymentDialogHide}>
+      <Dialog draggable={false}  resizable={false} header="Register Payment" className="responsive-dialog" visible={isRegisterPaymentDialogVisible} style={{ width: '50vw' }} onHide={handleRegisterPaymentDialogHide}>
         <RegisterPaymentDialog studentId={selectedStudent?.id} coachId={user.userId} onClose={handleRegisterPaymentDialogHide} 
           oldSubscription={selectedStudent?.user.subscription} oldCoachPlan={selectedStudent?.user.subscription.clientSubscription?.coachPlan}
         />
       </Dialog>
 
-      <Dialog header="Student Details" className="responsive-dialog" visible={isStudentDetailVisible} style={{ width: '50vw' }} onHide={handleStudentDetailHide}>
+      <Dialog draggable={false}  resizable={false} header="Student Details" className="responsive-dialog" visible={isStudentDetailVisible} style={{ width: '50vw' }} onHide={handleStudentDetailHide}>
         <StudentDetailDialog student={selectedStudent} onClose={handleStudentDetailHide} />
       </Dialog>
     </div>

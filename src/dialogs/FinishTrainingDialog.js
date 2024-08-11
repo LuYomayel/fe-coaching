@@ -44,7 +44,7 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
   };
 
   return (
-    <Dialog header="Finish Training" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+    <Dialog draggable={false}  resizable={false} header="Finish Training" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
       <div className="p-field">
         <label htmlFor="sessionTime">Session Time (hh:mm)</label>
         <Calendar

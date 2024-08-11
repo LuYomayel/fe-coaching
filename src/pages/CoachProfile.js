@@ -531,8 +531,8 @@ const CoachProfile = () => {
                                 <div className="p-col-12 p-md-6">
                                 <p><strong>Name:</strong> {coachInfo.name}</p>
                                 <p><strong>Email:</strong> {coachInfo.user.email}</p>
-                                <p><strong>Biography:</strong> {coachInfo.bio}</p>
-                                <p><strong>Experience:</strong> {coachInfo.experience}</p>
+                                <p  className='overflow-hidden text-overflow-ellipsis'><strong>Biography:</strong> {coachInfo.bio}</p>
+                                <p  className='overflow-hidden text-overflow-ellipsis'><strong>Experience:</strong> {coachInfo.experience}</p>
                                 <p><strong>Training type:</strong> {coachInfo.trainingType.join(', ')}</p>
                                 {coachInfo.hasGym && 
                                     <p><strong>Gym Location:</strong> {coachInfo.gymLocation}</p>
@@ -546,7 +546,7 @@ const CoachProfile = () => {
                     <TabView className='hola'>
                         <TabPanel header="Workouts">
                         <DataTable value={workouts} paginator rows={10}>
-                            <Column field="planName" header="Name" />
+                            <Column field="planName" header="Name"  className='overflow-hidden text-overflow-ellipsis'/>
                             <Column field="workoutInstance.personalizedNotes" header="Description" />
                             
                             <Column
@@ -640,7 +640,7 @@ const CoachProfile = () => {
                     </TabView>
                 </div>
             </div>
-            <Dialog header="Video" visible={videoDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
+            <Dialog draggable={false}  resizable={false} header="Video" visible={videoDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
                 <iframe
                 width="100%"
                 height="400px"
@@ -652,7 +652,7 @@ const CoachProfile = () => {
                 />
             </Dialog>
 
-            <Dialog header={dialogMode === 'create' ? "Create New Coach Plan" : "Edit Coach Plan"} className="responsive-dialog" visible={createPlanDialogVisible} style={{ width: '50vw' }} onHide={closeCreatePlanDialog}>
+            <Dialog draggable={false}  resizable={false} header={dialogMode === 'create' ? "Create New Coach Plan" : "Edit Coach Plan"} className="responsive-dialog" visible={createPlanDialogVisible} style={{ width: '50vw' }} onHide={closeCreatePlanDialog}>
                 <div className="p-fluid">
                     <div className="p-field">
                     <label htmlFor="name">Plan Name</label>
@@ -676,7 +676,7 @@ const CoachProfile = () => {
                 </div>
             </Dialog>
             
-            <Dialog header={dialogMode === 'create' ? "Create New Exercise" : "Edit Exercise"}  className="responsive-dialog" visible={exerciseDialogVisible} style={{ width: '50vw' }} onHide={closeExerciseDialog}>
+            <Dialog draggable={false}  resizable={false} header={dialogMode === 'create' ? "Create New Exercise" : "Edit Exercise"}  className="responsive-dialog" visible={exerciseDialogVisible} style={{ width: '50vw' }} onHide={closeExerciseDialog}>
                 <div className="p-fluid">
                     <div className="p-field">
                         <label htmlFor="name">{dialogMode === 'create' ? 'Exercise Name' : 'Edit Exercise Name'}</label>
@@ -684,7 +684,7 @@ const CoachProfile = () => {
                     </div>
                     <div className="p-field">
                         <label htmlFor="description">Description</label>
-                        <InputTextarea id="description" value={newExercise.description} onChange={(e) => setNewExercise({ ...newExercise, description: e.target.value })} rows={3} />
+                        <InputTextarea id="description"  className='overflow-hidden text-overflow-ellipsis' value={newExercise.description} onChange={(e) => setNewExercise({ ...newExercise, description: e.target.value })} rows={3} />
                     </div>
                     <div className="p-field">
                         <label htmlFor="multimedia">Video URL</label>
@@ -723,7 +723,7 @@ const CoachProfile = () => {
                 </div>
             </Dialog>
 
-            <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+            <Dialog draggable={false}  resizable={false} header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
                 {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
                     setRefreshKey={setRefreshKey} setLoading={setLoading} />}
             </Dialog>

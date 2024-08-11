@@ -44,7 +44,8 @@ const fetchCoachStudents = async (userId) => {
     }
 };
 
-export const fetchClientActivities = async (studentId) => {
+const fetchClientActivities = async (studentId) => {
+  console.log(studentId)
     const response = await fetch(`${apiUrl}/users/clientId/activities/${studentId}`, {
       headers: {
         'Content-Type': 'application/json',
@@ -56,9 +57,26 @@ export const fetchClientActivities = async (studentId) => {
       const errorMessage = errorData.message || 'Something went wrong';
       throw new Error(errorMessage);
     }
-  
+    console.log(response)
     return response.json(); // Directly returning parsed JSON data
-  };
+};
+
+const fetchClientActivitiesByUserId = async (userId) => {
+    console.log('UserID:', userId)
+    const response = await fetch(`${apiUrl}/users/userId/activities/${userId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      const errorMessage = errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
+    }
+    console.log(response)
+    return response.json(); // Directly returning parsed JSON data
+};
 
 const saveStudent = async (body) => {
     const response = await fetch(`${apiUrl}/users/client`, {
@@ -72,8 +90,8 @@ const saveStudent = async (body) => {
     if (!response.ok) {
       const errorData = await response.json();
       // Handle cases where the error message might be an array or single message
-      const errorMessage = errorData.message && Array.isArray(errorData.message)
-        ? errorData.message.join(', ')
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
         : errorData.message || 'Something went wrong';
       throw new Error(errorMessage);
     }
@@ -94,8 +112,8 @@ const updateCoach = async (userId, body, token) => {
     if (!response.ok) {
       const errorData = await response.json();
       // Handle cases where the error message might be an array or single message
-      const errorMessage = errorData.message && Array.isArray(errorData.message)
-        ? errorData.message.join(', ')
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
         : errorData.message || 'Something went wrong';
       throw new Error(errorMessage);
     }
@@ -113,11 +131,11 @@ const updatePersonalInfo = async (personalInfoId, body) => {
     });
   
     if (!response.ok) {
-
       const errorData = await response.json();
-      if(errorData.message.message && errorData.message.message.length > 0)
-        throw new Error(errorData.message.message.join(', '));
-      const errorMessage = errorData.message || 'Something went wrong';
+      // Handle cases where the error message might be an array or single message
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
       throw new Error(errorMessage);
     }
   
@@ -147,8 +165,10 @@ export {
     fetchClient,
     fetchCoachPlans,
     fetchCoachStudents,
+    fetchClientActivitiesByUserId,
+    fetchClientActivities,
     saveStudent,
     updateCoach,
     updatePersonalInfo,
-    deleteClient
+    deleteClient,
 }

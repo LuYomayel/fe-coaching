@@ -52,9 +52,13 @@ const assignSubscription = async (body) => {
   
     if (!response.ok) {
       const errorData = await response.json();
-      const errorMessage = errorData.message || 'Something went wrong';
+      // Handle cases where the error message might be an array or single message
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
       throw new Error(errorMessage);
     }
+  
   
     return response.json(); // Optional, depends if you need to process the response further
 };    
@@ -69,9 +73,14 @@ const createOrUpdateCoachPlan = async (plan, planId, userId, mode) => {
       body: JSON.stringify({...plan, coachId: userId}),
   });
   if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong');
+    const errorData = await response.json();
+    // Handle cases where the error message might be an array or single message
+    const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+      ? errorData.message.message.join(', ')
+      : errorData.message || 'Something went wrong';
+    throw new Error(errorMessage);
   }
+
   if(mode === 'create'){
     return await response.json();
   }else{
@@ -92,10 +101,10 @@ const registerPayment = async ( body) => {
   console.log(body)
   if (!response.ok) {
     const errorData = await response.json();
-    if(errorData.message.message && errorData.message.message.length > 0){
-      throw new Error(errorData.message.message.join(', '))
-    }
-    const errorMessage = errorData.message || 'Something went wrong';
+    // Handle cases where the error message might be an array or single message
+    const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+      ? errorData.message.message.join(', ')
+      : errorData.message || 'Something went wrong';
     throw new Error(errorMessage);
   }
 

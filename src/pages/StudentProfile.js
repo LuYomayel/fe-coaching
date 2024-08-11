@@ -20,8 +20,9 @@ import { TabPanel, TabView } from 'primereact/tabview';
 import '../styles/StudentProfile.css'
 import { Tag } from 'primereact/tag';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { fetchClient, fetchClientActivities, updatePersonalInfo } from '../services/usersService';
+import { fetchClient, fetchClientActivities, fetchClientActivitiesByUserId, updatePersonalInfo } from '../services/usersService';
 import { fetchSubscriptionDetails } from '../services/subscriptionService';
+import { InputNumber } from 'primereact/inputnumber';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ClientProfile = () => {
@@ -83,7 +84,7 @@ const ClientProfile = () => {
 
         setFitnessGoal(goals);
         // Fetch activities
-        const dataActivities = await fetchClientActivities(user.userId);
+        const dataActivities = await fetchClientActivitiesByUserId(user.userId);
         setActivities(dataActivities);
 
         // Fetch subscription details
@@ -157,6 +158,7 @@ const ClientProfile = () => {
         return;
       }
     }
+    console.log('Body: ', body)
     showConfirmationDialog({
       message: "Are you sure you want to edit this student?",
       header: "Confirmation",
@@ -258,7 +260,7 @@ const descriptionFilterTemplate = (options) => {
             <Card title="Current Subscription">
               <div className="p-field">
                 <label htmlFor="planName">Plan Name:</label>
-                <p id="planName">{subscription?.coachPlan?.name}</p>
+                <p id="planName" className='overflow-hidden text-overflow-ellipsis'>{subscription?.coachPlan?.name}</p>
               </div>
               <div className="p-field">
                 <label htmlFor="startDate">Start Date:</label>
@@ -307,17 +309,19 @@ const descriptionFilterTemplate = (options) => {
             <TabPanel header="Progress">
               <Chart type="pie" data={progressData} width='20rem' height='20rem'/>
             </TabPanel>
-            <TabPanel header="User historial" className=''>
+            <TabPanel header="User historial" className='overflow-auto'>
               <DataTable 
               value={activities} 
               paginator 
-              rows={10}
-              rowsPerPageOptions={[10,25,50]}
+              rows={8}
+              rowsPerPageOptions={[8,25,50]}
               filters={filters}
               filterDisplay="menu"
               globalFilterFields={['description']}
               onFilter={(e) => setFilters(e.filters)}
               emptyMessage="No activities found."
+              height={'38rem'}
+              className='overflow-auto'
               >
                 <Column 
                   field="timestamp" 
@@ -353,7 +357,7 @@ const descriptionFilterTemplate = (options) => {
        
       </div>
 
-      <Dialog header="Edit Personal Information" visible={editDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={handleEditDialogClose}>
+      <Dialog draggable={false}  resizable={false} header="Edit Personal Information" visible={editDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={handleEditDialogClose}>
         <div className="p-fluid">
           <div className="p-field">
             <label htmlFor="fitnessGoal">Fitness Goal</label>
@@ -365,7 +369,7 @@ const descriptionFilterTemplate = (options) => {
           </div>
           <div className="p-field">
             <label htmlFor="editPhone">Phone</label>
-            <InputText id="editPhone" value={personalInfo.phoneNumber} onChange={(e) => setPersonalInfo({ ...personalInfo, phoneNumber: e.target.value })} />
+            <InputNumber maxLength={11} id="editPhone"  useGrouping={false} value={personalInfo.phoneNumber} onChange={(e) => setPersonalInfo({ ...personalInfo, phoneNumber: e.value })} />
           </div>
         </div>
         <Button label="Save" icon="pi pi-check" onClick={onClickSaveStudent} loading={loading} />

@@ -186,21 +186,22 @@ const handleCompletedChange = (exerciseId, isNotAsPlanned) => {
 
     const numSets = parseInt(exercise.sets) || group.set;
 
+    const sets = Array.from({ length: numSets }).map(() => ({
+      repetitions: exercise.repetitions,
+      weight: exercise.weight,
+      time: exercise.time,
+      distance: exercise.distance,
+      tempo: exercise.tempo,
+      notes: exercise.notes,
+      difficulty: exercise.difficulty,
+      duration: exercise.duration,
+      restInterval: exercise.restInterval
+    }));
+
     if (isNotAsPlanned) {
-      const sets = Array.from({ length: numSets }).map(() => ({
-        repetitions: exercise.repetitions,
-        weight: exercise.weight,
-        time: exercise.time,
-        distance: exercise.distance,
-        tempo: exercise.tempo,
-        notes: exercise.notes,
-        difficulty: exercise.difficulty,
-        duration: exercise.duration,
-        restInterval: exercise.restInterval
-      }));
       newProgress[exerciseId] = { ...newProgress[exerciseId], completedNotAsPlanned: true, completed: false, sets };
     } else {
-      newProgress[exerciseId] = { ...newProgress[exerciseId], completed: true, completedNotAsPlanned: false };
+      newProgress[exerciseId] = { ...newProgress[exerciseId], completed: true, completedNotAsPlanned: false, sets };
     }
     return newProgress;
   });
@@ -239,7 +240,7 @@ const onClickSubmitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood
     }
     
     return {
-      exerciseId,
+      exerciseId: parseInt(exerciseId),
       sets,
       completed: progress.completed,
       completedNotAsPlanned: progress.completedNotAsPlanned,
@@ -248,7 +249,6 @@ const onClickSubmitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood
     };
   }).filter(feedback => feedback !== null);
 
-  console.log('Estelopg:',exerciseFeedbackArray)
   if (exerciseFeedbackArray.length === 0) {
     showToast('error', 'Error', 'No valid feedback to submit.');
     return;
@@ -265,6 +265,7 @@ const onClickSubmitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood
     additionalNotes
   };
 
+  console.log(body)
   submitFeedback(planId, body)
     .then(() => {
       setExerciseProgress({});
@@ -311,7 +312,7 @@ const onClickSubmitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood
       </Card>
     </div>
 
-    <div className="exercise-groups">
+    <div className="exercise-groups scroll">
       {(plan.groups ?  plan.groups : []).map((group, groupIndex) => (
         <div key={groupIndex} className="exercise-group">
           <Card title={`Group ${group.groupNumber}`} className="group-card">

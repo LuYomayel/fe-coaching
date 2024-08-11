@@ -199,6 +199,8 @@ const StudentHome = () => {
                 tooltip="View Workout Details" 
                 icon="pi pi-eye" 
                 label={title}
+                text
+                outlined
                 className={`w-full lg:w-auto p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : status === 'current' ? 'info' : 'warning'}` }
                 onClick={() => handleViewWorkoutDetails(workoutInstanceId)} 
               />
@@ -211,7 +213,7 @@ const StudentHome = () => {
   };
 
   return (
-    <div className="student-home-container">
+    <div className="student-home-container p-fluid w-10 mx-auto">
       <h1>Welcome, {client?.name || ''}!</h1>
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
@@ -219,12 +221,12 @@ const StudentHome = () => {
             views={{
               listMonth: { buttonText: 'List Month' }
             }}
-            height={'50rem'}
-            viewClassNames={'calendar-student'}
+            height={'43rem'}
             events={calendarEvents}
             eventContent={renderEventContent}
             ref={calendarRef}
             fixedWeekCount={false}
+            contentHeight={550}
             windowResize={(arg) => {
               const calendarApi = calendarRef.current.getApi();
               console.log(arg.view.type, window.innerWidth)
@@ -237,7 +239,7 @@ const StudentHome = () => {
               }
             }}
           />
-        <Dialog header="Plan Details" className="responsive-dialog"  visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+        <Dialog draggable={false}  resizable={false} header="Plan Details" className="responsive-dialog"  visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
           {selectedPlan && <PlanDetails planId={selectedPlan} setLoading={setLoading} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} />}
         </Dialog>
       {/* </div> */}

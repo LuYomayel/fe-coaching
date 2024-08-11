@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Card } from 'primereact/card';
@@ -19,12 +19,14 @@ import '../styles/StudentDetails.css';
 import { Fieldset } from 'primereact/fieldset';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { deleteWorkoutPlan } from '../services/workoutService';
-import { fetchClientActivities } from '../services/usersService';
+import { fetchClientActivities, fetchClientActivitiesByUserId } from '../services/usersService';
 import { fetchSubscriptionForStudent } from '../services/subscriptionService';
+import { UserContext } from '../utils/UserContext';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentDetails = () => {
+  const { client } = useContext(UserContext)
   const { studentId } = useParams();
   const [student, setStudent] = useState(null);
   const { loading, setLoading} = useSpinner();
@@ -68,7 +70,9 @@ const StudentDetails = () => {
           ]
         });
 
-        const activitiesData = await fetchClientActivities(studentId);
+        // const activitiesData = await fetchClientActivities(studentId);
+        const activitiesData = await fetchClientActivitiesByUserId(client.user.id);
+        
         setActivities(activitiesData);
 
       } catch (error) {
@@ -180,7 +184,7 @@ const StudentDetails = () => {
             <Column body={viewPlanDetailsTemplate} header="Actions" />
           </DataTable>
 
-          <Dialog header="Plan Details" className="responsive-dialog" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+          <Dialog draggable={false}  resizable={false} header="Plan Details" className="responsive-dialog" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
             {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
               setRefreshKey={setRefreshKey} setLoading={setLoading} />}
           </Dialog>

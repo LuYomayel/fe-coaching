@@ -31,8 +31,8 @@ const fetchTrainingCyclesByClient = async (clientId) => {
             const sessionEvents = session.workoutInstances.length > 0
               ? session.workoutInstances.map(workoutInstance => {
                 workoutInstance.status = updateStatusLocal(workoutInstance, session);
-                if(new Date(session.sessionDate).getMonth() === 2)
-                 console.log(getDayMonthYear(session).toISOString().split('T')[0])
+                // if(new Date(session.sessionDate).getMonth() === 2)
+                //  console.log(getDayMonthYear(session).toISOString().split('T')[0])
                 return {
                   title: workoutInstance.workout.planName,
                   start: getDayMonthYear(session).toISOString().split('T')[0],
@@ -57,13 +57,9 @@ const fetchTrainingCyclesByClient = async (clientId) => {
         )
       );
   
-      const cycleMap = cycles.map(cycle => {
-        const startDate = new Date(cycle.startDate);
-        const monthYear = `${startDate.getMonth() + 1}-${startDate.getFullYear()}`;
-        return { monthYear, id: cycle.id };
-      });
+
   
-      return { events, cycleMap };
+      return { events, cycleOptions: cycles };
     } catch (error) {
       throw error; // re-throw to handle it in the component
     }
@@ -113,6 +109,19 @@ const fetchWorkoutsByClientId = async (clientId) => {
     }
 };
 
+const fetchAssignedWorkoutsForCycleDay = async (cycleId, dayNumber) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle/${cycleId}/day/${dayNumber}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error fetching workouts:', errorData);
+      throw new Error(errorData.message || 'Something went wrong');
+    }
+    return await response.json();
+  } catch (error) {
+    throw error; // re-throw to handle it in the component
+  }
+};
 
 const createTrainingCycle = async (body) => {
     const response = await fetch(`${apiUrl}/workout/training-cycles`, {
@@ -125,8 +134,13 @@ const createTrainingCycle = async (body) => {
   
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong');
+      // Handle cases where the error message might be an array or single message
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
     }
+  
   
     return await response.json();  // Assuming you might want the response data
 };
@@ -163,6 +177,7 @@ const submitPlan = async (plan, planId, isEdit) => {
       ? `${apiUrl}/workout/${plan.isTemplate ? 'template' : 'instance'}/${planId}` 
       : `${apiUrl}/workout`;
   
+    console.log(plan)
     const response = await fetch(endpoint, {
       method: requestMethod,
       headers: {
@@ -173,8 +188,13 @@ const submitPlan = async (plan, planId, isEdit) => {
   
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong');
+      // Handle cases where the error message might be an array or single message
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
     }
+  
     return response.json();
 };
 
@@ -191,9 +211,13 @@ const submitFeedback = async (planId, body) => {
   
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(errorData);
-        throw new Error(errorData.message || 'Something went wrong');
+        // Handle cases where the error message might be an array or single message
+        const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+          ? errorData.message.message.join(', ')
+          : errorData.message || 'Something went wrong';
+        throw new Error(errorMessage);
       }
+    
       return await response.json();  // Assuming you need data from the response
     } catch (error) {
       throw error; // Rethrow to be handled where the function is called
@@ -212,8 +236,13 @@ const assignWorkout = async (data) => {
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong');
+      // Handle cases where the error message might be an array or single message
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
     }
+  
   
     return response.json(); // Devuelve la respuesta para su uso posterior si es necesario
 };
@@ -229,8 +258,13 @@ const assignWorkoutsToCycle = async (cycleId, clientId, body) => {
   
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong');
+      // Handle cases where the error message might be an array or single message
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
     }
+  
   
     return response.json(); // Puede devolver la respuesta para confirmar la operación o manejarla como desees
 };
@@ -246,11 +280,39 @@ const assignSession = async (sessionId, body) => {
   
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong');
+      // Handle cases where the error message might be an array or single message
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
     }
+  
   
     return response.json(); // Asumimos que la respuesta es JSON y puede ser útil devolverla
 };
+
+const unassignWorkoutsFromCycle = async (cycleId, body) => {
+  const response = await fetch(`${apiUrl}/workout/delete-instances-cycle/${cycleId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    // Handle cases where the error message might be an array or single message
+    const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+      ? errorData.message.message.join(', ')
+      : errorData.message || 'Something went wrong';
+    throw new Error(errorMessage);
+  }
+
+
+  return response.json(); // Asumimos que la respuesta es JSON y puede ser útil devolverla
+};
+
 
 const deleteWorkoutPlan = async (planId, isTemplate) => {
     const url = isTemplate ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout/deleteInstance/${planId}`;
@@ -306,6 +368,8 @@ export {
     assignWorkout, 
     assignWorkoutsToCycle, 
     assignSession, 
+    unassignWorkoutsFromCycle,
+    fetchAssignedWorkoutsForCycleDay,
     deleteWorkoutPlan,
     deletePlan,
 };

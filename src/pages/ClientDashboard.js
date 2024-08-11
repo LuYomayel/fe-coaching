@@ -33,13 +33,6 @@ const ClientDashboard = () => {
   const [dialogVisible, setDialogVisible] = useState(false);
   
   const [adherenceData, setAdherenceData] = useState(null);
-  const [keyExercisesData, setKeyExercisesData] = useState(null);
-  const [intensityDistributionData, setIntensityDistributionData] = useState(null);
-  const [rpeFeedbackData, setRpeFeedbackData] = useState(null);
-  // const [bodyProgressData, setBodyProgressData] = useState(null); // Uncomment and process when data is available
-  // const [sessionConsistencyData, setSessionConsistencyData] = useState(null); // Uncomment and process when data is available
-  const [trainingCyclesData, setTrainingCyclesData] = useState(null);
-  const [goalsData, setGoalsData] = useState(null);
 
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [exerciseOptions, setExerciseOptions] = useState([]);
@@ -52,37 +45,21 @@ const ClientDashboard = () => {
   const [assignCycleVisible, setAssignCycleVisible] = useState(false);
   const [selectedCycleId, setSelectedCycleId] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
-  const [cycles, setCycles] = useState([]);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const calendarRef = useRef(null);
   const [assignSessionVisible, setAssignSessionVisible] = useState(false);
+  const [actionType, setActionType] = useState('assign');
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(1);
+  const [cycleOptions, setCycleOptions] = useState([])
   const { user } = useContext(UserContext);
-
-  const updateStatusLocal = (workout, session) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const sessionDate = new Date(session.sessionDate);
-    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
-    if (workout.status === 'pending') {
-      if (sessionDay < today) {
-        return 'expired';
-      } else if (sessionDay.getTime() === today.getTime()) {
-        return 'current';
-      }
-    }else {
-      return workout.status
-    }
-  }
 
   useEffect(() => {
     setLoading(true);
     fetchTrainingCyclesByClient(clientId)
-      .then(({ events, cycleMap }) => {
-        console.log(events)
-        setCycles(cycleMap);
+      .then(({ events, cycleOptions }) => {
+        setCycleOptions(cycleOptions)
         setCalendarEvents(events);
       })
       .catch(error => showToast('error', 'Error fetching training cycles', error.message))
@@ -272,223 +249,15 @@ const ClientDashboard = () => {
     );
   };
 
-  // Aquí puedes procesar los datos y crear gráficos usando Chart.js o PrimeReact Chart
-
-  const processDataForAdherenceChart = (workouts) => {
-    const plannedWorkouts = workouts.length;
-    const workoutsUpdated = updateStatus(workouts);
-    const completedWorkouts = workoutsUpdated.filter(workout => workout.status === 'completed').length;
-    const expiredWorkouts = workoutsUpdated.filter(workout => workout.status === 'expired').length;
-  
-    return {
-      labels: ['Planned', 'Completed', 'Expired'],
-      datasets: [
-        {
-          label: 'Workouts',
-          backgroundColor: ['#42A5F5', '#66BB6A', 'red'],
-          data: [plannedWorkouts, completedWorkouts, expiredWorkouts]
-        }
-      ]
-    };
-  };
-  
-  const options = {
-    scales: {
-      'y-axis-1': {
-        type: 'linear',
-        position: 'left',
-      },
-      'y-axis-2': {
-        type: 'linear',
-        position: 'right',
-        grid: {
-          drawOnChartArea: false,
-        },
-        ticks: {
-          min: 0,
-          max: 5, // Ajustar según el rango esperado de RPE
-        },
-      },
-    },
-  };
-
-  const AdherenceChart = ({ data }) => (
-    <div className="chart-container">
-      <h3>Adherence to Plan</h3>
-      <Chart type="bar" data={data} />
-    </div>
-  );
-
-  const processDataForKeyExercisesChart = (workouts, exerciseName) => {
-    const exerciseData = workouts.reduce((acc, workout) => {
-      workout.groups.forEach(group => {
-        group.exercises.forEach(ex => {
-          if (ex.exercise.name === exerciseName) {
-            acc.push({
-              date: new Date(workout.realEndDate).toLocaleDateString(),
-              rpe: ex.rpe ? parseInt(ex.rpe) : null
-            });
-          }
-        });
-      });
-      return acc;
-    }, []);
-  
-    const dates = exerciseData.map(data => data.date);
-    const rpeValues = exerciseData.map(data => data.rpe);
-    console.log(dates, rpeValues)
-    return {
-      labels: dates,
-      datasets: [
-        {
-          label: `${exerciseName} RPE`,
-          data: rpeValues,
-          fill: false,
-          borderColor: '#42A5F5',
-          tension: 0.4
-        }
-      ]
-    };
-  };
-  
-  const KeyExercisesChart = ({ data }) => (
-    <div className="chart-container">
-      <h3>Key Exercises Progress</h3>
-      <Chart type="line" data={data} />
-    </div>
-  );
-
-  const processDataForIntensityDistributionChart = (workouts) => {
-    const intensityData = workouts.reduce((acc, workout) => {
-      workout.groups.forEach(group => {
-        group.exercises.forEach(ex => {
-          if (ex.rpe) {
-            acc[ex.rpe] = (acc[ex.rpe] || 0) + 1;
-          }
-        });
-      });
-      return acc;
-    }, {});
-  
-    const rpeLevels = Object.keys(intensityData);
-    const rpeCounts = Object.values(intensityData);
-  
-    return {
-      labels: rpeLevels,
-      datasets: [
-        {
-          label: 'Intensity Distribution',
-          backgroundColor: '#FF6384',
-          data: rpeCounts
-        }
-      ]
-    };
-  };
-  
-  const IntensityDistributionChart = ({ data }) => (
-    <div className="chart-container">
-      <h3>Intensity Distribution</h3>
-      <Chart type="bar" data={data} />
-    </div>
-  );
-
-  const processDataForRpeFeedbackChart = (workouts) => {
-    const feedbackData = workouts.map(workout => ({
-      date: new Date(workout.realEndDate).toLocaleDateString(),
-      rpe: workout.perceivedDifficulty,
-      feedback: workout.generalFeedback
-    }));
-  
-    const dates = feedbackData.map(data => data.date);
-    const rpeValues = feedbackData.map(data => data.rpe);
-    const feedbackValues = feedbackData.map(data => data.feedback.length);
-  
-    return {
-      labels: dates,
-      datasets: [
-        {
-          label: 'RPE',
-          data: rpeValues,
-          fill: false,
-          borderColor: '#42A5F5',
-          tension: 0.4
-        },
-        {
-          label: 'Feedback Length',
-          data: feedbackValues,
-          fill: false,
-          borderColor: '#66BB6A',
-          tension: 0.4
-        }
-      ]
-    };
-  };
-  
-  const RpeFeedbackChart = ({ data }) => (
-    <div className="chart-container">
-      <h3>RPE and Client Feedback</h3>
-      <Chart type="line" data={data} />
-    </div>
-  );
-
-  const processDataForTrainingCyclesChart = (workouts) => {
-    // Assuming each workout has a 'cycle' property indicating the training cycle
-    const cycles = [...new Set(workouts.map(workout => workout.cycle))];
-    const cycleData = cycles.map(cycle => {
-      const cycleWorkouts = workouts.filter(workout => workout.cycle === cycle);
-      const avgRpe = cycleWorkouts.reduce((sum, workout) => sum + workout.perceivedDifficulty, 0) / cycleWorkouts.length;
-  
-      return {
-        cycle,
-        avgRpe
-      };
-    });
-  
-    const labels = cycleData.map(data => `Cycle ${data.cycle}`);
-    const rpeValues = cycleData.map(data => data.avgRpe);
-  
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Average RPE',
-          backgroundColor: '#42A5F5',
-          data: rpeValues
-        }
-      ]
-    };
-  };
-  
-  const TrainingCyclesChart = ({ data }) => (
-    <div className="chart-container">
-      <h3>Training Cycle Progress</h3>
-      <Chart type="bar" data={data} />
-    </div>
-  );
-
-  const handleDateClick = (info) => {
-    const selectedDateWorkouts = workouts.filter(workout => new Date(workout.realEndDate).toLocaleDateString() === info.dateStr);
-    setFilteredWorkouts(selectedDateWorkouts);
-  };
-
   const hideCreateCycleDialog = () => {
     setRefreshKey(old => old+1)
     setDialogVisible(false);
   };
 
-  const handleOpenAssignCycle = (date) => {
-     const monthYear = getCurrentMonthYear();
-    // const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
-    const cycle = cycles.find(cycle => {
-      return cycle.monthYear == getCurrentMonthYear();
-    });
-    if (cycle) {
-      setSelectedCycleId(cycle.id);
-      setSelectedClient(clientId);
-      setAssignCycleVisible(true);
-    } else {
-      showToast('error', 'Error', 'No cycle found for the selected month');
-    }
+  const handleOpenAssignCycle = (action) => {
+    setSelectedClient(clientId);
+    setActionType(action)
+    setAssignCycleVisible(true);
   };
   
   const hidePlanDetails = () => {
@@ -515,21 +284,29 @@ const ClientDashboard = () => {
     return (
       <>
         {title !== 'no title' && (
-          <div className="flex align-items-center justify-content-center">
+          <div className="flex align-items-center justify-content-center h-full">
             <Button 
               tooltip="View Workout Details" 
               icon="pi pi-eye" 
+              size='small'
               label={title}
+              text
+              outlined
+              raised
               className={`p-button p-button-${status === 'completed' ? 'success' : status === 'expired' ? 'danger' : status === 'current' ? 'info' : 'warning'} w-full lg:w-auto`} 
               onClick={() => handleViewWorkoutDetails(workoutInstanceId)} 
             />
           </div>
         )}
         {title === 'no title' && (
-          <div className="flex align-items-center justify-content-center">
+          <div className="flex align-items-center justify-content-center h-full">
             <Button 
               tooltip="Assign Workouts to Day" 
               icon="pi pi-calendar-plus" 
+              size='small'
+              text
+              outlined
+              raised
               label={(<div className="text-left p-0 m-0"><p>Assign Workout</p><small>{cycle}</small></div>)}
               className="p-button p-button-primary w-full lg:w-auto" 
               onClick={() => handleAssignDayWorkout(sessionId)} 
@@ -541,18 +318,9 @@ const ClientDashboard = () => {
   };
 
   const handleAssignDayWorkout = (sessionId) => {
-    console.log(sessionId)
     setSelectedClient(clientId)
     setSelectedSessionId(sessionId);
     setAssignSessionVisible(true);
-  };
-
-  const getCurrentMonthYear = () => {
-    const calendarApi = calendarRef.current.getApi();
-    const currentDate = calendarApi.getDate();
-    const currentMonth = currentDate.getMonth() + 1; // getMonth() devuelve 0-11, así que sumamos 1
-    const currentYear = currentDate.getFullYear();
-    return `${currentMonth}-${currentYear}`;
   };
 
   const showCreateCycleDialog = () => {
@@ -564,18 +332,24 @@ const ClientDashboard = () => {
       <div className="col-12 mx-auto">
         <h1 className="panel-header">Client Dashboard</h1>
         <TabView className='mx-auto'>
-          <TabPanel header="Workout Calendar">
+          <TabPanel header="Workout Calendar" className='calendar-class overflow-scroll'>
             <div className="flex flex-column lg:flex-row align-items-center justify-content-between">
               <div>
                 <h2>Calendar</h2>
               </div>
               <div className='flex gap-2 mt-2 lg:mt-0'>
+                <Button 
+                  label="Unassign Workouts" 
+                  icon="pi pi-trash" 
+                  className="p-button-danger p-button-rounded" 
+                  onClick={() => handleOpenAssignCycle('unassign')}
+                />
               <Button 
                 tooltip="Assign Workouts to Cycle" 
                 icon="pi pi-refresh" 
                 label='Assign Workouts'
                 className='p-button-rounded p-button-success w-full lg:w-auto' 
-                onClick={() => handleOpenAssignCycle(new Date())} 
+                onClick={() => handleOpenAssignCycle('assign')} 
               />
               <Button label="Create Training Cycle" icon="pi pi-plus" className="p-button-rounded p-button-secondary w-full lg:w-auto"  onClick={showCreateCycleDialog} />
               </div>
@@ -592,9 +366,9 @@ const ClientDashboard = () => {
                 eventContent={renderEventContent}
                 ref={calendarRef}
                 fixedWeekCount={false}
-                height={'45rem'}
                 eventClassNames='events-class'
                 viewClassNames='nueva-clase'
+                contentHeight={550}
                 windowResize={(arg) => {
                   const calendarApi = calendarRef.current.getApi();
                   console.log(arg.view.type, window.innerWidth)
@@ -614,8 +388,10 @@ const ClientDashboard = () => {
               cycleId={selectedCycleId}
               clientId={selectedClient}
               setRefreshKey={setRefreshKey} // Asegúrate de pasar una función real si necesitas refrescar datos
+              cycleOptions={cycleOptions}
+              actionType={actionType}
             />
-            <Dialog header="Plan Details" className="responsive-dialog"  visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+            <Dialog draggable={false}  resizable={false} header="Plan Details" className="responsive-dialog"  visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
               {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
               setRefreshKey={setRefreshKey} setLoading={setLoading} />}
             </Dialog>
@@ -625,6 +401,7 @@ const ClientDashboard = () => {
               sessionId={selectedSessionId}
               clientId={selectedClient}
               setRefreshKey={setRefreshKey}
+              
             />
             <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} />
           </TabPanel>
@@ -644,7 +421,7 @@ const ClientDashboard = () => {
             <div className="grid">
               <div className="col-12 md:col-6 lg:col-6">
                 <Dropdown value={selectedExercise} options={exerciseOptions} filter filterBy='label' onChange={(e) => setSelectedExercise(e.value)} placeholder="Select an Exercise" />
-                {chartData && <Chart type="line" data={chartData} options={options} />}
+                {chartData && <Chart type="line" data={chartData}  />}
               </div>
               <div className="col-12 md:col-6 lg:col-6">
                 {adherenceData && <Chart type="bar" data={adherenceData} />}

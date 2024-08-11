@@ -15,6 +15,10 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   const {user} = useContext(UserContext);
 
   useEffect(() => {
+    setSelectedWorkout([null]);
+  }, []);
+
+  useEffect(() => {
     const loadWorkouts = async () => {
       try {
         const workoutsData = await fetchCoachWorkouts(user.userId);
@@ -53,7 +57,8 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   };
 
   return (
-    <Dialog header="Assign Workout to Session" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+    <Dialog draggable={false}
+    resizable={false}  header="Assign Workout to Session" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
       <div className="p-fluid">
         <div className="p-field">
           <label htmlFor="workout">Workout</label>

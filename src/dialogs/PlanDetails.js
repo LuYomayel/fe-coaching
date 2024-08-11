@@ -62,7 +62,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
       setLoading(true);
       try {
         const planDetails = await fetchWorkoutInstance(planId);
-        console.log(planDetails)
+        // console.log(planDetails)
         setPlan(planDetails);
       } catch (error) {
         showToast('error', 'Error fetching plan details xd', error.message);

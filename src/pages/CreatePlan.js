@@ -18,6 +18,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import '../styles/CreatePlan.css';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { fetchWorkoutInstance, submitPlan } from '../services/workoutService';
+import { v4 as uuidv4 } from 'uuid'; // Librería para generar UUIDs
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -72,7 +73,8 @@ const CreatePlan = ({ isEdit }) => {
           notes: '',
           difficulty: '',
           duration: '',
-          distance: ''
+          distance: '',
+          id: '',
         }]
       }]
     };
@@ -224,19 +226,10 @@ const CreatePlan = ({ isEdit }) => {
     updatedGroups[groupIndex].exercises[exerciseIndex].exercise.name = selectedExercise.label;
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
   };
-  
-  // Función para filtrar por nombre y tipo de ejercicio
-  const filterExercises = (e) => {
-    const query = e.query.toLowerCase();
-    return exercises.filter(ex => 
-      ex.label.toLowerCase().includes(query) || 
-      ex.exerciseType.toLowerCase().includes(query)
-    );
-  };
-
 
   const handleAddExercise = (groupIndex) => {
     const newExercise = {
+      id: uuidv4(), // Genera un ID único para cada nuevo ejercicio
       exercise: { name: '', id: '', multimedia: '' },
       repetitions: '',
       sets: '',
@@ -247,22 +240,44 @@ const CreatePlan = ({ isEdit }) => {
       notes: '',
       difficulty: '',
       duration: '',
-      distance: ''
+      distance: '',
     };
-    const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises.push(newExercise);
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+  
+    setPlan((prevState) => {
+      const updatedGroups = prevState.groups.map((group, idx) => {
+        if (idx === groupIndex) {
+          return {
+            ...group,
+            exercises: [...group.exercises, newExercise], // Añadir ejercicio de forma inmutable
+          };
+        }
+        return group; // Devuelve el grupo sin modificaciones si no coincide el índice
+      });
+  
+      return { ...prevState, groups: updatedGroups }; // Devuelve un nuevo estado con los grupos actualizados
+    });
   };
 
-  const handleRemoveExercise = (groupIndex, exerciseIndex) => {
-    const updatedGroups = [...plan.groups];
-    updatedGroups[groupIndex].exercises = updatedGroups[groupIndex].exercises.filter((_, index) => index !== exerciseIndex);
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+  const handleRemoveExercise = (groupIndex, exerciseId) => {
+    setPlan((prevState) => {
+      const updatedGroups = prevState.groups.map((group, idx) => {
+        if (idx === groupIndex) {
+          // Filtra el ejercicio basado en su ID para eliminar solo el ejercicio seleccionado
+          return {
+            ...group,
+            exercises: group.exercises.filter((exercise) => exercise.id !== exerciseId),
+          };
+        }
+        return group; // Devuelve el grupo sin modificaciones si no coincide el índice
+      });
+  
+      return { ...prevState, groups: updatedGroups }; // Devuelve un nuevo estado con los grupos actualizados
+    });
   };
 
   const handleTabClose = (e, groupIndex) => {
-    const exerciseIndex = e.index;
-    handleRemoveExercise(groupIndex, exerciseIndex);
+    const exerciseId = plan.groups[groupIndex].exercises[e.index].id; // Usa el ID del ejercicio
+    handleRemoveExercise(groupIndex, exerciseId); // Llama a la función de eliminación con el ID correcto
   };
 
   const handlePropertyChange = (groupIndex, exerciseIndex, property, value) => {
@@ -304,10 +319,15 @@ const CreatePlan = ({ isEdit }) => {
       }
 
       for (const exercise of group.exercises) {
+        console.log('Exercises: ', group.exercises)
         if (!exercise.exercise.id) {
           showToast('error', 'Error',  'Each exercise must be selected.');
           return;
         }
+        if(typeof exercise.id === 'string'){
+          exercise.id = 0;
+        }
+
         // if (!exercise.exercise.multimedia.trim()) {
         //   showToast('error', 'Error','Video URL is required for each exercise.');
         //   return;
@@ -335,6 +355,7 @@ const CreatePlan = ({ isEdit }) => {
 
   const fetchSubmit = async () => {
     try {
+      console.log(plan, planId, isEdit)
       const result = await submitPlan(plan, planId, isEdit);
       if (isEdit) {
         showToast('success', 'Plan updated!', `You have updated the plan ${plan.workout.planName} successfully!`);
@@ -343,6 +364,7 @@ const CreatePlan = ({ isEdit }) => {
       }
       navigate(-1); // Assuming navigate is from react-router-dom and is appropriately imported
     } catch (error) {
+      console.log(error)
       showToast('error', 'Something went wrong!', error.message);
     }
   };
@@ -413,51 +435,76 @@ const CreatePlan = ({ isEdit }) => {
                 </div>
                 <h3>Exercises</h3>
                 <div className="tabview-container responsive-tabview-container">
-                <TabView onTabClose={(e) => handleTabClose(e, groupIndex)} scrollable>
-                  {group.exercises.map((exercise, exerciseIndex) => (
-                    <TabPanel key={exerciseIndex} header={exercise.exercise.name || 'No Exercise'} closable>
-                      <div className="p-fluid exercise">
-                        <div className="p-field">
-                          <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
-                          <Dropdown id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} value={exercise.exercise.id} options={exercises} onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} filter 
-                            filterBy="label,exerciseType" // Solo muestra el nombre en el dropdown
-                            itemTemplate={exerciseItemTemplate}
-                          showClear required placeholder="Select an exercise" />
-                        </div>
-                        {Object.keys(exercise).map((property, propertyIndex) => (
-                          (property !== 'exercise' && property !== 'completedNotAsPlanned' && property !== 'id' && property !== 'multimedia' && exercise[property] !== '' && property !== 'rpe' && property !== 'comments' && property !== 'completed') && (
-                            <div key={propertyIndex} className="p-field">
-                                <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>{property.charAt(0).toUpperCase() + property.slice(1)}:</label>
-                                  <IconField>
-                                    <InputText
-                                      id={`${property}${groupIndex}-${exerciseIndex}`}
-                                      name={property}
-                                      value={exercise[property]}
-                                      onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, property, e.target.value)}
-                                    />
-                                    <InputIcon
-                                      className="pi pi-times input-icon-button"
-                                      tooltip='Remove property'
-                                      onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
-                                    />
-                                  </IconField>
+                  <TabView onTabClose={(e) => handleTabClose(e, groupIndex)}  scrollable >
+                    {group.exercises.map((exercise, exerciseIndex) => (
+                      
+                      <TabPanel 
+                        // key={`group-${groupIndex}-exercise-${exerciseIndex}`}
+                        key={exercise.id} // Utiliza el ID único generado para cada ejercicio
+                        header={exercise.exercise.name || 'No Exercise'} 
+                        closable
+                        
+                      >
+                        <>
+                        </>
+                        <div className="p-fluid exercise">
+                          <div className="p-field">
+                            <label htmlFor={`exerciseDropdown${groupIndex}-${exerciseIndex}`}>Exercise:</label>
+                            <Dropdown 
+                              id={`exerciseDropdown${groupIndex}-${exerciseIndex}`} 
+                              value={exercise.exercise.id} 
+                              options={exercises} 
+                              onChange={(e) => handleExerciseDropdownChange(groupIndex, exerciseIndex, e)} 
+                              filter 
+                              filterBy="label,exerciseType" 
+                              itemTemplate={exerciseItemTemplate}
+                              required 
+                              placeholder="Select an exercise" 
+                            />
+                          </div>
+                          {Object.keys(exercise).map((property, propertyIndex) => (
+                            property !== 'exercise' && 
+                            property !== 'completedNotAsPlanned' && 
+                            property !== 'id' && 
+                            property !== 'multimedia' && 
+                            exercise[property] !== '' && 
+                            property !== 'rpe' && 
+                            property !== 'comments' && 
+                            property !== 'completed' && (
+                              <div key={`prop-${groupIndex}-${exerciseIndex}-${propertyIndex}`} className="p-field">
+                                <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>
+                                  {property.charAt(0).toUpperCase() + property.slice(1)}:
+                                </label>
+                                <IconField>
+                                  <InputText
+                                    id={`${property}${groupIndex}-${exerciseIndex}`}
+                                    name={property}
+                                    value={exercise[property]}
+                                    onChange={(e) => handlePropertyChange(groupIndex, exerciseIndex, property, e.target.value)}
+                                  />
+                                  <InputIcon
+                                    className="pi pi-times input-icon-button"
+                                    tooltip='Remove property'
+                                    onClick={() => handleRemoveProperty(groupIndex, exerciseIndex, property)}
+                                  />
+                                </IconField>
                               </div>
-                          )
-                        ))}
-                        <div className="p-field">
-                          <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
-                          <Dropdown
-                            filter={true}
-                            id={`addProperty${groupIndex}-${exerciseIndex}`}
-                            options={getAvailableProperties(exercise).map(prop => ({ label: prop.charAt(0).toUpperCase() + prop.slice(1), value: prop }))}
-                            onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
-                            placeholder="Select a property"
-                          />
+                            )
+                          ))}
+                          <div className="p-field">
+                            <label htmlFor={`addProperty${groupIndex}-${exerciseIndex}`}>Add Property:</label>
+                            <Dropdown
+                              filter={true}
+                              id={`addProperty${groupIndex}-${exerciseIndex}`}
+                              options={getAvailableProperties(exercise).map(prop => ({ label: prop.charAt(0).toUpperCase() + prop.slice(1), value: prop }))}
+                              onChange={(e) => handleAddProperty(groupIndex, exerciseIndex, e)}
+                              placeholder="Select a property"
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </TabPanel>
-                  ))}
-                </TabView>
+                      </TabPanel>
+                    ))}
+                  </TabView>
                 </div>
                 <div className="flex align-items-center justify-content-center">
                 <Button type="button" label="Add Exercise" icon="pi pi-plus" onClick={() => handleAddExercise(groupIndex)} className="p-button-rounded p-button-success text-center" />

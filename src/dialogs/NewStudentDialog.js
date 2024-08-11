@@ -76,8 +76,9 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
     }
     if(birthdate.getTime() > new Date().getTime())
       return showToast('error', 'Error', 'Birthdate can not be later than today')
-    if(birthdate.getFullYear() - new Date().getFullYear() >= 0 && birthdate.getFullYear() - new Date().getFullYear() <= 10)
-      showToast('warn', 'Warning', 'Client too young, check birthdate')
+    console.log(new Date().getFullYear() - birthdate.getFullYear())
+    if((new Date().getFullYear() - birthdate.getFullYear()) >= 0 &&  (new Date().getFullYear() - birthdate.getFullYear()) <= 10)
+      return showToast('warn', 'Warning', 'Client must be at least 10 years old, check birthdate')
     console.log(body)
     showConfirmationDialog({
       message: "Are you sure you want to create this student?",
@@ -111,15 +112,15 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
       </div>
       <div className="p-field">
         <label htmlFor="activityLevel">Height (cm)</label>
-        <InputNumber id="height" value={height} onChange={(e) => setHeight(e.value)} />
+        <InputNumber id="height" value={height} onChange={(e) => setHeight(e.value)} maxLength={3} min={0}/>
       </div>
       <div className="p-field">
         <label htmlFor="activityLevel">Weight (kg)</label>
-        <InputNumber id="weight" value={weight} onChange={(e) => setWeight(e.value)} />
+        <InputNumber id="weight" value={weight} onChange={(e) => setWeight(e.value)} maxLength={3} min={0}/>
       </div>
       <div className="p-field">
         <label htmlFor="activityLevel">Birhdate</label>
-        <Calendar id="birthdate" dateFormat='dd/mm/yy' value={birthdate} onChange={(e) => setBirthDate(e.target.value)} />
+        <Calendar id="birthdate" dateFormat='dd/mm/yy' value={birthdate} onChange={(e) => setBirthDate(e.target.value)}/>
       </div>
       <Button label="Save" icon="pi pi-save" loading={loading} onClick={onClickSaveStudent} />
     </div>
