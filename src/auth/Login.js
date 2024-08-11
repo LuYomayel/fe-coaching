@@ -66,8 +66,13 @@ const Login = () => {
             if (decodedToken.userType === 'coach') {
               try {
                 const coachData = await fetchCoach(decodedToken.userId);
-                setCoach(coachData);
-                navigate('/coach');
+                if(!coachData){
+                  setCoach(null)
+                  navigate('/complete-coach-profile');
+                }else{
+                  setCoach(coachData);
+                  navigate('/coach');
+                }
               } catch (error) {
                 console.error(error);
                 setCoach(null);

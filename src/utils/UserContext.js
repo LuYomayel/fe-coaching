@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useSpinner } from './GlobalSpinner';
-import { fetchClient, fetchCoach } from '../services/usersService';
+import { fetchClient, fetchCoach, fetchUser } from '../services/usersService';
 
 export const UserContext = createContext();
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -13,29 +13,57 @@ export const UserProvider = ({ children }) => {
   const { setLoading } = useSpinner();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decodedUser = jwtDecode(token);
-      setUser(decodedUser);
+    const checkEverything = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decodedUser = jwtDecode(token);
+        setUser(decodedUser);
 
-      setLoading(true);
-      if (decodedUser.userType === 'coach') {
-        fetchCoachData(decodedUser.userId);
-      } else if (decodedUser.userType === 'client') {
-        fetchClientData(decodedUser.userId);
+        const {valid} = await fetchUserData(token)
+        if(valid){
+          setLoading(true);
+          if (decodedUser.userType === 'coach') {
+            const data = await fetchCoachData(decodedUser.userId);
+            setCoach(data)
+          } else if (decodedUser.userType === 'client') {
+            const data = await fetchClientData(decodedUser.userId);
+            setClient(data)
+          } else {
+            setLoading(false);
+          }
+        }else{
+          // localStorage.removeItem('token')
+          setUser(null);
+          setCoach(null);
+          setClient(null);
+        }
       } else {
-        setLoading(false);
+        setUser(null);
+        setCoach(null);
+        setClient(null);
       }
-    } else {
-      setUser(null);
-      setCoach(null);
-      setClient(null);
     }
+    checkEverything();
+
+    
   }, []);
+
+  const fetchUserData = async (token) => {
+    try {
+      const data = await fetchUser(token)
+      console.log('User:', data)
+      return data
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchCoachData = async (userId) => {
     try {
       const data = await fetchCoach(userId)
+      return data
       setCoach(data);
     } catch (error) {
       console.log(error);
@@ -48,6 +76,7 @@ export const UserProvider = ({ children }) => {
   const fetchClientData = async (userId) => {
     try {
       const data = await fetchClient(userId)
+      return data
       setClient(data);
     } catch (error) {
       console.log(error);

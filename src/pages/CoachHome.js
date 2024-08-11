@@ -268,7 +268,7 @@ const CoachHome = () => {
     <div className='flex flex-column my-students-container'>
       <div className='w-11 mx-auto'>
 
-        <h1>My students</h1>
+        <h1>Subscribed students</h1>
           <div className='students-container'>
             <div className="flex flex-nowrap lg:flex-wrap overflow-x-auto lg:overflow-x-visible">
               {clients.map(student => (

@@ -1,5 +1,5 @@
 const apiUrl = process.env.REACT_APP_API_URL;
-
+const token = localStorage.getItem('token')
 const fetchCoachSubscription = async (userId) => {
   const response = await fetch(`${apiUrl}/subscription/coach/${userId}`);
 
@@ -42,10 +42,12 @@ const fetchSubscriptionDetails = async (userId) => {
 };
 
 const assignSubscription = async (body) => {
+  console.log('Token: ', token)
     const response = await fetch(`${apiUrl}/subscription/client`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(body),
     });

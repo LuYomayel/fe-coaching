@@ -25,6 +25,7 @@ import ResetPassword from './auth/ResetPassword.js';
 import ManageStudents from './pages/ManageStudents.js';
 import ClientProfile from './pages/StudentProfile.js';
 import ClientDashboard from './pages/ClientDashboard.js';
+import NotSubscribed from './components/NotSubscribed.js';
 const App = () => {
   return (
     <SpinnerProvider>
@@ -54,9 +55,10 @@ const App = () => {
 
                 <Route path="/verify-email"element={< VerifyEmail />} />
                 {/* <Route path="/complete-coach-profile" element={<CoachProfileForm />} /> */}
-                <Route path="/complete-coach-profile" element={<CoachProfileForm/>} />
+                <Route path="/complete-coach-profile" element={<PrivateRoute element={CoachProfileForm} />}/>
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/not-subscribed" element={<NotSubscribed />} />
 
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>

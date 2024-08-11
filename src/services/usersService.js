@@ -1,11 +1,35 @@
 const apiUrl = process.env.REACT_APP_API_URL;
+
+const fetchUser = async (token) => {
+  const response = await fetch(`${apiUrl}/auth/verify-token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (response.ok) {
+    return await response.json();
+  } else {
+    return { valid: false}
+  }
+};
 const fetchCoach = async (userId) => {
-    const response = await fetch(`${apiUrl}/users/coach/${userId}`);
-    if (response.ok) {
-      return await response.json();
-    } else {
-      throw new Error('Unable to fetch coach data');
+  const response = await fetch(`${apiUrl}/users/coach/${userId}`);
+  if (response.ok) {
+    const text = await response.text(); // Obtén la respuesta como texto
+
+    // Verifica si el texto está vacío
+    if (!text) {
+      return null; // O maneja el caso de respuesta vacía como prefieras
     }
+
+    const data = JSON.parse(text); // Parsea el texto a JSON
+    console.log('Response fetch coach: ', data);
+    return data;
+  } else {
+    throw new Error('Unable to fetch coach data');
+  }
 };
   
 const fetchClient = async (userId) => {
@@ -161,6 +185,7 @@ const deleteClient = async (clientId) => {
 
 
 export {
+    fetchUser,
     fetchCoach,
     fetchClient,
     fetchCoachPlans,

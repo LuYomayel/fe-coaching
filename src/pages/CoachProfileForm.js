@@ -16,7 +16,9 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const trainingTypes = [
   { label: 'Strength Training', value: 'strength' },
   { label: 'Cardio', value: 'cardio' },
-  { label: 'HIIT', value: 'hiit' },
+  { label: 'Calisthenics', value: 'calisthenics' },
+  { label: 'Cross Fit', value: 'cross fit' },
+  { label: 'General Fitness', value: 'general fitness' },
   // Add other training types as needed
 ];
 
@@ -52,7 +54,7 @@ const CoachProfileForm = () => {
       email: user.email,
       subscriptionType,
     }
-    // console.log(body, )
+    console.log(body )
     // return
     try {
       const token = localStorage.getItem('token'); // Assume the token is stored in local storage
