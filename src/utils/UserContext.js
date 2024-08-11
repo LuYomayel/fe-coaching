@@ -10,18 +10,20 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [coach, setCoach] = useState(null);
   const [client, setClient] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { setLoading } = useSpinner();
 
   useEffect(() => {
     const checkEverything = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
         const decodedUser = jwtDecode(token);
         setUser(decodedUser);
 
         const {valid} = await fetchUserData(decodedUser.userId)
         if(valid){
-          setLoading(true);
+          
           if (decodedUser.userType === 'coach') {
             const data = await fetchCoachData(decodedUser.userId);
             setCoach(data)
@@ -29,7 +31,6 @@ export const UserProvider = ({ children }) => {
             const data = await fetchClientData(decodedUser.userId);
             setClient(data)
           } else {
-            setLoading(false);
           }
         }else{
           localStorage.removeItem('token')
@@ -42,11 +43,19 @@ export const UserProvider = ({ children }) => {
         setCoach(null);
         setClient(null);
       }
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setLoading(false)
+        setIsLoading(false); 
+      }
+
+      
     }
     checkEverything();
 
     
-  }, []);
+  }, [setLoading]);
 
   const fetchUserData = async (userId) => {
     try {
@@ -55,8 +64,6 @@ export const UserProvider = ({ children }) => {
       return data
     } catch (error) {
       console.log(error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -68,8 +75,6 @@ export const UserProvider = ({ children }) => {
     } catch (error) {
       console.log(error);
       setCoach(null);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -81,13 +86,11 @@ export const UserProvider = ({ children }) => {
     } catch (error) {
       console.log(error);
       setClient(null);
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   return (
-    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient }}>
+    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient, isLoading }}>
       {children}
     </UserContext.Provider>
   );
