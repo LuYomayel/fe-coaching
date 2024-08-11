@@ -42,7 +42,6 @@ const fetchSubscriptionDetails = async (userId) => {
 };
 
 const assignSubscription = async (body) => {
-  console.log('Token: ', token)
     const response = await fetch(`${apiUrl}/subscription/client`, {
       method: 'POST',
       headers: {

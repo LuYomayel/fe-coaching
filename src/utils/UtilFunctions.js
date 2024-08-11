@@ -14,14 +14,16 @@ const isValidYouTubeUrl = (url) => {
 
 const extractYouTubeVideoId = (url) => {
   let videoId = '';
-  if (url.includes('youtube.com/watch?v=')) {
-    videoId = url.split('v=')[1].split('&')[0];
-  } else if (url.includes('youtu.be/')) {
-    videoId = url.split('.be/')[1].split('&')[0];
-  } else if (url.includes('youtube.com/shorts/')) {
-    videoId = url.split('/shorts/')[1].split('?')[0];
+  if(url){
+    if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1].split('&')[0];
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('.be/')[1].split('&')[0];
+    } else if (url.includes('youtube.com/shorts/')) {
+      videoId = url.split('/shorts/')[1].split('?')[0];
+    }
+    return videoId;
   }
-  return videoId;
 };
 
 const getYouTubeThumbnail = (url) => {

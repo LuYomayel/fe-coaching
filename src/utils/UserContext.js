@@ -19,7 +19,7 @@ export const UserProvider = ({ children }) => {
         const decodedUser = jwtDecode(token);
         setUser(decodedUser);
 
-        const {valid} = await fetchUserData(token)
+        const {valid} = await fetchUserData(decodedUser.userId)
         if(valid){
           setLoading(true);
           if (decodedUser.userType === 'coach') {
@@ -32,7 +32,7 @@ export const UserProvider = ({ children }) => {
             setLoading(false);
           }
         }else{
-          // localStorage.removeItem('token')
+          localStorage.removeItem('token')
           setUser(null);
           setCoach(null);
           setClient(null);
@@ -48,10 +48,10 @@ export const UserProvider = ({ children }) => {
     
   }, []);
 
-  const fetchUserData = async (token) => {
+  const fetchUserData = async (userId) => {
     try {
-      const data = await fetchUser(token)
-      console.log('User:', data)
+      const data = await fetchUser(userId)
+      // console.log('User:', data)
       return data
     } catch (error) {
       console.log(error);

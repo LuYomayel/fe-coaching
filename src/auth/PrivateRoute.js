@@ -5,7 +5,6 @@ import CoachProfileForm from '../pages/CoachProfileForm';
 import NotSubscribed from '../components/NotSubscribed';
 const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   const { user, coach, client } = useContext(UserContext);
-  console.log('Client: ',client)
   if (!user) {
     return <Navigate to="/" />;
   }
