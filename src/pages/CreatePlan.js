@@ -31,6 +31,7 @@ const CreatePlan = ({ isEdit }) => {
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
   const { loading, setLoading } = useSpinner();
+  const [deletedGroup, setDeletedGroup] = useState(null);
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
 
@@ -208,7 +209,20 @@ const CreatePlan = ({ isEdit }) => {
 
   const handleRemoveGroup = (groupIndex) => {
     const updatedGroups = plan.groups.filter((_, index) => index !== groupIndex);
+    const groupToRemove = plan.groups[groupIndex];
+
+    setDeletedGroup(groupToRemove);  // Almacena el grupo eliminado
     setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
+  };
+
+  const handleUndoDelete = () => {
+    if (deletedGroup) {
+      setPlan(prevState => ({
+        ...prevState,
+        groups: [...prevState.groups, deletedGroup]
+      }));
+      setDeletedGroup(null);  // Limpia el estado del grupo eliminado
+    }
   };
 
   const handleGroupChange = (index, event) => {
@@ -518,6 +532,7 @@ const CreatePlan = ({ isEdit }) => {
       </div>
       
       <div className="actions-section responsive-actions-section">
+      <Button type="button" label="Undo Delete" icon="pi pi-undo" onClick={handleUndoDelete} className="p-button-rounded p-button-warning p-button-lg responsive-button" disabled={!deletedGroup} /> {/* Botón Deshacer */}
           <Button type="button" label="Clear Plan" icon="pi pi-trash" onClick={handleClearPlan} className="p-button-rounded p-button-danger p-button-lg responsive-button" />
           <Button type="button" label="Add Group" icon="pi pi-plus" onClick={handleAddGroup} className="p-button-rounded p-button-info p-button-lg responsive-button" />
           <Button type="submit" label={isEdit ? 'Edit Plan' : 'Create Plan'} icon="pi pi-check" className="p-button-rounded p-button-success p-button-lg responsive-button" onClick={handleSubmit}/>
