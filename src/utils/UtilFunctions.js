@@ -8,22 +8,30 @@ const formatDate = (value) => {
 };
 
 const isValidYouTubeUrl = (url) => {
-  const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be|youtube\.com\/shorts)\/.+$/;
+  const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/(watch\?v=|embed\/|shorts\/|v\/|.+)?$/;
   return regex.test(url);
 };
 
 const extractYouTubeVideoId = (url) => {
   let videoId = '';
-  if(url){
-    if (url.includes('youtube.com/watch?v=')) {
-      videoId = url.split('v=')[1].split('&')[0];
-    } else if (url.includes('youtu.be/')) {
-      videoId = url.split('.be/')[1].split('&')[0];
-    } else if (url.includes('youtube.com/shorts/')) {
-      videoId = url.split('/shorts/')[1].split('?')[0];
+
+  if (url.includes('youtube.com/watch?v=')) {
+    videoId = url.split('v=')[1]?.split('&')[0];
+  } else if (url.includes('youtu.be/')) {
+    videoId = url.split('.be/')[1]?.split('?')[0];
+  } else if (url.includes('youtube.com/shorts/')) {
+    videoId = url.split('/shorts/')[1]?.split('?')[0];
+  } else if (url.includes('youtube.com/embed/')) {
+    videoId = url.split('/embed/')[1]?.split('?')[0];
+  } else {
+    // Otros casos posibles
+    const match = url.match(/v=([^&]+)/);
+    if (match) {
+      videoId = match[1];
     }
-    return videoId;
   }
+
+  return videoId || null; // Retorna null si no se encuentra un videoId
 };
 
 const getYouTubeThumbnail = (url) => {
