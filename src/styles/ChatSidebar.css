@@ -1,0 +1,79 @@
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background-color: var(--highlight-bg);
+    height: calc(100vh - 6rem);
+    border-radius: 5px;
+    /* border: 1px solid #ddd; */
+}
+
+.message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 70%;
+}
+
+.sent {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+    align-self: flex-end;
+    text-align: right;
+}
+
+.received {
+    background-color: var(--gray-500);
+    color: var(--primary-color-text);
+    align-self: flex-start;
+    text-align: left;
+}
+
+.message p {
+    margin: 0;
+    padding: 0;
+}
+
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    flex-direction: column-reverse;
+    overflow-y: auto;
+    height: calc(100% - 50rem);
+}
+
+.input-container {
+    display: flex;
+}
+
+.p-fileupload-choose .p-button-label {
+    display: none; 
+}
+
+.p-fileupload-choose {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.p-fileupload .p-button{
+    min-width: 0;
+}
+
+.p-fileupload-content {
+    display: none;
+}
+
+.input-preview-container {
+    position: relative;
+}
+
+.loading-bar {
+    position: absolute;
+    bottom: -10px; /* Ajusta este valor según sea necesario para posicionar la barra justo debajo */
+    left: 0;
+    right: 0;
+    z-index: 10; /* Asegura que esté por encima de cualquier fondo pero por debajo del contenido */
+    margin-bottom: 5px;
+}

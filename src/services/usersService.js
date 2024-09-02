@@ -77,6 +77,21 @@ const fetchCoachStudents = async (userId) => {
     }
 };
 
+const fetchMessages = async (coachId, clientId, page=1) => {
+    try {
+      const response = await fetch(`${apiUrl}/messages/${coachId}/${clientId}?page=${page}&limit=20`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Something went wrong.');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      throw error;  // Rethrow to handle it in the UI component
+    }
+}
+
 const fetchClientActivities = async (studentId) => {
   console.log(studentId)
     const response = await fetch(`${apiUrl}/users/clientId/activities/${studentId}`, {
@@ -197,6 +212,7 @@ export {
     fetchUser,
     fetchCoach,
     fetchClient,
+    fetchMessages,
     fetchCoachPlans,
     fetchCoachStudents,
     fetchClientActivitiesByUserId,
