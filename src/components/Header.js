@@ -1,19 +1,46 @@
-import React, { useContext, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../utils/UserContext';
-import { OverlayPanel } from 'primereact/overlaypanel';
-import { Button } from 'primereact/button';
+import React, { useState, useRef, useContext } from 'react';
 import { Sidebar } from 'primereact/sidebar';
+import { Button } from 'primereact/button';
+import { Avatar } from 'primereact/avatar';
+import { OverlayPanel } from 'primereact/overlaypanel';
+import { Menu } from 'primereact/menu';
+import { UserContext } from '../utils/UserContext';
+import { useNavigate, Link } from 'react-router-dom';
 import ChatSidebar from './ChatSideBar';
+import { useChatSidebar } from '../utils/ChatSideBarContext';
 
-import '../styles/Header.css';
-
-const Header = () => {
-  const { user, coach, client, setUser } = useContext(UserContext);
+export default function Header() {
+  const [visible, setVisible] = useState(false);
+  const { isChatSidebarOpen, closeChatSidebar, openChatSidebar } = useChatSidebar();
   const op = useRef(null);
-  const [chatVisible, setChatVisible] = useState(false);
+  const { user, coach, client, setUser } = useContext(UserContext);
   const navigate = useNavigate();
+
+  const menuItems = [
+    {
+      label: 'Profile',
+      icon: 'pi pi-user',
+      command: () => navigate(user.userType === 'client' ? '/student/profile' : '/coach/profile'),
+    },
+    {
+      label: 'Home',
+      icon: 'pi pi-home',
+      command: () => navigate(user.userType === 'client' ? '/student' : '/coach'),
+    },
+    {
+      label: 'Clients',
+      icon: 'pi pi-users',
+      command: () => {
+        if (user.userType === 'coach') navigate('/manage-students');
+      },
+      visible: user?.userType === 'coach',  // Sólo visible para coach
+    },
+    {
+      label: 'Logout',
+      icon: 'pi pi-power-off',
+      command: () => handleLogout(),
+    }
+  ];
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -21,41 +48,28 @@ const Header = () => {
     navigate('/');
   };
 
-  if (!user) return null;
-  else if (user && !user.isVerified) return null;
-  else if (user && (!coach && !client)) return null;
-  else if (user && client && client.user.subscription.status === 'Inactive') return null;
+  if (!user || (user && !user.isVerified) || (user && (!coach && !client)) || (user && client && client.user.subscription.status === 'Inactive')) {
+    return null;
+  }
 
   return (
-    <header className="app-header p-d-flex p-jc-between p-ai-center p-shadow-2 p-p-3">
-      <Button icon="pi pi-comments" onClick={() => setChatVisible(true)} className="p-mr-2" label="Chat" />
-      <Sidebar visible={chatVisible} onHide={() => setChatVisible(false)} position="left"style={{ width: '40rem' }} >
-        <ChatSidebar />
-      </Sidebar>
-      <div className="logo">
-        <Link to={user.userType === 'client' ? '/student' : '/coach'} className="p-text-bold p-text-uppercase p-mr-3">
-          EaseTrain
-        </Link>
+    <div className="flex justify-content-between align-items-center p-3 surface-0 shadow-1">
+      <div className="flex align-items-center">
+        {/* <Link to={user.userType === 'client' ? '/student' : '/coach'}>
+          <img src="/logo.png" alt="EaseTrain Logo" className="mr-2" style={{ height: '40px' }} />
+        </Link> */}
+        <span className="text-xl font-bold">EaseTrain</span>
       </div>
-      <div className="p-d-flex p-ai-center user-info">
-        <span className="p-mr-2">{user.name}</span>
-        <img
-          src={user.profilePicture || '/image.webp'}
-          alt="Profile"
-          className="profile-picture"
-          onClick={(e) => op.current.toggle(e)}
-        />
-        <OverlayPanel ref={op} className="user-menu">
-          <Link to={user.userType === 'client' ? '/student' : '/coach'} className="p-d-block p-py-2">Home</Link>
-          <Link to={user.userType === 'client' ? '/student/profile' : '/coach/profile'} className="p-d-block p-py-2">Profile</Link>
-          {user.userType === 'coach' && (
-            <Link to="/manage-students" className="p-d-block p-py-2">Clients</Link>
-          )}
-          <Button label="Logout" icon="pi pi-sign-out" className="p-button-danger p-d-block p-my-2" onClick={handleLogout} />
+      <div className="flex align-items-center">
+        <Button icon="pi pi-comments" onClick={openChatSidebar} className="p-button-text mr-2" label="Chat" />
+        <Avatar image={user.profilePicture || '/image.webp'} shape="circle" onClick={(e) => op.current.toggle(e)} />
+        <OverlayPanel ref={op}>
+          <Menu model={menuItems} />
         </OverlayPanel>
       </div>
-    </header>
+      <Sidebar visible={isChatSidebarOpen} position="right" onHide={() => closeChatSidebar()} style={{ width: '40rem' }}>
+        <ChatSidebar isCoach={user.userType === 'coach'} />
+      </Sidebar>
+    </div>
   );
-};
-
-export default Header;
+}

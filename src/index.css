@@ -91,8 +91,10 @@ p {
 }
 
 .body-container{
-  height: calc(100vh - 6rem);
+  /* height: calc(100vh - 6rem); */
   /* overflow: auto; */
+  height: 100vh !important;
+  overflow: auto;
 }
 .p-paginator {
   display: flex;
@@ -154,44 +156,44 @@ p {
   width: 400px;
 }
 
-.fc-h-event{
+
+/* Calendar */
+
+/* .fc-h-event{
   background-color: transparent;
   border: none;
   display: flex;
   align-items: start;
   
 }
-
-/* Calendar */
-
 .fc {
   font-family: var(--primereact-font-family);
   font-size: 14px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra alrededor del calendario */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); 
 }
 
 .fc .fc-event-title, .fc .fc-day-header {
-  font-weight: 600; /* Negrita para los títulos de eventos y encabezados de días */
+  font-weight: 600; 
 }
 
 .fc .fc-event {
-  border-radius: 8px; /* Bordes redondeados */
-  padding: 4px 8px; /* Espaciado interno para los eventos */
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Sombra sutil para darle profundidad */
+  border-radius: 8px;
+  padding: 4px 8px; 
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 
 .fc .fc-toolbar button {
-  border-radius: 5px; /* Bordes redondeados en los botones */
-  padding: 5px 10px; /* Espaciado interno para los botones */
-  border: none; /* Sin borde */
+  border-radius: 5px; 
+  padding: 5px 10px; 
+  border: none; 
   text-transform:capitalize;
   background-color: var(--primary-color);
   color: #212121;
 }
 
 .fc .fc-toolbar-title {
-  font-size: 18px; /* Tamaño de fuente del título */
+  font-size: 18px; 
 }
 
 .fc .fc-day-today {
@@ -200,23 +202,21 @@ p {
 }
 
 .fc .fc-daygrid-day {
-  border: none; /* Elimina las líneas blancas predeterminadas */
+  border: none; 
   box-shadow: 0px 0px 2px var(--primary-color), 0px 0px 5px var(--primary-color); 
-  /* box-shadow: 0px 0px 2px #9575CD, 0px 0px 5px #9575CD;  */
+
 }
 
 .fc .fc-daygrid-day-top {
   display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center; /* Centra verticalmente */
+  justify-content: center;
+  align-items: center; 
   height: 100%; 
 }
 
 .fc .fc-daygrid-day-number {
-  margin: 0; /* Elimina cualquier margen para centrar correctamente */
+  margin: 0; 
 }
-
-/* Hola */
 
 .fc-theme-standard td, .fc-theme-standard th {
   border: none;
@@ -224,7 +224,7 @@ p {
 
 .fc-theme-standard .fc-scrollgrid {
   border: none;
-}
+} */
 
 /* Card */
 
@@ -233,3 +233,7 @@ p {
   text-overflow: ellipsis;
 }
 
+.p-timeline-event-content{
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

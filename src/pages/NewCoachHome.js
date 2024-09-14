@@ -1,0 +1,411 @@
+import React, { useState, useEffect, useContext } from 'react';
+import { Card } from 'primereact/card';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { ProgressBar } from 'primereact/progressbar';
+import { Avatar } from 'primereact/avatar';
+import { Tag } from 'primereact/tag';
+import { Timeline } from 'primereact/timeline';
+import { Badge } from 'primereact/badge';
+import { Chart } from 'primereact/chart';
+import { Panel } from 'primereact/panel';
+import { ListBox } from 'primereact/listbox';
+import { Calendar } from 'primereact/calendar';
+import { InputIcon } from 'primereact/inputicon';
+import { IconField } from 'primereact/iconfield';
+import { formatDate } from '../utils/UtilFunctions';
+
+import { useToast } from '../utils/ToastContext';
+import { UserContext } from '../utils/UserContext';
+import { useSpinner } from '../utils/GlobalSpinner';
+import { useNavigate } from 'react-router-dom';
+import { fetchCoachStudents, fetchRecentActivitiesByCoachId, fetchWorkoutProgressByCoachId, fetchUpcomingSessionsByCoachId, fetchLastMessages } from '../services/usersService';
+import { fetchCoachWorkouts, fetchTrainingCyclesByCoachId } from '../services/workoutService';
+
+// Mock data (replace with actual data in a real application)
+const coachName = "John Doe";
+const clients = [
+  { name: "Alice Smith", photo: "alice.jpg", progress: 75 },
+  { name: "Bob Johnson", photo: "bob.jpg", progress: 50 },
+  { name: "Carol Williams", photo: "carol.jpg", progress: 90 },
+];
+const trainingPlans = [
+  { name: "Weight Loss Plan", status: "active" },
+  { name: "Muscle Gain Plan", status: "pending" },
+  { name: "Cardio Boost Plan", status: "completed" },
+];
+const recentActivities = [
+  { content: "Alice completed her workout", date: "1 hour ago" },
+  { content: "New client sign-up: David", date: "3 hours ago" },
+  { content: "Message from Bob", date: "Yesterday" },
+];
+const upcomingSessions = [
+  { client: "Alice Smith", date: "2023-05-10T10:00:00" },
+  { client: "Bob Johnson", date: "2023-05-11T14:00:00" },
+];
+
+export default function CoachHomePage() {
+    const [globalFilter, setGlobalFilter] = useState('');
+    const { setLoading } = useSpinner();
+    const showToast = useToast();
+    const { user, coach } = useContext(UserContext);
+    const navigate = useNavigate();
+    const [clients, setClients] = useState([]);
+    const [trainingPlans, setTrainingPlans] = useState([]);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [recentActivities, setRecentActivities] = useState([]);
+    const [workoutProgress, setWorkoutProgress] = useState([]);
+    const [upcomingSessions, setUpcomingSessions] = useState([]);
+    const [workouts, setWorkouts] = useState([]);
+    const [lastMessages, setLastMessages] = useState([]);
+
+    const processWorkoutProgressData = (workoutProgress) => {
+        let completedCount = 0;
+        let pendingCount = 0;
+        let expiredCount = 0;
+    
+        // Recorrer el progreso de cada cliente
+        workoutProgress.forEach(clientProgress => {
+            clientProgress.progress.forEach(workout => {
+                if (workout.status === 'Completed') {
+                    completedCount++;
+                } else if (workout.status === 'Pending') {
+                    pendingCount++;
+                } else if (workout.status === 'Expired') {
+                    expiredCount++;
+                }
+            });
+        });
+    
+        return { completedCount, pendingCount, expiredCount };
+    };
+
+    const colorPalette = ['#FF5733', '#33FF57', '#3357FF', '#F1C40F', '#9B59B6'];
+
+    const assignColorsToClients = (upcomingSessions) => {
+        return upcomingSessions.map((session, index) => ({
+            ...session,
+            color: colorPalette[index % colorPalette.length], // Asigna un color cíclicamente
+        }));
+    };
+
+    const upcomingSessionsWithColors = assignColorsToClients(upcomingSessions);
+    
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const clientsData = await fetchCoachStudents(user.userId);
+                
+                const activeClients = clientsData.filter(client => client.user.subscription.status === 'Active');
+                setClients(activeClients);
+
+                const trainingCycles = await fetchTrainingCyclesByCoachId(user.userId);
+                const plans = trainingCycles.map(cycle => ({
+                    name: cycle.name,
+                    status: cycle.status, // Puedes mapear el estado real de cada ciclo
+                }));
+                setTrainingPlans(plans);
+
+                const userActivities = await fetchRecentActivitiesByCoachId(coach.id);
+                setRecentActivities(userActivities);
+
+                const workoutProgress = await fetchWorkoutProgressByCoachId(coach.id);
+                setWorkoutProgress(workoutProgress);
+
+                // Assign workout progress to client via email
+                const clientsWithProgress = clientsData.map(client => {
+                    const progress = workoutProgress.find(progress => progress.client === client.user.email);    
+                    return {
+                        ...client,
+                        progress: progress ? progress.progress : 0,
+                    };
+                });
+                setClients(clientsWithProgress);
+
+                const upcomingSessions = await fetchUpcomingSessionsByCoachId(coach.id);
+                setUpcomingSessions(upcomingSessions);
+
+                const workouts = await fetchCoachWorkouts(user.userId);
+                setWorkouts(workouts);
+
+                const lastMessages = await fetchLastMessages(user.userId);
+                setLastMessages(lastMessages);
+                console.log('Last Messages:', lastMessages);
+            } catch (error) {
+
+                showToast('error', 'Error', error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [refreshKey, user.userId, setLoading, showToast]);
+
+    
+
+  const header = (
+    <div className="flex justify-content-between align-items-center">
+      <h5 className="m-0">Manage Clients</h5>
+      <IconField iconPosition="left">
+            <InputIcon className="pi pi-search"> </InputIcon>
+            <InputText
+                type="search"
+                onInput={(e) => setGlobalFilter(e.target.value)}
+                placeholder="Search clients..."
+                />
+        </IconField>
+    </div>
+  );
+
+  const clientNameTemplate = (rowData) => {
+    return (
+        <div className="flex align-items-center gap-2">
+            <Avatar image={rowData.user.profilePicture || '/image.webp'} shape="circle" />
+            <span>{rowData.name}</span>
+        </div>
+    );
+};
+
+const progressTemplate = (rowData) => {
+    if(!rowData.progress) {
+        return null;
+    }
+    const progress = rowData.progress;
+    const totalWorkouts = progress.length;
+
+    // Contar el número de entrenamientos completados, pendientes y expirados
+    const completedCount = progress.filter(p => p.status === 'Completed').length;
+    const pendingCount = progress.filter(p => p.status === 'Pending').length;
+    const expiredCount = progress.filter(p => p.status === 'Expired').length;
+
+    return (
+        <div className="flex align-items-center gap-2">
+            {/* Etiquetas para los distintos estados */}
+            <Tag value={`Completed: ${completedCount}`} severity="success" />
+            <Tag value={`Pending: ${pendingCount}`} severity="warning" />
+            <Tag value={`Expired: ${expiredCount}`} severity="danger" />
+            {/* {completedCount > 0 && (
+            )}
+            {pendingCount >= 0 && (
+            )}
+            {expiredCount > 0 && (
+            )} */}
+            {/* Mostrar una barra de progreso del total */}
+            <div style={{ width: '100%' }}>
+                <ProgressBar 
+                    value={(completedCount / totalWorkouts) * 100} 
+                    showValue={false} 
+                    style={{ height: '10px', backgroundColor: '#e0e0e0' }}
+                />
+                <small>{completedCount}/{totalWorkouts} Completed</small>
+            </div>
+        </div>
+    );
+};
+
+  const actionTemplate = (student) => {
+    return (
+      <div>
+        {/* <Button icon="pi pi-eye" className="p-button-rounded p-button-text" /> */}
+        <Button icon="pi pi-eye" className="p-button-rounded p-button-text" onClick={() => navigateToClientProfile(student.id)} />
+        {/* <Button icon="pi pi-pencil" className="p-button-rounded p-button-text" /> */}
+      </div>
+    );
+  };
+
+  const statusTemplate = (rowData) => {
+    const statusMap = {
+        active: { severity: 'success', label: 'Active' },
+        pending: { severity: 'warning', label: 'Pending' },
+        completed: { severity: 'danger', label: 'Completed' },
+    };
+    const status = statusMap[rowData.status] || { severity: 'info', label: rowData.status };
+    // return <Tag severity={status.severity} value={status.label} />;
+    return <Button label="Edit Plan" icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit/${rowData.id}`)} />
+};
+
+    const { completedCount, pendingCount, expiredCount } = processWorkoutProgressData(workoutProgress);
+    const chartData = {
+            labels: ['Completed', 'Pending', 'Expired'],
+            datasets: [
+                {
+                    data: [completedCount, pendingCount, expiredCount],
+                    backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
+                },
+            ],
+        };
+
+    const chartOptions = {
+        plugins: {
+            legend: {
+                labels: {
+                    usePointStyle: true,
+                },
+            },
+        },
+    };
+
+    const navigateToClientProfile = (clientId) => {
+        navigate(`/client-dashboard/${clientId}`);
+    };
+
+  return (
+    <div className="p-4">
+      {/* Welcome Header */}
+      <Card className="mb-4">
+        <div className="flex align-items-center justify-content-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Welcome back, {coach.name}!</h1>
+            <div className="flex gap-4">
+              <div>
+                <span className="font-bold">Total Clients:</span> {clients.length}
+              </div>
+              <div>
+                <span className="font-bold">Active Plans:</span> {trainingPlans.filter(p => p.status === 'active').length}
+              </div>
+              <div>
+                <span className="font-bold">Upcoming Sessions:</span> {upcomingSessions.length}
+              </div>
+            </div>
+          </div>
+          {/* <img src="/logo.png" alt="EaseTrain Logo" className="w-4rem" /> */}
+        </div>
+      </Card>
+
+      {/* Client Management Section */}
+        <DataTable
+            value={clients}
+            header={header}
+            globalFilter={globalFilter}
+            emptyMessage="No clients found."
+            className="p-datatable-sm"
+        >
+            <Column field="name" header="Client" body={clientNameTemplate} />
+            <Column field="progress" header="Progress" body={progressTemplate} />
+            <Column body={actionTemplate} />
+        </DataTable>
+
+      {/* Training Plans Overview */}
+      <Card className="mb-4">
+            <h2 className="text-2xl font-bold mb-3">Training Plans</h2>
+            <div className="grid">
+                {workouts.map((plan, index) => (
+                    <div key={index} className="col-12 md:col-4">
+                        <Card title={plan.planName} className="mb-3">
+                            {statusTemplate(plan)}
+                        </Card>
+                    </div>
+                ))}
+            </div>
+            <div className="flex justify-content-end gap-2">
+                <Button label="New Plan" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary" onClick={() => navigate('/plans/create')} />
+                {/* <Button label="Edit Plan" icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate('/plans/edit')} /> */}
+            </div>
+        </Card>
+
+      <div className="grid">
+        <div className="col-12 md:col-6 lg:col-4">
+          {/* Recent Activity and Notifications */}
+          <Card className="mb-4">
+            <div className="flex justify-content-between align-items-center mb-3">
+              <h2 className="text-2xl font-bold m-0">Recent Activity</h2>
+              {/* <Button icon="pi pi-bell" className="p-button-rounded p-button-text" badge="3" badgeClassName="p-badge-danger" /> */}
+            </div>
+            <Timeline value={recentActivities} conte className='overflow-hidden text-overflow-ellipsis' content={(item) => `${item.user.client.name} - ${item.description}`} opposite={(item) => formatDate(item.timestamp)} />
+          </Card>
+
+          {/* Messaging Section */}
+          <Card className="mb-4">
+            <h2 className="text-2xl font-bold mb-3">Recent Messages</h2>
+            <ListBox
+                options={lastMessages}
+                optionLabel="content"
+                className="w-full mb-3"
+                itemTemplate={(option) => (
+                    <div className="flex align-items-center">
+                        <span>{option.sender.client.name}: &nbsp;</span>
+                        <span>{option.content ? option.content : 'File'}</span>
+                    </div>
+                )}
+            />
+            {/* <ul className="list-none p-0 m-0">
+              <li className="mb-2">Alice: Great session today!</li>
+              <li className="mb-2">Bob: Can we reschedule?</li>
+            </ul> */}
+            <Button label="Open Chat" icon="pi pi-comments" className="mt-3" />
+          </Card>
+        </div>
+
+        <div className="col-12 md:col-6 lg:col-4">
+            {/* Analytics & Progress Reports */}
+            <Card className="mb-4">
+                <h2 className="text-2xl font-bold mb-3">Workout Progress</h2>
+                <Chart type="pie" data={chartData} options={chartOptions} className="w-full" />
+            </Card>
+
+            {/* Subscription Status */}
+            <Panel header="Subscription Status" className="mb-4">
+                <p>Current Plan: Premium</p>
+                <p>Clients Managed: {clients.length}/50</p>
+                <Button label="Upgrade Plan" className="mt-3" />
+            </Panel>
+        </div>
+
+        <div className="col-12 md:col-6 lg:col-4">
+          {/* Upcoming Sessions & Appointments */}
+          <Card className="mb-4">
+            <h2 className="text-2xl font-bold mb-3">Upcoming Sessions</h2>
+            <ListBox
+                options={upcomingSessionsWithColors}
+                optionLabel="client"
+                className="w-full mb-3"
+                itemTemplate={(option) => (
+                    <div className="flex align-items-center justify-content-between">
+                        <span style={{ color: option.color }}>{option.client}</span>
+                        <small>{option.nextSession ? formatDate(option.nextSession) : 'No upcoming session'}</small>
+                    </div>
+                )}
+            />
+            <Calendar 
+                inline 
+                dateTemplate={(date) => {
+                    const session = upcomingSessionsWithColors.find(session => {
+                        const sessionDate = new Date(session.nextSession);
+                        
+                        const dateNew = new Date(date.year, date.month, date.day);
+                        console.log(sessionDate.toDateString() === dateNew.toDateString());    
+                        return sessionDate.toDateString() === dateNew.toDateString(); // Compara las fechas
+                    });
+
+                    // Si hay una sesión en esta fecha, devolver un fondo coloreado
+                    if (session) {
+                        return (
+                            <div style={{ 
+                                backgroundColor: session.color, 
+                                borderRadius: '50%', 
+                                width: '100%', 
+                                height: '100%', 
+                                display: 'flex', 
+                                justifyContent: 'center', 
+                                alignItems: 'center' 
+                            }}>
+                                {date.day}
+                            </div>
+                        );
+                    }
+
+                    // Devolver la fecha sin formato si no es una sesión
+                    return date.day;
+                }}
+            />
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

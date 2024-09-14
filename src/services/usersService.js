@@ -85,6 +85,7 @@ const fetchMessages = async (coachId, clientId, page=1) => {
         throw new Error(errorData.message || 'Something went wrong.');
       }
       const data = await response.json();
+      console.log('Messages:', data); 
       return data;
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -109,6 +110,21 @@ const fetchClientActivities = async (studentId) => {
     return response.json(); // Directly returning parsed JSON data
 };
 
+const fetchRecentActivitiesByCoachId = async (coachId) => {
+    const response = await fetch(`${apiUrl}/users/coachId/${coachId}/recent-activity`, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      const errorMessage = errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
+    }
+  
+    return response.json(); // Directly returning parsed JSON data
+}
 const fetchClientActivitiesByUserId = async (userId) => {
     console.log('UserID:', userId)
     const response = await fetch(`${apiUrl}/users/userId/activities/${userId}`, {
@@ -123,6 +139,44 @@ const fetchClientActivitiesByUserId = async (userId) => {
       throw new Error(errorMessage);
     }
     console.log(response)
+    return response.json(); // Directly returning parsed JSON data
+};
+
+const fetchWorkoutProgressByCoachId = async (coachId) => {
+    const response = await fetch(`${apiUrl}/users/coachId/${coachId}/workout-progress`, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      const errorMessage = errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
+    }
+    return response.json(); // Directly returning parsed JSON data
+};
+
+const fetchUpcomingSessionsByCoachId = async (coachId) => {
+    const response = await fetch(`${apiUrl}/users/coachId/${coachId}/upcoming-sessions`, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      const errorMessage = errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
+    }
+    return response.json(); // Directly returning parsed JSON data
+};
+
+const fetchLastMessages = async (coachId) => {
+    const response = await fetch(`${apiUrl}/messages/coach/${coachId}/last-messages`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      const errorMessage = errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
+    }
     return response.json(); // Directly returning parsed JSON data
 };
 
@@ -216,6 +270,10 @@ export {
     fetchCoachPlans,
     fetchCoachStudents,
     fetchClientActivitiesByUserId,
+    fetchRecentActivitiesByCoachId,
+    fetchWorkoutProgressByCoachId,
+    fetchUpcomingSessionsByCoachId,
+    fetchLastMessages,
     fetchClientActivities,
     saveStudent,
     updateCoach,

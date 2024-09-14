@@ -26,45 +26,54 @@ import ManageStudents from './pages/ManageStudents.js';
 import ClientProfile from './pages/StudentProfile.js';
 import ClientDashboard from './pages/ClientDashboard.js';
 import NotSubscribed from './components/NotSubscribed.js';
+import Home from './auth/Home.js';
+import NewCoachHome from './pages/NewCoachHome.js';
+import NewCoachProfile from './pages/NewCoachProfile.js';
+import NewManageStudentsPage from './pages/NewManageStudents.js';
+import NewClientDashboard from './pages/NewClientDashboard.js';
+import NewCreatePlan from './pages/NewCreatePlan.js';
+import { ChatSidebarProvider } from './utils/ChatSideBarContext.js';
 const App = () => {
   return (
     <SpinnerProvider>
       <UserProvider>
         <ToastProvider>
-          <ConfirmationDialogProvider>
-            <Router>
-              <Header/>
-              <div className='body-container'>
-              <Routes>
-                <Route path="/" element={< Login />} />
-                <Route path="/login" element={< Login />} />
-                <Route path="/unauthorized" element={<Unauthorized />} />
+          <ChatSidebarProvider>
+            <ConfirmationDialogProvider>
+              <Router>
+                <Header/>
+                <div className='body-container'>
+                <Routes>
+                  <Route path="/" element={< Home />} />
+                  <Route path="/login" element={< Home />} />
+                  <Route path="/unauthorized" element={<Unauthorized />} />
 
-                <Route path="/coach" element={<PrivateRoute element={CoachHome} requiredType="coach"  />} />
-                <Route path="/coach/profile" element={<PrivateRoute element={CoachProfile} requiredType="coach" />} />
-                <Route path="/plans/create" element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={false} />} />
-                <Route path="/plans/edit/:planId" element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />} />
-                <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={PlanDetails} requiredType="coach" />} />
-                <Route path="/students/:studentId/details" element={<PrivateRoute element={StudentDetails} requiredType="coach" />} />
-                <Route path="/manage-students" element={<PrivateRoute element={ManageStudents} requiredType="coach" />} />
-                <Route path="/client-dashboard/:clientId" element={<PrivateRoute element={ClientDashboard} requiredType="coach" />} />
+                  <Route path="/coach" element={<PrivateRoute element={NewCoachHome} requiredType="coach"  />} />
+                  <Route path="/coach/profile" element={<PrivateRoute element={NewCoachProfile} requiredType="coach" />} />
+                  <Route path="/plans/create" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={false} />} />
+                  <Route path="/plans/edit/:planId" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />} />
+                  <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={PlanDetails} requiredType="coach" />} />
+                  <Route path="/students/:studentId/details" element={<PrivateRoute element={StudentDetails} requiredType="coach" />} />
+                  <Route path="/manage-students" element={<PrivateRoute element={NewManageStudentsPage} requiredType="coach" />} />
+                  <Route path="/client-dashboard/:clientId" element={<PrivateRoute element={NewClientDashboard} requiredType="coach" />} />
 
-                <Route path="/student" element={<PrivateRoute element={StudentHome} requiredType="client" />} />
-                <Route path="/student/profile" element={<PrivateRoute element={ClientProfile} requiredType="client" />} />
-                <Route path="/plans/start-session/:planId" element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />} />
+                  <Route path="/student" element={<PrivateRoute element={StudentHome} requiredType="client" />} />
+                  <Route path="/student/profile" element={<PrivateRoute element={ClientProfile} requiredType="client" />} />
+                  <Route path="/plans/start-session/:planId" element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />} />
 
-                <Route path="/verify-email"element={< VerifyEmail />} />
-                {/* <Route path="/complete-coach-profile" element={<CoachProfileForm />} /> */}
-                <Route path="/complete-coach-profile" element={<PrivateRoute element={CoachProfileForm} />}/>
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/not-subscribed" element={<NotSubscribed />} />
+                  <Route path="/verify-email"element={< VerifyEmail />} />
+                  {/* <Route path="/complete-coach-profile" element={<CoachProfileForm />} /> */}
+                  <Route path="/complete-coach-profile" element={<PrivateRoute element={CoachProfileForm} />}/>
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/not-subscribed" element={<NotSubscribed />} />
 
-                <Route path="*" element={<Navigate to="/" />} />
-              </Routes>
-              </div>
-            </Router>
-          </ConfirmationDialogProvider>
+                  <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+                </div>
+              </Router>
+            </ConfirmationDialogProvider>
+          </ChatSidebarProvider>
         </ToastProvider>
       </UserProvider>
     </SpinnerProvider>
