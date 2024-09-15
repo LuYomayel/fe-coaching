@@ -296,6 +296,15 @@ const NewCreatePlan = ({ isEdit }) => {
     // Create a clean version of the plan object
     const cleanPlan = JSON.parse(JSON.stringify({
       ...plan,
+      workout: {
+        ...plan.workout,
+        coach: {
+          id: '',
+          user: {
+            id: user.userId
+          }
+        }
+      },
       groups: plan.groups.map(group => ({
         ...group,
         exercises: group.exercises.map(exercise => ({
@@ -307,6 +316,7 @@ const NewCreatePlan = ({ isEdit }) => {
         }))
       }))
     }));
+    console.log(cleanPlan);
 
     showConfirmationDialog({
       message: isEdit ? 'Are you sure you want to edit this plan?' : 'Are you sure you want to create this plan?',
@@ -379,7 +389,12 @@ const NewCreatePlan = ({ isEdit }) => {
 
             // Log de los resultados
             console.log('After: ', planFromImage);
-            setPlan(planFromImage);
+            setPlan((plan) => ({
+                isTemplate: true,
+                instanceName: '',
+                ...planFromImage
+              }));
+
 
             // Mostramos un toast con los ejercicios y grupos eliminados
             if (removedExercises.length > 0 || removedGroups.length > 0) {

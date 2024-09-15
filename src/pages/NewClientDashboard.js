@@ -286,19 +286,24 @@ export default function ClientDashboard() {
               );
             });
             const tableData = exercise.setLogs.length > 0 ? exercise.setLogs : [{ setNumber: 1 }];
-            
-            const expandedData = tableData.flatMap(setLog => [
-              { 
-                setNumber: setLog.setNumber, 
-                type: 'Expected', 
-                ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: exercise[prop] || '-' }), {})
-              },
-              { 
-                setNumber: setLog.setNumber, 
-                type: 'Completed', 
-                ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: setLog[prop] || '-' }), {})
-              }
-            ]);
+            const expandedData = tableData.flatMap(setLog => {
+              return [
+
+                { 
+                  setNumber: setLog.setNumber, 
+                  type: 'Expected', 
+                  ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: exercise[prop] || '-' }), {}),
+                  rpe:  '-',
+                },
+                { 
+                  setNumber: setLog.setNumber, 
+                  type: 'Completed', 
+                  ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: setLog[prop] || '-' }), {}),
+                  rpe: exercise.rpe || '-',
+                }
+              ];
+            }
+            );
 
             return (
               <AccordionTab key={exercise.id} header={exercise.exercise.name}>

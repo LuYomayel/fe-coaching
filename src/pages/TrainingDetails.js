@@ -203,6 +203,7 @@ const handleCompletedChange = (exerciseId, isNotAsPlanned) => {
     } else {
       newProgress[exerciseId] = { ...newProgress[exerciseId], completed: true, completedNotAsPlanned: false, sets };
     }
+    console.log(newProgress)
     return newProgress;
   });
   handleSaveProgress();

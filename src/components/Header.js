@@ -18,14 +18,14 @@ export default function Header() {
 
   const menuItems = [
     {
-      label: 'Profile',
-      icon: 'pi pi-user',
-      command: () => navigate(user.userType === 'client' ? '/student/profile' : '/coach/profile'),
-    },
-    {
       label: 'Home',
       icon: 'pi pi-home',
       command: () => navigate(user.userType === 'client' ? '/student' : '/coach'),
+    },
+    {
+      label: 'Profile',
+      icon: 'pi pi-user',
+      command: () => navigate(user.userType === 'client' ? '/student/profile' : '/coach/profile'),
     },
     {
       label: 'Clients',
@@ -55,9 +55,9 @@ export default function Header() {
   return (
     <div className="flex justify-content-between align-items-center p-3 surface-0 shadow-1">
       <div className="flex align-items-center">
-        {/* <Link to={user.userType === 'client' ? '/student' : '/coach'}>
-          <img src="/logo.png" alt="EaseTrain Logo" className="mr-2" style={{ height: '40px' }} />
-        </Link> */}
+        <Link to={user.userType === 'client' ? '/student' : '/coach'}>
+          <img src="/logo512.png" alt="EaseTrain Logo" className="mr-2" style={{ height: '40px' }} />
+        </Link>
         <span className="text-xl font-bold">EaseTrain</span>
       </div>
       <div className="flex align-items-center">

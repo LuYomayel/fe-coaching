@@ -90,29 +90,13 @@ export default function CoachHomePage() {
 
                 const userActivities = await fetchRecentActivitiesByCoachId(coach.id);
                 setRecentActivities(userActivities);
-
-                const workoutProgress = await fetchWorkoutProgressByCoachId(coach.id);
-                setWorkoutProgress(workoutProgress);
-
-                // Assign workout progress to client via email
-                const clientsWithProgress = clientsData.map(client => {
-                    const progress = workoutProgress.find(progress => progress.client === client.user.email);    
-                    return {
-                        ...client,
-                        progress: progress ? progress.progress : 0,
-                    };
-                });
-                setClients(clientsWithProgress);
-
-                const upcomingSessions = await fetchUpcomingSessionsByCoachId(coach.id);
-                setUpcomingSessions(upcomingSessions);
-
+                
                 const workouts = await fetchCoachWorkouts(user.userId);
+                console.log('Workouts:', workouts);
                 setWorkouts(workouts);
 
                 const lastMessages = await fetchLastMessages(user.userId);
                 setLastMessages(lastMessages);
-                console.log('Last Messages:', lastMessages);
             } catch (error) {
 
                 showToast('error', 'Error', error.message);
@@ -124,7 +108,47 @@ export default function CoachHomePage() {
         fetchData();
     }, [refreshKey, user.userId, setLoading, showToast]);
 
-    
+    useEffect(() => {
+        const fetchUpcomingSessions = async () => {
+            try {
+                setLoading(true);
+                const upcomingSessions = await fetchUpcomingSessionsByCoachId(coach.id);
+                setUpcomingSessions(upcomingSessions);
+            } catch (error) {
+                showToast('error', 'Error', error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchUpcomingSessions();
+    }, [refreshKey, coach.id, setLoading, showToast]);
+
+    useEffect(() => {
+        const fetchWorkoutProgress = async () => {
+            try {
+                setLoading(true);
+                const workoutProgress = await fetchWorkoutProgressByCoachId(coach.id);
+                setWorkoutProgress(workoutProgress);
+
+                const clientsData = await fetchCoachStudents(user.userId);
+                // Assign workout progress to client via email
+                const clientsWithProgress = clientsData.map(client => {
+                    const progress = workoutProgress.find(progress => progress.client === client.user.email);    
+                    return {
+                        ...client,
+                        progress: progress ? progress.progress : 0,
+                    };
+                });
+                setClients(clientsWithProgress);
+
+            } catch (error) {
+                showToast('error', 'Error', error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchWorkoutProgress();
+    }, [refreshKey, coach.id, setLoading, showToast]);
 
   const header = (
     <div className="flex justify-content-between align-items-center">
