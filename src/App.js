@@ -37,6 +37,7 @@ import NewStudentDetails from './pages/NewStudentsDetails.js';
 import NewStudentHome from './pages/NewStudentHome.js';
 import NewClientProfile from './pages/NewClientProfile.js';
 import NewTrainingPlanDetails from './pages/NewTrainingDetails.js';
+import NewPlanDetail from './dialogs/NewPlanDetails.js';
 const App = () => {
   return (
     <SpinnerProvider>
@@ -56,7 +57,7 @@ const App = () => {
                   <Route path="/coach/profile" element={<PrivateRoute element={NewCoachProfile} requiredType="coach" />} />
                   <Route path="/plans/create" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={false} />} />
                   <Route path="/plans/edit/:planId" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />} />
-                  <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={PlanDetails} requiredType="coach" />} />
+                  <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={NewPlanDetail} requiredType="coach" />} />
                   <Route path="/students/:studentId/details" element={<PrivateRoute element={NewStudentDetails} requiredType="coach" />} />
                   <Route path="/manage-students" element={<PrivateRoute element={NewManageStudentsPage} requiredType="coach" />} />
                   <Route path="/client-dashboard/:clientId" element={<PrivateRoute element={NewClientDashboard} requiredType="coach" />} />
