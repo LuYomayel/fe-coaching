@@ -359,7 +359,7 @@ const progressTemplate = (rowData) => {
                         const sessionDate = new Date(session.nextSession);
                         
                         const dateNew = new Date(date.year, date.month, date.day);
-                        console.log(sessionDate.toDateString() === dateNew.toDateString());    
+                        // console.log(sessionDate.toDateString() === dateNew.toDateString());    
                         return sessionDate.toDateString() === dateNew.toDateString(); // Compara las fechas
                     });
 

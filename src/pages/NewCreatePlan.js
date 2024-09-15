@@ -6,7 +6,6 @@ import { Dropdown } from 'primereact/dropdown';
 import { useNavigate } from 'react-router-dom';
 import { InputNumber } from 'primereact/inputnumber';
 import { Dialog } from 'primereact/dialog';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card } from 'primereact/card';
@@ -16,6 +15,7 @@ import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
+import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 
 const propertyList = [
   { name: 'Repetitions', key: 'repetitions' },
@@ -36,7 +36,7 @@ const NewCreatePlan = ({ isEdit }) => {
   const { user } = useContext(UserContext);
   const showToast = useToast();
   const { setLoading } = useSpinner();
-
+    const { showConfirmationDialog } = useConfirmationDialog();
   const [deletedGroup, setDeletedGroup] = useState(null);
   const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
 
@@ -84,6 +84,10 @@ const NewCreatePlan = ({ isEdit }) => {
   const [exercises, setExercises] = useState([]);
   const toast = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+
+    useEffect(() => {
+        setLoading(isUploading)
+    }, [isUploading, setLoading]);
 
   useEffect(() => {
     const fetchPlanDetails = async () => {
@@ -153,7 +157,7 @@ const NewCreatePlan = ({ isEdit }) => {
   };
 
   const clearPlan = () => {
-    confirmDialog({
+    showConfirmationDialog({
       message: 'Are you sure you want to clear the entire workout plan?',
       header: 'Confirm Clear Plan',
       icon: 'pi pi-exclamation-triangle',
@@ -304,7 +308,7 @@ const NewCreatePlan = ({ isEdit }) => {
       }))
     }));
 
-    confirmDialog({
+    showConfirmationDialog({
       message: isEdit ? 'Are you sure you want to edit this plan?' : 'Are you sure you want to create this plan?',
       header: 'Confirm Submission',
       icon: 'pi pi-exclamation-triangle',
@@ -331,48 +335,102 @@ const NewCreatePlan = ({ isEdit }) => {
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setIsUploading(true);
-      try {
-        const planFromImage = await getPlanFromImage(file);
-        setPlan(planFromImage);
-        showToast('success', 'Plan imported!', 'The workout plan has been imported from the image successfully.');
-      } catch (error) {
-        showToast('error', 'Error importing plan', error.message);
-      } finally {
-        setIsUploading(false);
-      }
+        setIsUploading(true);
+        try {
+            const planFromImage = await getPlanFromImage(file);
+            console.log('Before: ', planFromImage);
+
+            // Arrays para almacenar ejercicios y grupos eliminados
+            const removedExercises = [];
+            const removedGroups = [];
+
+            // Filtramos los grupos y sus ejercicios
+            const newGroups = planFromImage.groups.reduce((acc, group) => {
+                const exercisesToAdd = group.exercises.filter(exercise => {
+                    const exists = exercises.some(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase());
+                    if (!exists) {
+                        removedExercises.push(exercise.exercise.name);  // Agregamos ejercicios no existentes
+                    }
+                    return exists;
+                });
+
+                // Si el grupo tiene ejercicios válidos, lo agregamos al array
+                if (exercisesToAdd.length > 0) {
+                    const newGroup = {
+                        set: group.set,
+                        rest: group.rest,
+                        groupNumber: group.groupNumber,
+                        exercises: exercisesToAdd.map(exercise => ({
+                            exercise: exercises.find(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase()),
+                            id: uuidv4(),
+                            notes: exercise.notes
+                        }))
+                    };
+                    acc.push(newGroup);
+                } else {
+                    // Si el grupo no tiene ejercicios válidos, lo eliminamos y lo registramos
+                    removedGroups.push(group.groupNumber);
+                }
+                return acc;
+            }, []);
+
+            // Actualizamos los grupos en el plan
+            planFromImage.groups = newGroups;
+
+            // Log de los resultados
+            console.log('After: ', planFromImage);
+            setPlan(planFromImage);
+
+            // Mostramos un toast con los ejercicios y grupos eliminados
+            if (removedExercises.length > 0 || removedGroups.length > 0) {
+                let message = '';
+                if (removedExercises.length > 0) {
+                    message += `Removed exercises: ${removedExercises.join(', ')}. `;
+                }
+                if (removedGroups.length > 0) {
+                    message += `Removed groups: ${removedGroups.join(', ')}.`;
+                }
+                showToast('info', 'Plan filtered', message, true);
+            }
+
+            showToast('success', 'Plan imported!', 'The workout plan has been imported from the image successfully.');
+        } catch (error) {
+            showToast('error', 'Error importing plan', error.message, true);
+        } finally {
+            setIsUploading(false);
+        }
     }
-  };
+};
 
   const getPlanFromImage = async (imageFile) => {
     // Create a FormData object to send the image file
     const formData = new FormData();
     formData.append('file', imageFile);
     formData.append('purpose', 'plan_extraction');
-  
+    console.log(formData);
     // Set up the API request
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/workout/import-plan-from-image`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-      },
+    //   headers: {
+    //     'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+    //   },
       body: formData,
     });
   
     if (!response.ok) {
       const errorData = await response.json();
+      console.log(errorData);
       throw new Error(errorData.error.message || 'Error processing image');
     }
-  
+    
     const data = await response.json();
     // Assuming the API returns the plan object in the response
-    return data.plan;
+    return data;
   };
-  
+
   return (
     <div className="workout-plan-builder p-4 ">
       <Toast ref={toast} />
-      <ConfirmDialog />
 
       <Card className="mb-4">
         <div className="flex flex-column md:flex-row align-items-center justify-content-between">
@@ -394,6 +452,7 @@ const NewCreatePlan = ({ isEdit }) => {
                 onClick={() => document.getElementById('image-upload-input').click()}
                 className="mr-2"
                 disabled={isUploading}
+                loading={isUploading}
             />
             <input
                 type="file"
@@ -457,7 +516,7 @@ const NewCreatePlan = ({ isEdit }) => {
                         {group.exercises.map((exercise, exerciseIndex) => (
                           <div key={exercise.id} className="mb-3 p-3 border-1 border-gray-200 border-round">
                             <div className="flex justify-content-between align-items-center mb-2">
-                              <h4 className="text-lg m-0">{exercise.exercise.name}</h4>
+                              <h4 className="text-lg m-0">{exercise.exercise?.name}</h4>
                               <div>
                                 <Button
                                   icon="pi pi-plus"

@@ -9,7 +9,6 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { InputNumber } from 'primereact/inputnumber';
 import { Checkbox } from 'primereact/checkbox';
 import { Toast } from 'primereact/toast';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { fetchWorkoutInstance, deleteWorkoutPlan } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
 import { getYouTubeThumbnail, extractYouTubeVideoId } from '../utils/UtilFunctions';
