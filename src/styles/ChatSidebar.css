@@ -3,7 +3,7 @@
     flex-direction: column;
     padding: 10px;
     background-color: var(--highlight-bg);
-    height: calc(100vh - 6rem);
+    /* height: calc(100vh - 6rem); */
     border-radius: 5px;
     /* border: 1px solid #ddd; */
 }

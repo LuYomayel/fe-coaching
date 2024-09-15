@@ -21,6 +21,7 @@ import { UserContext } from '../utils/UserContext';
 import AssignWorkoutToCycleDialog from '../dialogs/AssignWorkoutToCycleDialog';
 import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialog';
 import PlanDetails from '../dialogs/PlanDetails';
+import NewPlanDetail from '../dialogs/NewPlanDetails';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId } from '../services/workoutService';
 import '../styles/ClientDashboard.css';
@@ -384,7 +385,7 @@ export default function ClientDashboard() {
           />
           <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} />
           <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
-            {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} />}
+            {selectedPlan && <NewPlanDetail planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} />}
           </Dialog>
         </TabPanel>
 

@@ -91,9 +91,6 @@ p {
 }
 
 .body-container{
-  /* height: calc(100vh - 6rem); */
-  /* overflow: auto; */
-  height: 100vh !important;
   overflow: auto;
 }
 .p-paginator {

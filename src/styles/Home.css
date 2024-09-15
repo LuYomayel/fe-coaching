@@ -1,6 +1,6 @@
 .my-students-container {
     padding: 2rem;
-    min-height: 100vh;
+    /* min-height: 100vh; */
 }
 
 @media (max-width: 576px) {

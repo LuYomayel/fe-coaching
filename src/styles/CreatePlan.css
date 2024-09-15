@@ -1,6 +1,6 @@
 .create-plan-container {
     display: flex;
-    max-height: calc(100vh - 12rem);
+    /* max-height: calc(100vh - 12rem); */
     padding: 2rem;
     gap: 1rem;
     color: #fff;
@@ -75,7 +75,7 @@
     }
     .create-plan-container {
         flex-direction: column;
-        height: calc(100vh - 130px);
+        /* height: calc(100vh - 130px); */
         padding: 0.5rem;
     }
 
