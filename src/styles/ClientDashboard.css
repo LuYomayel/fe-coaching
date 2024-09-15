@@ -40,3 +40,7 @@
   flex-direction: column;
 }
 
+.fc-h-event{
+  background-color: transparent !important;
+  border: none !important;
+}

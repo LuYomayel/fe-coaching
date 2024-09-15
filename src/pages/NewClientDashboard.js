@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Card } from 'primereact/card';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from 'primereact/datatable';
@@ -14,91 +14,305 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-
-// Mock data
-const mockWorkouts = [
-  { id: 1, title: 'Full Body Workout', start: '2023-05-15T10:00:00', end: '2023-05-15T11:30:00' },
-  { id: 2, title: 'Cardio Session', start: '2023-05-17T09:00:00', end: '2023-05-17T10:00:00' },
-  { id: 3, title: 'Upper Body Focus', start: '2023-05-19T11:00:00', end: '2023-05-19T12:30:00' },
-];
-
-const mockWorkoutDetails = [
-  { id: 1, name: 'Full Body Workout', date: '2023-05-15', exercises: [
-    { name: 'Squats', expected: { sets: 3, reps: 10, weight: 100 }, completed: { sets: 3, reps: 10, weight: 100 } },
-    { name: 'Bench Press', expected: { sets: 3, reps: 8, weight: 150 }, completed: { sets: 3, reps: 8, weight: 150 } },
-  ]},
-  { id: 2, name: 'Cardio Session', date: '2023-05-17', exercises: [
-    { name: 'Treadmill', expected: { duration: 30, speed: 6 }, completed: { duration: 30, speed: 6 } },
-    { name: 'Rowing Machine', expected: { duration: 20, distance: 3000 }, completed: { duration: 20, distance: 3100 } },
-  ]},
-];
-
-const mockExercises = [
-  { name: 'Squats', value: 'squats' },
-  { name: 'Bench Press', value: 'benchPress' },
-  { name: 'Deadlift', value: 'deadlift' },
-];
-
-const mockExerciseProgress = {
-  squats: {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-    datasets: [
-      {
-        label: 'Expected Reps',
-        data: [30, 30, 36, 36],
-        fill: false,
-        borderColor: '#42A5F5',
-      },
-      {
-        label: 'Completed Reps',
-        data: [30, 32, 34, 36],
-        fill: false,
-        borderColor: '#66BB6A',
-      },
-    ],
-  },
-};
+import { useParams } from 'react-router-dom';
+import { useToast } from '../utils/ToastContext';
+import { useSpinner } from '../utils/GlobalSpinner';
+import { UserContext } from '../utils/UserContext';
+import AssignWorkoutToCycleDialog from '../dialogs/AssignWorkoutToCycleDialog';
+import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialog';
+import PlanDetails from '../dialogs/PlanDetails';
+import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
+import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId } from '../services/workoutService';
+import '../styles/ClientDashboard.css';
+import { formatDate } from '../utils/UtilFunctions';
 
 export default function ClientDashboard() {
+  const { clientId } = useParams();
+  const toast = useRef(null);
+  const showToast = useToast();
+  const { setLoading } = useSpinner();
+  const { user } = useContext(UserContext);
+
+  // State variables
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [workoutDetailsVisible, setWorkoutDetailsVisible] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null);
-  const toast = useRef(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [exerciseOptions, setExerciseOptions] = useState([]);
+  const [chartData, setChartData] = useState(null);
+  const [workoutOptions, setWorkoutOptions] = useState([]);
+  const [filteredWorkouts, setFilteredWorkouts] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [assignCycleVisible, setAssignCycleVisible] = useState(false);
+  const [selectedCycleId, setSelectedCycleId] = useState(null);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const calendarRef = useRef(null);
+  const [assignSessionVisible, setAssignSessionVisible] = useState(false);
+  const [actionType, setActionType] = useState('assign');
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(1);
+  const [cycleOptions, setCycleOptions] = useState([]);
 
+  // Fetch data when the component mounts or refreshKey changes
+  useEffect(() => {
+    setLoading(true);
+    fetchTrainingCyclesByClient(clientId)
+      .then(({ events, cycleOptions }) => {
+        setCycleOptions(cycleOptions);
+        setCalendarEvents(events);
+      })
+      .catch(error => showToast('error', 'Error fetching training cycles', error.message))
+      .finally(() => setLoading(false));
+
+    fetchWorkoutsByClientId(clientId)
+      .then(data => {
+        setWorkouts(data);
+        const exercises = [...new Map(data.flatMap(workout => 
+          workout.groups.flatMap(group => 
+            group.exercises.map(ex => [ex.exercise.id, { id: ex.exercise.id, name: ex.exercise.name }])
+          )
+        ).map(entry => [entry[0], entry[1]]))].map(entry => entry[1]);
+
+        setExerciseOptions(exercises.map(ex => ({ label: ex.name, value: ex.id })));
+
+        const uniqueWorkouts = [...new Map(data.map(workout => [workout.workout.id, workout.workout])).values()];
+        setWorkoutOptions(uniqueWorkouts.map(workout => ({ label: workout.planName, value: workout.id })));
+      })
+      .catch(error => {
+        showToast('error', 'Error fetching client workouts', error.message);
+      })
+      .finally(() => setLoading(false));
+  }, [clientId, showToast, setLoading, refreshKey]);
+
+  // Update chart data when selectedExercise changes
+  useEffect(() => {
+    if (selectedExercise) {
+      const extractNumber = (str) => {
+        if (!str) return 0;
+        const num = str.match(/\d+(\.\d+)?/);
+        return num ? parseFloat(num[0]) : 0;
+      };
+
+      const filteredWorkouts = workouts.flatMap(workout =>
+        workout.groups.flatMap(group =>
+          group.exercises.filter(ex => ex.exercise.id === selectedExercise).map(ex => ({
+            date: workout.realEndDate,
+            expectedReps: extractNumber(ex.repetitions) || 0,
+            rpe: extractNumber(ex.rpe) || 0,
+            sets: ex.setLogs.map(set => ({
+              completedReps: extractNumber(set.repetitions) || 0,
+              weight: extractNumber(set.weight) || 0,
+              rpe: extractNumber(set.rpe) || 0,
+              time: extractNumber(set.time) || 0,
+              distance: extractNumber(set.distance) || 0,
+              tempo: set.tempo || '',
+              notes: set.notes || '',
+              difficulty: set.difficulty || '',
+              duration: extractNumber(set.duration) || 0,
+              restInterval: extractNumber(set.restInterval) || 0
+            }))
+          }))
+        )
+      ).filter(workout => workout.date);
+
+      const processedData = filteredWorkouts.map(fw => {
+        const totalReps = fw.sets.reduce((sum, set) => sum + set.completedReps, 0);
+        const totalWeight = fw.sets.reduce((sum, set) => sum + set.weight, 0);
+        const averageReps = fw.sets.length ? (totalReps / fw.sets.length) : 0;
+        const averageWeight = fw.sets.length ? (totalWeight / fw.sets.length) : 0;
+
+        return {
+          date: new Date(fw.date).toLocaleDateString(),
+          expectedReps: fw.expectedReps,
+          averageReps,
+          averageWeight,
+          rpe: fw.rpe
+        };
+      });
+
+      const dates = processedData.map(pd => pd.date);
+      const expectedRepsData = processedData.map(pd => pd.expectedReps);
+      const completedRepsData = processedData.map(pd => pd.averageReps);
+      const weightData = processedData.map(pd => pd.averageWeight);
+      const rpeData = processedData.map(pd => pd.rpe);
+
+      setChartData({
+        labels: dates,
+        datasets: [
+          {
+            label: 'Expected Repetitions',
+            data: expectedRepsData,
+            borderColor: 'blue',
+            fill: false,
+            yAxisID: 'y-axis-1',
+          },
+          {
+            label: 'Completed Repetitions',
+            data: completedRepsData,
+            borderColor: 'green',
+            fill: false,
+            yAxisID: 'y-axis-1',
+          },
+          {
+            label: 'Average Weight (kg)',
+            data: weightData,
+            borderColor: 'red',
+            fill: false,
+            yAxisID: 'y-axis-1',
+          },
+          {
+            label: 'Average RPE',
+            data: rpeData,
+            borderColor: 'purple',
+            fill: false,
+            yAxisID: 'y-axis-2',
+          },
+        ],
+      });
+    }
+  }, [selectedExercise, workouts]);
+
+  // Update filtered workouts when selectedWorkout changes
+  useEffect(() => {
+    if (selectedWorkout) {
+      const filtered = workouts.filter(workout => workout.workout.id === selectedWorkout && workout.status === 'completed');
+      setFilteredWorkouts(filtered);
+    }
+  }, [selectedWorkout, workouts]);
+
+  // Handlers
   const handleEventClick = (info) => {
-    setSelectedWorkout(info.event);
-    setWorkoutDetailsVisible(true);
+    const workoutInstanceId = info.event.extendedProps.workoutInstanceId;
+    handleViewWorkoutDetails(workoutInstanceId);
   };
 
-  const handleAssignWorkout = () => {
-    toast.current.show({ severity: 'success', summary: 'Success', detail: 'Workout assigned successfully', life: 3000 });
+  const handleViewWorkoutDetails = (workoutInstanceId) => {
+    setLoading(true);
+    setSelectedPlan(workoutInstanceId);
+    setPlanDetailsVisible(true);
   };
 
-  const handleUnassignWorkout = () => {
-    toast.current.show({ severity: 'info', summary: 'Info', detail: 'Workout unassigned', life: 3000 });
+  const hidePlanDetails = () => {
+    setPlanDetailsVisible(false);
+    setSelectedPlan(null);
+  };
+
+  const renderEventContent = (eventInfo) => {
+    if (!eventInfo || !eventInfo.event) {
+      return null;
+    }
+
+    const { title, extendedProps } = eventInfo.event;
+    const { status, workoutInstanceId, sessionId, cycle } = extendedProps || {};
+
+    return (
+      <div className="custom-event-content">
+        {title !== 'no title' ? (
+          <Button 
+            tooltip="View Workout Details" 
+            icon="pi pi-eye" 
+            size='small'
+            label={title}
+            severity={status === 'completed' ? 'success' : status === 'expired' ? 'danger' : status === 'current' ? 'info' : 'warning'}
+            text
+            raised
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleViewWorkoutDetails(workoutInstanceId);
+            }} 
+          />
+        ) : (
+          <Button 
+            tooltip="Assign Workouts to Day" 
+            icon="pi pi-calendar-plus" 
+            size='small'
+            severity="primary"
+            text
+            raised
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAssignDayWorkout(sessionId);
+            }} 
+          >
+            <div className="text-left p-0 m-0">
+              <p className="m-0">Assign Workout</p>
+              <small>{cycle}</small>
+            </div>
+          </Button>
+        )}
+      </div>
+    );
+  };
+
+  const handleAssignDayWorkout = (sessionId) => {
+    setSelectedClient(clientId);
+    setSelectedSessionId(sessionId);
+    setAssignSessionVisible(true);
+  };
+
+  const showCreateCycleDialog = () => {
+    setDialogVisible(true);
+  };
+
+  const hideCreateCycleDialog = () => {
+    setRefreshKey(old => old + 1);
+    setDialogVisible(false);
+  };
+
+  const handleOpenAssignCycle = (action) => {
+    setSelectedClient(clientId);
+    setActionType(action);
+    setAssignCycleVisible(true);
   };
 
   const renderWorkoutDetails = (rowData) => {
     return (
-      <Accordion className="w-full">
-        {rowData.exercises.map((exercise, index) => (
-          <AccordionTab key={index} header={exercise.name}>
-            <div className="grid">
-              <div className="col-12 md:col-6">
-                <h4>Expected</h4>
-                <p>Sets: {exercise.expected.sets}</p>
-                <p>Reps: {exercise.expected.reps}</p>
-                <p>Weight: {exercise.expected.weight} lbs</p>
-              </div>
-              <div className="col-12 md:col-6">
-                <h4>Completed</h4>
-                <p>Sets: {exercise.completed.sets}</p>
-                <p>Reps: {exercise.completed.reps}</p>
-                <p>Weight: {exercise.completed.weight} lbs</p>
-              </div>
-            </div>
-          </AccordionTab>
-        ))}
+      <Accordion multiple>
+        {rowData.groups.flatMap(group =>
+          group.exercises.map(exercise => {
+            const allProperties = ['repetitions', 'weight', 'rpe', 'time', 'distance', 'tempo', 'notes', 'difficulty', 'duration', 'restInterval'];
+            const availableProperties = allProperties.filter(prop => {
+              return (
+                exercise[prop] != null 
+                && exercise[prop] != '' 
+                // && exercise.setLogs.some(log => log[prop] != null)
+              );
+            });
+            const tableData = exercise.setLogs.length > 0 ? exercise.setLogs : [{ setNumber: 1 }];
+            
+            const expandedData = tableData.flatMap(setLog => [
+              { 
+                setNumber: setLog.setNumber, 
+                type: 'Expected', 
+                ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: exercise[prop] || '-' }), {})
+              },
+              { 
+                setNumber: setLog.setNumber, 
+                type: 'Completed', 
+                ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: setLog[prop] || '-' }), {})
+              }
+            ]);
+
+            return (
+              <AccordionTab key={exercise.id} header={exercise.exercise.name}>
+                <DataTable value={expandedData} rowGroupMode="subheader" groupRowsBy="setNumber"
+                           sortMode="single" sortField="setNumber" sortOrder={1}>
+                  <Column field="setNumber" header="Set" body={(rowData) => `Set ${rowData.setNumber}`} />
+                  <Column field="type" header="Type" />
+                  {availableProperties.map(prop => (
+                    <Column key={prop} field={prop} header={prop.charAt(0).toUpperCase() + prop.slice(1)} />
+                  ))}
+                </DataTable>
+              </AccordionTab>
+            );
+          })
+        )}
       </Accordion>
     );
   };
@@ -106,76 +320,101 @@ export default function ClientDashboard() {
   return (
     <div className="client-dashboard p-4">
       <Toast ref={toast} />
-
-      <Card className="mb-4" style={{ backgroundImage: 'linear-gradient(to right, #6366F1, #A5B4FC)', color: 'white' }}>
-        <h1 className="text-4xl font-bold text-center">Client Dashboard</h1>
+      <Card className="mb-4" style={{ backgroundImage: 'linear-gradient(to right, #6366F1, #A5B4FC)' }}>
+        <h1 className="text-4xl font-bold text-center text-white">Client Dashboard</h1>
       </Card>
 
       <TabView>
         <TabPanel header="Workout Calendar">
-          <div className="mb-3">
-            <Button label="Assign Workout" icon="pi pi-plus" className="p-button-success mr-2" onClick={handleAssignWorkout} />
-            <Button label="Unassign Workout" icon="pi pi-minus" className="p-button-danger" onClick={handleUnassignWorkout} />
+          <div className="mb-3 flex flex-wrap gap-2">
+            <Button 
+              label="Assign Workouts" 
+              icon="pi pi-refresh" 
+              className="p-button-success" 
+              onClick={() => handleOpenAssignCycle('assign')} 
+            />
+            <Button 
+              label="Unassign Workouts" 
+              icon="pi pi-trash" 
+              className="p-button-danger" 
+              onClick={() => handleOpenAssignCycle('unassign')} 
+            />
+            <Button 
+              label="Create Training Cycle" 
+              icon="pi pi-plus" 
+              className="p-button-secondary" 
+              onClick={showCreateCycleDialog} 
+            />
           </div>
           <Card>
             <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-              initialView="dayGridMonth"
-              headerToolbar={{
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listWeek'
+              plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
+              initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
+              events={calendarEvents}
+              eventContent={renderEventContent}
+              ref={calendarRef}
+              fixedWeekCount={false}
+              className="custom-calendar"
+              contentHeight="auto"
+              windowResize={(arg) => {
+                const calendarApi = calendarRef.current.getApi();
+                if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
+                  calendarApi.changeView('listMonth');
+                } else if (arg.view.type === 'listMonth' && window.innerWidth > 768) {
+                  calendarApi.changeView('dayGridMonth');
+                }
               }}
-              events={mockWorkouts}
-              eventClick={handleEventClick}
-              height="auto"
             />
           </Card>
+          <AssignWorkoutToCycleDialog
+            visible={assignCycleVisible}
+            onHide={() => setAssignCycleVisible(false)}
+            cycleId={selectedCycleId}
+            clientId={selectedClient}
+            setRefreshKey={setRefreshKey}
+            cycleOptions={cycleOptions}
+            actionType={actionType}
+          />
+          <AssignWorkoutToSessionDialog
+            visible={assignSessionVisible}
+            onHide={() => setAssignSessionVisible(false)}
+            sessionId={selectedSessionId}
+            clientId={selectedClient}
+            setRefreshKey={setRefreshKey}
+          />
+          <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} />
+          <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+            {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} />}
+          </Dialog>
         </TabPanel>
 
         <TabPanel header="Workout Details">
-          <DataTable value={mockWorkoutDetails} responsiveLayout="scroll">
-            <Column field="name" header="Workout Name" />
-            <Column field="date" header="Date" />
-            <Column body={renderWorkoutDetails} header="Exercises" />
-          </DataTable>
+          <div className="grid">
+            <div className="col-12">
+              <Dropdown value={selectedWorkout} options={workoutOptions} onChange={(e) => setSelectedWorkout(e.value)} placeholder="Select a Workout" className="w-full mb-3" />
+              <DataTable value={filteredWorkouts}>
+                <Column field={(rowData) => formatDate(rowData.realEndDate)}  header="Trained Date" style={{ width: '10%' }} />
+                <Column field="workout.planName" header="Workout Name" style={{ width: '20%' }}/>
+                <Column header="Details" body={renderWorkoutDetails} />
+              </DataTable>
+            </div>
+          </div>
         </TabPanel>
 
         <TabPanel header="Exercise Progress">
-          <div className="card">
-            <Dropdown
-              value={selectedExercise}
-              options={mockExercises}
-              onChange={(e) => setSelectedExercise(e.value)}
-              placeholder="Select an Exercise"
-              className="w-full mb-3"
-            />
-            {selectedExercise && (
-              <Chart type="line" data={mockExerciseProgress[selectedExercise]} options={{
+          <div className="grid">
+            <div className="col-12 md:col-6">
+              <Dropdown value={selectedExercise} options={exerciseOptions} filter filterBy="label" onChange={(e) => setSelectedExercise(e.value)} placeholder="Select an Exercise" className="w-full mb-3" />
+              {chartData && <Chart type="line" data={chartData} options={{
                 responsive: true,
                 maintainAspectRatio: false,
                 aspectRatio: 1.5,
-              }} />
-            )}
+              }} />}
+            </div>
           </div>
         </TabPanel>
       </TabView>
 
-      <Dialog
-        header="Workout Details"
-        visible={workoutDetailsVisible}
-        style={{ width: '50vw' }}
-        onHide={() => setWorkoutDetailsVisible(false)}
-      >
-        {selectedWorkout && (
-          <div>
-            <h2>{selectedWorkout.title}</h2>
-            <p>Start: {new Date(selectedWorkout.start).toLocaleString()}</p>
-            <p>End: {new Date(selectedWorkout.end).toLocaleString()}</p>
-            <Button label="View Full Details" icon="pi pi-external-link" className="p-button-secondary mt-3" />
-          </div>
-        )}
-      </Dialog>
     </div>
   );
 }

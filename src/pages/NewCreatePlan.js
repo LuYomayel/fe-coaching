@@ -5,20 +5,18 @@ import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { useNavigate } from 'react-router-dom';
 import { InputNumber } from 'primereact/inputnumber';
-
-import { Calendar } from 'primereact/calendar';
 import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card } from 'primereact/card';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { MultiSelect } from 'primereact/multiselect';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import { fetchWorkoutInstance, submitPlan } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
+import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
+
 const propertyList = [
   { name: 'Repetitions', key: 'repetitions' },
   { name: 'Sets', key: 'sets' },
@@ -30,44 +28,53 @@ const propertyList = [
   { name: 'Duration', key: 'duration' },
   { name: 'Distance', key: 'distance' },
 ];
+
 const apiUrl = process.env.REACT_APP_API_URL;
+
 const NewCreatePlan = ({ isEdit }) => {
   const { planId } = useParams();
   const { user } = useContext(UserContext);
   const showToast = useToast();
-  const { setLoading} = useSpinner();
-    const [deletedGroup, setDeletedGroup] = useState(null);
-  const [plan, setPlan] = useState({
-    workout: {
-      id: '',
-      planName: '',
-      coach: {
+  const { setLoading } = useSpinner();
+
+  const [deletedGroup, setDeletedGroup] = useState(null);
+  const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
+
+  const [plan, setPlan] = useState(() => {
+    const savedPlan = localStorage.getItem('unsavedPlan');
+    return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
+      workout: {
         id: '',
-        user: {
-          id: user.userId
+        planName: '',
+        coach: {
+          id: '',
+          user: {
+            id: user.userId
+          }
         }
-      }
-    },
-    isTemplate: true,
-    dateAssigned: '',
-    dateCompleted: '',
-    expectedEndDate: '',
-    expectedStartDate: '',
-    feedback: '',
-    instanceName: '',
-    isRepeated: false,
-    personalizedNotes: '',
-    realEndDate: '',
-    realStartedDate: '',
-    repeatDays: [],
-    status: '',
-    groups: [{
-      set: '',
-      rest: '',
-      groupNumber: 1,
-      exercises: []
-    }]
+      },
+      isTemplate: true,
+      dateAssigned: '',
+      dateCompleted: '',
+      expectedEndDate: '',
+      expectedStartDate: '',
+      feedback: '',
+      instanceName: '',
+      isRepeated: false,
+      personalizedNotes: '',
+      realEndDate: '',
+      realStartedDate: '',
+      repeatDays: [],
+      status: '',
+      groups: []
+    };
   });
+
+  useEffect(() => {
+    if (!isEdit) {
+      localStorage.setItem('unsavedPlan', JSON.stringify(plan));
+    }
+  }, [plan, isEdit]);
 
   const navigate = useNavigate();
   const [selectedGroup, setSelectedGroup] = useState(null);
@@ -75,8 +82,8 @@ const NewCreatePlan = ({ isEdit }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [showPropertyDialog, setShowPropertyDialog] = useState(false);
   const [exercises, setExercises] = useState([]);
-  const [exerciseFilter, setExerciseFilter] = useState('');
   const toast = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const fetchPlanDetails = async () => {
@@ -94,7 +101,7 @@ const NewCreatePlan = ({ isEdit }) => {
     };
 
     fetchPlanDetails();
-  }, [isEdit, planId, setLoading, setPlan]);
+  }, [isEdit, planId, setLoading, setPlan, showToast]);
 
   useEffect(() => {
     fetch(`${apiUrl}/exercise`)
@@ -105,12 +112,10 @@ const NewCreatePlan = ({ isEdit }) => {
           throw new Error(errorData.message || 'Something went wrong');
         }
         const data = await response.json();
-        // const formattedExercises = data.map(exercise => ({ label: exercise.name, value: exercise.id, exerciseType: exercise.exerciseType }));
-        const hola = data.filter(exercise => exercise.exerciseType !== null);
-        setExercises(hola);
+        setExercises(data.filter(exercise => exercise.exerciseType !== null));
       })
       .catch(error => showToast('error', 'Error fetching exercises', `${error.message}`));
-  }, [apiUrl, showToast]);
+  }, [showToast]);
 
   const addGroup = () => {
     const newGroup = {
@@ -123,14 +128,28 @@ const NewCreatePlan = ({ isEdit }) => {
   };
 
   const removeGroup = (index) => {
-    const newGroups = [...plan.groups];
-    newGroups.splice(index, 1);
+    const groupToRemove = plan.groups[index];
+    const newGroups = plan.groups.filter((_, idx) => idx !== index);
     newGroups.forEach((group, idx) => {
       group.groupNumber = idx + 1;
     });
+    setDeletedGroup(groupToRemove);
+    setDeletedGroupIndex(index);
     setPlan({ ...plan, groups: newGroups });
     showToast('info', 'Group Removed', 'The group has been removed');
-    handleRemoveGroup(index);
+  };
+
+  const handleUndoDelete = () => {
+    if (deletedGroup !== null && deletedGroupIndex !== null) {
+      const newGroups = [...plan.groups];
+      newGroups.splice(deletedGroupIndex, 0, deletedGroup);
+      newGroups.forEach((group, idx) => {
+        group.groupNumber = idx + 1;
+      });
+      setPlan({ ...plan, groups: newGroups });
+      setDeletedGroup(null);
+      setDeletedGroupIndex(null);
+    }
   };
 
   const clearPlan = () => {
@@ -165,27 +184,10 @@ const NewCreatePlan = ({ isEdit }) => {
           status: '',
           groups: []
         });
+        localStorage.removeItem('unsavedPlan');
         showToast('info', 'Plan Cleared', 'The workout plan has been cleared');
       },
     });
-  };
-
-  const handleRemoveGroup = (groupIndex) => {
-    const updatedGroups = plan.groups.filter((_, index) => index !== groupIndex);
-    const groupToRemove = plan.groups[groupIndex];
-
-    setDeletedGroup(groupToRemove);  // Almacena el grupo eliminado
-    setPlan(prevState => ({ ...prevState, groups: updatedGroups }));
-  };
-
-  const handleUndoDelete = () => {
-    if (deletedGroup) {
-      setPlan(prevState => ({
-        ...prevState,
-        groups: [...prevState.groups, deletedGroup]
-      }));
-      setDeletedGroup(null);  // Limpia el estado del grupo eliminado
-    }
   };
 
   const openExerciseDialog = (groupIndex) => {
@@ -194,13 +196,12 @@ const NewCreatePlan = ({ isEdit }) => {
   };
 
   const addExercise = () => {
-    console.log(selectedExercise)
     if (selectedExercise) {
       const newExercise = {
         exercise: {
           ...selectedExercise
         },
-        id: selectedExercise.id,
+        id: uuidv4(), // Generate unique ID
         notes: '',
       };
       const newGroups = [...plan.groups];
@@ -226,7 +227,6 @@ const NewCreatePlan = ({ isEdit }) => {
   const addProperty = (property) => {
     const newGroups = [...plan.groups];
     const exercise = newGroups[selectedGroup].exercises[selectedExercise];
-    console.log(exercise)   
     if (!exercise[property.key]) {
       exercise[property.key] = '';
       setPlan({ ...plan, groups: newGroups });
@@ -241,7 +241,6 @@ const NewCreatePlan = ({ isEdit }) => {
   };
 
   const updatePropertyValue = (groupIndex, exerciseIndex, propertyKey, value) => {
-    console.log(value)  
     const newGroups = [...plan.groups];
     const exercise = newGroups[groupIndex].exercises[exerciseIndex];
     exercise[propertyKey] = value;
@@ -267,18 +266,18 @@ const NewCreatePlan = ({ isEdit }) => {
       showToast('error', 'Error', 'Plan name is required.');
       return;
     }
-  
+
     if (plan.groups.length === 0) {
       showToast('error', 'Error', 'At least one group is required.');
       return;
     }
-  
+
     for (const group of plan.groups) {
       if (group.exercises.length === 0) {
         showToast('error', 'Error', 'Each group must have at least one exercise.');
         return;
       }
-  
+
       for (const exercise of group.exercises) {
         if (!exercise.exercise.id) {
           showToast('error', 'Error', 'Each exercise must be selected.');
@@ -289,7 +288,7 @@ const NewCreatePlan = ({ isEdit }) => {
         }
       }
     }
-  
+
     // Create a clean version of the plan object
     const cleanPlan = JSON.parse(JSON.stringify({
       ...plan,
@@ -304,15 +303,15 @@ const NewCreatePlan = ({ isEdit }) => {
         }))
       }))
     }));
-  
+
     confirmDialog({
-      message: 'Are you sure you want to submit this workout plan?',
+      message: isEdit ? 'Are you sure you want to edit this plan?' : 'Are you sure you want to create this plan?',
       header: 'Confirm Submission',
       icon: 'pi pi-exclamation-triangle',
       accept: () => fetchSubmit(cleanPlan),
     });
   };
-  
+
   const fetchSubmit = async (cleanPlan) => {
     try {
       const result = await submitPlan(cleanPlan, planId, isEdit);
@@ -321,6 +320,7 @@ const NewCreatePlan = ({ isEdit }) => {
       } else {
         showToast('success', 'Plan created!', `You have created the plan ${cleanPlan.workout.planName} successfully!`);
       }
+      localStorage.removeItem('unsavedPlan');
       navigate(-1);
     } catch (error) {
       console.log(error);
@@ -328,6 +328,47 @@ const NewCreatePlan = ({ isEdit }) => {
     }
   };
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setIsUploading(true);
+      try {
+        const planFromImage = await getPlanFromImage(file);
+        setPlan(planFromImage);
+        showToast('success', 'Plan imported!', 'The workout plan has been imported from the image successfully.');
+      } catch (error) {
+        showToast('error', 'Error importing plan', error.message);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const getPlanFromImage = async (imageFile) => {
+    // Create a FormData object to send the image file
+    const formData = new FormData();
+    formData.append('file', imageFile);
+    formData.append('purpose', 'plan_extraction');
+  
+    // Set up the API request
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+      },
+      body: formData,
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message || 'Error processing image');
+    }
+  
+    const data = await response.json();
+    // Assuming the API returns the plan object in the response
+    return data.plan;
+  };
+  
   return (
     <div className="workout-plan-builder p-4 ">
       <Toast ref={toast} />
@@ -347,16 +388,30 @@ const NewCreatePlan = ({ isEdit }) => {
             />
           </div>
           <div className="w-full md:w-6 flex justify-content-end">
+            <Button
+                label="Import from Image"
+                icon="pi pi-upload"
+                onClick={() => document.getElementById('image-upload-input').click()}
+                className="mr-2"
+                disabled={isUploading}
+            />
+            <input
+                type="file"
+                id="image-upload-input"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleImageUpload}
+            />
             <Button label="Add Group" icon="pi pi-plus" onClick={addGroup} className="mr-2" />
-            <Button label="Undo Delete" icon="pi pi-undo" onClick={handleUndoDelete} className="p-button-info responsive-button mr-2" disabled={!deletedGroup} /> {/* Botón Deshacer */}
+            <Button label="Undo Delete" icon="pi pi-undo" onClick={handleUndoDelete} className="p-button-info responsive-button mr-2" disabled={!deletedGroup} />
             <Button label="Clear Plan" icon="pi pi-trash" onClick={clearPlan} className="p-button-danger" />
           </div>
         </div>
       </Card>
 
       <Card className="mb-4">
-          <label htmlFor="personalized-notes" className="block text-sm font-medium mb-1">Personalized Notes</label>
-          <InputTextarea id="personalized-notes" value={plan.personalizedNotes} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })} rows={3} className="w-full" />
+        <label htmlFor="personalized-notes" className="block text-sm font-medium mb-1">Personalized Notes</label>
+        <InputTextarea id="personalized-notes" value={plan.personalizedNotes} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })} rows={3} className="w-full" />
       </Card>
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -427,9 +482,6 @@ const NewCreatePlan = ({ isEdit }) => {
                                           <InputText
                                             value={exercise[key]}
                                             onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, key, e.target.value)}
-                                            // onChange={(e) => console.log('Aca cambiando:', e.target.value)}
-                                            // min={0}
-                                            
                                             className="w-full"
                                           />
                                           <Button
@@ -470,7 +522,7 @@ const NewCreatePlan = ({ isEdit }) => {
       </DragDropContext>
 
       <div className="flex justify-content-end mt-4">
-        <Button label="Submit Plan" icon="pi pi-check" onClick={submitPlanClick} className="p-button-success" />
+        <Button label={isEdit ? 'Edit Plan' : 'Create Plan'} icon="pi pi-check" onClick={submitPlanClick} className="p-button-success" />
       </div>
 
       <Dialog header="Add Exercise" visible={showExerciseDialog} onHide={() => setShowExerciseDialog(false)} className="w-30rem">
@@ -481,7 +533,6 @@ const NewCreatePlan = ({ isEdit }) => {
             setSelectedExercise(e.value)
           }}
           optionLabel="name"
-        //   optionValue='id'
           filter
           filterBy="name"
           placeholder="Select an Exercise"

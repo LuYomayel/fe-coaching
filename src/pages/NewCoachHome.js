@@ -24,28 +24,6 @@ import { useNavigate } from 'react-router-dom';
 import { fetchCoachStudents, fetchRecentActivitiesByCoachId, fetchWorkoutProgressByCoachId, fetchUpcomingSessionsByCoachId, fetchLastMessages } from '../services/usersService';
 import { fetchCoachWorkouts, fetchTrainingCyclesByCoachId } from '../services/workoutService';
 
-// Mock data (replace with actual data in a real application)
-const coachName = "John Doe";
-const clients = [
-  { name: "Alice Smith", photo: "alice.jpg", progress: 75 },
-  { name: "Bob Johnson", photo: "bob.jpg", progress: 50 },
-  { name: "Carol Williams", photo: "carol.jpg", progress: 90 },
-];
-const trainingPlans = [
-  { name: "Weight Loss Plan", status: "active" },
-  { name: "Muscle Gain Plan", status: "pending" },
-  { name: "Cardio Boost Plan", status: "completed" },
-];
-const recentActivities = [
-  { content: "Alice completed her workout", date: "1 hour ago" },
-  { content: "New client sign-up: David", date: "3 hours ago" },
-  { content: "Message from Bob", date: "Yesterday" },
-];
-const upcomingSessions = [
-  { client: "Alice Smith", date: "2023-05-10T10:00:00" },
-  { client: "Bob Johnson", date: "2023-05-11T14:00:00" },
-];
-
 export default function CoachHomePage() {
     const [globalFilter, setGlobalFilter] = useState('');
     const { setLoading } = useSpinner();
@@ -219,6 +197,9 @@ const progressTemplate = (rowData) => {
   };
 
   const statusTemplate = (rowData) => {
+
+    const workoutInstanceTemplate = rowData.workoutInstances.find(w => w.isTemplate === true);
+
     const statusMap = {
         active: { severity: 'success', label: 'Active' },
         pending: { severity: 'warning', label: 'Pending' },
@@ -226,7 +207,7 @@ const progressTemplate = (rowData) => {
     };
     const status = statusMap[rowData.status] || { severity: 'info', label: rowData.status };
     // return <Tag severity={status.severity} value={status.label} />;
-    return <Button label="Edit Plan" icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit/${rowData.id}`)} />
+    return <Button label="Edit Plan" icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit/${workoutInstanceTemplate.id}`)} />
 };
 
     const { completedCount, pendingCount, expiredCount } = processWorkoutProgressData(workoutProgress);
