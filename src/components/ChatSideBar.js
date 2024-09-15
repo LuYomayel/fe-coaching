@@ -10,12 +10,13 @@ import { Message } from 'primereact/message';
 import { UserContext } from '../utils/UserContext';
 import io from 'socket.io-client';
 import { fetchMessages, fetchCoachStudents } from '../services/usersService'; // Actualiza la función si es necesario
+import { Dialog } from 'primereact/dialog';
 import ReactPlayer from 'react-player';
 import { useChatSidebar } from '../utils/ChatSideBarContext';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-export default function ChatSidebar({ isCoach, userId, onClose }) {
+export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
   const { isChatOpen, closeChatSidebar, selectedChat, setSelectedChat } = useChatSidebar();
 
   const [messages, setMessages] = useState([]);
@@ -29,9 +30,10 @@ export default function ChatSidebar({ isCoach, userId, onClose }) {
   const [errorMessage, setErrorMessage] = useState(null);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
-  
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogContent, setDialogContent] = useState(null);
 
-  const { user, coach } = useContext(UserContext); // Contexto para obtener la información del usuario
+  const { user, coach, client } = useContext(UserContext); // Contexto para obtener la información del usuario
 
   useEffect(() => {
     // Establecer conexión con el socket
@@ -46,7 +48,7 @@ export default function ChatSidebar({ isCoach, userId, onClose }) {
 
     // Recibir nuevos mensajes
     newSocket.on('receiveMessage', (message) => {
-      if (selectedChat && message.senderId === selectedChat.id) {
+      if (selectedChat && message.sender.id === selectedChat.user.id) {
         setMessages((prevMessages) => [...prevMessages, message]);
       }
     });
@@ -57,15 +59,17 @@ export default function ChatSidebar({ isCoach, userId, onClose }) {
     // Efecto para cargar la lista de clientes cuando el usuario es un coach
     useEffect(() => {
         const fetchClients = async () => {
-        if (isCoach && coach) {
-            try {
-            const clientsData = await fetchCoachStudents(coach.user.id); // Obtener lista de clientes del servicio
-            setClients(clientsData); // Guardar clientes en el estado
-            console.log('Clients:', clientsData);
-            } catch (error) {
-            console.error('Error fetching clients:', error);
-            }
-        }
+          if (isCoach && coach) {
+              try {
+                const clientsData = await fetchCoachStudents(coach.user.id); // Obtener lista de clientes del servicio
+                setClients(clientsData); // Guardar clientes en el estado
+              } catch (error) {
+                console.error('Error fetching clients:', error);
+              }
+          } else if(!isCoach) {
+
+              setSelectedChat(client.coach)
+          }
         };
     
         fetchClients();
@@ -84,31 +88,34 @@ export default function ChatSidebar({ isCoach, userId, onClose }) {
     useEffect(() => {
         // Cargar los mensajes previos al seleccionar un chat
         const fetch = async () => {
+          
             if (selectedChat) {
-                const messages = await fetchMessagesFunc(user.userId, selectedChat.id);
+                const messages = await fetchMessagesFunc(user.userId, selectedChat.user.id);
                 setMessages(messages);
             }
+            console.log('Messages:');
         };
         fetch();
-    }, [selectedChat, userId]);
+    }, [selectedChat]);
+
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    const handleSelectChat = async (client) => {
-        setSelectedChat(client); // Al seleccionar el cliente, se abre el chat
-        console.log('Selected chat:', client);
+    const handleSelectChat = async (clientSelected) => {
+      console.log('Client selected:', clientSelected);
+        setSelectedChat(clientSelected); // Al seleccionar el cliente, se abre el chat
         setMessages([]); // Reiniciar mensajes al cambiar de chat
-        const messages = await fetchMessagesFunc(user.userId, client.id)
+        const messages = await fetchMessagesFunc(user.userId, clientSelected.user.id)
         setMessages(messages);
     };
 
   const handleSendMessage = async () => {
     if (newMessage.trim() || selectedFile) {
       const newMsg = {
-        senderId: userId,
-        receiverId: selectedChat.id,
+        senderId: user.userId,
+        receiverId: selectedChat.user.id,
         content: newMessage,
         timestamp: new Date().toISOString(),
         fileUrl: selectedFile ? URL.createObjectURL(selectedFile) : null,
@@ -160,6 +167,18 @@ export default function ChatSidebar({ isCoach, userId, onClose }) {
     if (fileInputRef.current) fileInputRef.current.clear();
   };
 
+  const handleOpenDialog = (fileUrl, fileType) => {
+    setDialogVisible(true);
+    console.log('Message:', fileUrl, fileType);
+    setDialogContent({ fileUrl, fileType });
+  }
+
+  const handleCloseDialog = () => {
+    setDialogVisible(false);
+    setDialogContent(null);
+  }
+
+
   return (
     <Card className="chat-sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="flex justify-content-between align-items-center mb-3">
@@ -196,17 +215,17 @@ export default function ChatSidebar({ isCoach, userId, onClose }) {
 
           <div className="messages-list" style={{ flexGrow: 1, overflowY: 'auto' }}>
             {messages.map((msg) => (
-              <div key={msg.id} className={`message ${msg.senderId === userId ? 'sent' : 'received'} mb-2`}>
+              <div key={msg.id} className={`message ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'sent' : 'received'} mb-2`}>
                 {msg.fileUrl && (
-                  <div className="mb-2">
+                  <div className="mb-2" onClick={() => handleOpenDialog(msg.fileUrl, msg.fileType)}>
                     {msg.fileUrl.includes('video') ? (
                       <ReactPlayer url={msg.fileUrl} controls className="max-w-full h-auto" />
                     ) : (
-                      <img src={msg.fileUrl} alt="attachment" className="max-w-full h-auto" />
+                      <img src={msg.fileUrl} alt="attachment" className="max-w-full h-auto cursor-pointer" />
                     )}
                   </div>
                 )}
-                <p className={`p-2 rounded-lg ${msg.senderId === userId ? 'bg-primary text-white' : 'bg-surface-200'}`}>
+                <p className={`p-2 rounded-lg ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'bg-primary text-white' : 'bg-surface-200'}`}>
                   {msg.content}
                 </p>
                 <small className="text-color-secondary">{new Date(msg.timestamp).toLocaleTimeString()}</small>
@@ -235,7 +254,7 @@ export default function ChatSidebar({ isCoach, userId, onClose }) {
                 mode="basic"
                 name="file" 
                 accept="image/*,video/*" 
-                maxFileSize={10000000}
+                maxFileSize={1000000000}
                 customUpload
                 uploadHandler={handleFileSelect}
                 auto
@@ -249,6 +268,20 @@ export default function ChatSidebar({ isCoach, userId, onClose }) {
           </div>
         </div>
       )}
+
+      {/* Dialog to display image/video */}
+      <Dialog header="Attachment" visible={dialogVisible} style={{ width: '50vw' }} onHide={handleCloseDialog}>
+        {dialogContent && (
+          <>
+            {dialogContent.fileType.includes('video') ? (
+              <ReactPlayer url={dialogContent.fileUrl} controls className="w-full h-auto" />
+            ) : (
+              <img src={dialogContent.fileUrl} alt="attachment" className="w-full h-auto" />
+            )}
+          </>
+        )}
+      </Dialog>
+
     </Card>
   );
 }

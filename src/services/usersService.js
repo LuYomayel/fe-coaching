@@ -126,7 +126,6 @@ const fetchRecentActivitiesByCoachId = async (coachId) => {
     return response.json(); // Directly returning parsed JSON data
 }
 const fetchClientActivitiesByUserId = async (userId) => {
-    console.log('UserID:', userId)
     const response = await fetch(`${apiUrl}/users/userId/activities/${userId}`, {
       headers: {
         'Content-Type': 'application/json',
@@ -138,7 +137,6 @@ const fetchClientActivitiesByUserId = async (userId) => {
       const errorMessage = errorData.message || 'Something went wrong';
       throw new Error(errorMessage);
     }
-    console.log(response)
     return response.json(); // Directly returning parsed JSON data
 };
 

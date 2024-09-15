@@ -81,6 +81,7 @@ export const UserProvider = ({ children }) => {
   const fetchClientData = async (userId) => {
     try {
       const data = await fetchClient(userId)
+      console.log('Client:', data )
       return data
       setClient(data);
     } catch (error) {

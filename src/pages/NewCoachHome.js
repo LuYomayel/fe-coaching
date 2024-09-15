@@ -309,7 +309,7 @@ const progressTemplate = (rowData) => {
                 className="w-full mb-3"
                 itemTemplate={(option) => (
                     <div className="flex align-items-center">
-                        <span>{option.sender.client.name}: &nbsp;</span>
+                        <span>{option.sender.client?.name}: &nbsp;</span>
                         <span>{option.content ? option.content : 'File'}</span>
                     </div>
                 )}

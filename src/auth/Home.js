@@ -291,7 +291,7 @@ export default function HomePage() {
                     </div>
                     <Button type="submit" label="Log In" className="mt-2" loading={loading} />
                     <div className="text-center mt-2">
-                        <a href="#" className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Forgot password?</a>
+                        <a href="/forgot-password" className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Forgot password?</a>
                     </div>
                 </form>
             </Dialog>
@@ -302,11 +302,6 @@ export default function HomePage() {
         return (
             <Dialog header="Sign Up" visible={signUpVisible} style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setSignUpVisible(false)}>
                 <form onSubmit={handleSignUp} className="p-fluid">
-                    {/* <div className="field">
-                        <label htmlFor="fullName" className="font-bold">Full Name</label>
-                        <InputText id="fullName" value={signUpForm.fullName} onChange={(e) => setSignUpForm({ ...signUpForm, fullName: e.target.value })} className={classNames({ 'p-invalid': signUpErrors.fullName })} />
-                        {signUpErrors.fullName && <small className="p-error">{signUpErrors.fullName}</small>}
-                    </div> */}
                     <div className="field">
                         <label htmlFor="signUpEmail" className="font-bold">Email</label>
                         <InputText id="signUpEmail" type="email" value={signUpForm.email} onChange={(e) => setSignUpForm({ ...signUpForm, email: e.target.value })} className={classNames({ 'p-invalid': signUpErrors.email })} />
