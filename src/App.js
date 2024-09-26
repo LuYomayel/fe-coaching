@@ -39,6 +39,9 @@ import NewClientProfile from './pages/NewClientProfile.js';
 import NewTrainingPlanDetails from './pages/NewTrainingDetails.js';
 import NewPlanDetail from './dialogs/NewPlanDetails.js';
 import BodyContainer from './utils/BodyContainer.js';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+const stripePromise = loadStripe('pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq');
 const App = () => {
   return (
     <SpinnerProvider>
@@ -46,6 +49,7 @@ const App = () => {
         <ToastProvider>
           <ChatSidebarProvider>
             <ConfirmationDialogProvider>
+              <Elements stripe={stripePromise}>
               <Router>
                 <Header/>
                   <BodyContainer>
@@ -78,6 +82,7 @@ const App = () => {
                   </Routes>
                   </BodyContainer>
               </Router>
+              </Elements>
             </ConfirmationDialogProvider>
           </ChatSidebarProvider>
         </ToastProvider>

@@ -11,6 +11,9 @@ import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import '../styles/CoachProfileForm.css'
 import { updateCoach } from '../services/usersService';
+import SubscriptionPaymentPage from './SubscriptionPayment';
+import { Dialog } from 'primereact/dialog';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const trainingTypes = [
@@ -23,6 +26,8 @@ const trainingTypes = [
 ];
 
 const CoachProfileForm = () => {
+  const stripe = useStripe();
+  const elements = useElements();
   const [name, setName] = useState('');
   const [estimatedClients, setEstimatedClients] = useState(3);
   const [trainingType, setTrainingType] = useState([]);
@@ -34,6 +39,9 @@ const CoachProfileForm = () => {
   const [loading, setLoading] = useState(false);
   const showToast = useToast();
   const { user, setCoach, coach } = useContext(UserContext);
+  const [isPlanDialogVisible, setIsPlanDialogVisible] = useState(false);
+  const [isFormCompleted, setIsFormCompleted] = useState(false);
+  const [userPayment, setUserPayment] = useState(null);
   const navigate = useNavigate();
 
   useEffect( () => {
@@ -45,7 +53,7 @@ const CoachProfileForm = () => {
     // setLoading(false);
     const body = {
       name, 
-      estimatedClients: subscriptionType === 'freeTrial' ? 3 : estimatedClients, 
+      estimatedClients: subscriptionType === 'freeTrial' ? 3 : userPayment.max_clients, 
       trainingType, 
       hasGym, 
       gymLocation: hasGym ? gymLocation : null, 
@@ -54,12 +62,20 @@ const CoachProfileForm = () => {
       email: user.email,
       subscriptionType,
     }
-    console.log(body )
     // return
+    if(subscriptionType === 'paid' && !userPayment){
+      setIsPlanDialogVisible(true);
+      return;
+    }
+    if (!stripe || !elements) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token'); // Assume the token is stored in local storage
       const data = await updateCoach(user.userId, body, token);
       setCoach(data);
+
       navigate('/coach');
       showToast('success', 'Profile updated!', `Thanks for subscribing ${data.name}`);
     } catch (error) {
@@ -75,10 +91,10 @@ const CoachProfileForm = () => {
           <label htmlFor="name">Name</label>
           <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
-        <div className="p-field">
+        {/* <div className="p-field">
           <label htmlFor="estimatedClients">Estimated Clients</label>
           <InputText id="estimatedClients" value={estimatedClients} onChange={(e) => setEstimatedClients(e.target.value)} disabled={subscriptionType === 'freeTrial'} />
-        </div>
+        </div> */}
         <div className="p-field">
           <label htmlFor="trainingType">Training Type</label>
           <MultiSelect id="trainingType" value={trainingType} options={trainingTypes} optionLabel="label" onChange={(e) => setTrainingType(e.value)} multiple placeholder="Select Training Types" />
@@ -105,17 +121,55 @@ const CoachProfileForm = () => {
           <label>Subscription Type</label>
           <div className="">
             <div className="flex align-items-center gap-2">
-              <RadioButton inputId="freeTrial" name="subscriptionType" value="freeTrial" onChange={(e) => setSubscriptionType(e.value)} checked={subscriptionType === 'freeTrial'} />
+              <RadioButton
+                inputId="freeTrial"
+                name="subscriptionType"
+                value="freeTrial"
+                onChange={(e) => setSubscriptionType(e.value)}
+                checked={subscriptionType === 'freeTrial'}
+              />
               <label htmlFor="freeTrial">Free Trial (3 Clients)</label>
             </div>
             <div className="flex align-items-center gap-2">
-              <RadioButton inputId="paid" name="subscriptionType" value="paid" onChange={(e) => setSubscriptionType(e.value)} checked={subscriptionType === 'paid'} disabled/>
+              <RadioButton
+                inputId="paid"
+                name="subscriptionType"
+                value="paid"
+                onChange={(e) => setSubscriptionType(e.value)}
+                checked={subscriptionType === 'paid'}
+              />
               <label htmlFor="paid">Monthly Subscription</label>
             </div>
           </div>
         </div>
+
+        {subscriptionType === 'paid' && !userPayment && (
+          <div className="p-field">
+            <Button 
+                label="Choose Plan" 
+                className="p-button-outlined w-full" 
+                onClick={() => setIsPlanDialogVisible(true)} 
+              />
+          </div>
+        )}
+          {userPayment && (
+            <div className="p-field">
+              <h4>Subscription Plan</h4>
+              <p><strong>Plan:</strong> {userPayment.name}</p>
+              <p><strong>Price:</strong> ${userPayment.price}</p>
+              <p><strong>Clients:</strong> {userPayment.max_clients}</p>
+            </div>
+          )}
         <Button label="Submit" icon="pi pi-check" loading={loading} onClick={handleSubmit} />
       </Card>
+        <Dialog 
+          header="Select a Subscription Plan" 
+          visible={isPlanDialogVisible} 
+          style={{ width: '50vw' }} 
+          onHide={() => setIsPlanDialogVisible(false)}
+        >
+          <SubscriptionPaymentPage setUserPayment={setUserPayment} setIsPlanDialogVisible={setIsPlanDialogVisible}/>
+        </Dialog>
     </div>
   );
 };

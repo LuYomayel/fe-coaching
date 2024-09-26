@@ -63,6 +63,37 @@ const assignSubscription = async (body) => {
   
     return response.json(); // Optional, depends if you need to process the response further
 };    
+
+const makePayment = async (body) => {
+  
+    const response = await fetch(`${apiUrl}/payment/create-payment-intent`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({body}),
+  });
+
+  return await response.json();
+};
+
+const updateCoachSubscription = async (body) => {
+  console.log(body)
+  const response = await fetch(`${apiUrl}/subscription/coach-subscription`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Something went wrong');
+  }
+
+  return response.json();  // Return the response if needed for further processing
+}
 const createOrUpdateCoachPlan = async (plan, planId, userId, mode) => {
   const url = mode === 'create' ? `${apiUrl}/subscription/coach/coachPlan` : `${apiUrl}/subscription/coach/coachPlan/${planId}`;
   const method = mode === 'create' ? 'POST' : 'PUT';
@@ -129,6 +160,8 @@ export {
     fetchCoachSubscriptionPlans,
     fetchSubscriptionForStudent,
     fetchSubscriptionDetails,
+    makePayment,
+    updateCoachSubscription,
     assignSubscription,
     createOrUpdateCoachPlan,
     registerPayment,

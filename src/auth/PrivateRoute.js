@@ -4,12 +4,17 @@ import { UserContext } from '../utils/UserContext';
 import CoachProfileForm from '../pages/CoachProfileForm';
 import NotSubscribed from '../components/NotSubscribed';
 import { useSpinner } from '../utils/GlobalSpinner';
+import Spinner from '../utils/LittleSpinner';
 const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   const { user, coach, client, isLoading } = useContext(UserContext);
   const { loading } = useSpinner();
 
   if (isLoading) {
-    return <p>Loading...</p>; // O muestra un spinner o un componente de carga mientras se obtienen los datos
+    return (
+      <div className="flex items-center justify-center align-items-center h-screen">
+        <Spinner />
+      </div>
+    ); // O muestra un spinner o un componente de carga mientras se obtienen los datos
   }
 
   if (!user) {
@@ -19,8 +24,7 @@ const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   else if (requiredType && user.userType !== requiredType) {
     return <Navigate to="/unauthorized" />;
   }
-  else if (user.userType === 'coach' && !coach) {
-    console.log('HOla')
+  else if (user.userType === 'coach' && coach) {
     return <CoachProfileForm/>;
   }
   if (user.userType === 'client' && client && client.user.subscription.status === 'Inactive') {
