@@ -28,6 +28,8 @@ import { extractYouTubeVideoId, getYouTubeThumbnail, isValidYouTubeUrl } from '.
 import { MultiSelect } from 'primereact/multiselect';
 import { FilterMatchMode } from 'primereact/api';
 import * as XLSX from 'xlsx';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import Spinner from '../utils/LittleSpinner';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -39,6 +41,13 @@ export default function CoachProfilePage() {
   const navigate = useNavigate();
   const { setLoading } = useSpinner(); // <- spinner function
 
+  const [isWorkoutsLoading, setIsWorkoutsLoading] = useState(true);
+  const [isCoachInfoLoading, setIsCoachInfoLoading] = useState(true);
+  const [isCoachSubscriptionLoading, setIsCoachSubscriptionLoading] = useState(true);
+  const [isCoachPlansLoading, setIsCoachPlansLoading] = useState(true);
+  const [isExercisesLoading, setIsExercisesLoading] = useState(true);
+  const [isBodyAreasLoading, setIsBodyAreasLoading] = useState(true);
+  const [isSubscriptionPlansLoading, setIsSubscriptionPlansLoading] = useState(true);
   // State variables
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -92,13 +101,9 @@ export default function CoachProfilePage() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchWorkouts = async () => { 
       try {
-        setLoading(true);
-
-        const subscriptionData = await fetchCoachSubscription(user.userId);
-        setCurrentPlanId(subscriptionData.subscriptionPlan.id);
-
+        setIsWorkoutsLoading(true);
         const workoutData = await fetchCoachWorkouts(user.userId);
         const mappedWorkouts = workoutData.map((workout) => {
           const instance = workout.workoutInstances.find((instance) => instance.isTemplate);
@@ -108,13 +113,56 @@ export default function CoachProfilePage() {
           };
         });
         setWorkouts(mappedWorkouts);
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsWorkoutsLoading(false);
+      }
+    };
 
+    const fetchCoachInfo = async () => {
+      try {
+        setIsCoachInfoLoading(true);
         const data = await fetchCoach(user.userId);
         setCoachInfo(data);
+      } catch (error) {
+        if (error.message === 'Coach not found') {
+          navigate('/complete-coach-profile');
+        }
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsCoachInfoLoading(false);
+      }
 
+    };
+
+    const fetchCoachSubscriptionData = async () => {
+      try {
+        setIsCoachSubscriptionLoading(true);
+        const subscriptionData = await fetchCoachSubscription(user.userId);
+        setCurrentPlanId(subscriptionData.subscriptionPlan.id);
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsCoachSubscriptionLoading(false);
+      }
+    };
+
+    const fetchCoachPlansData = async () => {
+      try {
+        setIsCoachPlansLoading(true);
         const coachPlansData = await fetchCoachPlans(user.userId);
         setCoachPlans(coachPlansData);
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      } finally{
+        setIsCoachPlansLoading(false);
+      }
+    };
 
+    const fetchExercises = async () => {
+      try {
+        setIsExercisesLoading(true);
         const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${user.userId}`);
         if (!exercisesResponse.ok) {
           const errorData = await exercisesResponse.json();
@@ -122,7 +170,17 @@ export default function CoachProfilePage() {
         }
         const exercisesData = await exercisesResponse.json();
         setExercises(exercisesData);
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsExercisesLoading(false);
+      }
 
+    };
+
+    const fetchBodyAreas = async () => {
+      try {
+        setIsBodyAreasLoading(true);
         const bodyAreasResponse = await fetch(`${apiUrl}/exercise/body-area`);
         if (!bodyAreasResponse.ok) {
           const errorData = await bodyAreasResponse.json();
@@ -131,20 +189,86 @@ export default function CoachProfilePage() {
         const bodyAreasData = await bodyAreasResponse.json();
         const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
         setBodyAreas(formattedBodyAreas);
-
-        const subscriptionPlansData = await fetchCoachSubscriptionPlans();
-        setSubscriptionPlans(subscriptionPlansData);
       } catch (error) {
-        if (error.message === 'Coach not found') {
-          navigate('/complete-coach-profile');
-        }
         showToast('error', 'Error', error.message);
       } finally {
-        setLoading(false);
+        setIsBodyAreasLoading(false);
       }
     };
 
-    fetchData();
+    const fetchSubscriptionPlans = async () => {
+      try {
+        setIsSubscriptionPlansLoading(true);
+        const subscriptionPlansData = await fetchCoachSubscriptionPlans();
+        setSubscriptionPlans(subscriptionPlansData);
+      } catch (error) {
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsSubscriptionPlansLoading(false);
+      }
+    };
+
+    fetchWorkouts();
+    fetchCoachInfo();
+    fetchCoachSubscriptionData();
+    fetchCoachPlansData();
+    fetchExercises();
+    fetchBodyAreas();
+    fetchSubscriptionPlans();
+
+    // const fetchData = async () => {
+    //   try {
+    //     setLoading(true);
+
+    //     const subscriptionData = await fetchCoachSubscription(user.userId);
+    //     setCurrentPlanId(subscriptionData.subscriptionPlan.id);
+
+    //     const workoutData = await fetchCoachWorkouts(user.userId);
+    //     const mappedWorkouts = workoutData.map((workout) => {
+    //       const instance = workout.workoutInstances.find((instance) => instance.isTemplate);
+    //       return {
+    //         ...workout,
+    //         workoutInstance: instance,
+    //       };
+    //     });
+    //     setWorkouts(mappedWorkouts);
+
+    //     const data = await fetchCoach(user.userId);
+    //     setCoachInfo(data);
+
+    //     const coachPlansData = await fetchCoachPlans(user.userId);
+    //     setCoachPlans(coachPlansData);
+
+    //     const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${user.userId}`);
+    //     if (!exercisesResponse.ok) {
+    //       const errorData = await exercisesResponse.json();
+    //       throw new Error(errorData.message || 'Something went wrong');
+    //     }
+    //     const exercisesData = await exercisesResponse.json();
+    //     setExercises(exercisesData);
+
+    //     const bodyAreasResponse = await fetch(`${apiUrl}/exercise/body-area`);
+    //     if (!bodyAreasResponse.ok) {
+    //       const errorData = await bodyAreasResponse.json();
+    //       throw new Error(errorData.message || 'Something went wrong');
+    //     }
+    //     const bodyAreasData = await bodyAreasResponse.json();
+    //     const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
+    //     setBodyAreas(formattedBodyAreas);
+
+    //     const subscriptionPlansData = await fetchCoachSubscriptionPlans();
+    //     setSubscriptionPlans(subscriptionPlansData);
+    //   } catch (error) {
+    //     if (error.message === 'Coach not found') {
+    //       navigate('/complete-coach-profile');
+    //     }
+    //     showToast('error', 'Error', error.message);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+
+    // fetchData();
   }, [user.userId, showToast, navigate, refreshKey]);
 
   const handleViewPlanDetails = (workoutInstanceId) => {
@@ -711,29 +835,29 @@ export default function CoachProfilePage() {
 
   return (
     <div className="coach-profile p-4">
-      <Card className="mb-4">
-        {coachInfo && (
+      <Card className={isCoachInfoLoading ? 'flex justify-content-center' : 'mb-4'}>
+        {isCoachInfoLoading ? <Spinner/> : (
           <div className="flex flex-column md:flex-row">
             <div className="flex-grow-1">
-              <h1 className="text-3xl font-bold mb-2">Welcome, {coachInfo.name}!</h1>
+              <h1 className="text-3xl font-bold mb-2">Welcome, {coachInfo?.name}!</h1>
               <p className="mb-2">
-                <strong>Email:</strong> {coachInfo.user.email}
+                <strong>Email:</strong> {coachInfo?.user.email}
               </p>
               <p className="mb-2">
-                <strong>Experience:</strong> {coachInfo.experience}
+                <strong>Experience:</strong> {coachInfo?.experience}
               </p>
               <p className="mb-2">
-                <strong>Training Type:</strong> {coachInfo.trainingType.join(', ')}
+                <strong>Training Type:</strong> {coachInfo?.trainingType.join(', ')}
               </p>
-              {coachInfo.hasGym && (
+              {coachInfo?.hasGym && (
                 <p>
-                  <strong>Gym Location:</strong> {coachInfo.gymLocation}
+                  <strong>Gym Location:</strong> {coachInfo?.gymLocation}
                 </p>
               )}
             </div>
             <div className="flex-grow-1 mt-4 md:mt-0">
               <h2 className="text-xl font-bold mb-2">Biography</h2>
-              <p>{coachInfo.bio}</p>
+              <p>{coachInfo?.bio}</p>
             </div>
           </div>
         )}
@@ -742,10 +866,11 @@ export default function CoachProfilePage() {
       <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         <TabPanel header="Workouts">
           <DataTable
-            value={workouts}
-            responsiveLayout="scroll"
-            className="p-datatable-sm"
-            header={renderHeader('Workouts')}
+              value={workouts}
+              responsiveLayout="scroll"
+              className="p-datatable-sm"
+              header={renderHeader('Workouts')}
+              loading={isWorkoutsLoading}
           >
             <Column field="planName" header="Workout Name"></Column>
             <Column
@@ -760,6 +885,7 @@ export default function CoachProfilePage() {
             {coachPlans.map((plan) => (
               <div key={plan.id} className="col-12 md:col-6 lg:col-4">
                 <Card title={plan.name} subTitle={`$${plan.price.toFixed(2)} / month`} className="h-full">
+                  
                   <p className="m-0">Workouts per week: {plan.workoutsPerWeek}</p>
                   <div className="flex justify-content-between mt-4">
                     <Button
@@ -791,6 +917,7 @@ export default function CoachProfilePage() {
             filters={filters}
             globalFilterFields={['name', 'exerciseType', 'description']}
             onFilter={(e) => setFilters(e.filters)}
+            loading={isExercisesLoading}
           >
             <Column
               field="name"

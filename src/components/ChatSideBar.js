@@ -13,7 +13,7 @@ import { fetchMessages, fetchCoachStudents } from '../services/usersService'; //
 import { Dialog } from 'primereact/dialog';
 import ReactPlayer from 'react-player';
 import { useChatSidebar } from '../utils/ChatSideBarContext';
-
+import '../styles/ChatSidebar.css';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
@@ -78,7 +78,8 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
     const fetchMessagesFunc = async (userId, clientId) => {
         try {
             const messages = await fetchMessages(userId, clientId);
-            return messages
+            const sortedMessages = messages.sort((a, b) =>  new Date(b.timestamp) - new Date(a.timestamp))
+            return sortedMessages
         } catch (error) {
             console.error('Error fetching messages:', error);
             throw error;
@@ -93,7 +94,7 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
                 const messages = await fetchMessagesFunc(user.userId, selectedChat.user.id);
                 setMessages(messages);
             }
-            console.log('Messages:');
+            // console.log('Messages:');
         };
         fetch();
     }, [selectedChat]);
@@ -104,11 +105,11 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
     }, [messages]);
 
     const handleSelectChat = async (clientSelected) => {
-      console.log('Client selected:', clientSelected);
-        setSelectedChat(clientSelected); // Al seleccionar el cliente, se abre el chat
-        setMessages([]); // Reiniciar mensajes al cambiar de chat
-        const messages = await fetchMessagesFunc(user.userId, clientSelected.user.id)
-        setMessages(messages);
+      setSelectedChat(clientSelected); // Al seleccionar el cliente, se abre el chat
+      setMessages([]); // Reiniciar mensajes al cambiar de chat
+      const messages = await fetchMessagesFunc(user.userId, clientSelected.user.id);
+      
+      setMessages(messages);
     };
 
   const handleSendMessage = async () => {
@@ -130,20 +131,24 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
           const data = await response.json();
           newMsg.fileUrl = data.url;
           newMsg.fileType = data.mimeType;
+          fileInputRef.current.clear();
+          setSelectedFile(null);
+          setFilePreview(null);
         }
 
         // Enviar el mensaje a través del socket
         socket.emit('sendMessage', newMsg);
-        setMessages([...messages, newMsg]);
+        setMessages([newMsg ,...messages]);
         setNewMessage("");
-        setSelectedFile(null);
-        setFilePreview(null);
       } catch (error) {
         console.error('Error sending message:', error);
       }
     }
   };
 
+  useEffect(() => {
+    console.log(filePreview)
+  }, [filePreview])
   const handleFileSelect = (event) => {
     const file = event.files[0];
     setSelectedFile(file);
@@ -164,12 +169,12 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
   const removeSelectedFile = () => {
     setSelectedFile(null);
     setFilePreview(null);
+
     if (fileInputRef.current) fileInputRef.current.clear();
   };
 
   const handleOpenDialog = (fileUrl, fileType) => {
     setDialogVisible(true);
-    console.log('Message:', fileUrl, fileType);
     setDialogContent({ fileUrl, fileType });
   }
 
@@ -180,10 +185,12 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
 
 
   return (
-    <Card className="chat-sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Card className="chat-sidebar" style={{ display: 'flex', flexDirection: 'column', 
+    // height: '100%' 
+    }}>
       <div className="flex justify-content-between align-items-center mb-3">
         <h2 className="text-xl font-bold">Chat</h2>
-        <Button icon="pi pi-times" onClick={onClose} className="p-button-rounded p-button-text" />
+        {/* <Button icon="pi pi-times" onClick={onClose} className="p-button-rounded p-button-text" /> */}
       </div>
       
       {isCoach && !selectedChat && (
@@ -205,7 +212,7 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
 
       {selectedChat && (
         <div className="chat-window" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-          <div className="flex align-items-center mb-3">
+          <div className="flex align-items-center mb-1">
             {isCoach && (
               <Button icon="pi pi-arrow-left" onClick={() => setSelectedChat(null)} className="p-button-text mr-2" />
             )}
@@ -215,20 +222,20 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
 
           <div className="messages-list" style={{ flexGrow: 1, overflowY: 'auto' }}>
             {messages.map((msg) => (
-              <div key={msg.id} className={`message ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'sent' : 'received'} mb-2`}>
+              <div key={msg.id} className={`message ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'sent' : 'received'} mb-1`}>
                 {msg.fileUrl && (
-                  <div className="mb-2" onClick={() => handleOpenDialog(msg.fileUrl, msg.fileType)}>
+                  <div className="mb-1" onClick={() => handleOpenDialog(msg.fileUrl, msg.fileType)}>
                     {msg.fileUrl.includes('video') ? (
                       <ReactPlayer url={msg.fileUrl} controls className="max-w-full h-auto" />
                     ) : (
-                      <img src={msg.fileUrl} alt="attachment" className="max-w-full h-auto cursor-pointer" />
+                      <img src={msg.fileUrl} alt="video" className="max-w-full h-auto cursor-pointer" />
                     )}
                   </div>
                 )}
-                <p className={`p-2 rounded-lg ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'bg-primary text-white' : 'bg-surface-200'}`}>
+                <p className={` rounded-lg ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'bg-primary text-white' : 'bg-surface-200'}`}>
                   {msg.content}
                 </p>
-                <small className="text-color-secondary">{new Date(msg.timestamp).toLocaleTimeString()}</small>
+                <small className="">{new Date(msg.timestamp).toLocaleTimeString()}</small>
               </div>
             ))}
             <div ref={messagesEndRef} />
@@ -249,7 +256,17 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
             {errorMessage && <Message severity="error" text={errorMessage} className="mb-2" />}
 
             <div className="p-inputgroup">
-              <InputText value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." />
+              <InputText 
+                value={newMessage}  
+                onChange={(e) => setNewMessage(e.target.value)} 
+                placeholder="Type a message..." 
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault(); // Evita que se añada un salto de línea
+                    handleSendMessage(); // Envía el mensaje cuando se presiona Enter
+                  }
+                }} 
+                />
               <FileUpload 
                 mode="basic"
                 name="file" 
@@ -257,6 +274,7 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
                 maxFileSize={1000000000}
                 customUpload
                 uploadHandler={handleFileSelect}
+                ref={fileInputRef}
                 auto
                 chooseOptions={{ icon: 'pi pi-paperclip', iconOnly: true }}
                 className="p-button-outlined"
@@ -270,11 +288,11 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
       )}
 
       {/* Dialog to display image/video */}
-      <Dialog header="Attachment" visible={dialogVisible} style={{ width: '50vw' }} onHide={handleCloseDialog}>
+      <Dialog header="Attachment" visible={dialogVisible} style={{ width: '80vw', height:'80vh' }} className='responsive-dialog' onHide={handleCloseDialog}>
         {dialogContent && (
           <>
             {dialogContent.fileType.includes('video') ? (
-              <ReactPlayer url={dialogContent.fileUrl} controls className="w-full h-auto" />
+              <ReactPlayer url={dialogContent.fileUrl} controls className="w-full h-full" />
             ) : (
               <img src={dialogContent.fileUrl} alt="attachment" className="w-full h-auto" />
             )}

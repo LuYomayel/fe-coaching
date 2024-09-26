@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
@@ -7,7 +7,7 @@ import { Password } from 'primereact/password';
 import { classNames } from 'primereact/utils';
 import { Dumbbell, Users, LineChart, MessageCircle, Video } from 'lucide-react';
 
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
@@ -35,6 +35,10 @@ export default function HomePage() {
     const showToast = useToast();
     const navigate = useNavigate();
 
+    const featuresRef = useRef(null);
+    const pricingRef = useRef(null);
+    const aboutRef = useRef(null);
+    const contactRef = useRef(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -169,6 +173,12 @@ export default function HomePage() {
         }
     };
 
+    const scrollToSection = (sectionRef) => {
+        if (sectionRef && sectionRef.current) {
+            sectionRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     const renderHeader = () => {
         return (
             <div className="flex align-items-center justify-content-between">
@@ -177,10 +187,10 @@ export default function HomePage() {
                     <span className="font-bold text-xl">EaseTrain</span>
                 </div>
                 <div>
-                    <Button label="Features" className="p-button-text mr-2" />
-                    <Button label="Pricing" className="p-button-text mr-2" />
-                    <Button label="About" className="p-button-text mr-2" />
-                    <Button label="Contact" className="p-button-text" />
+                    <Button label="Features" className="p-button-text mr-2" onClick={() => scrollToSection(featuresRef)} />
+                    <Button label="Pricing" className="p-button-text mr-2" onClick={() => scrollToSection(pricingRef)} />
+                    <Button label="About" className="p-button-text mr-2" onClick={() => scrollToSection(aboutRef)} />
+                    <Button label="Contact" className="p-button-text" onClick={() => scrollToSection(contactRef)} />
                 </div>
             </div>
         );
@@ -213,7 +223,7 @@ export default function HomePage() {
         ];
 
         return (
-            <div className="bg-gray-100 py-8">
+            <div className="bg-gray-100 py-8" ref={featuresRef}>
                 <div className="max-w-screen-lg mx-auto px-4">
                     <h2 className="text-4xl font-bold text-center mb-8">Key Features</h2>
                     <div className="grid">
@@ -242,7 +252,7 @@ export default function HomePage() {
         ];
 
         return (
-            <div className="py-8">
+            <div ref={aboutRef} className="py-8">
                 <div className="max-w-screen-lg mx-auto px-4">
                     <h2 className="text-4xl font-bold text-center mb-8">What Our Users Say</h2>
                     <div className="grid">
@@ -262,7 +272,7 @@ export default function HomePage() {
 
     const renderFooter = () => {
         return (
-            <div className="bg-gray-200 py-4">
+            <div ref={contactRef} className="bg-gray-200 py-4">
                 <div className="max-w-screen-lg mx-auto px-4 flex justify-content-between align-items-center">
                     <p className="text-sm">© 2023 EaseTrain. All rights reserved.</p>
                     <div>
@@ -324,7 +334,7 @@ export default function HomePage() {
     };
 
     return (
-        <div className="flex flex-column min-h-screen">
+        <div className="flex flex-column min-h-screen h-full">
             <header className="p-4">
                 {renderHeader()}
             </header>

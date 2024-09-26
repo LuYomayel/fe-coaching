@@ -21,7 +21,10 @@ import StudentDetailDialog from '../dialogs/StudentDetailDialog';
 import { cancelSubscription } from '../services/subscriptionService';
 import { useChatSidebar } from '../utils/ChatSideBarContext';
 import { formatDate } from '../utils/UtilFunctions';
+import { InputIcon } from 'primereact/inputicon';
+import { IconField } from 'primereact/iconfield';
 
+const apiUrl = process.env.REACT_APP_API_URL;
 export default function NewManageStudentsPage() {
   const { user } = useContext(UserContext);
   const { openChatSidebar, setSelectedChat } = useChatSidebar();
@@ -41,6 +44,7 @@ export default function NewManageStudentsPage() {
   const toast = useRef(null);
 
   const { setLoading } = useSpinner();
+  const [ isSendingVerification, setIsSendingVerification ] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,6 +73,34 @@ export default function NewManageStudentsPage() {
         {rowData.user.subscription.status}
       </span>
     );
+  };
+
+  const handleResendVerification = async (email) => {
+    try {
+      setIsSendingVerification(true);
+      const response = await fetch(`${apiUrl}/auth/send-verification-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+      },
+        body: JSON.stringify({ email }),
+      });
+     
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log(errorData)
+
+        throw new Error(errorData.message || 'Something went wrong');
+      }
+      else {
+        showToast('success', 'Verification email sent successfully!');
+      }
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    } finally {
+      setIsSendingVerification(false);
+    }
+
   };
 
   const actionBodyTemplate = (rowData) => {
@@ -117,6 +149,16 @@ export default function NewManageStudentsPage() {
             className="p-button-rounded p-button-info"
             onClick={() => viewProfile(rowData.id)}
           />
+          {!rowData.user.isVerified && (
+            <Button
+              icon="pi pi-envelope"
+              className="p-button-rounded p-button-success"
+              onClick={() => handleResendVerification(rowData.user.email)}
+              tooltip="Resend Verification Email"
+              loading={isSendingVerification  }
+            />
+          )  
+          }
           <Button
             icon="pi pi-calendar-plus"
             className="p-button-rounded p-button-success"
@@ -252,14 +294,15 @@ export default function NewManageStudentsPage() {
       </Card>
 
       <div className="flex justify-content-between align-items-center mb-4">
-        <span className="p-input-icon-left">
-          <i className="pi pi-search" />
-          <InputText
-            placeholder="Search students"
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-          />
-        </span>
+        <IconField iconPosition="left">
+              <InputIcon className="pi pi-search"> </InputIcon>
+              <InputText
+                placeholder="Search students"
+                value={globalFilter}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+            />
+          </IconField>
+        
         <Button label="Add New Student" icon="pi pi-plus" onClick={openNewStudentDialog} />
       </div>
 

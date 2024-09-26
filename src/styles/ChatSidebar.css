@@ -18,6 +18,7 @@
 .sent {
     background-color: var(--primary-color);
     color: var(--primary-color-text);
+    justify-content: end;
     align-self: flex-end;
     text-align: right;
 }

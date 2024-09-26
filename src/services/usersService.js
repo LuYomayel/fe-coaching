@@ -85,7 +85,7 @@ const fetchMessages = async (coachId, clientId, page=1) => {
         throw new Error(errorData.message || 'Something went wrong.');
       }
       const data = await response.json();
-      console.log('Messages:', data); 
+      // console.log('Messages:', data); 
       return data;
     } catch (error) {
       console.error('Error fetching messages:', error);

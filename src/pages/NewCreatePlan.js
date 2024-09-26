@@ -18,11 +18,11 @@ import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 
 const propertyList = [
-  { name: 'Repetitions', key: 'repetitions' },
+  { name: 'Reps', key: 'repetitions' },
   { name: 'Sets', key: 'sets' },
-  { name: 'Time (seconds)', key: 'time' },
-  { name: 'Weight (lbs)', key: 'weight' },
-  { name: 'Rest Interval (seconds)', key: 'restInterval' },
+  { name: 'Time', key: 'time' },
+  { name: 'Weight', key: 'weight' },
+  { name: 'Rest Interval', key: 'restInterval' },
   { name: 'Tempo', key: 'tempo' },
   { name: 'Difficulty', key: 'difficulty' },
   { name: 'Duration', key: 'duration' },
@@ -95,6 +95,25 @@ const NewCreatePlan = ({ isEdit }) => {
         setLoading(true);
         try {
           const data = await fetchWorkoutInstance(planId);
+
+          // Iterate through each group
+          const newData = data.groups.map(group => {
+            // Iterate through each exercise in the group
+            group.exercises.map(exercise => {
+              // Check and modify the properties
+              if (exercise) {
+                exercise.repetitions = exercise.repetitions === '' ? null : exercise.repetitions
+                exercise.sets = exercise.sets === '' ?  null : exercise.sets
+                exercise.tempo = exercise.tempo === '' ? null : exercise.tempo
+                exercise.time = exercise.time === '' ?  null : exercise.time
+                exercise.weight = exercise.weight === '' ?  null : exercise.weight
+                exercise.restInterval = exercise.restInterval === '' ?  null : exercise.restInterval
+                exercise.difficulty = exercise.difficulty === '' ?  null : exercise.difficulty
+                exercise.duration = exercise.duration === '' ?  null : exercise.duration
+                exercise.distance = exercise.distance === '' ?  null : exercise.distance
+              }
+            });
+          });
           setPlan(data);
         } catch (error) {
           showToast('error', 'Error fetching plan details', `${error.message}`);
@@ -373,7 +392,8 @@ const NewCreatePlan = ({ isEdit }) => {
                         exercises: exercisesToAdd.map(exercise => ({
                             exercise: exercises.find(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase()),
                             id: uuidv4(),
-                            notes: exercise.notes
+                            notes: exercise.notes,
+                            ...exercise
                         }))
                     };
                     acc.push(newGroup);
@@ -440,6 +460,7 @@ const NewCreatePlan = ({ isEdit }) => {
     
     const data = await response.json();
     // Assuming the API returns the plan object in the response
+    console.log(data);  
     return data;
   };
 
@@ -485,7 +506,7 @@ const NewCreatePlan = ({ isEdit }) => {
 
       <Card className="mb-4">
         <label htmlFor="personalized-notes" className="block text-sm font-medium mb-1">Personalized Notes</label>
-        <InputTextarea id="personalized-notes" value={plan.personalizedNotes} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })} rows={3} className="w-full" />
+        <InputTextarea  id="personalized-notes" value={plan.personalizedNotes} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })}  className="w-full" />
       </Card>
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -529,13 +550,13 @@ const NewCreatePlan = ({ isEdit }) => {
                           </div>
                         </div>
                         {group.exercises.map((exercise, exerciseIndex) => (
-                          <div key={exercise.id} className="mb-3 p-3 border-1 border-gray-200 border-round">
+                          <div key={exercise.id} className="mb-3 p-2 border-1 border-gray-200 border-round">
                             <div className="flex justify-content-between align-items-center mb-2">
                               <h4 className="text-lg m-0">{exercise.exercise?.name}</h4>
                               <div>
                                 <Button
                                   icon="pi pi-plus"
-                                  className="p-button-text p-button-sm mr-2"
+                                  className="p-button-text p-button-sm"
                                   onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
                                 />
                                 <Button
@@ -549,9 +570,9 @@ const NewCreatePlan = ({ isEdit }) => {
                               {Object.entries(exercise).map(([key, value]) => {
                                 if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes') {
                                   return (
-                                    <div key={key} className="col-12 md:col-6 lg:col-4 mb-2">
+                                    <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
                                       <div className="flex flex-column">
-                                        <label className="mb-1">{propertyList.find(p => p.key === key)?.name || key}</label>
+                                        <label className="">{propertyList.find(p => p.key === key)?.name || key}</label>
                                         <div className="flex align-items-center">
                                           <InputText
                                             value={exercise[key]}
@@ -560,7 +581,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                           />
                                           <Button
                                             icon="pi pi-times"
-                                            className="p-button-danger p-button-text p-button-sm ml-2"
+                                            className="p-button-danger p-button-text p-button-sm"
                                             onClick={() => removeProperty(groupIndex, exerciseIndex, key)}
                                           />
                                         </div>
@@ -595,23 +616,27 @@ const NewCreatePlan = ({ isEdit }) => {
         </Droppable>
       </DragDropContext>
 
-      <div className="flex justify-content-end mt-4">
+      <div className="flex justify-content-end mt-2">
         <Button label={isEdit ? 'Edit Plan' : 'Create Plan'} icon="pi pi-check" onClick={submitPlanClick} className="p-button-success" />
       </div>
 
       <Dialog header="Add Exercise" visible={showExerciseDialog} onHide={() => setShowExerciseDialog(false)} className="w-30rem">
         <Dropdown
-          value={selectedExercise}
-          options={exercises}
-          onChange={(e) => {
-            setSelectedExercise(e.value)
-          }}
-          optionLabel="name"
-          filter
-          filterBy="name"
-          placeholder="Select an Exercise"
-          className="w-full mb-3"
-        />
+            value={selectedExercise}
+            options={exercises}
+            onChange={(e) => setSelectedExercise(e.value)}
+            optionLabel="name"
+            filter
+            filterBy="name,exerciseType" // Filtra por ambos campos: nombre y tipo de ejercicio
+            placeholder="Select an Exercise"
+            className="w-full mb-3"
+            itemTemplate={(option) => (
+              <div className='flex flex-column'>
+                <span>{option.name}</span> {/* Muestra nombre y tipo de ejercicio */}
+                <small className='text-xs'>{option.exerciseType}</small>
+              </div>
+            )}
+          />
         <Button label="Add Exercise" icon="pi pi-plus" onClick={addExercise} disabled={!selectedExercise} />
       </Dialog>
 
