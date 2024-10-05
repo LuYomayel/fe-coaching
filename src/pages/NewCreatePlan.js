@@ -389,12 +389,17 @@ const NewCreatePlan = ({ isEdit }) => {
                         set: group.set,
                         rest: group.rest,
                         groupNumber: group.groupNumber,
-                        exercises: exercisesToAdd.map(exercise => ({
-                            exercise: exercises.find(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase()),
+                        exercises: exercisesToAdd.map(exercise => {
+                          // Find the complete exercise object from the array
+                          const completeExercise = exercises.find(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase());
+                          console.log(completeExercise);
+                          return {
+                            exercise: completeExercise,
                             id: uuidv4(),
                             notes: exercise.notes,
                             ...exercise
-                        }))
+                          };
+                        })
                     };
                     acc.push(newGroup);
                 } else {
