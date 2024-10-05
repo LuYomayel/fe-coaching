@@ -303,7 +303,7 @@ const NewCreatePlan = ({ isEdit }) => {
 
       for (const exercise of group.exercises) {
         if (!exercise.exercise.id) {
-          showToast('error', 'Error', 'Each exercise must be selected.');
+          showToast('error', 'Error', `Each exercise must be selected. ${exercise.exercise.name} is not selected.`);
           return;
         }
         if (typeof exercise.id === 'string') {
