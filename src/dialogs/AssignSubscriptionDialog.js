@@ -40,7 +40,8 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
       clientId: studentId,
       startDate,
       endDate,
-      coachPlanId: selectedCoachPlan
+      coachPlanId: selectedCoachPlan,
+      userId: user.userId
     }
     const { isValid, message } = validateDates(startDate, endDate)
 
