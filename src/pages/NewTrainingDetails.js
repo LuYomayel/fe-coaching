@@ -18,7 +18,7 @@ import { fetchWorkoutInstance, submitFeedback } from '../services/workoutService
 import FinishTrainingDialog from '../dialogs/FinishTrainingDialog';
 import VideoDialog from '../dialogs/VideoDialog';
 import { extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctions';
-import CustomInput from '../components/CustomInput';
+import RpeDropdownComponent from '../components/RpeDropdown';
 
 export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefreshKey, isTraining = true }) {
   const { planId } = useParams();
@@ -41,6 +41,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
         setLoading(true);
         const data = await fetchWorkoutInstance(planId);
         if (data.status === 'completed') setIsClientTraining(false);
+        console.log('Plan data: ', data);
         setPlan(data);
       } catch (error) {
         showToast('error', 'Error fetching plan details', error.message);
@@ -246,7 +247,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                             (property, propertyIndex) =>
                               property !== 'exercise' &&
                               property !== 'id' &&
-                              exercise[property] !== '' &&
+                              exercise[property] !== null &&
                               property !== 'completed' &&
                               property !== 'rpe' &&
                               property !== 'comments' &&
@@ -279,7 +280,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                                       (property) =>
                                         property !== 'exercise' &&
                                         property !== 'id' &&
-                                        exercise[property] !== '' &&
+                                        exercise[property] !== null &&
                                         property !== 'completed' &&
                                         property !== 'completedNotAsPlanned' &&
                                         property !== 'rpe' &&
@@ -310,14 +311,12 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                                 />
                                 <label htmlFor={`completed-${exercise.id}`} className="ml-2">Completed</label>
                               </div>
-                              <div className="p-field mb-2">
+                              <div className="p-field">
                                 <label htmlFor={`rating-${exercise.id}`} className="block mb-1">RPE: </label>
-                                <CustomInput
-                                  type="dropdown"
-                                  id={`rating-${exercise.id}`}
-                                  value={exerciseProgress[exercise.id]?.rating || 0}
+                                <RpeDropdownComponent
+                                  selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
                                   onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
-                                  className="w-full"
+                                  planId={planId}
                                 />
                               </div>
                               <div className="p-field">
@@ -349,9 +348,13 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                                 />
                                 <label htmlFor={`completed-${exercise.id}`} className="ml-2">Completed Not As Planned</label>
                               </div>
-                              <div className="p-field mb-2">
+                              <div className="p-field">
                                 <label htmlFor={`rating-${exercise.id}`} className="block mb-1">RPE: </label>
-                                <CustomInput type="dropdown" id={`rating-${exercise.id}`} value={parseInt(exercise.rpe) || 0} disabled className="w-full" />
+                                <RpeDropdownComponent
+                                  selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
+                                  onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
+                                  planId={planId}
+                                />
                               </div>
                               <div className="p-field">
                                 <label htmlFor={`comments-${exercise.id}`} className="block mb-1">Comments</label>
@@ -401,7 +404,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                           (property, propertyIndex) =>
                             property !== 'exercise' &&
                             property !== 'id' &&
-                            exercise[property] !== '' &&
+                            exercise[property] !== null &&
                             property !== 'completed' &&
                             property !== 'rpe' &&
                             property !== 'comments' &&
@@ -434,7 +437,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                                     (property) =>
                                       property !== 'exercise' &&
                                       property !== 'id' &&
-                                      exercise[property] !== '' &&
+                                      exercise[property] !== null &&
                                       property !== 'completed' &&
                                       property !== 'completedNotAsPlanned' &&
                                       property !== 'rpe' &&
@@ -465,13 +468,12 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                               <label htmlFor={`completed-${exercise.id}`} className="ml-2">Completed</label>
                             </div>
                             <div className="p-field">
-                              <label htmlFor={`rating-${exercise.id}`} className="block mb-1">RPE: </label>
-                              <CustomInput
-                                type="dropdown"
-                                id={`rating-${exercise.id}`}
-                                value={exerciseProgress[exercise.id]?.rating || 0}
-                                onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
-                              />
+                                <label htmlFor={`rating-${exercise.id}`} className="block mb-1">RPE: </label>
+                                <RpeDropdownComponent
+                                  selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
+                                  onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
+                                  planId={planId}
+                                />
                             </div>
                             <div className="p-field">
                               <label htmlFor={`comments-${exercise.id}`} className="block mb-1">Comments</label>
@@ -503,9 +505,13 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                               <label htmlFor={`completed-${exercise.id}`} className="ml-2">Completed Not As Planned</label>
                             </div>
                             <div className="p-field">
-                              <label htmlFor={`rating-${exercise.id}`} className="block mb-1">RPE: </label>
-                              <CustomInput type="dropdown" id={`rating-${exercise.id}`} value={parseInt(exercise.rpe) || 0} disabled />
-                            </div>
+                                <label htmlFor={`rating-${exercise.id}`} className="block mb-1">RPE: </label>
+                                <RpeDropdownComponent
+                                  selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
+                                  onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
+                                  planId={planId}
+                                />
+                              </div>
                             <div className="p-field">
                               <label htmlFor={`comments-${exercise.id}`} className="block mb-1">Comments</label>
                               <InputTextarea

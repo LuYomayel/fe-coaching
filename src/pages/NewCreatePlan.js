@@ -367,7 +367,7 @@ const NewCreatePlan = ({ isEdit }) => {
         setIsUploading(true);
         try {
             const planFromImage = await getPlanFromImage(file);
-            console.log('Before: ', planFromImage);
+            // console.log('Before: ', planFromImage);
 
             // Arrays para almacenar ejercicios y grupos eliminados
             const removedExercises = [];
@@ -392,15 +392,16 @@ const NewCreatePlan = ({ isEdit }) => {
                         exercises: exercisesToAdd.map(exercise => {
                           // Find the complete exercise object from the array
                           const completeExercise = exercises.find(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase());
-                          console.log(completeExercise);
+                          console.log('Complete exercise',completeExercise);
                           return {
-                            exercise: completeExercise,
                             id: uuidv4(),
                             notes: exercise.notes,
-                            ...exercise
+                            ...exercise,
+                            exercise: {...completeExercise},
                           };
                         })
                     };
+                    console.log('New group', newGroup);
                     acc.push(newGroup);
                 } else {
                     // Si el grupo no tiene ejercicios válidos, lo eliminamos y lo registramos
@@ -413,7 +414,7 @@ const NewCreatePlan = ({ isEdit }) => {
             planFromImage.groups = newGroups;
 
             // Log de los resultados
-            console.log('After: ', planFromImage);
+            // console.log('After: ', planFromImage);
             setPlan((plan) => ({
                 isTemplate: true,
                 instanceName: '',

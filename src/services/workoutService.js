@@ -1,3 +1,5 @@
+import { getDayMonthYear } from "../utils/UtilFunctions";
+
 const apiUrl = process.env.REACT_APP_API_URL;
 const fetchCoachWorkouts = async (userId) => {
     const response = await fetch(`${apiUrl}/workout/coach-workouts/userId/${userId}`);
@@ -160,15 +162,6 @@ const updateStatusLocal = (workout, session) => {
       return workout.status
     }
 }
-
-const getDayMonthYear = (session) => {
-  const sessionDate = new Date(session.sessionDate);
-  const year = sessionDate.getFullYear();
-  const month = sessionDate.getMonth(); // 0-based
-  const day = sessionDate.getDate();
-
-  return new Date(year, month, day); // Esto crea una fecha sin hora
-};
 
 const submitPlan = async (plan, planId, isEdit) => {
     
@@ -352,9 +345,96 @@ const deletePlan = async (workoutInstanceId) => {
     }
   };
 
+  const getRpeMethods = async (userId) => {
+    try {
+      const response = await fetch(`${apiUrl}/workout/rpe/all/${userId}`);
+      const data = await response.json();
+      return data; // Return the RPE methods array
+    } catch (error) {
+      throw error; // Re-throw to handle it in the component
+    }
+  }
+  const createOrUpdateRpeMethod = async (dialogMode, newRpe, userId) => {
+    const url = dialogMode === 'create' ? `${apiUrl}/workout/rpe/create/${userId}` : `${apiUrl}/workout/rpe/update/${newRpe.id}/${userId}`;
+    const method = dialogMode === 'create' ? 'POST' : 'PUT';
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newRpe),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error creating RPE method:', errorData);
+        // Handle cases where the error message might be an array or single message
+        const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+          ? errorData.message.message.join(', ')
+          : errorData.message || 'Something went wrong';
+        throw new Error(errorMessage);
+      }
+      return true; // Indicate success
+    }
+    catch (error) {
+      throw error;
+    }
+  }
+
+  const assignRpeToTarget = async (rpeMethodId, targetType, targetId, userId) => {
+    try {
+      const body = { rpeMethodId, targetType, targetId };
+      const response = await fetch(`${apiUrl}/workout/rpe/assign/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to assign RPE Method to target');
+      }
+      return true
+    } catch (error) {
+      throw error; 
+    }
+  };
+
+  const getRpeAssignmentsByTarget = async (targetType, targetId) => {
+    try {
+      const response = await fetch(`${apiUrl}/rpe/target/${targetType}/${targetId}`, {
+        method: 'POST',
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to retrieve RPE assignments');
+      }
+  
+      const data = await response.json();
+      return data; // Retornar las asignaciones obtenidas
+    } catch (error) {
+      throw error; 
+    }
+  };
 
 
-
+  const deleteRpe = async (rpeId, userId) => {
+    try {
+      const response = await fetch(`${apiUrl}/workout/rpe/delete/${rpeId}/${userId}`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Something went wrong');
+      }
+  
+      return true; // Indicate success
+    } catch (error) {
+      throw error; 
+    }
+  }
 export { 
     fetchTrainingCyclesByCoachId,
     fetchCoachWorkouts, 
@@ -372,4 +452,9 @@ export {
     fetchAssignedWorkoutsForCycleDay,
     deleteWorkoutPlan,
     deletePlan,
+    getRpeMethods,
+    createOrUpdateRpeMethod,
+    assignRpeToTarget,
+    getRpeAssignmentsByTarget,
+    deleteRpe
 };

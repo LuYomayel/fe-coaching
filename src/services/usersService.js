@@ -148,9 +148,11 @@ const fetchWorkoutProgressByCoachId = async (coachId) => {
     });
     if (!response.ok) {
       const errorData = await response.json();
+      console.log('Error data:', errorData)
       const errorMessage = errorData.message || 'Something went wrong';
       throw new Error(errorMessage);
     }
+
     return response.json(); // Directly returning parsed JSON data
 };
 

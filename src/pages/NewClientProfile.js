@@ -23,7 +23,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { fetchClient, fetchClientActivitiesByUserId, updatePersonalInfo } from '../services/usersService';
 import { fetchSubscriptionDetails } from '../services/subscriptionService';
-import { formatDate, getSeverity, sortBySessionDate, updateStatus } from '../utils/UtilFunctions';
+import { formatDate, getDayMonthYear, getSeverity, sortBySessionDate, updateStatus } from '../utils/UtilFunctions';
 
 export default function NewClientProfile() {
   const { user } = useContext(UserContext);
@@ -292,9 +292,8 @@ export default function NewClientProfile() {
                 />
                 <Column header="Details" body={setPlanDetails} />
                 <Column
-                  field="trainingSession.sessionDate"
                   header="Training Date"
-                  body={(rowData) => formatDate(rowData.trainingSession.sessionDate)}
+                  body={(rowData) => formatDate(getDayMonthYear(rowData.trainingSession).toISOString().split('T')[0])}
                   sortable
                   filter
                   filterField="trainingSession.sessionDate"

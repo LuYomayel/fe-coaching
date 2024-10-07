@@ -97,7 +97,8 @@ export default function CoachHomePage() {
         const fetchTrainingPlans = async () => {
           try {
             setIsTrainingPlansLoading(true);
-            const trainingPlansData = await fetchWorkoutProgressByCoachId(user.userId);
+            console.log('Logueando', user.userId)
+            const trainingPlansData = await fetchWorkoutProgressByCoachId(coach.id);
             const plans = trainingPlansData.map(cycle => ({
                 name: cycle.name,
                 status: cycle.status, // Puedes mapear el estado real de cada ciclo

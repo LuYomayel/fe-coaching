@@ -4,6 +4,7 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
+import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
@@ -15,8 +16,8 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { fetchCoachWorkouts } from '../services/workoutService';
-import { fetchCoach, fetchCoachPlans } from '../services/usersService';
+import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchCoachWorkouts, fetchTrainingCyclesByCoachId, getRpeMethods } from '../services/workoutService';
+import { fetchCoach, fetchCoachPlans, fetchCoachStudents, fetchWorkoutProgressByCoachId } from '../services/usersService';
 import {
   createOrUpdateCoachPlan,
   fetchCoachSubscription,
@@ -56,6 +57,8 @@ export default function CoachProfilePage() {
 
   // Data arrays
   const [workouts, setWorkouts] = useState([]); // <- state for workouts
+  const [trainingCycles, setTrainingCycles] = useState([]); // <- state for training cycles
+  const [users, setUsers] = useState([]); // <- state for users
   const [coachPlans, setCoachPlans] = useState([]); // <- state for coach plans
   const [subscriptionPlans, setSubscriptionPlans] = useState([]); // <- state for subscription plans
   const [exercises, setExercises] = useState([]); // <- state for exercises
@@ -100,176 +103,209 @@ export default function CoachProfilePage() {
     includeMealPlan: false,
   });
 
-  useEffect(() => {
-    const fetchWorkouts = async () => { 
+  // States for RPE methods
+    const [rpeMethods, setRpeMethods] = useState([
+      { id: 1, name: 'RPE', minValue: 0, maxValue: 10, step: 1 },
+    ]);
+    const [isRpeLoading, setIsRpeLoading] = useState(true);
+    const [rpeDialogVisible, setRpeDialogVisible] = useState(false);
+    const [rpeAssignmentDialogVisible, setRpeAssignmentDialogVisible] = useState(false);
+    const [newRpe, setNewRpe] = useState({ name: '', minValue: 0, maxValue: 10, step: 1, valuesMeta: [] });
+    const [selectedType, setSelectedType] = useState(null);
+    const [selectedTarget, setSelectedTarget] = useState(null);
+    const [selectedRpe, setSelectedRpe] = useState(null);
+
+    const typeOptions = [
+      { label: 'Workout', value: 'workout' },
+      { label: 'Training Cycle', value: 'trainingCycle' },
+      { label: 'User', value: 'user' },
+    ];
+
+    const renderTargetDropdown = () => {
+      let options = [];
+  
+      if (selectedType === 'workout') {
+        options = workouts.map((workout) => ({
+          label: workout.planName,
+          value: workout.id,
+        }));
+      } else if (selectedType === 'trainingCycle') {
+        options = trainingCycles.map((cycle) => ({
+          label: cycle.name,
+          value: cycle.id,
+        }));
+      } else if (selectedType === 'user') {
+        options = users.map((user) => ({
+          label: `${user.name}`,
+          value: user.id,
+        }));
+      }
+  
+      return (
+        <Dropdown
+          value={selectedTarget}
+          options={options}
+          onChange={(e) => setSelectedTarget(e.value)}
+          placeholder={`Select ${selectedType}`}
+          className="w-full"
+        />
+      );
+    };
+
+    const fetchRpeMethods = async () => {
+      setIsRpeLoading(true);
       try {
-        setIsWorkoutsLoading(true);
-        const workoutData = await fetchCoachWorkouts(user.userId);
-        const mappedWorkouts = workoutData.map((workout) => {
-          const instance = workout.workoutInstances.find((instance) => instance.isTemplate);
-          return {
-            ...workout,
-            workoutInstance: instance,
-          };
-        });
-        setWorkouts(mappedWorkouts);
+        const response = await getRpeMethods(user.userId);
+        console.log(response);
+        setRpeMethods(response);
       } catch (error) {
         showToast('error', 'Error', error.message);
       } finally {
-        setIsWorkoutsLoading(false);
+        setIsRpeLoading(false);
       }
     };
 
-    const fetchCoachInfo = async () => {
-      try {
-        setIsCoachInfoLoading(true);
-        const data = await fetchCoach(user.userId);
-        setCoachInfo(data);
-      } catch (error) {
-        if (error.message === 'Coach not found') {
-          navigate('/complete-coach-profile');
+    useEffect(() => {
+      const fetchWorkouts = async () => { 
+        try {
+          setIsWorkoutsLoading(true);
+          const workoutData = await fetchCoachWorkouts(user.userId);
+          const mappedWorkouts = workoutData.map((workout) => {
+            const instance = workout.workoutInstances.find((instance) => instance.isTemplate);
+            return {
+              ...workout,
+              workoutInstance: instance,
+            };
+          });
+          setWorkouts(mappedWorkouts);
+        } catch (error) {
+          showToast('error', 'Error', error.message);
+        } finally {
+          setIsWorkoutsLoading(false);
         }
-        showToast('error', 'Error', error.message);
-      } finally {
-        setIsCoachInfoLoading(false);
-      }
+      };
 
-    };
-
-    const fetchCoachSubscriptionData = async () => {
-      try {
-        setIsCoachSubscriptionLoading(true);
-        const subscriptionData = await fetchCoachSubscription(user.userId);
-        setCurrentPlanId(subscriptionData.subscriptionPlan.id);
-      } catch (error) {
-        showToast('error', 'Error', error.message);
-      } finally {
-        setIsCoachSubscriptionLoading(false);
-      }
-    };
-
-    const fetchCoachPlansData = async () => {
-      try {
-        setIsCoachPlansLoading(true);
-        const coachPlansData = await fetchCoachPlans(user.userId);
-        setCoachPlans(coachPlansData);
-      } catch (error) {
-        showToast('error', 'Error', error.message);
-      } finally{
-        setIsCoachPlansLoading(false);
-      }
-    };
-
-    const fetchExercises = async () => {
-      try {
-        setIsExercisesLoading(true);
-        const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${user.userId}`);
-        if (!exercisesResponse.ok) {
-          const errorData = await exercisesResponse.json();
-          throw new Error(errorData.message || 'Something went wrong');
+      const fetchCoachInfo = async () => {
+        try {
+          setIsCoachInfoLoading(true);
+          const data = await fetchCoach(user.userId);
+          setCoachInfo(data);
+        } catch (error) {
+          if (error.message === 'Coach not found') {
+            navigate('/complete-coach-profile');
+          }
+          showToast('error', 'Error', error.message);
+        } finally {
+          setIsCoachInfoLoading(false);
         }
-        const exercisesData = await exercisesResponse.json();
-        setExercises(exercisesData);
-      } catch (error) {
-        showToast('error', 'Error', error.message);
-      } finally {
-        setIsExercisesLoading(false);
-      }
 
-    };
+      };
 
-    const fetchBodyAreas = async () => {
-      try {
-        setIsBodyAreasLoading(true);
-        const bodyAreasResponse = await fetch(`${apiUrl}/exercise/body-area`);
-        if (!bodyAreasResponse.ok) {
-          const errorData = await bodyAreasResponse.json();
-          throw new Error(errorData.message || 'Something went wrong');
+      const fetchCoachSubscriptionData = async () => {
+        try {
+          setIsCoachSubscriptionLoading(true);
+          const subscriptionData = await fetchCoachSubscription(user.userId);
+          setCurrentPlanId(subscriptionData.subscriptionPlan.id);
+        } catch (error) {
+          showToast('error', 'Error', error.message);
+        } finally {
+          setIsCoachSubscriptionLoading(false);
         }
-        const bodyAreasData = await bodyAreasResponse.json();
-        const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
-        setBodyAreas(formattedBodyAreas);
-      } catch (error) {
-        showToast('error', 'Error', error.message);
-      } finally {
-        setIsBodyAreasLoading(false);
-      }
-    };
+      };
 
-    const fetchSubscriptionPlans = async () => {
-      try {
-        setIsSubscriptionPlansLoading(true);
-        const subscriptionPlansData = await fetchCoachSubscriptionPlans();
-        setSubscriptionPlans(subscriptionPlansData);
-      } catch (error) {
-        showToast('error', 'Error', error.message);
-      } finally {
-        setIsSubscriptionPlansLoading(false);
-      }
-    };
+      const fetchCoachPlansData = async () => {
+        try {
+          setIsCoachPlansLoading(true);
+          const coachPlansData = await fetchCoachPlans(user.userId);
+          setCoachPlans(coachPlansData);
+        } catch (error) {
+          showToast('error', 'Error', error.message);
+        } finally{
+          setIsCoachPlansLoading(false);
+        }
+      };
 
-    fetchWorkouts();
-    fetchCoachInfo();
-    fetchCoachSubscriptionData();
-    fetchCoachPlansData();
-    fetchExercises();
-    fetchBodyAreas();
-    fetchSubscriptionPlans();
+      const fetchExercises = async () => {
+        try {
+          setIsExercisesLoading(true);
+          const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${user.userId}`);
+          if (!exercisesResponse.ok) {
+            const errorData = await exercisesResponse.json();
+            throw new Error(errorData.message || 'Something went wrong');
+          }
+          const exercisesData = await exercisesResponse.json();
+          setExercises(exercisesData);
+        } catch (error) {
+          showToast('error', 'Error', error.message);
+        } finally {
+          setIsExercisesLoading(false);
+        }
 
-    // const fetchData = async () => {
-    //   try {
-    //     setLoading(true);
+      };
 
-    //     const subscriptionData = await fetchCoachSubscription(user.userId);
-    //     setCurrentPlanId(subscriptionData.subscriptionPlan.id);
+      const fetchBodyAreas = async () => {
+        try {
+          setIsBodyAreasLoading(true);
+          const bodyAreasResponse = await fetch(`${apiUrl}/exercise/body-area`);
+          if (!bodyAreasResponse.ok) {
+            const errorData = await bodyAreasResponse.json();
+            throw new Error(errorData.message || 'Something went wrong');
+          }
+          const bodyAreasData = await bodyAreasResponse.json();
+          const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
+          setBodyAreas(formattedBodyAreas);
+        } catch (error) {
+          showToast('error', 'Error', error.message);
+        } finally {
+          setIsBodyAreasLoading(false);
+        }
+      };
 
-    //     const workoutData = await fetchCoachWorkouts(user.userId);
-    //     const mappedWorkouts = workoutData.map((workout) => {
-    //       const instance = workout.workoutInstances.find((instance) => instance.isTemplate);
-    //       return {
-    //         ...workout,
-    //         workoutInstance: instance,
-    //       };
-    //     });
-    //     setWorkouts(mappedWorkouts);
+      const fetchSubscriptionPlans = async () => {
+        try {
+          setIsSubscriptionPlansLoading(true);
+          const subscriptionPlansData = await fetchCoachSubscriptionPlans();
+          setSubscriptionPlans(subscriptionPlansData);
+        } catch (error) {
+          showToast('error', 'Error', error.message);
+        } finally {
+          setIsSubscriptionPlansLoading(false);
+        }
+      };
 
-    //     const data = await fetchCoach(user.userId);
-    //     setCoachInfo(data);
+      const fetchClients = async () => {
+        try {
+          const clientsData = await fetchCoachStudents(user.userId);
+          const activeClients = clientsData.filter(client => client.user.subscription.status === 'Active');
+          setUsers(activeClients);
+        } catch (error) {
+          console.error('Error fetching clients:', error);
+        } finally {
+        }
+      };
+  
+      const fetchTrainingPlans = async () => {
+        try {
+          const trainingPlansData = await fetchTrainingCyclesByCoachId(user.userId);
+          console.log(trainingPlansData);
+          setTrainingCycles(trainingPlansData);
+        } catch (error) {
+          console.error('Error fetching training plans:', error);
+        }
+      };
+      
 
-    //     const coachPlansData = await fetchCoachPlans(user.userId);
-    //     setCoachPlans(coachPlansData);
-
-    //     const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${user.userId}`);
-    //     if (!exercisesResponse.ok) {
-    //       const errorData = await exercisesResponse.json();
-    //       throw new Error(errorData.message || 'Something went wrong');
-    //     }
-    //     const exercisesData = await exercisesResponse.json();
-    //     setExercises(exercisesData);
-
-    //     const bodyAreasResponse = await fetch(`${apiUrl}/exercise/body-area`);
-    //     if (!bodyAreasResponse.ok) {
-    //       const errorData = await bodyAreasResponse.json();
-    //       throw new Error(errorData.message || 'Something went wrong');
-    //     }
-    //     const bodyAreasData = await bodyAreasResponse.json();
-    //     const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
-    //     setBodyAreas(formattedBodyAreas);
-
-    //     const subscriptionPlansData = await fetchCoachSubscriptionPlans();
-    //     setSubscriptionPlans(subscriptionPlansData);
-    //   } catch (error) {
-    //     if (error.message === 'Coach not found') {
-    //       navigate('/complete-coach-profile');
-    //     }
-    //     showToast('error', 'Error', error.message);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
-    // fetchData();
-  }, [user.userId, showToast, navigate, refreshKey]);
+      fetchWorkouts();
+      fetchCoachInfo();
+      fetchCoachSubscriptionData();
+      fetchCoachPlansData();
+      fetchExercises();
+      fetchBodyAreas();
+      fetchSubscriptionPlans();
+      fetchRpeMethods(); 
+      fetchClients();
+      fetchTrainingPlans(); 
+    }, [user.userId, showToast, navigate, refreshKey]);
 
   const handleViewPlanDetails = (workoutInstanceId) => {
     setLoading(true);
@@ -280,6 +316,28 @@ export default function CoachProfilePage() {
   const hidePlanDetails = () => {
     setPlanDetailsVisible(false);
     setSelectedPlan(null);
+  };
+
+  // Handle save RPE method function
+  const handleSaveRpeMethod = async () => {
+    try {
+      setIsRpeLoading(true);
+      const response = await createOrUpdateRpeMethod(dialogMode, newRpe, user.userId);
+      if(response){
+        showToast('success', 'Success', dialogMode === 'create' ? 'New RPE Method created successfully' : 'RPE Method updated successfully');
+        setRpeDialogVisible(false);
+        setNewRpe({ name: '', minValue: 0, maxValue: 10, step: 1 });
+        fetchRpeMethods();
+      }
+      else {
+        showToast('error', 'Error', 'RPE Method not created or edited');
+      }
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    } finally {
+      setIsRpeLoading(false);
+    }
+
   };
 
   const renderHeader = (text) => {
@@ -583,6 +641,136 @@ export default function CoachProfilePage() {
             </Dialog>
     );
     };
+
+    const renderRpeMethodDialog = () => (
+      <Dialog
+        draggable={false}
+        resizable={false}
+        header={dialogMode === 'create' ? 'Create New RPE Method' : 'Edit RPE Method'}
+        className="responsive-dialog"
+        visible={rpeDialogVisible}
+        style={{ width: '50vw' }}
+        onHide={() => setRpeDialogVisible(false)}
+      >
+        <div className="p-fluid">
+          <div className="p-field">
+            <label htmlFor="name">RPE Method Name</label>
+            <InputText
+              id="name"
+              value={newRpe.name}
+              onChange={(e) => setNewRpe({ ...newRpe, name: e.target.value })}
+            />
+          </div>
+          <div className="p-field">
+            <label htmlFor="minValue">Min Value</label>
+            <InputNumber
+              id="minValue"
+              value={newRpe.minValue}
+              onChange={(e) => setNewRpe({ ...newRpe, minValue: e.value })}
+            />
+          </div>
+          <div className="p-field">
+            <label htmlFor="maxValue">Max Value</label>
+            <InputNumber
+              id="maxValue"
+              value={newRpe.maxValue}
+              onChange={(e) => setNewRpe({ ...newRpe, maxValue: e.value })}
+            />
+          </div>
+          <div className="p-field">
+            <label htmlFor="step">Step</label>
+            <InputNumber
+              id="step"
+              value={newRpe.step}
+              onChange={(e) => setNewRpe({ ...newRpe, step: e.value })}
+            />
+          </div>
+    
+          {/* Field to add valuesMeta */}
+          <div className="p-field">
+            <label>Values Meta</label>
+            {newRpe.valuesMeta && Array.isArray(newRpe.valuesMeta) && newRpe.valuesMeta.map((valueMeta, index) => (
+              <div key={index} className="p-grid p-align-center p-mb-2">
+                <div className="p-col-3">
+                  <InputNumber
+                    value={valueMeta.value}
+                    onChange={(e) =>
+                      setNewRpe({
+                        ...newRpe,
+                        valuesMeta: newRpe.valuesMeta.map((meta, i) =>
+                          i === index ? { ...meta, value: e.value } : meta
+                        ),
+                      })
+                    }
+                    placeholder="Value"
+                  />
+                </div>
+                <div className="p-col-3">
+                  <InputText
+                    value={valueMeta.color}
+                    onChange={(e) =>
+                      setNewRpe({
+                        ...newRpe,
+                        valuesMeta: newRpe.valuesMeta.map((meta, i) =>
+                          i === index ? { ...meta, color: e.target.value } : meta
+                        ),
+                      })
+                    }
+                    placeholder="Color (e.g., #FF0000)"
+                  />
+                </div>
+                <div className="p-col-3">
+                  <InputText
+                    value={valueMeta.emoji}
+                    onChange={(e) =>
+                      setNewRpe({
+                        ...newRpe,
+                        valuesMeta: newRpe.valuesMeta.map((meta, i) =>
+                          i === index ? { ...meta, emoji: e.target.value } : meta
+                        ),
+                      })
+                    }
+                    placeholder="Emoji (e.g., 🔥)"
+                  />
+                </div>
+                <div className="p-col-3">
+                  <Button
+                    icon="pi pi-trash"
+                    className="p-button-danger"
+                    onClick={() =>
+                      setNewRpe({
+                        ...newRpe,
+                        valuesMeta: newRpe.valuesMeta.filter((_, i) => i !== index),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+            {/* Button to add new value */}
+            <Button
+              label="Add Value"
+              icon="pi pi-plus"
+              onClick={() =>
+                setNewRpe({
+                  ...newRpe,
+                  valuesMeta: [...newRpe.valuesMeta, { value: 0, color: '', emoji: '' }],
+                })
+              }
+            />
+          </div>
+    
+          <div className="p-field">
+            <Button
+              label={dialogMode === 'create' ? 'Create RPE Method' : 'Update RPE Method'}
+              icon="pi pi-check"
+              onClick={handleSaveRpeMethod}
+              loading={isRpeLoading}
+            />
+          </div>
+        </div>
+      </Dialog>
+    );
   const handleCreatePlan = async () => {
     try {
       const data = await createOrUpdateCoachPlan(newPlan, newPlan.id, user.userId, dialogMode);
@@ -833,6 +1021,132 @@ export default function CoachProfilePage() {
     );
   };
 
+  const rpeActionsBodyTemplate = (rowData) => (
+    <React.Fragment>
+      <Button
+        icon="pi pi-pencil"
+        className="p-button-rounded p-button-warning p-button-text"
+        onClick={() => openEditRpeDialog(rowData)}
+      />
+      <Button
+        icon="pi pi-trash"
+        className="p-button-rounded p-button-danger p-button-text"
+        onClick={() =>
+          showConfirmationDialog({
+            message: 'Are you sure you want to delete this RPE Method?',
+            header: 'Confirmation',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => handleDeleteRpeMethod(rowData.id),
+            reject: () => console.log('Rejected'),
+          })
+        }
+      />
+    </React.Fragment>
+  );
+
+  const openEditRpeDialog = (rpeMethod) => {
+    setDialogMode('edit');
+    setNewRpe(rpeMethod);
+    setRpeDialogVisible(true);
+  };
+  
+  const handleDeleteRpeMethod = async (rpeId) => {
+    try {
+      setIsRpeLoading(true);
+      const response = await deleteRpe(rpeId, user.userId);
+      if(response){
+        showToast('success', 'Success', 'RPE Method deleted successfully');
+        fetchRpeMethods();
+      }
+      else {  
+        showToast('error', 'Error', 'RPE Method not deleted');
+      }
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    } finally {
+      setIsRpeLoading(false);
+    }
+  };
+
+  const handleAssign = async () => {
+    try {
+      const response = await assignRpeToTarget(selectedRpe, selectedType, selectedTarget, user.userId);
+      if (!response) {
+        showToast('error', 'Error', 'RPE Method not assigned');
+        return;
+      }
+      showToast('success', 'Success', `RPE Method assigned successfully to the selected ${selectedType}`);
+      setSelectedType(null);
+      setSelectedTarget(null);
+      setSelectedRpe(null);
+      setRpeAssignmentDialogVisible(false);
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    }
+  };
+
+  const renderRpeAssignmentDialog = () => (
+    <Dialog
+        draggable={false}
+        resizable={false}
+        header="Assign RPE Method"
+        className="responsive-dialog"
+        visible={rpeAssignmentDialogVisible}
+        style={{ width: '50vw' }}
+        onHide={() => setRpeAssignmentDialogVisible(false)}
+      >
+      <div className="assign-rpe p-4">
+        <h2 className="text-2xl mb-4">Assign RPE Method</h2>
+        <div className="p-grid p-fluid">
+          <div className="p-col-12 p-md-4">
+            <Dropdown
+              value={selectedType}
+              options={typeOptions}
+              onChange={(e) => setSelectedType(e.value)}
+              placeholder="Select Assignment Type"
+              className="w-full"
+            />
+          </div>
+          <div className="p-col-12 p-md-4">{selectedType && renderTargetDropdown()}</div>
+          <div className="p-col-12 p-md-4">
+            <Dropdown
+              value={selectedRpe}
+              options={rpeMethods.map((rpe) => ({
+                label: rpe.name,
+                value: rpe.id,
+              }))}
+              onChange={(e) => setSelectedRpe(e.value)}
+              placeholder="Select RPE Method"
+              className="w-full"
+            />
+          </div>
+        </div>
+    
+        <div className="p-d-flex p-jc-end mt-4">
+          <Button
+            label="Assign RPE Method"
+            icon="pi pi-check"
+            onClick={handleConfirmAssign}
+            disabled={!selectedType || !selectedTarget || !selectedRpe}
+          />
+        </div>
+      </div>
+    </Dialog>
+  );
+  
+  // Función para confirmar la asignación usando showConfirmationDialog
+  const handleConfirmAssign = () => {
+    showConfirmationDialog({
+      message: `Are you sure you want to assign ${rpeMethods.find((r) => r.id === selectedRpe)?.name} to the selected ${selectedType}?`,
+      header: 'Confirm Assignment',
+      icon: 'pi pi-exclamation-triangle',
+      accept: handleAssign,
+      reject: () => console.log('Assignment cancelled.'),
+    });
+  };
+
+
+
   return (
     <div className="coach-profile p-4">
       <Card className={isCoachInfoLoading ? 'flex justify-content-center' : 'mb-4'}>
@@ -968,6 +1282,20 @@ export default function CoachProfilePage() {
             ))}
           </div>
         </TabPanel>
+        <TabPanel header="RPE Methods">
+          <div className="flex justify-content-end mb-3">
+            <Button label="Add RPE Method" icon="pi pi-plus" onClick={() => setRpeDialogVisible(true)} />
+            <Button label="Assign RPE Method" icon="pi pi-plus" onClick={() => setRpeAssignmentDialogVisible(true)} />
+          </div>
+          <DataTable value={rpeMethods} className="mt-4" loading={isRpeLoading}>
+            <Column field="name" header="RPE Name" />
+            <Column field="minValue" header="Min Value" />
+            <Column field="maxValue" header="Max Value" />
+            <Column field="step" header="Step" />
+            <Column header="Actions" body={rpeActionsBodyTemplate} />
+          </DataTable>
+          
+        </TabPanel>
       </TabView>
 
       <Card className="mt-4">
@@ -1004,9 +1332,11 @@ export default function CoachProfilePage() {
           setLoading={setLoading}
         />
       </Dialog>
+      {renderRpeMethodDialog()}
       {renderExerciseModal()}
       {renderPlanModal()}
       {renderVideoModal()}
+      {renderRpeAssignmentDialog()}
     </div>
   );
 }

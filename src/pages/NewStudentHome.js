@@ -15,6 +15,7 @@ import listPlugin from '@fullcalendar/list';
 import { fetchTrainingCyclesForClientByUserId } from '../services/workoutService';
 import PlanDetails from '../dialogs/PlanDetails';
 import NewPlanDetail from '../dialogs/NewPlanDetails';
+import { getDayMonthYear } from '../utils/UtilFunctions';
 
 export default function NewStudentHome() {
   const { user, client } = useContext(UserContext);
@@ -61,7 +62,7 @@ export default function NewStudentHome() {
                   workoutInstance.status = updateStatus(workoutInstance, session);
                   return {
                     title: workoutInstance.workout.planName,
-                    start: session.sessionDate,
+                    start: getDayMonthYear(session).toISOString().split('T')[0],
                     extendedProps: {
                       status: workoutInstance.status,
                       workoutInstanceId: workoutInstance.id,
@@ -72,7 +73,7 @@ export default function NewStudentHome() {
               : [
                   {
                     title: 'no title',
-                    start: session.sessionDate,
+                    start: getDayMonthYear(session).toISOString().split('T')[0],
                     extendedProps: {
                       sessionId: session.id,
                     },

@@ -121,4 +121,13 @@ const validateStudentDetails = ({ name, email, fitnessGoal, activityLevel, birth
   return { isValid: true, message: '' };
 };
 
-export { formatDate, isValidYouTubeUrl, extractYouTubeVideoId, sortBySessionDate, updateStatus, getSeverity, validateDates, validateStudentDetails, getYouTubeThumbnail }
+const getDayMonthYear = (session) => {
+  const sessionDate = new Date(session.sessionDate);
+  const year = sessionDate.getFullYear();
+  const month = sessionDate.getMonth(); // 0-based
+  const day = sessionDate.getDate();
+
+  return new Date(year, month, day); // Esto crea una fecha sin hora
+};
+
+export { getDayMonthYear, formatDate, isValidYouTubeUrl, extractYouTubeVideoId, sortBySessionDate, updateStatus, getSeverity, validateDates, validateStudentDetails, getYouTubeThumbnail }
