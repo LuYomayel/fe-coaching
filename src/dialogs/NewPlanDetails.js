@@ -291,7 +291,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                 )}
             </Card>
 
-            <Accordion multiple>
+            <Accordion>
                 {workoutPlan.groups.map((group) => (
                     <AccordionTab key={group.groupNumber} header={`Group ${group.groupNumber}`}>
                         <p>Sets: {group.set}</p>

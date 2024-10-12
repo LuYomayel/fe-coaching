@@ -278,7 +278,7 @@ export default function ClientDashboard() {
 
   const renderWorkoutDetails = (rowData) => {
     return (
-      <Accordion multiple>
+      <Accordion>
         {rowData.groups.flatMap(group =>
           group.exercises.map(exercise => {
             const allProperties = ['repetitions', 'weight', 'rpe', 'time', 'distance', 'tempo', 'notes', 'difficulty', 'duration', 'restInterval'];

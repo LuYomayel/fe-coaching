@@ -222,7 +222,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
       </Card>
 
       <div className="mobile-view md:hidden">
-        <Accordion multiple>
+        <Accordion>
           {plan.groups.map((group, groupIndex) => (
             <AccordionTab key={groupIndex} header={`Group ${group.groupNumber}`}>
               <p><strong>Set Count:</strong> {group.set}</p>
@@ -241,7 +241,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                       />
                     </div>
                     <div className="col-12">
-                      <Accordion multiple>
+                      <Accordion>
                         <AccordionTab header="Exercise Details">
                           {Object.keys(exercise).map(
                             (property, propertyIndex) =>

@@ -183,7 +183,7 @@ const ClientDashboard = () => {
 
   const renderSets = (rowData) => {
     return (
-      <Accordion multiple>
+      <Accordion>
         {rowData.groups.flatMap(group =>
           group.exercises.map(exercise => (
             <AccordionTab key={exercise.id} header={exercise.exercise.name}>
