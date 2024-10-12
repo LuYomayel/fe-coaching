@@ -26,6 +26,7 @@ import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId } from '../services/workoutService';
 import '../styles/ClientDashboard.css';
 import { formatDate } from '../utils/UtilFunctions';
+import WorkoutTable from '../components/WorkoutTable';
 
 export default function ClientDashboard() {
   const { clientId } = useParams();
@@ -57,6 +58,7 @@ export default function ClientDashboard() {
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(1);
   const [cycleOptions, setCycleOptions] = useState([]);
+  const [cycleDropdownOptions, setCycleDropdownOptions] = useState([]);
 
   // Fetch data when the component mounts or refreshKey changes
   useEffect(() => {
@@ -65,6 +67,8 @@ export default function ClientDashboard() {
       .then(({ events, cycleOptions }) => {
         setCycleOptions(cycleOptions);
         setCalendarEvents(events);
+        const options = cycleOptions.map((cycle) => ({ label: cycle.name, value: cycle.id }));
+        setCycleDropdownOptions(options);
       })
       .catch(error => showToast('error', 'Error fetching training cycles', error.message))
       .finally(() => setLoading(false));
@@ -378,7 +382,8 @@ export default function ClientDashboard() {
             cycleId={selectedCycleId}
             clientId={selectedClient}
             setRefreshKey={setRefreshKey}
-            cycleOptions={cycleOptions}
+            // cycleOptions={cycleOptions}
+            cycleOptions={cycleDropdownOptions}
             actionType={actionType}
           />
           <AssignWorkoutToSessionDialog
@@ -418,6 +423,10 @@ export default function ClientDashboard() {
               }} />}
             </div>
           </div>
+        </TabPanel>
+
+        <TabPanel header="Client workouts">
+          <WorkoutTable trainingWeeks={cycleOptions[2]?.trainingWeeks} cycleOptions={cycleDropdownOptions}/>
         </TabPanel>
       </TabView>
 

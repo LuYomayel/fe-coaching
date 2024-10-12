@@ -8,10 +8,11 @@ import { Column } from 'primereact/column';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { InputNumber } from 'primereact/inputnumber';
 import { Checkbox } from 'primereact/checkbox';
+import { Divider } from 'primereact/divider';
 import { Toast } from 'primereact/toast';
 import { fetchWorkoutInstance, deleteWorkoutPlan } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
-import { getYouTubeThumbnail, extractYouTubeVideoId } from '../utils/UtilFunctions';
+import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
@@ -41,6 +42,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                 setLoading(true);
                 const planDetails = await fetchWorkoutInstance(planId);
                 setWorkoutPlan(planDetails);
+                console.log(planDetails);
             } catch (error) {
                 showToast('error', 'Error fetching plan details', error.message);
             } finally {
@@ -150,6 +152,92 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
         </div>
     );
 
+    const renderExerciseDetailsWithFeedback = (exercise, groupId) => (
+        <div className="flex flex-column md:flex-row align-items-center mb-3" key={exercise.id}>
+            {/* Detalles del ejercicio */}
+            <div className="w-full md:w-4 mb-2 md:mb-0">
+                <div className="mr-2 flex-shrink-0">
+                    <a
+                        href="#/"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handleVideoClick(exercise.exercise.multimedia);
+                        }}
+                    >
+                        <img
+                            src={getYouTubeThumbnail(exercise.exercise.multimedia)}
+                            alt={`${exercise.exercise.name} video thumbnail`}
+                            className="border-round"
+                            style={{ width: '120px', height: '68px', objectFit: 'cover', cursor: 'pointer' }}
+                        />
+                    </a>
+                </div>
+                <strong>{exercise.exercise.name}</strong>
+            </div>
+            <div className="w-full md:w-8">
+                <div className="grid">
+                    {exercise.repetitions && (
+                        <div className="col-6 md:col-3">Reps: {exercise.repetitions}</div>
+                    )}
+                    {exercise.weight && (
+                        <div className="col-6 md:col-3">Peso: {exercise.weight}</div>
+                    )}
+                    {exercise.time && (
+                        <div className="col-6 md:col-3">Tiempo: {exercise.time}</div>
+                    )}
+                    {exercise.tempo && (
+                        <div className="col-6 md:col-3">Tempo: {exercise.tempo}</div>
+                    )}
+                    {exercise.restInterval && (
+                        <div className="col-6 md:col-3">
+                            Descanso: {exercise.restInterval}
+                        </div>
+                    )}
+                    {exercise.difficulty && (
+                        <div className="col-6 md:col-3">Dificultad: {exercise.difficulty}</div>
+                    )}
+                    {exercise.notes && (
+                        <div className="col-6 md:col-3">Notas: {exercise.notes}</div>
+                    )}
+                    {exercise.distance && (
+                        <div className="col-6 md:col-3">Distancia: {exercise.distance}</div>
+                    )}
+                    {exercise.duration && (
+                        <div className="col-6 md:col-3">Duración: {exercise.duration}</div>
+                    )}
+                    {exercise.sets && (
+                        <div className="col-6 md:col-3">Sets: {exercise.sets}</div>
+                    )}
+                </div>
+            </div>
+            {/* Separador */}
+            {/* <div className="col-12">
+                <Divider />
+            </div> */}
+            {/* Datos de feedback */}
+            <div className="w-full md:w-12">
+                <div className="grid">
+                    {exercise.completed !== undefined && (
+                        <div className="col-6 md:col-3">
+                            Completado: {exercise.completed ? 'Sí' : 'No'}
+                        </div>
+                    )}
+                    {exercise.completedNotAsPlanned && (
+                        <div className="col-6 md:col-3">
+                            No completado como planeado: {exercise.completedNotAsPlanned}
+                        </div>
+                    )}
+                    {exercise.rpe && (
+                        <div className="col-6 md:col-3">RPE: {exercise.rpe}</div>
+                    )}
+                    {exercise.comments && (
+                        <div className="col-6 md:col-3">Comentarios: {exercise.comments}</div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="workout-plan-detail p-4">
             <Toast ref={toast} />
@@ -157,18 +245,22 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                 <div className="flex justify-content-between">
                     {user.userType === 'coach' && (
                         <div className="flex gap-2">
-                            <Button
-                                label="Edit"
-                                icon="pi pi-pencil"
-                                className="p-button-secondary"
-                                onClick={handleEdit}
-                            />
-                            <Button
-                                label="Delete"
-                                icon="pi pi-trash"
-                                className="p-button-danger"
-                                onClick={handleDelete}
-                            />
+                           {workoutPlan.status === 'pending' && (
+                                <Button
+                                    label="Edit"
+                                    icon="pi pi-pencil"
+                                    className="p-button-primary"
+                                    onClick={handleEdit}
+                                />
+                            )}
+                            {workoutPlan.status === 'pending' && (
+                                <Button
+                                    label="Delete"
+                                    icon="pi pi-trash"
+                                    className="p-button-danger"
+                                    onClick={handleDelete}
+                                />
+                            )}
                         </div>
                     )}
                     {user.userType === 'client' && workoutPlan.status === 'pending' && (
@@ -183,6 +275,18 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                 {!workoutPlan.isTemplate && (
                     <p>
                         <strong>Status:</strong> {workoutPlan.status}
+                        {workoutPlan.status === 'completed' && (
+                            <>
+                                <p className="">Completed on: {formatDate(workoutPlan.realEndDate)}</p>
+                                <p className="">Session time: {workoutPlan.sessionTime}</p>
+                                <p className="">Feedback: {workoutPlan.generalFeedback}</p>
+                                <p className="">Mood: {workoutPlan.mood ? `${workoutPlan.mood}/10` : '-'}</p>
+                                <p className="">Energy level: {workoutPlan.energyLevel ? `${workoutPlan.energyLevel}/10` : '-'}</p>
+                                <p className="">Difficulty: {workoutPlan.perceivedDifficulty ? `${workoutPlan.perceivedDifficulty}/10` : '-'}</p>
+                                <p className="">Extra notes: {workoutPlan.feedback}</p>
+                            </>
+                        )}
+
                     </p>
                 )}
             </Card>
@@ -193,7 +297,9 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                         <p>Sets: {group.set}</p>
                         <p>Rest between sets: {group.rest} sec</p>
                         {group.exercises.map((exercise) =>
-                            renderExerciseDetails(exercise, group.groupNumber)
+                            workoutPlan.status === 'completed'
+                                ? renderExerciseDetailsWithFeedback(exercise, group.groupNumber)
+                                : renderExerciseDetails(exercise, group.groupNumber)
                         )}
                     </AccordionTab>
                 ))}
