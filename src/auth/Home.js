@@ -14,6 +14,7 @@ import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import {jwtDecode} from 'jwt-decode';
 import { fetchClient, fetchCoach } from '../services/usersService';
+import { fetchCoachSubscriptionPlans } from '../services/subscriptionService';
 
 // Ensure you have these imports in your main application file:
 // import 'primereact/resources/themes/lara-light-indigo/theme.css';
@@ -29,7 +30,7 @@ export default function HomePage() {
     const [signUpForm, setSignUpForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
     const [loginErrors, setLoginErrors] = useState({ email: '', password: '' });
     const [signUpErrors, setSignUpErrors] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
-
+    const [subscriptionPlans, setSubscriptionPlans] = useState([]);
     const { setLoading, loading } = useSpinner();
     const { setUser, setClient, setCoach } = useContext(UserContext);
     const showToast = useToast();
@@ -57,6 +58,20 @@ export default function HomePage() {
         }
     }, [navigate, setUser]);
 
+    useEffect(() => {
+        const fetchSubscriptionPlans = async () => {
+            try {
+                const subscriptionPlansData = await fetchCoachSubscriptionPlans();
+                setSubscriptionPlans(subscriptionPlansData);
+            } catch (error) {
+                showToast('error', 'Error', error.message);
+            } finally {
+                
+            }
+        };    
+        fetchSubscriptionPlans();
+    }
+    , []);
     const validateLoginForm = () => {
         let isValid = true;
         const errors = { email: '', password: '' };
@@ -191,6 +206,7 @@ export default function HomePage() {
                     <Button label="Pricing" className="p-button-text mr-2" onClick={() => scrollToSection(pricingRef)} />
                     <Button label="About" className="p-button-text mr-2" onClick={() => scrollToSection(aboutRef)} />
                     <Button label="Contact" className="p-button-text" onClick={() => scrollToSection(contactRef)} />
+                    <Button label="Login" className="p-button-text mr-2" onClick={() => setLoginVisible(true)} />
                 </div>
             </div>
         );
@@ -198,15 +214,53 @@ export default function HomePage() {
 
     const renderHero = () => {
         return (
-            <div className="flex align-items-center justify-content-center min-h-screen text-center" style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--surface-ground) 100%)' }}>
-                <div className="p-4">
-                    <h1 className="text-5xl font-bold mb-4">Welcome to EaseTrain</h1>
-                    <p className="text-xl mb-6 max-w-30rem mx-auto">
-                        EaseTrain helps personal trainers manage clients, customize training plans, track progress, and communicate effectively.
-                    </p>
-                    <div>
-                        <Button label="Sign Up" className="p-button-raised p-button-rounded mr-2" onClick={() => setSignUpVisible(true)} />
-                        <Button label="Log In" className="p-button-outlined p-button-rounded" onClick={() => setLoginVisible(true)} />
+            <div className="relative overflow-hidden" style={{ background: 'linear-gradient(to right, #7e5bef, #5a9bd4)' }}>
+                <div className="absolute inset-0">
+                    <svg
+                        className="absolute" style={{ bottom: 0, left: 0, marginBottom: '2rem', transform: 'scale(1.5)', opacity: 0.1 }}
+                        viewBox="0 0 375 283"
+                        fill="none"
+                    >
+                        <rect x="159.52" y="175" width="152" height="152" rx="8" transform="rotate(-45 159.52 175)" fill="white" />
+                        <rect y="107.48" width="152" height="152" rx="8" transform="rotate(-45 0 107.48)" fill="white" />
+                    </svg>
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, #7e5bef, #3ea1db)', opacity: 0.9 }} />
+                </div>
+                <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32" style={{ maxWidth: '1200px' }}>
+                    <div className="grid align-items-center justify-content-between">
+                        <div className="col-12 md:col-6 text-center md:text-left mb-6 md:mb-0">
+                            <h1 style={{ fontSize: '3.5rem', fontWeight: '800', lineHeight: '1.2', marginBottom: '1.5rem', color: 'white' }}>
+                                Transform Your Fitness Journey with EaseTrain
+                            </h1>
+                            <p className="text-white" style={{ fontSize: '1.5rem', marginBottom: '2rem', color: '#E0BBE4' }}>
+                                Empower trainers, motivate clients, and achieve fitness goals together.
+                            </p>
+                            <div className="grid justify-content-center md:justify-content-start mb-4">
+                                <div className="col-fixed mb-2 mr-2">
+                                <Button onClick={() => setSignUpVisible(true)} label="Get Started" className="p-button-lg p-button-raised p-button-rounded" style={{ color: '#7e5bef', backgroundColor: '#fff', borderColor: '#fff', padding: '1rem 2rem' }} />
+                                </div>
+                                <div className="col-fixed">
+                                <Button label="Learn More" className="p-button-lg p-button-rounded p-button-outlined" style={{ color: '#fff', borderColor: '#fff', padding: '1rem 2rem' }} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-12 md:col-6">
+                            <div className="relative">
+                                {/* <div className="absolute" style={{ inset: 0, backgroundColor: '#dcd6f7', borderRadius: '50%', opacity: 0.5, filter: 'blur(20px)' }} /> */}
+                                {/* <div className="relative bg-white p-8 border-round shadow-2xl"> */}
+                                <div style={{ backgroundColor: '#fff', borderRadius: '1rem', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', padding: '2rem' }}>
+                                    <div className="flex align-items-center justify-content-center w-4rem h-4rem bg-purple-600 border-circle mb-4">
+                                        <Dumbbell style={{ width: '32px', height: '32px', color: '#fff' }} />
+                                    </div>
+                                    <h3 style={{ fontSize: '2rem', color: '#333', marginBottom: '1rem' }}>
+                                        Personalized Training
+                                    </h3>
+                                    <p style={{ color: '#666' }}>
+                                        Create personalized training plans, track progress, and communicate seamlessly with your clients.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -241,6 +295,33 @@ export default function HomePage() {
                     </div>
                 </div>
             </div>
+        );
+    };
+
+    const renderPricing = () => {
+        return (
+            <div ref={pricingRef}>
+                <h2 className="text-4xl font-bold text-center mb-8">Pricing Plans</h2>
+                <div  className="grid">
+                    {subscriptionPlans.map((plan) => (
+                    <div key={plan.id} className="col-12 md:col-3 lg:col-3">
+                        <Card
+                        title={plan.name}
+                        subTitle={`$${plan.price.toFixed(2)} / month`}
+                        className={classNames('h-full h-20rem relative')}
+                        style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.15)'}}
+                        >
+                        <ul className="list-none p-0 m-0">
+                            <li className="flex align-items-center mb-2">
+                            <i className="pi pi-check-circle mr-2 text-green-500"></i>
+                            <span>Max Clients: {plan.max_clients}</span>
+                            </li>
+                        </ul>
+                        </Card>
+                    </div>
+                    ))}
+            </div>
+          </div>
         );
     };
 
@@ -341,6 +422,7 @@ export default function HomePage() {
             <main className="flex-grow-1">
                 {renderHero()}
                 {renderFeatures()}
+                {renderPricing()}
                 {renderTestimonials()}
             </main>
             <footer>
