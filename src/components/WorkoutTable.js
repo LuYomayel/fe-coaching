@@ -20,7 +20,7 @@ const daysOfWeek = [
     { label: 'Sunday', value: 7 },
 ];
 
-export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
+export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKey }) {
     const [cycle, setCycle] = useState(null);
     const [dayOfWeek, setDayOfWeek] = useState(null);
     const [exercises, setExercises] = useState([]);
@@ -38,8 +38,8 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
             const numWeeks = trainingWeeks.length;
             const exercises = [];
             const propertiesSet = new Set();
-
-            trainingWeeks.forEach((week, weekIndex) => {
+            const selectedCycle = trainingWeeks.find(c => c.id === cycle).trainingWeeks;
+            selectedCycle.forEach((week, weekIndex) => {
                 week.trainingSessions.forEach(session => {
                     session.workoutInstances.forEach(instance => {
                         const nombre = instance.workout.planName;
@@ -179,7 +179,7 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
         // Por ejemplo:
         console.log(changes);
         try {
-            setIsEditing(true);
+            setIsLoading(true);
             const response = await updateExercisesInstace(changes);
             console.log(response);
             // Manejar la respuesta si es necesario
@@ -188,7 +188,8 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
             showToast('error', 'Error', 'Error al guardar los cambios');
             
         } finally {
-            setIsEditing(false);
+            setIsLoading(false);
+            setRefreshKey((prevKey) => prevKey + 1);
         }
     };
 

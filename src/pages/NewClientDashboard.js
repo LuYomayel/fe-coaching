@@ -426,7 +426,7 @@ export default function ClientDashboard() {
         </TabPanel>
 
         <TabPanel header="Client workouts">
-          <WorkoutTable trainingWeeks={cycleOptions[2]?.trainingWeeks} cycleOptions={cycleDropdownOptions}/>
+          <WorkoutTable trainingWeeks={cycleOptions} cycleOptions={cycleDropdownOptions} setRefreshKey={setRefreshKey}/>
         </TabPanel>
       </TabView>
 

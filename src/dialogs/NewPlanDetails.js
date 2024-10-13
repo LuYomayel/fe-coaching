@@ -228,7 +228,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                         </div>
                     )}
                     {exercise.rpe && (
-                        <div className="col-6 md:col-3">RPE: {exercise.rpe}</div>
+                        <div className="col-6 md:col-3">{workoutPlan.assignedRpe}: {exercise.rpe}</div>
                     )}
                     {exercise.comments && (
                         <div className="col-6 md:col-3">Comentarios: {exercise.comments}</div>
