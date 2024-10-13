@@ -163,6 +163,45 @@ const updateStatusLocal = (workout, session) => {
     }
 }
 
+const updateExercisesInstace = async (exercises) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/updateExercises`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(exercises),
+    });
+
+    console.log('Response status:', response.status);
+    const textResponse = await response.text();
+    console.log('Response body:', textResponse);
+    
+    if (!response.ok) {
+      let errorMessage = 'Something went wrong';
+      try {
+        const errorData = JSON.parse(textResponse);
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        // El cuerpo de la respuesta no es un JSON válido
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Intentar parsear la respuesta como JSON
+    let data = {};
+    try {
+      data = JSON.parse(textResponse);
+    } catch (e) {
+      // Si el cuerpo está vacío, data permanecerá como un objeto vacío
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+
 const submitPlan = async (plan, planId, isEdit) => {
     
     const requestMethod = isEdit ? 'PUT' : 'POST';
@@ -443,6 +482,7 @@ export {
     fetchTrainingCyclesForClientByUserId,
     fetchWorkoutsByClientId,
     createTrainingCycle,
+    updateExercisesInstace,
     submitPlan,
     submitFeedback,
     assignWorkout, 

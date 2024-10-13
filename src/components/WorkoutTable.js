@@ -5,6 +5,10 @@ import { Card } from 'primereact/card';
 import { ColumnGroup } from 'primereact/columngroup';
 import { Row } from 'primereact/row';
 import { Dropdown } from 'primereact/dropdown';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { updateExercisesInstace } from '../services/workoutService';
+import { useToast } from '../utils/ToastContext';
 
 const daysOfWeek = [
     { label: 'Monday', value: 1 },
@@ -20,10 +24,14 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
     const [cycle, setCycle] = useState(null);
     const [dayOfWeek, setDayOfWeek] = useState(null);
     const [exercises, setExercises] = useState([]);
+    const [originalExercises, setOriginalExercises] = useState([]); // Nuevo estado para el original
     const [numWeeks, setNumWeeks] = useState(0);
     const [properties, setProperties] = useState([]);
     const [planName, setPlanName] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const showToast = useToast();
     const possibleProperties = ["sets", "reps", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance"];
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (cycle && dayOfWeek) {
@@ -39,9 +47,11 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
                         instance.groups.forEach(group => {
                             group.exercises.forEach(exerciseData => {
                                 const exerciseName = exerciseData.exercise?.name || 'Unnamed Exercise';
+                                const exerciseId = exerciseData.id;
                                 const existingExercise = exercises.find(e => e.name === exerciseName);
 
                                 if (existingExercise) {
+                                    existingExercise.id[weekIndex] = exerciseId;
                                     possibleProperties.forEach(prop => {
                                         const value = exerciseData[prop] || group[prop] || '-';
                                         if (value !== '-') {
@@ -55,7 +65,9 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
                                     }
                                     const exerciseObj = {
                                         name: exerciseName,
+                                        id: Array(numWeeks).fill(null),
                                     };
+                                    exerciseObj.id[weekIndex] = exerciseId;
                                     possibleProperties.forEach(prop => {
                                         exerciseObj[prop] = Array(numWeeks).fill('-');
                                     });
@@ -75,6 +87,7 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
             });
 
             setExercises(exercises);
+            setOriginalExercises(JSON.parse(JSON.stringify(exercises))); // Copia profunda
             setNumWeeks(numWeeks);
             setProperties(Array.from(propertiesSet));
         }
@@ -94,10 +107,88 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
     };
 
     const renderProperty = (rowData, property, weekIndex) => {
-        if (rowData[property] && rowData[property][weekIndex]) {
-            return rowData[property][weekIndex];
-        } else {
-            return '-';
+        return rowData[property][weekIndex] || '-';
+    };
+
+    const cellEditor = (options, property, weekIndex) => {
+        if (!isEditing) {
+            return options.value;
+        }
+
+        return (
+            <InputText
+                type="text"
+                value={options.rowData[property][weekIndex]}
+                onChange={(e) => onEditorValueChange(options, e.target.value, property, weekIndex)}
+            />
+        );
+    };
+
+    const onEditorValueChange = (options, value, property, weekIndex) => {
+        let updatedExercises = [...exercises];
+        updatedExercises[options.rowIndex][property][weekIndex] = value;
+        setExercises(updatedExercises);
+    };
+
+    const handleEditSave = async () => {
+        if (isEditing) {
+            const changes = [];
+
+            exercises.forEach((exercise, exerciseIndex) => {
+                for (let weekIndex = 0; weekIndex < numWeeks; weekIndex++) {
+                    const exerciseInstanceId = exercise.id[weekIndex];
+                    if (exerciseInstanceId) {
+                        const updatedProperties = {};
+                        let hasChanges = false;
+
+                        properties.forEach((property) => {
+                            const originalValue = originalExercises[exerciseIndex][property][weekIndex];
+                            const currentValue = exercise[property][weekIndex];
+
+                            if (originalValue !== currentValue) {
+                                updatedProperties[property] = currentValue;
+                                hasChanges = true;
+                            }
+                        });
+
+                        if (hasChanges) {
+                            changes.push({
+                                id: exerciseInstanceId,
+                                ...updatedProperties,
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Enviar `changes` al backend
+            try {
+                await saveExercisesToBackend(changes);
+                setOriginalExercises(JSON.parse(JSON.stringify(exercises))); // Actualizar el original
+                // Mostrar mensaje de éxito si lo deseas
+            } catch (error) {
+                // Manejar errores
+                console.error(error);
+            }
+        }
+        setIsEditing(!isEditing);
+    };
+
+    const saveExercisesToBackend = async (changes) => {
+        // Implementa la lógica para enviar los datos al backend.
+        // Por ejemplo:
+        console.log(changes);
+        try {
+            setIsEditing(true);
+            const response = await updateExercisesInstace(changes);
+            console.log(response);
+            // Manejar la respuesta si es necesario
+        } catch (error) {
+            console.error(error);
+            showToast('error', 'Error', 'Error al guardar los cambios');
+            
+        } finally {
+            setIsEditing(false);
         }
     };
 
@@ -129,13 +220,41 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
     for (let i = 0; i < numWeeks; i++) {
         properties.forEach(property => {
             dataColumns.push(
-                <Column body={(rowData) => renderProperty(rowData, property, i)} key={`${property}-col-${i}`} />
+                <Column
+                    key={`${property}-col-${i}`}
+                    field={`${property}.${i}`}
+                    header={propertyLabels[property] || property}
+                    body={(rowData) => renderProperty(rowData, property, i)}
+                    editor={(options) => cellEditor(options, property, i)}
+                    editorOptions={{ disabled: !isEditing }}
+                />
             );
         });
     }
 
+    const renderCardTitle = () => {
+        if (cycle && dayOfWeek) {
+            return (
+                <div className='flex flex-colum justify-content-between'>
+                    <div>
+                        {`Day ${dayOfWeek} - ${planName}`}
+                    </div>
+                    <div>
+                        <Button
+                            label={isEditing ? "Guardar" : "Editar"}
+                            icon={isEditing ? "pi pi-save" : "pi pi-pencil"}
+                            onClick={handleEditSave}
+                            loading={isLoading}
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        return 'Select a cycle and day of the week';
+    }
     return (
-        <Card title={`Day ${dayOfWeek} - ${planName}`}>
+        <Card title={renderCardTitle}>
             <div className='grid'>
                 <div className="col-6">
                     <div className="p-field">
@@ -160,9 +279,15 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions }) {
                     </div>
                 </div>
             </div>
-            <DataTable value={exercises} headerColumnGroup={headerGroup} responsiveLayout="scroll" scrollable 
-    scrollHeight="700px" // Define el tamaño del área de visualización
-     >
+            <DataTable
+                value={exercises}
+                headerColumnGroup={headerGroup}
+                responsiveLayout="scroll"
+                scrollable
+                scrollHeight="700px"
+                editMode="cell"
+                loading={isLoading}
+            >
                 <Column field="name" header="Ejercicio" />
                 {dataColumns}
             </DataTable>
