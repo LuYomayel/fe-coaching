@@ -49,8 +49,11 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
     // Recibir nuevos mensajes
     newSocket.on('receiveMessage', (message) => {
       if (selectedChat && message.sender.id === selectedChat.user.id) {
-        setMessages((prevMessages) => [...prevMessages, message]);
+        console.log('hOLA')
+        setMessages((prevMessages) => [message, ...prevMessages]);
+        
       }else{
+        console.log('recerived MEssage')
         setUnreadMessages((prevCount) => prevCount + 1);
       }
     });
@@ -79,9 +82,14 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
 
     const fetchMessagesFunc = async (userId, clientId) => {
         try {
+            console.log("a ver aca 2: ", userId, clientId)
             const messages = await fetchMessages(userId, clientId);
-            const sortedMessages = messages.sort((a, b) =>  new Date(b.timestamp) - new Date(a.timestamp))
-            return sortedMessages
+            console.log('Y esto? ', messages)
+            if(messages.length > 0 ){
+              const sortedMessages = messages.sort((a, b) =>  new Date(b.timestamp) - new Date(a.timestamp))
+              return sortedMessages
+            }
+            return messages
         } catch (error) {
             console.error('Error fetching messages:', error);
             throw error;
@@ -93,18 +101,22 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
         const fetch = async () => {
           
             if (selectedChat) {
+              console.log('A ver aca: ', user.userId, selectedChat.user.id)
                 const messages = await fetchMessagesFunc(user.userId, selectedChat.user.id);
                 setMessages(messages);
-                console.log('Messages:', selectedChat.user.id, user.userId);
+                if(messages.length > 0 ){
+                  const countNotReadMessages = messages.filter(message => !message.isRead)
+                  setUnreadMessages(prev => prev - countNotReadMessages.length)
+                }
                 await markMessagesAsRead(selectedChat.user.id, user.userId);
             }
         };
-        fetch();
-    }, [selectedChat]);
+        if(selectedChat && user) fetch();
+    }, [selectedChat, user]);
 
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
     const handleSelectChat = async (clientSelected) => {

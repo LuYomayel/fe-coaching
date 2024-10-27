@@ -79,7 +79,8 @@ const fetchCoachStudents = async (userId) => {
 
 const fetchMessages = async (coachId, clientId, page=1) => {
     try {
-      const response = await fetch(`${apiUrl}/messages/${coachId}/${clientId}?page=${page}&limit=20`);
+      const response = await fetch(`${apiUrl}/messages/${coachId}/${clientId}?page=${page}&limit=100`);
+      console.log('Response: ',response)
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Something went wrong.');

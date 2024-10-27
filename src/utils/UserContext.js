@@ -20,7 +20,15 @@ export const UserProvider = ({ children }) => {
         if (token) {
         const decodedUser = jwtDecode(token);
         setUser(decodedUser);
-
+        const isTokenExpired = decodedUser.exp * 1000 < Date.now();
+        if(isTokenExpired){
+          localStorage.removeItem('token')
+          setUser(null);
+          setCoach(null);
+          setClient(null);
+          return
+        }
+          
         const {valid} = await fetchUserData(decodedUser.userId)
         if(valid){
           
