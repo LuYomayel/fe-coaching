@@ -93,6 +93,35 @@ const fetchMessages = async (coachId, clientId, page=1) => {
     }
 }
 
+const markMessagesAsRead = async (senderId, receiverId) => {
+  const body = {
+    senderId,
+    receiverId
+  }
+  console.log("Body: ", body)
+  try {
+    const response = await fetch(`${apiUrl}/messages/mark-as-read/conversation/${senderId}/${receiverId}` , {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // 'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      console.log('ResponseL: ', response)
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Something went wrong.');
+    }
+    const data = await response.json();
+    // console.log('Messages:', data); 
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw error;  // Rethrow to handle it in the UI component
+  }
+}
+
 const fetchClientActivities = async (studentId) => {
   console.log(studentId)
     const response = await fetch(`${apiUrl}/users/clientId/activities/${studentId}`, {
@@ -178,6 +207,16 @@ const fetchLastMessages = async (coachId) => {
       throw new Error(errorMessage);
     }
     return response.json(); // Directly returning parsed JSON data
+};
+
+const fetchUnreadMessages = async (userId) => {
+  const response = await fetch(`${apiUrl}/messages/get-unread-messages/${userId}`);
+  if (!response.ok) {
+    const errorData = await response.json();
+    const errorMessage = errorData.message || 'Something went wrong';
+    throw new Error(errorMessage);
+  }
+  return response.json(); // Directly returning parsed JSON data
 };
 
 const saveStudent = async (body) => {
@@ -279,4 +318,6 @@ export {
     updateCoach,
     updatePersonalInfo,
     deleteClient,
+    markMessagesAsRead,
+    fetchUnreadMessages
 }

@@ -9,7 +9,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Message } from 'primereact/message';
 import { UserContext } from '../utils/UserContext';
 import io from 'socket.io-client';
-import { fetchMessages, fetchCoachStudents } from '../services/usersService'; // Actualiza la función si es necesario
+import { fetchMessages, fetchCoachStudents, markMessagesAsRead } from '../services/usersService'; // Actualiza la función si es necesario
 import { Dialog } from 'primereact/dialog';
 import ReactPlayer from 'react-player';
 import { useChatSidebar } from '../utils/ChatSideBarContext';
@@ -34,7 +34,7 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
   const [dialogContent, setDialogContent] = useState(null);
 
   const { user, coach, client } = useContext(UserContext); // Contexto para obtener la información del usuario
-
+  const { setUnreadMessages} = useChatSidebar()
   useEffect(() => {
     // Establecer conexión con el socket
     const newSocket = io(apiUrl, {
@@ -50,6 +50,8 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
     newSocket.on('receiveMessage', (message) => {
       if (selectedChat && message.sender.id === selectedChat.user.id) {
         setMessages((prevMessages) => [...prevMessages, message]);
+      }else{
+        setUnreadMessages((prevCount) => prevCount + 1);
       }
     });
 
@@ -93,8 +95,9 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
             if (selectedChat) {
                 const messages = await fetchMessagesFunc(user.userId, selectedChat.user.id);
                 setMessages(messages);
+                console.log('Messages:', selectedChat.user.id, user.userId);
+                await markMessagesAsRead(selectedChat.user.id, user.userId);
             }
-            // console.log('Messages:');
         };
         fetch();
     }, [selectedChat]);

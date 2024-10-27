@@ -41,50 +41,53 @@ import NewPlanDetail from './dialogs/NewPlanDetails.js';
 import BodyContainer from './utils/BodyContainer.js';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { NotificationProvider } from './utils/NotificationsContext.js';
 const stripePromise = loadStripe('pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq');
 const App = () => {
   return (
     <SpinnerProvider>
       <UserProvider>
         <ToastProvider>
-          <ChatSidebarProvider>
-            <ConfirmationDialogProvider>
-              <Elements stripe={stripePromise}>
-              <Router>
-                <Header/>
-                  <BodyContainer>
-                  <Routes>
-                    <Route path="/" element={< Home />} />
-                    <Route path="/login" element={< Home />} />
-                    <Route path="/unauthorized" element={<Unauthorized />} />
+          <NotificationProvider>
+            <ChatSidebarProvider>
+              <ConfirmationDialogProvider>
+                <Elements stripe={stripePromise}>
+                <Router>
+                  <Header/>
+                    <BodyContainer>
+                    <Routes>
+                      <Route path="/" element={< Home />} />
+                      <Route path="/login" element={< Home />} />
+                      <Route path="/unauthorized" element={<Unauthorized />} />
 
-                    <Route path="/coach" element={<PrivateRoute element={NewCoachHome} requiredType="coach"  />} />
-                    <Route path="/coach/profile" element={<PrivateRoute element={NewCoachProfile} requiredType="coach" />} />
-                    <Route path="/plans/create" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={false} />} />
-                    <Route path="/plans/edit/:planId" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />} />
-                    <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={NewPlanDetail} requiredType="coach" />} />
-                    <Route path="/students/:studentId/details" element={<PrivateRoute element={NewStudentDetails} requiredType="coach" />} />
-                    <Route path="/manage-students" element={<PrivateRoute element={NewManageStudentsPage} requiredType="coach" />} />
-                    <Route path="/client-dashboard/:clientId" element={<PrivateRoute element={NewClientDashboard} requiredType="coach" />} />
+                      <Route path="/coach" element={<PrivateRoute element={NewCoachHome} requiredType="coach"  />} />
+                      <Route path="/coach/profile" element={<PrivateRoute element={NewCoachProfile} requiredType="coach" />} />
+                      <Route path="/plans/create" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={false} />} />
+                      <Route path="/plans/edit/:planId" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />} />
+                      <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={NewPlanDetail} requiredType="coach" />} />
+                      <Route path="/students/:studentId/details" element={<PrivateRoute element={NewStudentDetails} requiredType="coach" />} />
+                      <Route path="/manage-students" element={<PrivateRoute element={NewManageStudentsPage} requiredType="coach" />} />
+                      <Route path="/client-dashboard/:clientId" element={<PrivateRoute element={NewClientDashboard} requiredType="coach" />} />
 
-                    <Route path="/student" element={<PrivateRoute element={NewStudentHome} requiredType="client" />} />
-                    <Route path="/student/profile" element={<PrivateRoute element={NewClientProfile} requiredType="client" />} />
-                    <Route path="/plans/start-session/:planId" element={<PrivateRoute element={NewTrainingPlanDetails} requiredType="client" />} />
+                      <Route path="/student" element={<PrivateRoute element={NewStudentHome} requiredType="client" />} />
+                      <Route path="/student/profile" element={<PrivateRoute element={NewClientProfile} requiredType="client" />} />
+                      <Route path="/plans/start-session/:planId" element={<PrivateRoute element={NewTrainingPlanDetails} requiredType="client" />} />
 
-                    <Route path="/verify-email"element={< VerifyEmail />} />
-                    {/* <Route path="/complete-coach-profile" element={<CoachProfileForm />} /> */}
-                    <Route path="/complete-coach-profile" element={<PrivateRoute element={CoachProfileForm} />}/>
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/not-subscribed" element={<NotSubscribed />} />
+                      <Route path="/verify-email"element={< VerifyEmail />} />
+                      {/* <Route path="/complete-coach-profile" element={<CoachProfileForm />} /> */}
+                      <Route path="/complete-coach-profile" element={<PrivateRoute element={CoachProfileForm} />}/>
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/not-subscribed" element={<NotSubscribed />} />
 
-                    <Route path="*" element={<Navigate to="/" />} />
-                  </Routes>
-                  </BodyContainer>
-              </Router>
-              </Elements>
-            </ConfirmationDialogProvider>
-          </ChatSidebarProvider>
+                      <Route path="*" element={<Navigate to="/" />} />
+                    </Routes>
+                    </BodyContainer>
+                </Router>
+                </Elements>
+              </ConfirmationDialogProvider>
+            </ChatSidebarProvider>
+            </NotificationProvider>
         </ToastProvider>
       </UserProvider>
     </SpinnerProvider>
