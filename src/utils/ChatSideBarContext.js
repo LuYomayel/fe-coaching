@@ -38,6 +38,7 @@ export const ChatSidebarProvider = ({ children }) => {
         console.log('Message: ', message.content, message)
         showToast('success', `New message from: ${message.sender.coach ? message.sender.coach.name : message.sender.client.name}`, message.content)
       }else if(!isChatSidebarOpen){
+        setUnreadMessages((prevCount) => prevCount + 1);
         showToast('success', `New message from: ${message.sender.coach ? message.sender.coach.name : message.sender.client.name}`, message.content)
       }
     });
