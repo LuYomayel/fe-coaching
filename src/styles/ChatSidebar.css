@@ -3,7 +3,7 @@
     flex-direction: column;
     padding: 10px;
     background-color: var(--highlight-bg);
-    /* height: calc(100vh - 6rem); */
+    /* height: 100%; */
     border-radius: 5px;
     /* border: 1px solid #ddd; */
 }
@@ -40,7 +40,7 @@
     flex-direction: column;
     flex-direction: column-reverse;
     overflow-y: auto;
-    height: calc(100% - 50rem);
+    height: calc(100vh - 22rem);
 }
 
 .input-container {

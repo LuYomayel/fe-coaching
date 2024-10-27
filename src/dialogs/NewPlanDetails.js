@@ -3,12 +3,7 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Accordion, AccordionTab } from 'primereact/accordion';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { InputNumber } from 'primereact/inputnumber';
-import { Checkbox } from 'primereact/checkbox';
-import { Divider } from 'primereact/divider';
+import { Badge } from 'primereact/badge';
 import { Toast } from 'primereact/toast';
 import { fetchWorkoutInstance, deleteWorkoutPlan } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +36,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
             try {
                 setLoading(true);
                 const planDetails = await fetchWorkoutInstance(planId);
+                planDetails.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
                 setWorkoutPlan(planDetails);
                 console.log(planDetails);
             } catch (error) {
@@ -292,8 +288,19 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
             </Card>
 
             <Accordion>
-                {workoutPlan.groups.map((group) => (
-                    <AccordionTab key={group.groupNumber} header={`Group ${group.groupNumber}`}>
+                {workoutPlan.groups.map((group) => {
+                    const allExercisesCompleted = group.exercises.every(exercise => exercise.completed);
+                    return(
+                    <AccordionTab key={group.groupNumber}header={
+                        <>
+                          Group {group.groupNumber}
+                          <Badge
+                            value={allExercisesCompleted ? '✔' : '✘'}
+                            className="ml-2"
+                            severity={allExercisesCompleted ? 'success' : 'danger'}
+                          />
+                        </>
+                      }>
                         <p>Sets: {group.set}</p>
                         <p>Rest between sets: {group.rest} sec</p>
                         {group.exercises.map((exercise) =>
@@ -302,7 +309,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                                 : renderExerciseDetails(exercise, group.groupNumber)
                         )}
                     </AccordionTab>
-                ))}
+                )})}
             </Accordion>
 
             <Dialog

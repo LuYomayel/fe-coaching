@@ -95,7 +95,7 @@ const NewCreatePlan = ({ isEdit }) => {
         setLoading(true);
         try {
           const data = await fetchWorkoutInstance(planId);
-
+          data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
           // Iterate through each group
           const newData = data.groups.map(group => {
             // Iterate through each exercise in the group

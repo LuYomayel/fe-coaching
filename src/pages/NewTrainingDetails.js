@@ -43,6 +43,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
         const data = await fetchWorkoutInstance(planId);
         if (data.status === 'completed') setIsClientTraining(false);
         console.log('Plan data: ', data);
+        data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
         setPlan(data);
       } catch (error) {
         showToast('error', 'Error fetching plan details', error.message);
@@ -581,11 +582,13 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
         @media (max-width: 768px) {
           .training-plan-details {
             padding: 0.5rem;
+            padding-bottom: 3.5rem;
           }
         }
         @media (min-width: 769px) {
           .training-plan-details {
             padding: 1rem;
+            padding-bottom: 3.5rem;
           }
         }
       `}</style>

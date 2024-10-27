@@ -441,7 +441,7 @@ export default function ClientDashboard() {
           </div>
         </TabPanel>
 
-        <TabPanel header="Exercise Progress">
+        {/* <TabPanel header="Exercise Progress">
           <div className="grid">
             <div className="col-12 md:col-6">
               <Dropdown value={selectedExercise} options={exerciseOptions} filter filterBy="label" onChange={(e) => setSelectedExercise(e.value)} placeholder="Select an Exercise" className="w-full mb-3" />
@@ -452,7 +452,7 @@ export default function ClientDashboard() {
               }} />}
             </div>
           </div>
-        </TabPanel>
+        </TabPanel> */}
 
         <TabPanel header='Excel View'>
           <WorkoutTable trainingWeeks={cycleOptions} cycleOptions={cycleDropdownOptions} setRefreshKey={setRefreshKey}/>
