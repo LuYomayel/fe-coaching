@@ -30,12 +30,12 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
     const [planName, setPlanName] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const showToast = useToast();
-    const possibleProperties = ["sets", "reps", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance"];
+    const possibleProperties = ["sets", "repetitions", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance"];
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (cycle && dayOfWeek) {
-            const numWeeks = trainingWeeks.length;
+            const numWeeks = trainingWeeks[0].trainingWeeks.length;
             const exercises = [];
             const propertiesSet = new Set();
             const selectedCycle = trainingWeeks.find(c => c.id === cycle).trainingWeeks;
@@ -63,8 +63,10 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
                                     if (session.dayNumber !== dayOfWeek) {
                                         return;
                                     }
+                                    
                                     const exerciseObj = {
                                         name: exerciseName,
+                                        groupNumber: group.groupNumber,
                                         id: Array(numWeeks).fill(null),
                                     };
                                     exerciseObj.id[weekIndex] = exerciseId;
@@ -78,6 +80,7 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
                                             propertiesSet.add(prop);
                                         }
                                     });
+                                    console.log('Exercise: ', exerciseObj)
                                     exercises.push(exerciseObj);
                                 }
                             });
@@ -86,16 +89,18 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
                 });
             });
 
-            setExercises(exercises);
+            const sortExercises = exercises.sort((a,b) => a.groupNumber - b.groupNumber)
+            setExercises(sortExercises);
             setOriginalExercises(JSON.parse(JSON.stringify(exercises))); // Copia profunda
             setNumWeeks(numWeeks);
+            console.log('Num weeks: ', numWeeks)
             setProperties(Array.from(propertiesSet));
         }
     }, [cycle, dayOfWeek]);
 
     const propertyLabels = {
         sets: "Set",
-        reps: "Reps",
+        repetitions: "Repetitions",
         weight: "Weight",
         time: "Time",
         restInterval: "Rest Interval",
@@ -177,11 +182,9 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
     const saveExercisesToBackend = async (changes) => {
         // Implementa la lógica para enviar los datos al backend.
         // Por ejemplo:
-        console.log(changes);
         try {
             setIsLoading(true);
             const response = await updateExercisesInstace(changes);
-            console.log(response);
             // Manejar la respuesta si es necesario
         } catch (error) {
             console.error(error);
@@ -232,6 +235,10 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
             );
         });
     }
+
+    const rowClassName = (rowData) => {
+        return rowData.groupNumber % 2 === 0 ? 'group-even' : 'group-odd';
+    };
 
     const renderCardTitle = () => {
         if (cycle && dayOfWeek) {
@@ -288,8 +295,9 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
                 scrollHeight="700px"
                 editMode="cell"
                 loading={isLoading}
+                rowClassName={rowClassName}
             >
-                <Column field="name" header="Ejercicio" />
+                <Column header="Ejercicio" body={rowData => `${rowData.groupNumber}. ${rowData.name}`}/>
                 {dataColumns}
             </DataTable>
         </Card>

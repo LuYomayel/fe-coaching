@@ -27,6 +27,7 @@ import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId } from '../service
 import '../styles/ClientDashboard.css';
 import { formatDate } from '../utils/UtilFunctions';
 import WorkoutTable from '../components/WorkoutTable';
+import { Badge } from 'primereact/badge';
 
 export default function ClientDashboard() {
   const { clientId } = useParams();
@@ -185,7 +186,9 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (selectedWorkout) {
       const filtered = workouts.filter(workout => workout.workout.id === selectedWorkout && workout.status === 'completed');
-      setFilteredWorkouts(filtered);
+      const sortedWorkouts = [...filtered].sort((a, b) => new Date(b.realEndDate) - new Date(a.realEndDate));
+
+      setFilteredWorkouts(sortedWorkouts);
     }
   }, [selectedWorkout, workouts]);
 
@@ -276,12 +279,28 @@ export default function ClientDashboard() {
     setAssignCycleVisible(true);
   };
 
+  const renderPlanName = (rowData) => (
+    <div>
+        {/* Título del nombre del plan */}
+        <p className="font-bold">{rowData.workout.planName}</p>
+        
+        {/* Información adicional en un estilo más pequeño */}
+        <p className="text-sm">Completed on: {formatDate(rowData.realEndDate)}</p>
+        <p className="text-sm">Session time: {rowData.sessionTime}</p>
+        <p className="text-sm">Feedback: {rowData.generalFeedback}</p>
+        <p className="text-sm">Mood: {rowData.mood ? `${rowData.mood}/10` : '-'}</p>
+        <p className="text-sm">Energy level: {rowData.energyLevel ? `${rowData.energyLevel}/10` : '-'}</p>
+        <p className="text-sm">Difficulty: {rowData.perceivedDifficulty ? `${rowData.perceivedDifficulty}/10` : '-'}</p>
+        <p className="text-sm">Extra notes: {rowData.feedback}</p>
+    </div>
+);
+
   const renderWorkoutDetails = (rowData) => {
     return (
       <Accordion>
         {rowData.groups.flatMap(group =>
           group.exercises.map(exercise => {
-            const allProperties = ['repetitions', 'weight', 'rpe', 'time', 'distance', 'tempo', 'notes', 'difficulty', 'duration', 'restInterval'];
+            const allProperties = ['repetitions', 'weight', 'rpe', 'time', 'distance', 'tempo', 'notes', 'difficulty', 'duration', 'restInterval', 'comments'];
             const availableProperties = allProperties.filter(prop => {
               return (
                 exercise[prop] != null 
@@ -304,13 +323,24 @@ export default function ClientDashboard() {
                   type: 'Completed', 
                   ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: setLog[prop] || '-' }), {}),
                   rpe: exercise.rpe || '-',
+                  notCompleted: !exercise.completed && !exercise.completedNotAsPlanned
                 }
               ];
             }
             );
-
+            if(!exercise.completed && !exercise.completedNotAsPlanned)
+              console.log('Expanded data:' , exercise)
             return (
-              <AccordionTab key={exercise.id} header={exercise.exercise.name}>
+              <AccordionTab key={exercise.id}  header={
+                <>
+                    {exercise.exercise.name}
+                    <Badge
+                        value={expandedData.some(data => data.notCompleted) ? '✘' : '✔'}
+                        className="ml-2"
+                        severity={expandedData.some(data => data.notCompleted) ? 'danger' : 'success'}
+                    />
+                </>
+            } >
                 <DataTable value={expandedData} rowGroupMode="subheader" groupRowsBy="setNumber"
                            sortMode="single" sortField="setNumber" sortOrder={1}>
                   <Column field="setNumber" header="Set" body={(rowData) => `Set ${rowData.setNumber}`} />
@@ -404,8 +434,7 @@ export default function ClientDashboard() {
             <div className="col-12">
               <Dropdown value={selectedWorkout} options={workoutOptions} onChange={(e) => setSelectedWorkout(e.value)} placeholder="Select a Workout" className="w-full mb-3" />
               <DataTable value={filteredWorkouts}>
-                <Column field={(rowData) => formatDate(rowData.realEndDate)}  header="Trained Date" style={{ width: '10%' }} />
-                <Column field="workout.planName" header="Workout Name" style={{ width: '20%' }}/>
+                <Column body={renderPlanName} header="Workout Name" style={{ width: '30%' }}/>
                 <Column header="Details" body={renderWorkoutDetails} />
               </DataTable>
             </div>
@@ -425,7 +454,7 @@ export default function ClientDashboard() {
           </div>
         </TabPanel>
 
-        <TabPanel header="Client workouts">
+        <TabPanel header='Excel View'>
           <WorkoutTable trainingWeeks={cycleOptions} cycleOptions={cycleDropdownOptions} setRefreshKey={setRefreshKey}/>
         </TabPanel>
       </TabView>

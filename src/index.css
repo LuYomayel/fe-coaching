@@ -173,3 +173,10 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.group-even {
+  background-color: #f9f9f9;
+}
+
+.group-odd {
+  background-color: #e0e0e0;
+}
