@@ -33,6 +33,7 @@ export const ChatSidebarProvider = ({ children }) => {
 
     // Recibir nuevos mensajes
     newSocket.on('receiveMessage', (message) => {
+      if(message.sender.id !== user.userId)
       if(isChatSidebarOpen && selectedChat.user.id !== message.sender.id){
         setUnreadMessages((prevCount) => prevCount + 1);
         console.log('Message: ', message.content, message)
