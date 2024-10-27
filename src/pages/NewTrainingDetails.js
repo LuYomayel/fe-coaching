@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card } from 'primereact/card';
+import { Badge } from 'primereact/badge';
 import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
 import { InputText } from 'primereact/inputtext';
@@ -114,10 +115,22 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
       }));
 
       if (isNotAsPlanned) {
-        newProgress[exerciseId] = { ...newProgress[exerciseId], completedNotAsPlanned: true, completed: false, sets };
+        const currentValue = newProgress[exerciseId]?.completedNotAsPlanned || false;
+        newProgress[exerciseId] = { ...newProgress[exerciseId], completedNotAsPlanned: !currentValue, completed: false, sets: !currentValue ? sets : [] };
       } else {
-        newProgress[exerciseId] = { ...newProgress[exerciseId], completed: true, completedNotAsPlanned: false, sets };
+        const currentValue = newProgress[exerciseId]?.completed || false;
+        newProgress[exerciseId] = { ...newProgress[exerciseId], completed: !currentValue, completedNotAsPlanned: false, sets: !currentValue ? sets : [] };
       }
+      console.log('New progress: ', newProgress)
+      // Verifica si todos los ejercicios del grupo están completados o completados parcialmente
+      const allExercisesCompleted = group.exercises.every(
+        (ex) => newProgress[ex.id]?.completed || newProgress[ex.id]?.completedNotAsPlanned
+      );
+
+      // Actualiza el estado del grupo (agrega un campo `groupCompleted` en el objeto `newProgress` o usa otro estado)
+      newProgress[group.id] = { ...newProgress[group.id], groupCompleted: allExercisesCompleted };
+
+
       return newProgress;
     });
   };
@@ -223,8 +236,19 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
 
       <div className="mobile-view md:hidden">
         <Accordion>
-          {plan.groups.map((group, groupIndex) => (
-            <AccordionTab key={groupIndex} header={`Group ${group.groupNumber}`}>
+          {plan.groups.map((group, groupIndex) => {
+            const isCompleted = group.exercises.some(exercise => exercise.completed || exercise.completedNotAsPlanned);
+            return (
+            <AccordionTab key={groupIndex} header={
+              <>
+                  Group {group.groupNumber}
+                  <Badge
+                      value={exerciseProgress[group.id]?.groupCompleted ? '✔' : '⏳'}
+                      className="ml-2"
+                      severity={exerciseProgress[group.id]?.groupCompleted ? 'success' : 'warning'}
+                  />
+              </>
+          }>
               <p><strong>Set Count:</strong> {group.set}</p>
               <p><strong>Rest Interval:</strong> {group.rest} seconds</p>
 
@@ -375,7 +399,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                 </Card>
               ))}
             </AccordionTab>
-          ))}
+          )})}
         </Accordion>
       </div>
 
