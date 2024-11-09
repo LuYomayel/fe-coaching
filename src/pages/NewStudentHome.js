@@ -208,11 +208,12 @@ export default function NewStudentHome() {
 
       <Dialog
         header="Plan Details"
+        draggable={false}
+        resizable={false}
+        dismissableMask
         visible={planDetailsVisible}
         style={{ width: '50vw' }}
         onHide={() => setPlanDetailsVisible(false)}
-        draggable
-        resizable
       >
         {selectedPlan && (
           <NewPlanDetail

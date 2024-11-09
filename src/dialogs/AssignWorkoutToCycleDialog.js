@@ -132,7 +132,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
 // Conditionally render elements based on actionType and current state
 return (
   <Dialog
-    draggable={false}
+    draggable={false} dismissableMask
     resizable={false}
     header={actionType === 'assign' ? 'Assign Workouts to Cycle' : 'Unassign Workouts from Cycle'}
     className="responsive-dialog"

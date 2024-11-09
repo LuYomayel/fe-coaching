@@ -303,7 +303,7 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
       )}
 
       {/* Dialog to display image/video */}
-      <Dialog header="Attachment" visible={dialogVisible} style={{ width: '80vw', height:'80vh' }} className='responsive-dialog' onHide={handleCloseDialog}>
+      <Dialog  draggable={false} resizable={false}  dismissableMask header="Attachment" visible={dialogVisible} style={{ width: '80vw', height:'80vh' }} className='responsive-dialog' onHide={handleCloseDialog}>
         {dialogContent && (
           <>
             {dialogContent.fileType.includes('video') ? (

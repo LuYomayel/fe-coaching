@@ -45,6 +45,7 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
     }
     const { isValid, message } = validateDates(startDate, endDate)
 
+
     if (!isValid) {
       showToast('error', 'Error', message);
       return;
@@ -64,6 +65,8 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
   const handleAssignSubscription = async (body) => {
     try {
       setLoading(true);
+      console.log('Body: ', body)
+      // return
       await assignSubscription(body);
       showToast('success', 'Success', 'Subscription assigned successfully');
       onClose();  // Assuming onClose is a function to close a modal or similar

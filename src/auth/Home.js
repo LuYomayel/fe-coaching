@@ -128,6 +128,7 @@ export default function HomePage() {
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
+                    console.log('Error de aca: ', errorData)
                     throw new Error(errorData.message || 'Something went wrong');
                 }
                 const data = await response.json();
@@ -156,6 +157,7 @@ export default function HomePage() {
                     }
                 }
             } catch (error) {
+                console.log(error)
                 showToast('error', 'Error', error.message);
                 setLoading(false);
             }
@@ -368,7 +370,7 @@ export default function HomePage() {
 
     const renderLoginDialog = () => {
         return (
-            <Dialog header="Log In" visible={loginVisible} style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setLoginVisible(false)}>
+            <Dialog header="Log In" visible={loginVisible} draggable={false} dismissableMask resizable={false}  style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setLoginVisible(false)}>
                 <form onSubmit={handleLogin} className="p-fluid">
                     <div className="field">
                         <label htmlFor="email" className="font-bold">Email</label>
@@ -391,7 +393,7 @@ export default function HomePage() {
 
     const renderSignUpDialog = () => {
         return (
-            <Dialog header="Sign Up" visible={signUpVisible} style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setSignUpVisible(false)}>
+            <Dialog header="Sign Up" visible={signUpVisible}  draggable={false} dismissableMask resizable={false}  style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setSignUpVisible(false)}>
                 <form onSubmit={handleSignUp} className="p-fluid">
                     <div className="field">
                         <label htmlFor="signUpEmail" className="font-bold">Email</label>

@@ -57,7 +57,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   };
 
   return (
-    <Dialog draggable={false}
+    <Dialog draggable={false} dismissableMask
     resizable={false}  header="Assign Workout to Session" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
       <div className="p-fluid">
         <div className="p-field">

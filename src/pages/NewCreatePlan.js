@@ -18,8 +18,8 @@ import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 
 const propertyList = [
-  { name: 'Reps', key: 'repetitions' },
-  { name: 'Sets', key: 'sets' },
+  { name: 'Reps', key: 'repetitions', default: true },
+  { name: 'Sets', key: 'sets', default: true },
   { name: 'Time', key: 'time' },
   { name: 'Weight', key: 'weight' },
   { name: 'Rest Interval', key: 'restInterval' },
@@ -226,6 +226,8 @@ const NewCreatePlan = ({ isEdit }) => {
         },
         id: uuidv4(), // Generate unique ID
         notes: '',
+        repetitions: '', // Agregado por defecto
+        sets: '', // Agregado por defecto
       };
       const newGroups = [...plan.groups];
       newGroups[selectedGroup].exercises.push(newExercise);
@@ -591,6 +593,15 @@ const NewCreatePlan = ({ isEdit }) => {
                                             onClick={() => removeProperty(groupIndex, exerciseIndex, key)}
                                           />
                                         </div>
+                                        {/* <div className="ml-2 flex align-items-center">
+                                          <input
+                                            type="checkbox"
+                                            id={`side-${key}`}
+                                            onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, `${key}PerSide`, e.target.checked)}
+                                            checked={!!exercise[`${key}PerSide`]}
+                                          />
+                                          <label htmlFor={`side-${key}`} className="ml-1">Per Side</label>
+                                        </div> */}
                                       </div>
                                     </div>
                                   );
@@ -616,6 +627,14 @@ const NewCreatePlan = ({ isEdit }) => {
                   )}
                 </Draggable>
               ))}
+              <div className="col-12 md:col-6 lg:col-4 xl:col-3 p-2">
+                <Card className="h-full flex justify-content-center align-items-center cursor-pointer" onClick={addGroup}>
+                  <div className="text-center">
+                    <i className="pi pi-plus-circle text-4xl mb-2"></i>
+                    <p className="m-0">Add Group</p>
+                  </div>
+                </Card>
+              </div>
               {provided.placeholder}
             </div>
           )}
@@ -626,7 +645,7 @@ const NewCreatePlan = ({ isEdit }) => {
         <Button label={isEdit ? 'Edit Plan' : 'Create Plan'} icon="pi pi-check" onClick={submitPlanClick} className="p-button-success" />
       </div>
 
-      <Dialog header="Add Exercise" visible={showExerciseDialog} onHide={() => setShowExerciseDialog(false)} className="w-30rem">
+      <Dialog header="Add Exercise" dismissableMask draggable={false} resizable={false} visible={showExerciseDialog} onHide={() => setShowExerciseDialog(false)} className="w-30rem">
         <Dropdown
             value={selectedExercise}
             options={exercises}
@@ -646,7 +665,7 @@ const NewCreatePlan = ({ isEdit }) => {
         <Button label="Add Exercise" icon="pi pi-plus" onClick={addExercise} disabled={!selectedExercise} />
       </Dialog>
 
-      <Dialog header="Add Property" visible={showPropertyDialog} onHide={() => setShowPropertyDialog(false)} className="w-30rem">
+      <Dialog header="Add Property" draggable={false} resizable={false} dismissableMask visible={showPropertyDialog} onHide={() => setShowPropertyDialog(false)} className="w-30rem">
         {propertyList.map((property) => (
           <div key={property.key} className="flex justify-content-between align-items-center mb-2">
             <span>{property.name}</span>

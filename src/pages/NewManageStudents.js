@@ -200,12 +200,13 @@ export default function NewManageStudentsPage() {
   };
 
   const openSubscriptionDialog = (student) => {
-    if (!student.user.isVerified)
-      return showToast(
-        'error',
-        'Error',
-        'Client must verify the email address prior to getting a subscription.'
-      );
+    // if (!student.user.isVerified)
+    //   return showToast(
+    //     'error',
+    //     'Error',
+    //     'Client must verify the email address prior to getting a subscription.'
+    //   );
+    console.log(student)
     setSelectedStudent(student);
     setIsSubscriptionDialogVisible(true);
   };
@@ -366,6 +367,7 @@ export default function NewManageStudentsPage() {
       <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask
         header="New Student"
         className="responsive-dialog"
         visible={isNewStudentDialogVisible}
@@ -381,6 +383,7 @@ export default function NewManageStudentsPage() {
       <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask
         header="Assign Subscription"
         className="responsive-dialog"
         visible={isSubscriptionDialogVisible}
@@ -397,6 +400,7 @@ export default function NewManageStudentsPage() {
       <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask
         header="Register Payment"
         className="responsive-dialog"
         visible={isRegisterPaymentDialogVisible}
@@ -417,6 +421,7 @@ export default function NewManageStudentsPage() {
       <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask
         header="Student Details"
         className="responsive-dialog"
         visible={isStudentDetailVisible}

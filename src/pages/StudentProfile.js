@@ -357,7 +357,7 @@ const descriptionFilterTemplate = (options) => {
        
       </div>
 
-      <Dialog draggable={false}  resizable={false} header="Edit Personal Information" visible={editDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={handleEditDialogClose}>
+      <Dialog draggable={false} dismissableMask resizable={false} header="Edit Personal Information" visible={editDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={handleEditDialogClose}>
         <div className="p-fluid">
           <div className="p-field">
             <label htmlFor="fitnessGoal">Fitness Goal</label>

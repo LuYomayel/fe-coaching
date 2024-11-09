@@ -368,6 +368,9 @@ export default function NewClientProfile() {
         visible={editDialogVisible}
         style={{ width: '50vw' }}
         onHide={handleEditDialogClose}
+        draggable={false}
+        resizable={false}
+        dismissableMask
         footer={
           <div>
             <Button label="Cancel" icon="pi pi-times" onClick={handleEditDialogClose} className="p-button-text" />

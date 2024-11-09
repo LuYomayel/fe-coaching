@@ -424,7 +424,7 @@ export default function ClientDashboard() {
             setRefreshKey={setRefreshKey}
           />
           <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} />
-          <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+          <Dialog header="Plan Details" dismissableMask draggable={false} resizable={false} visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
             {selectedPlan && <NewPlanDetail planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} />}
           </Dialog>
         </TabPanel>

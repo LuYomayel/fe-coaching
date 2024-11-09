@@ -38,6 +38,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
     { label: 'Gain mobility', value: 'gain mobility' },
     { label: 'Maintenance', value: 'maintenance' },
     { label: 'Flexibility', value: 'flexibility' },
+    { label: 'Other', value: 'other' }
   ]
   const activityLevels = [
     { label: 'Sedentary', value: 'sedentary'},
@@ -61,33 +62,33 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
     
   };
 
-  const onClickSaveStudent = async () =>{
-    const body = { name, email, fitnessGoal, activityLevel, gender, weight, height,birthdate, coachId: user.userId };
-    // Validación para comprobar si algún valor es nulo
-    for (const [key, value] of Object.entries(body)) {
-      if(key === 'fitnessGoal') {
-        if(value.length === 0) 
-          return showToast('error', 'Error', `${key} cannot be null or empty`);
-      }
-      if (value == null || value === '' || value === 0) {
-        showToast('error', 'Error', `${key} cannot be null or empty`);
-        return;
+  const onClickSaveStudent = async () => {
+    const body = { name, email, fitnessGoal, activityLevel, gender, weight, height, birthdate, coachId: user.userId };
+  
+    if (!name || !email) {
+      showToast('error', 'Error', 'Name and Email cannot be null or empty');
+      return;
+    }
+  
+    if (birthdate &&  birthdate.getTime() > new Date().getTime()) {
+      return showToast('error', 'Error', 'Birthdate cannot be later than today');
+    }
+  
+    if(birthdate){
+      const age = new Date().getFullYear() - birthdate.getFullYear();
+      if (age >= 0 && age <= 10) {
+        showToast('warn', 'Warning', 'Client is very young, please double-check the birthdate');
       }
     }
-    if(birthdate.getTime() > new Date().getTime())
-      return showToast('error', 'Error', 'Birthdate can not be later than today')
-    console.log(new Date().getFullYear() - birthdate.getFullYear())
-    if((new Date().getFullYear() - birthdate.getFullYear()) >= 0 &&  (new Date().getFullYear() - birthdate.getFullYear()) <= 10)
-      return showToast('warn', 'Warning', 'Client must be at least 10 years old, check birthdate')
-    console.log(body)
+  
     showConfirmationDialog({
       message: "Are you sure you want to create this student?",
       header: "Confirmation",
       icon: "pi pi-exclamation-triangle",
       accept: () => handleSaveStudent(body),
       reject: () => console.log('Rejected')
-  });
-  } 
+    });
+  };
   return (
     <div className="new-student-dialog">
       <div className="p-field">

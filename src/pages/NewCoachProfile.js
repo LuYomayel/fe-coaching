@@ -498,6 +498,7 @@ export default function CoachProfilePage() {
       <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask
         header={dialogMode === 'create' ? 'Create New Exercise' : 'Edit Exercise'}
         className="responsive-dialog"
         visible={exerciseDialogVisible}
@@ -583,6 +584,7 @@ export default function CoachProfilePage() {
       <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask
         header={dialogMode === 'create' ? 'Create New Coach Plan' : 'Edit Coach Plan'}
         className="responsive-dialog"
         visible={createPlanDialogVisible}
@@ -628,7 +630,7 @@ export default function CoachProfilePage() {
 
   const renderVideoModal = () => {
     return (
-        <Dialog draggable={false}  resizable={false} header="Video" visible={videoDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
+        <Dialog draggable={false} dismissableMask resizable={false} header="Video" visible={videoDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
                 <iframe
                 width="100%"
                 height="400px"
@@ -646,6 +648,7 @@ export default function CoachProfilePage() {
       <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask
         header={dialogMode === 'create' ? 'Create New RPE Method' : 'Edit RPE Method'}
         className="responsive-dialog"
         visible={rpeDialogVisible}
@@ -1091,6 +1094,7 @@ export default function CoachProfilePage() {
         resizable={false}
         header="Assign RPE Method"
         className="responsive-dialog"
+        dismissableMask
         visible={rpeAssignmentDialogVisible}
         style={{ width: '50vw' }}
         onHide={() => setRpeAssignmentDialogVisible(false)}
@@ -1318,6 +1322,7 @@ export default function CoachProfilePage() {
       <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask
         header="Workout details"
         visible={planDetailsVisible}
         className="responsive-dialog"

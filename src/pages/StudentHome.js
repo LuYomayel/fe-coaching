@@ -239,7 +239,7 @@ const StudentHome = () => {
               }
             }}
           />
-        <Dialog draggable={false}  resizable={false} header="Plan Details" className="responsive-dialog"  visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+        <Dialog draggable={false} dismissableMask resizable={false} header="Plan Details" className="responsive-dialog"  visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
           {selectedPlan && <PlanDetails planId={selectedPlan} setLoading={setLoading} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} />}
         </Dialog>
       {/* </div> */}

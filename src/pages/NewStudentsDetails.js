@@ -187,7 +187,7 @@ export default function NewStudentDetails() {
                 </DataTable>
             </Card>
 
-            <Dialog header="Plan Details" visible={planDetailsVisible} style={{ width: '50vw' }} onHide={() => setPlanDetailsVisible(false)}>
+            <Dialog draggable={false} resizable={false} dismissableMask header="Plan Details" visible={planDetailsVisible} style={{ width: '50vw' }} onHide={() => setPlanDetailsVisible(false)}>
                 {selectedPlan && (
                     <PlanDetails
                         planId={selectedPlan}

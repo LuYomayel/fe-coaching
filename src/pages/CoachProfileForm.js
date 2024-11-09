@@ -163,6 +163,9 @@ const CoachProfileForm = () => {
         <Button label="Submit" icon="pi pi-check" loading={loading} onClick={handleSubmit} />
       </Card>
         <Dialog 
+          draggable={false}
+          resizable={false}
+          dismissableMask
           header="Select a Subscription Plan" 
           visible={isPlanDialogVisible} 
           style={{ width: '50vw' }} 

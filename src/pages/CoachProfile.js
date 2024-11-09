@@ -640,7 +640,7 @@ const CoachProfile = () => {
                     </TabView>
                 </div>
             </div>
-            <Dialog draggable={false}  resizable={false} header="Video" visible={videoDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
+            <Dialog draggable={false} dismissableMask resizable={false} header="Video" visible={videoDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
                 <iframe
                 width="100%"
                 height="400px"
@@ -652,7 +652,7 @@ const CoachProfile = () => {
                 />
             </Dialog>
 
-            <Dialog draggable={false}  resizable={false} header={dialogMode === 'create' ? "Create New Coach Plan" : "Edit Coach Plan"} className="responsive-dialog" visible={createPlanDialogVisible} style={{ width: '50vw' }} onHide={closeCreatePlanDialog}>
+            <Dialog draggable={false} dismissableMask resizable={false} header={dialogMode === 'create' ? "Create New Coach Plan" : "Edit Coach Plan"} className="responsive-dialog" visible={createPlanDialogVisible} style={{ width: '50vw' }} onHide={closeCreatePlanDialog}>
                 <div className="p-fluid">
                     <div className="p-field">
                     <label htmlFor="name">Plan Name</label>
@@ -676,7 +676,7 @@ const CoachProfile = () => {
                 </div>
             </Dialog>
             
-            <Dialog draggable={false}  resizable={false} header={dialogMode === 'create' ? "Create New Exercise" : "Edit Exercise"}  className="responsive-dialog" visible={exerciseDialogVisible} style={{ width: '50vw' }} onHide={closeExerciseDialog}>
+            <Dialog draggable={false} dismissableMask resizable={false} header={dialogMode === 'create' ? "Create New Exercise" : "Edit Exercise"}  className="responsive-dialog" visible={exerciseDialogVisible} style={{ width: '50vw' }} onHide={closeExerciseDialog}>
                 <div className="p-fluid">
                     <div className="p-field">
                         <label htmlFor="name">{dialogMode === 'create' ? 'Exercise Name' : 'Edit Exercise Name'}</label>
@@ -723,7 +723,7 @@ const CoachProfile = () => {
                 </div>
             </Dialog>
 
-            <Dialog draggable={false}  resizable={false} header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
+            <Dialog draggable={false} dismissableMask resizable={false} header="Plan Details" visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
                 {selectedPlan && <PlanDetails planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} 
                     setRefreshKey={setRefreshKey} setLoading={setLoading} />}
             </Dialog>
