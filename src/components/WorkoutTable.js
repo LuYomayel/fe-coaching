@@ -20,7 +20,7 @@ const daysOfWeek = [
     { label: 'Sunday', value: 7 },
 ];
 
-export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKey }) {
+export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey }) {
     const [cycle, setCycle] = useState(null);
     const [dayOfWeek, setDayOfWeek] = useState(null);
     const [exercises, setExercises] = useState([]);
@@ -32,26 +32,81 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
     const showToast = useToast();
     const possibleProperties = ["sets", "repetitions", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance"];
     const [isLoading, setIsLoading] = useState(false);
+    const renderTablesByDayNumber = () => {
+        if (!exercises || exercises.length === 0) {
+            return <div>No training data available</div>;
+        }
+    
+        // Agrupar ejercicios por `dayNumber`
+        const exercisesByDayNumber = exercises.reduce((acc, exercise) => {
+            exercise.sessionDates.forEach((sessionDate, index) => {
+                const dayNumber = new Date(sessionDate).getDay() -1; // Obtener el `dayNumber` de la fecha
+                // console.log(exercise)
+                if (!acc[dayNumber]) {
+                    acc[dayNumber] = [];
+                }
+                
+                // Verificar si el ejercicio ya fue agregado al día correspondiente
+                if (!acc[dayNumber].some(e => e.name === exercise.name)) {
+                    acc[dayNumber].push(exercise);
+                }
+            });
+            return acc;
+        }, {});
+    
+        return Object.entries(exercisesByDayNumber).map(([dayNumber, exercisesForDay]) => {
+            const formattedDayLabel = daysOfWeek.find(day => day.value === parseInt(dayNumber))?.label || `Day ${dayNumber}`;
+    
+            return (
+                <div key={`day-${dayNumber}`}>
+                    <h3>{`Training Day: ${formattedDayLabel}`}</h3>
+                    <DataTable
+                        value={exercisesForDay}
+                        headerColumnGroup={headerGroup}
+                        responsiveLayout="scroll"
+                        scrollable
+                        scrollHeight="700px"
+                        editMode="cell"
+                        loading={isLoading}
+                        rowClassName={rowClassName}
+                    >
+                        <Column header="Ejercicio" body={rowData => `${rowData.groupNumber}. ${rowData.name}`} />
+                        {dataColumns}
+                    </DataTable>
+                </div>
+            );
+        });
+    };
 
     useEffect(() => {
-        if (cycle && dayOfWeek) {
-            const numWeeks = trainingWeeks[0].trainingWeeks.length;
-            const exercises = [];
+        if (cycle && trainingCycles && trainingCycles.length > 0) {
+            const selectedCycle = trainingCycles.find(c => c.id === cycle);
+            if (!selectedCycle) return;
+    
+            const exercisesMap = new Map();
             const propertiesSet = new Set();
-            const selectedCycle = trainingWeeks.find(c => c.id === cycle).trainingWeeks;
-            selectedCycle.forEach((week, weekIndex) => {
+            const numWeeks = selectedCycle.trainingWeeks?.length || 0;
+    
+            selectedCycle.trainingWeeks.forEach((week, weekIndex) => {
+                if (!week.trainingSessions) return;
+    
                 week.trainingSessions.forEach(session => {
+                    if (!session.workoutInstances) return;
+    
                     session.workoutInstances.forEach(instance => {
                         const nombre = instance.workout.planName;
                         setPlanName(nombre);
                         instance.groups.forEach(group => {
                             group.exercises.forEach(exerciseData => {
                                 const exerciseName = exerciseData.exercise?.name || 'Unnamed Exercise';
-                                const exerciseId = exerciseData.id;
-                                const existingExercise = exercises.find(e => e.name === exerciseName);
-
-                                if (existingExercise) {
-                                    existingExercise.id[weekIndex] = exerciseId;
+                                const key = `${exerciseName}-${group.groupNumber}`;
+    
+                                // Verificar si el ejercicio ya existe en el `Map`
+                                if (exercisesMap.has(key)) {
+                                    const existingExercise = exercisesMap.get(key);
+                                    // Solo actualizar las semanas correspondientes sin agregar un nuevo ejercicio
+                                    existingExercise.sessionDates.push(session.sessionDate);
+                                    existingExercise.id[weekIndex] = exerciseData.id; // Actualizar ID de la instancia
                                     possibleProperties.forEach(prop => {
                                         const value = exerciseData[prop] || group[prop] || '-';
                                         if (value !== '-') {
@@ -60,16 +115,18 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
                                         }
                                     });
                                 } else {
-                                    if (session.dayNumber !== dayOfWeek) {
+                                    if (dayOfWeek && session.dayNumber !== dayOfWeek) {
                                         return;
                                     }
-                                    
+    
+                                    // Crear un nuevo objeto de ejercicio
                                     const exerciseObj = {
                                         name: exerciseName,
                                         groupNumber: group.groupNumber,
+                                        sessionDates: [session.sessionDate],
                                         id: Array(numWeeks).fill(null),
                                     };
-                                    exerciseObj.id[weekIndex] = exerciseId;
+                                    exerciseObj.id[weekIndex] = exerciseData.id;
                                     possibleProperties.forEach(prop => {
                                         exerciseObj[prop] = Array(numWeeks).fill('-');
                                     });
@@ -80,23 +137,22 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
                                             propertiesSet.add(prop);
                                         }
                                     });
-                                    console.log('Exercise: ', exerciseObj)
-                                    exercises.push(exerciseObj);
+                                    exercisesMap.set(key, exerciseObj);
+                                    // console.log(exercisesMap)
                                 }
                             });
                         });
                     });
                 });
             });
-
-            const sortExercises = exercises.sort((a,b) => a.groupNumber - b.groupNumber)
-            setExercises(sortExercises);
-            setOriginalExercises(JSON.parse(JSON.stringify(exercises))); // Copia profunda
+    
+            const sortedExercises = Array.from(exercisesMap.values()).sort((a, b) => a.groupNumber - b.groupNumber);
+            setExercises(sortedExercises);
+            setOriginalExercises(JSON.parse(JSON.stringify(sortedExercises)));
             setNumWeeks(numWeeks);
-            console.log('Num weeks: ', numWeeks)
             setProperties(Array.from(propertiesSet));
         }
-    }, [cycle, dayOfWeek]);
+    }, [cycle, dayOfWeek, trainingCycles]);
 
     const propertyLabels = {
         sets: "Set",
@@ -241,7 +297,7 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
     };
 
     const renderCardTitle = () => {
-        if (cycle && dayOfWeek) {
+        if (cycle) {
             return (
                 <div className='flex flex-colum justify-content-between'>
                     <div>
@@ -249,7 +305,7 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
                     </div>
                     <div>
                         <Button
-                            label={isEditing ? "Guardar" : "Editar"}
+                            label={isEditing ? "Save" : "Edit"}
                             icon={isEditing ? "pi pi-save" : "pi pi-pencil"}
                             onClick={handleEditSave}
                             loading={isLoading}
@@ -283,11 +339,12 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
                             options={daysOfWeek}
                             onChange={(e) => setDayOfWeek(e.value)}
                             placeholder="Select Day"
+                            showClear
                         />
                     </div>
                 </div>
             </div>
-            <DataTable
+            {/* <DataTable
                 value={exercises}
                 headerColumnGroup={headerGroup}
                 responsiveLayout="scroll"
@@ -299,7 +356,8 @@ export default function WorkoutTable({ trainingWeeks, cycleOptions, setRefreshKe
             >
                 <Column header="Ejercicio" body={rowData => `${rowData.groupNumber}. ${rowData.name}`}/>
                 {dataColumns}
-            </DataTable>
+            </DataTable> */}
+            {renderTablesByDayNumber()}
         </Card>
     );
 }

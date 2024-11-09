@@ -455,7 +455,7 @@ export default function ClientDashboard() {
         </TabPanel> */}
 
         <TabPanel header='Excel View'>
-          <WorkoutTable trainingWeeks={cycleOptions} cycleOptions={cycleDropdownOptions} setRefreshKey={setRefreshKey}/>
+          <WorkoutTable trainingCycles={cycleOptions} cycleOptions={cycleDropdownOptions} setRefreshKey={setRefreshKey}/>
         </TabPanel>
       </TabView>
 
