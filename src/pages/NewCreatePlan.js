@@ -159,7 +159,7 @@ const NewCreatePlan = ({ isEdit }) => {
     setDeletedGroup(groupToRemove);
     setDeletedGroupIndex(index);
     setPlan({ ...plan, groups: newGroups });
-    showToast('info', 'Group Removed', 'The group has been removed');
+    showToast('info', 'Group Removed', `The group number ${groupToRemove.groupNumber} has been removed`);
   };
 
   const handleUndoDelete = () => {

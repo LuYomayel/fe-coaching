@@ -129,7 +129,7 @@ export default function HomePage() {
                 if (!response.ok) {
                     const errorData = await response.json();
                     console.log('Error de aca: ', errorData)
-                    throw new Error(errorData.message || 'Something went wrong');
+                    throw new Error(errorData.message.message || 'Something went wrong');
                 }
                 const data = await response.json();
                 setLoading(false);
