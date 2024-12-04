@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { ListBox } from 'primereact/listbox';
@@ -9,15 +9,19 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Message } from 'primereact/message';
 import { UserContext } from '../utils/UserContext';
 import io from 'socket.io-client';
-import { fetchMessages, fetchCoachStudents, markMessagesAsRead } from '../services/usersService'; // Actualiza la función si es necesario
+import { fetchMessages, fetchCoachStudents, markMessagesAsRead } from '../services/usersService';
 import { Dialog } from 'primereact/dialog';
 import ReactPlayer from 'react-player';
 import { useChatSidebar } from '../utils/ChatSideBarContext';
 import '../styles/ChatSidebar.css';
-const apiUrl = process.env.REACT_APP_API_URL;
 
-export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
-  const { isChatOpen, closeChatSidebar, selectedChat, setSelectedChat } = useChatSidebar();
+const apiUrl = process.env.REACT_APP_API_URL;
+const MAX_FILE_SIZE = 1000000000; // 1GB
+
+export default function ChatSidebar({ isCoach }) {
+  const { selectedChat, setSelectedChat } = useChatSidebar();
+  const { user, coach, client } = useContext(UserContext);
+  const { setUnreadMessages } = useChatSidebar();
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -26,295 +30,363 @@ export default function ChatSidebar({ isCoach, openChatWithUserId, onClose }) {
   const [filePreview, setFilePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [socket, setSocket] = useState(null);
-  const [isConnected, setIsConnected] = useState(false); // Estado de conexión del socket
+  const [isConnected, setIsConnected] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
-  const fileInputRef = useRef(null);
-  const messagesEndRef = useRef(null);
-  const [dialogVisible, setDialogVisible] = useState(false);
   const [dialogContent, setDialogContent] = useState(null);
 
-  const { user, coach, client } = useContext(UserContext); // Contexto para obtener la información del usuario
-  const { setUnreadMessages} = useChatSidebar()
+  const fileInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const messageListRef = useRef(null);
+
+  // Inicializar socket
   useEffect(() => {
-    // Establecer conexión con el socket
     const newSocket = io(apiUrl, {
-      auth: { token: localStorage.getItem('token') }
+      auth: { token: localStorage.getItem('token') },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
+
     setSocket(newSocket);
 
-    // Manejar conexión y desconexión
     newSocket.on('connect', () => setIsConnected(true));
     newSocket.on('disconnect', () => setIsConnected(false));
-
-    // Recibir nuevos mensajes
-    newSocket.on('receiveMessage', (message) => {
-      if (selectedChat && message.sender.id === selectedChat.user.id) {
-        console.log('hOLA')
-        setMessages((prevMessages) => [message, ...prevMessages]);
-        
-      }else{
-        console.log('recerived MEssage')
-        setUnreadMessages((prevCount) => prevCount + 1);
-      }
+    newSocket.on('error', (error) => {
+      console.error('Socket error:', error);
+      setErrorMessage('Error de conexión. Intentando reconectar...');
     });
 
     return () => newSocket.disconnect();
-  }, [selectedChat]);
+  }, []);
 
-    // Efecto para cargar la lista de clientes cuando el usuario es un coach
-    useEffect(() => {
-        const fetchClients = async () => {
-          if (isCoach && coach) {
-              try {
-                const clientsData = await fetchCoachStudents(coach.user.id); // Obtener lista de clientes del servicio
-                setClients(clientsData); // Guardar clientes en el estado
-              } catch (error) {
-                console.error('Error fetching clients:', error);
-              }
-          } else if(!isCoach) {
+  // Manejar mensajes entrantes
+  useEffect(() => {
+    if (!socket) return;
 
-              setSelectedChat(client.coach)
-          }
-        };
-    
-        fetchClients();
-    }, [isCoach, coach]);
-
-    const fetchMessagesFunc = async (userId, clientId) => {
-        try {
-            console.log("a ver aca 2: ", userId, clientId)
-            const messages = await fetchMessages(userId, clientId);
-            console.log('Y esto? ', messages)
-            if(messages.length > 0 ){
-              const sortedMessages = messages.sort((a, b) =>  new Date(b.timestamp) - new Date(a.timestamp))
-              return sortedMessages
-            }
-            return messages
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-            throw error;
-        }
+    const handleNewMessage = (message) => {
+      if (selectedChat && message.sender.id === selectedChat.user.id) {
+        setMessages(prevMessages => [message, ...prevMessages]);
+        markMessagesAsRead(selectedChat.user.id, user.userId);
+      } else {
+        setUnreadMessages(prev => prev + 1);
+      }
     };
 
-    useEffect(() => {
-        // Cargar los mensajes previos al seleccionar un chat
-        const fetch = async () => {
-          
-            if (selectedChat) {
-              console.log('A ver aca: ', user.userId, selectedChat.user.id)
-                const messages = await fetchMessagesFunc(user.userId, selectedChat.user.id);
-                setMessages(messages);
-                if(messages.length > 0 ){
-                  const countNotReadMessages = messages.filter(message => !message.isRead)
-                  setUnreadMessages(prev => prev - countNotReadMessages.length)
-                }
-                await markMessagesAsRead(selectedChat.user.id, user.userId);
-            }
-        };
-        if(selectedChat && user) fetch();
-    }, [selectedChat, user]);
+    socket.on('receiveMessage', handleNewMessage);
 
+    return () => socket.off('receiveMessage', handleNewMessage);
+  }, [selectedChat, socket, user.userId, setUnreadMessages]);
 
-    useEffect(() => {
-        // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
-
-    const handleSelectChat = async (clientSelected) => {
-      setSelectedChat(clientSelected); // Al seleccionar el cliente, se abre el chat
-      setMessages([]); // Reiniciar mensajes al cambiar de chat
-      const messages = await fetchMessagesFunc(user.userId, clientSelected.user.id);
+  // Cargar clientes (solo para coaches)
+  useEffect(() => {
+    const loadClients = async () => {
+      if (!isCoach || !coach) return;
       
-      setMessages(messages);
+      try {
+        setLoading(true);
+        const clientsData = await fetchCoachStudents(coach.user.id);
+        setClients(clientsData);
+      } catch (error) {
+        console.error('Error loading clients:', error);
+        setErrorMessage('Error al cargar los clientes');
+      } finally {
+        setLoading(false);
+      }
     };
+
+    loadClients();
+  }, [isCoach, coach]);
+
+  // Auto-seleccionar chat para clientes
+  useEffect(() => {
+    if (!isCoach && client?.coach) {
+      setSelectedChat(client.coach);
+    }
+  }, [isCoach, client, setSelectedChat]);
+
+  // Cargar mensajes del chat seleccionado
+  const loadMessages = useCallback(async (userId, chatUserId) => {
+    try {
+      setLoading(true);
+      const fetchedMessages = await fetchMessages(userId, chatUserId);
+      const sortedMessages = fetchedMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      setMessages(sortedMessages);
+      
+      if (sortedMessages.length > 0) {
+        const unreadCount = sortedMessages.filter(message => !message.isRead).length;
+        setUnreadMessages(prev => prev - unreadCount);
+        await markMessagesAsRead(chatUserId, userId);
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      setErrorMessage('Error al cargar los mensajes');
+    } finally {
+      setLoading(false);
+    }
+  }, [setUnreadMessages]);
+
+  useEffect(() => {
+    if (selectedChat && user) {
+      loadMessages(user.userId, selectedChat.user.id);
+    }
+  }, [selectedChat, user, loadMessages]);
+
+  const handleSelectChat = (clientSelected) => {
+    setSelectedChat(clientSelected);
+    setMessages([]);
+    setErrorMessage(null);
+  };
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() || selectedFile) {
+    if (!newMessage.trim() && !selectedFile) return;
+    
+    try {
+      setLoading(true);
+      let fileUrl = null;
+      let fileType = null;
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        
+        const response = await fetch(`${apiUrl}/upload`, { 
+          method: 'POST', 
+          body: formData,
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }).catch(error => {
+          throw new Error(`Error en la carga: ${error.message}`);
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error al subir el archivo');
+        }
+        
+        const data = await response.json();
+        fileUrl = data.url;
+        fileType = data.mimeType;
+      }
+
       const newMsg = {
         senderId: user.userId,
         receiverId: selectedChat.user.id,
         content: newMessage,
         timestamp: new Date().toISOString(),
-        fileUrl: selectedFile ? URL.createObjectURL(selectedFile) : null,
+        fileUrl,
+        fileType
       };
 
-      try {
-        if (selectedFile) {
-          // Lógica para subir el archivo al backend
-          const formData = new FormData();
-          formData.append('file', selectedFile);
-          const response = await fetch(`${apiUrl}/upload`, { method: 'POST', body: formData });
-          const data = await response.json();
-          newMsg.fileUrl = data.url;
-          newMsg.fileType = data.mimeType;
-          fileInputRef.current.clear();
-          setSelectedFile(null);
-          setFilePreview(null);
-        }
-
-        // Enviar el mensaje a través del socket
-        socket.emit('sendMessage', newMsg);
-        setMessages([newMsg ,...messages]);
-        setNewMessage("");
-      } catch (error) {
-        console.error('Error sending message:', error);
-      }
+      socket.emit('sendMessage', newMsg);
+      setMessages(prev => [newMsg, ...prev]);
+      setNewMessage("");
+      clearFileSelection();
+      setLoading(false);
+    } catch (error) {
+      console.error('Error al enviar mensaje:', error);
+      setErrorMessage(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    console.log(filePreview)
-  }, [filePreview])
   const handleFileSelect = (event) => {
     const file = event.files[0];
-    setSelectedFile(file);
-    setLoading(true);
+    if (!file) return;
 
-    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
-      const fileUrl = URL.createObjectURL(file);
-      setFilePreview(fileUrl);
-      setErrorMessage(null);
-    } else {
-      setErrorMessage('Please upload a valid image or video file.');
-      setFilePreview(null);
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
+    if (!validTypes.includes(file.type)) {
+      setErrorMessage('Formato de archivo no soportado. Use JPG, PNG, GIF o MP4.');
+      return;
     }
 
-    setLoading(false);
+    if (file.size > MAX_FILE_SIZE) {
+      setErrorMessage(`El archivo excede el límite de ${MAX_FILE_SIZE / 1000000}MB`);
+      return;
+    }
+
+    setSelectedFile(file);
+    setFilePreview(URL.createObjectURL(file));
+    setErrorMessage(null);
   };
 
-  const removeSelectedFile = () => {
+  const clearFileSelection = () => {
     setSelectedFile(null);
     setFilePreview(null);
-
     if (fileInputRef.current) fileInputRef.current.clear();
   };
 
-  const handleOpenDialog = (fileUrl, fileType) => {
-    setDialogVisible(true);
-    setDialogContent({ fileUrl, fileType });
-  }
-
-  const handleCloseDialog = () => {
-    setDialogVisible(false);
-    setDialogContent(null);
-  }
-
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   return (
-    <Card className="chat-sidebar" style={{ display: 'flex', flexDirection: 'column', 
-    // height: '100%' 
-    }}>
+    <Card className="chat-sidebar">
       <div className="flex justify-content-between align-items-center mb-3">
         <h2 className="text-xl font-bold">Chat</h2>
-        {/* <Button icon="pi pi-times" onClick={onClose} className="p-button-rounded p-button-text" /> */}
+        {errorMessage && (
+          <Message severity="error" text={errorMessage} className="mb-2" />
+        )}
       </div>
       
       {isCoach && !selectedChat && (
-        <div>
-            <h3 className="text-lg font-semibold mb-2">Your Clients</h3>
+        <div className="clients-list">
+          <h3 className="text-lg font-semibold mb-2">Tus Clientes</h3>
+          {loading ? (
+            <ProgressBar mode="indeterminate" style={{ height: '6px' }} />
+          ) : (
             <ListBox 
-            options={clients} 
-            optionLabel="name" 
-            onChange={(e) => handleSelectChat(e.value)} 
-            itemTemplate={(option) => (
+              options={clients} 
+              optionLabel="name" 
+              onChange={(e) => handleSelectChat(e.value)} 
+              itemTemplate={(option) => (
                 <div className="flex align-items-center p-2">
-                <Avatar image={`/images/${option.photo}`} shape="circle" className="mr-2" />
-                <span>{option.name}</span>
+                  <Avatar 
+                    image={`/images/${option.photo}`} 
+                    shape="circle" 
+                    className="mr-2"
+                    onError={(e) => e.target.src = '/images/default-avatar.png'} 
+                  />
+                  <span>{option.name}</span>
                 </div>
-            )}
+              )}
             />
+          )}
         </div>
-        )}
+      )}
 
       {selectedChat && (
-        <div className="chat-window" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-          <div className="flex align-items-center mb-1">
+        <div className="chat-window">
+          <div className="chat-header">
             {isCoach && (
-              <Button icon="pi pi-arrow-left" onClick={() => setSelectedChat(null)} className="p-button-text mr-2" />
+              <Button 
+                icon="pi pi-arrow-left" 
+                onClick={() => setSelectedChat(null)} 
+                className="p-button-text mr-2"
+              />
             )}
-            <Avatar image={`/images/${selectedChat.photo}`} shape="circle" className="mr-2" />
+            <Avatar 
+              image={`/images/${selectedChat.photo}`} 
+              shape="circle" 
+              className="mr-2"
+              onError={(e) => e.target.src = '/images/default-avatar.png'} 
+            />
             <h3 className="text-lg font-semibold">{selectedChat.name}</h3>
           </div>
 
-          <div className="messages-list" style={{ flexGrow: 1, overflowY: 'auto' }}>
-            {messages.map((msg) => (
-              <div key={msg.id} className={`message ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'sent' : 'received'} mb-1`}>
-                {msg.fileUrl && (
-                  <div className="mb-1" onClick={() => handleOpenDialog(msg.fileUrl, msg.fileType)}>
-                    {msg.fileUrl.includes('video') ? (
-                      <ReactPlayer url={msg.fileUrl} controls className="max-w-full h-auto" />
-                    ) : (
-                      <img src={msg.fileUrl} alt="video" className="max-w-full h-auto cursor-pointer" />
-                    )}
-                  </div>
-                )}
-                <p className={` rounded-lg ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'bg-primary text-white' : 'bg-surface-200'}`}>
-                  {msg.content}
-                </p>
-                <small className="">{new Date(msg.timestamp).toLocaleTimeString()}</small>
-              </div>
-            ))}
+          <div className="messages-list" ref={messageListRef}>
+            {loading ? (
+              <ProgressBar mode="indeterminate" style={{ height: '6px' }} />
+            ) : (
+              messages.map((msg) => (
+                <div 
+                  key={msg.id} 
+                  className={`message ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'sent' : 'received'}`}
+                >
+                  {msg.fileUrl && (
+                    <div className="message-attachment" onClick={() => setDialogContent({ fileUrl: msg.fileUrl, fileType: msg.fileType })}>
+                      {msg.fileType?.includes('video') ? (
+                        <ReactPlayer url={msg.fileUrl} controls width="100%" height="200px" />
+                      ) : (
+                        <img src={msg.fileUrl} alt="attachment" className="message-image" />
+                      )}
+                    </div>
+                  )}
+                  {msg.content && (
+                    <p className="message-content">{msg.content}</p>
+                  )}
+                  <small className="message-time">
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </small>
+                </div>
+              ))
+            )}
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="mt-3">
+          <div className="chat-input">
             {filePreview && (
-              <div className="file-preview relative mb-2">
-                {selectedFile.type.startsWith('image/') ? (
-                  <img src={filePreview} alt="preview" className="max-w-full h-auto" />
+              <div className="file-preview">
+                {selectedFile?.type.startsWith('image/') ? (
+                  <img src={filePreview} alt="preview" />
                 ) : (
-                  <ReactPlayer url={filePreview} controls className="max-w-full h-auto" />
+                  <ReactPlayer 
+                    url={filePreview} 
+                    controls 
+                    width="100%" 
+                    height="150px"
+                    style={{ maxHeight: '150px' }}
+                  />
                 )}
-                <Button icon="pi pi-times" onClick={removeSelectedFile} className="p-button-rounded p-button-danger p-button-text absolute top-0 right-0" />
+                <Button 
+                  icon="pi pi-times" 
+                  onClick={clearFileSelection} 
+                  className="remove-file-button p-button-rounded p-button-danger p-button-text"
+                />
               </div>
             )}
-
-            {errorMessage && <Message severity="error" text={errorMessage} className="mb-2" />}
-
-            <div className="p-inputgroup">
+            
+            <div className="input-group">
               <InputText 
-                value={newMessage}  
-                onChange={(e) => setNewMessage(e.target.value)} 
-                placeholder="Type a message..." 
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault(); // Evita que se añada un salto de línea
-                    handleSendMessage(); // Envía el mensaje cuando se presiona Enter
-                  }
-                }} 
-                />
+                value={newMessage} 
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Escribe un mensaje..."
+                disabled={!isConnected || loading}
+              />
               <FileUpload 
                 mode="basic"
-                name="file" 
-                accept="image/*,video/*" 
-                maxFileSize={1000000000}
+                name="file"
+                accept="image/*,video/*"
+                maxFileSize={MAX_FILE_SIZE}
                 customUpload
                 uploadHandler={handleFileSelect}
                 ref={fileInputRef}
                 auto
-                chooseOptions={{ icon: 'pi pi-paperclip', iconOnly: true }}
+                chooseOptions={{ 
+                  icon: 'pi pi-paperclip', 
+                  iconOnly: true,
+                  disabled: !isConnected || loading
+                }}
                 className="p-button-outlined"
               />
-              <Button icon="pi pi-send" onClick={handleSendMessage} disabled={loading} />
+              <Button 
+                icon="pi pi-send" 
+                onClick={handleSendMessage}
+                disabled={(!newMessage.trim() && !selectedFile) || !isConnected || loading}
+              />
             </div>
-
-            {loading && <ProgressBar mode="indeterminate" style={{ height: '6px' }} className="mt-2" />}
           </div>
         </div>
       )}
 
-      {/* Dialog to display image/video */}
-      <Dialog  draggable={false} resizable={false}  dismissableMask header="Attachment" visible={dialogVisible} style={{ width: '80vw', height:'80vh' }} className='responsive-dialog' onHide={handleCloseDialog}>
-        {dialogContent && (
-          <>
-            {dialogContent.fileType.includes('video') ? (
-              <ReactPlayer url={dialogContent.fileUrl} controls className="w-full h-full" />
-            ) : (
-              <img src={dialogContent.fileUrl} alt="attachment" className="w-full h-auto" />
-            )}
-          </>
+      <Dialog 
+        visible={!!dialogContent} 
+        onHide={() => setDialogContent(null)}
+        header="Archivo adjunto"
+        maximizable
+        className="media-dialog"
+      >
+        {dialogContent?.fileType?.includes('video') ? (
+          <ReactPlayer 
+            url={dialogContent?.fileUrl} 
+            controls 
+            width="100%"
+            height="100%"
+          />
+        ) : (
+          <img 
+            src={dialogContent?.fileUrl} 
+            alt="attachment" 
+            className="dialog-image"
+          />
         )}
       </Dialog>
-
     </Card>
   );
 }

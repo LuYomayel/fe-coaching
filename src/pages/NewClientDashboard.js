@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dropdown } from 'primereact/dropdown';
-import { Chart } from 'primereact/chart';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
@@ -17,10 +16,9 @@ import listPlugin from '@fullcalendar/list';
 import { useParams } from 'react-router-dom';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { UserContext } from '../utils/UserContext';
 import AssignWorkoutToCycleDialog from '../dialogs/AssignWorkoutToCycleDialog';
 import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialog';
-import PlanDetails from '../dialogs/PlanDetails';
+
 import NewPlanDetail from '../dialogs/NewPlanDetails';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId } from '../services/workoutService';
@@ -28,27 +26,35 @@ import '../styles/ClientDashboard.css';
 import { formatDate } from '../utils/UtilFunctions';
 import WorkoutTable from '../components/WorkoutTable';
 import { Badge } from 'primereact/badge';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 export default function ClientDashboard() {
   const { clientId } = useParams();
   const toast = useRef(null);
   const showToast = useToast();
   const { setLoading } = useSpinner();
-  const { user } = useContext(UserContext);
+  
+  const intl = useIntl();
 
   // State variables
   const [dialogVisible, setDialogVisible] = useState(false);
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-  const [workoutDetailsVisible, setWorkoutDetailsVisible] = useState(false);
+
+  // eslint-disable-next-line
   const [selectedExercise, setSelectedExercise] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
+  
+  // eslint-disable-next-line
   const [exerciseOptions, setExerciseOptions] = useState([]);
+
+  // eslint-disable-next-line
   const [chartData, setChartData] = useState(null);
   const [workoutOptions, setWorkoutOptions] = useState([]);
   const [filteredWorkouts, setFilteredWorkouts] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [assignCycleVisible, setAssignCycleVisible] = useState(false);
+
+  // eslint-disable-next-line
   const [selectedCycleId, setSelectedCycleId] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
@@ -193,11 +199,6 @@ export default function ClientDashboard() {
   }, [selectedWorkout, workouts]);
 
   // Handlers
-  const handleEventClick = (info) => {
-    const workoutInstanceId = info.event.extendedProps.workoutInstanceId;
-    handleViewWorkoutDetails(workoutInstanceId);
-  };
-
   const handleViewWorkoutDetails = (workoutInstanceId) => {
     setLoading(true);
     setSelectedPlan(workoutInstanceId);
@@ -281,19 +282,30 @@ export default function ClientDashboard() {
 
   const renderPlanName = (rowData) => (
     <div>
-        {/* Título del nombre del plan */}
-        <p className="font-bold">{rowData.workout.planName}</p>
-        
-        {/* Información adicional en un estilo más pequeño */}
-        <p className="text-sm">Completed on: {formatDate(rowData.realEndDate)}</p>
-        <p className="text-sm">Session time: {rowData.sessionTime}</p>
-        <p className="text-sm">Feedback: {rowData.generalFeedback}</p>
-        <p className="text-sm">Mood: {rowData.mood ? `${rowData.mood}/10` : '-'}</p>
-        <p className="text-sm">Energy level: {rowData.energyLevel ? `${rowData.energyLevel}/10` : '-'}</p>
-        <p className="text-sm">Difficulty: {rowData.perceivedDifficulty ? `${rowData.perceivedDifficulty}/10` : '-'}</p>
-        <p className="text-sm">Extra notes: {rowData.feedback}</p>
+      <p className="font-bold">{rowData.workout.planName}</p>
+      <p className="text-sm">
+        <FormattedMessage id="clientDashboard.workout.completedOn" />: {formatDate(rowData.realEndDate)}
+      </p>
+      <p className="text-sm">
+        <FormattedMessage id="clientDashboard.workout.sessionTime" />: {rowData.sessionTime}
+      </p>
+      <p className="text-sm">
+        <FormattedMessage id="clientDashboard.workout.feedback" />: {rowData.generalFeedback}
+      </p>
+      <p className="text-sm">
+        <FormattedMessage id="clientDashboard.workout.mood" />: {rowData.mood ? `${rowData.mood}/10` : '-'}
+      </p>
+      <p className="text-sm">
+        <FormattedMessage id="clientDashboard.workout.energy" />: {rowData.energyLevel ? `${rowData.energyLevel}/10` : '-'}
+      </p>
+      <p className="text-sm">
+        <FormattedMessage id="clientDashboard.workout.difficulty" />: {rowData.perceivedDifficulty ? `${rowData.perceivedDifficulty}/10` : '-'}
+      </p>
+      <p className="text-sm">
+        <FormattedMessage id="clientDashboard.workout.notes" />: {rowData.feedback}
+      </p>
     </div>
-);
+  );
 
   const renderWorkoutDetails = (rowData) => {
     return (
@@ -304,7 +316,7 @@ export default function ClientDashboard() {
             const availableProperties = allProperties.filter(prop => {
               return (
                 exercise[prop] != null 
-                && exercise[prop] != '' 
+                && exercise[prop] !== '' 
                 // && exercise.setLogs.some(log => log[prop] != null)
               );
             });
@@ -361,26 +373,28 @@ export default function ClientDashboard() {
     <div className="client-dashboard p-4">
       <Toast ref={toast} />
       <Card className="mb-4" style={{ backgroundImage: 'linear-gradient(to right, #6366F1, #A5B4FC)' }}>
-        <h1 className="text-4xl font-bold text-center text-white">Client Dashboard</h1>
+        <h1 className="text-4xl font-bold text-center text-white">
+          <FormattedMessage id="clientDashboard.title" />
+        </h1>
       </Card>
 
       <TabView>
-        <TabPanel header="Workout Calendar">
+        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.calendar' })}>
           <div className="mb-3 flex flex-wrap gap-2">
             <Button 
-              label="Assign Workouts" 
+              label={intl.formatMessage({ id: 'clientDashboard.buttons.assign' })}
               icon="pi pi-refresh" 
               className="p-button-success" 
               onClick={() => handleOpenAssignCycle('assign')} 
             />
             <Button 
-              label="Unassign Workouts" 
+              label={intl.formatMessage({ id: 'clientDashboard.buttons.unassign' })}
               icon="pi pi-trash" 
               className="p-button-danger" 
               onClick={() => handleOpenAssignCycle('unassign')} 
             />
             <Button 
-              label="Create Training Cycle" 
+              label={intl.formatMessage({ id: 'clientDashboard.buttons.createCycle' })}
               icon="pi pi-plus" 
               className="p-button-secondary" 
               onClick={showCreateCycleDialog} 
@@ -429,33 +443,37 @@ export default function ClientDashboard() {
           </Dialog>
         </TabPanel>
 
-        <TabPanel header="Workout Details">
+        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.details' })}>
           <div className="grid">
             <div className="col-12">
-              <Dropdown value={selectedWorkout} options={workoutOptions} onChange={(e) => setSelectedWorkout(e.value)} placeholder="Select a Workout" className="w-full mb-3" />
+              <Dropdown 
+                value={selectedWorkout} 
+                options={workoutOptions} 
+                onChange={(e) => setSelectedWorkout(e.value)} 
+                placeholder={intl.formatMessage({ id: 'clientDashboard.dropdown.selectWorkout' })}
+                className="w-full mb-3" 
+              />
               <DataTable value={filteredWorkouts}>
-                <Column body={renderPlanName} header="Workout Name" style={{ width: '30%' }}/>
-                <Column header="Details" body={renderWorkoutDetails} />
+                <Column 
+                  body={renderPlanName} 
+                  header={intl.formatMessage({ id: 'clientDashboard.table.workoutName' })} 
+                  style={{ width: '30%' }}
+                />
+                <Column 
+                  header={intl.formatMessage({ id: 'clientDashboard.table.details' })} 
+                  body={renderWorkoutDetails} 
+                />
               </DataTable>
             </div>
           </div>
         </TabPanel>
 
-        {/* <TabPanel header="Exercise Progress">
-          <div className="grid">
-            <div className="col-12 md:col-6">
-              <Dropdown value={selectedExercise} options={exerciseOptions} filter filterBy="label" onChange={(e) => setSelectedExercise(e.value)} placeholder="Select an Exercise" className="w-full mb-3" />
-              {chartData && <Chart type="line" data={chartData} options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                aspectRatio: 1.5,
-              }} />}
-            </div>
-          </div>
-        </TabPanel> */}
-
-        <TabPanel header='Excel View'>
-          <WorkoutTable trainingCycles={cycleOptions} cycleOptions={cycleDropdownOptions} setRefreshKey={setRefreshKey}/>
+        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.excelView' })}>
+          <WorkoutTable 
+            trainingCycles={cycleOptions} 
+            cycleOptions={cycleDropdownOptions} 
+            setRefreshKey={setRefreshKey}
+          />
         </TabPanel>
       </TabView>
 

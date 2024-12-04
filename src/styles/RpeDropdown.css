@@ -1,0 +1,32 @@
+.rpe-dropdown {
+  width: 100%;
+  max-width: 300px;
+}
+
+.rpe-option {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.error-message {
+  color: var(--red-500);
+  padding: 8px;
+  border-radius: 4px;
+  background-color: var(--red-50);
+}
+
+.warning-message {
+  color: var(--yellow-500);
+  padding: 8px;
+  border-radius: 4px;
+  background-color: var(--yellow-50);
+}
+
+.p-inputnumber-buttons-horizontal .p-button {
+  width: 2rem;
+}
+
+.p-dropdown-item {
+  padding: 0.5rem;
+} 

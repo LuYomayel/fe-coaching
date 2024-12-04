@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card } from 'primereact/card';
-import { Badge } from 'primereact/badge';
 import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
 import { InputText } from 'primereact/inputtext';
@@ -11,6 +10,7 @@ import { Fieldset } from 'primereact/fieldset';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { Toast } from 'primereact/toast';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
@@ -28,6 +28,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
   const showToast = useToast();
   const { loading, setLoading } = useSpinner();
   const toast = useRef(null);
+  const intl = useIntl();
 
   const [plan, setPlan] = useState(null);
   const [exerciseProgress, setExerciseProgress] = useState({});
@@ -149,29 +150,25 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
 
   const handleSaveProgress = () => {
     localStorage.setItem(`exerciseProgress_${planId}`, JSON.stringify(exerciseProgress));
-    showToast('success', 'Progress Saved', 'Your progress has been saved successfully.');
-  };
-
-  const handleFinishTraining = () => {
-    setFinishDialogVisible(true);
+    showToast('success', 'Success', intl.formatMessage({ id: 'training.success.saved' }));
   };
 
   const handleSubmitFeedback = ({ sessionTime, generalFeedback, energyLevel, mood, perceivedDifficulty, additionalNotes }) => {
     const exerciseFeedbackArray = Object.entries(exerciseProgress)
       .map(([exerciseId, progress]) => {
         const sets = Object.values(progress.sets || {});
-        const group = plan.groups.find((group) => group.exercises.some((ex) => ex.id == exerciseId));
+        const group = plan.groups.find((group) => group.exercises.some((ex) => ex.id === exerciseId));
         if (!group) {
-          showToast('error', 'Error', 'Original exercise not found.');
+          showToast('error', 'Error', intl.formatMessage({ id: 'training.error.exerciseNotFound' }));
           return null;
         }
-        const originalExercise = group.exercises.find((ex) => ex.id == exerciseId);
+        const originalExercise = group.exercises.find((ex) => ex.id === exerciseId);
         const allFieldsFilled = sets.every((set) =>
           Object.keys(originalExercise).every((key) => originalExercise[key] === '' || set[key] !== '')
         );
 
         if (!allFieldsFilled) {
-          showToast('error', 'Error', 'All relevant fields must be filled out.');
+          showToast('error', 'Error', intl.formatMessage({ id: 'training.error.fillAllFields' }));
           return null;
         }
 
@@ -187,7 +184,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
       .filter((feedback) => feedback !== null);
 
     if (exerciseFeedbackArray.length === 0) {
-      showToast('error', 'Error', 'No valid feedback to submit.');
+      showToast('error', 'Error', intl.formatMessage({ id: 'training.error.noFeedback' }));
       return;
     }
 
@@ -222,6 +219,9 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
     return (
       <div className="flex justify-content-center align-items-center" style={{ height: '100vh' }}>
         <ProgressSpinner />
+        <span className="ml-2">
+          <FormattedMessage id="training.loading" />
+        </span>
       </div>
     );
   }
@@ -230,28 +230,35 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
     <div className="training-plan-details">
       <Toast ref={toast} />
       <Card className="mb-3">
-        <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">Training Plan</h1>
+        <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">
+          <FormattedMessage id="training.title" />
+        </h1>
         <h2 className="text-xl md:text-2xl mb-1 md:mb-2">{plan.workout.planName}</h2>
-        {!plan.isTemplate && <p className="text-lg md:text-xl">Status: {plan.status}</p>}
+        {!plan.isTemplate && (
+          <p className="text-lg md:text-xl">
+            <FormattedMessage id="training.status" />: {plan.status}
+          </p>
+        )}
       </Card>
 
       <div className="mobile-view md:hidden">
         <Accordion>
-          {plan.groups.map((group, groupIndex) => {
-            const isCompleted = group.exercises.some(exercise => exercise.completed || exercise.completedNotAsPlanned);
-            return (
-            <AccordionTab key={groupIndex} header={
-              <>
-                  Group {group.groupNumber}
-                  <Badge
-                      value={exerciseProgress[group.id]?.groupCompleted ? '✔' : '⏳'}
-                      className="ml-2"
-                      severity={exerciseProgress[group.id]?.groupCompleted ? 'success' : 'warning'}
-                  />
-              </>
-          }>
-              <p><strong>Set Count:</strong> {group.set}</p>
-              <p><strong>Rest Interval:</strong> {group.rest} seconds</p>
+          {plan.groups.map((group, groupIndex) => (
+            <AccordionTab 
+              key={groupIndex} 
+              header={
+                <FormattedMessage 
+                  id="training.group" 
+                  values={{ number: group.groupNumber }}
+                />
+              }
+            >
+              <p>
+                <strong><FormattedMessage id="training.group.set" />:</strong> {group.set}
+              </p>
+              <p>
+                <strong><FormattedMessage id="training.group.rest" />:</strong> {group.rest} <FormattedMessage id="training.seconds" />
+              </p>
 
               {group.exercises.map((exercise, exerciseIndex) => (
                 <Card key={exerciseIndex} className="mb-3 p-2">
@@ -260,14 +267,14 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                     <div className="col-12">
                       <img
                         src={getYouTubeThumbnail(exercise.exercise.multimedia)}
-                        alt={`${exercise.exercise.name} thumbnail`}
+                        alt={exercise.exercise.name}
                         className="cursor-pointer w-full"
                         onClick={() => handleVideoClick(exercise.exercise.multimedia)}
                       />
                     </div>
                     <div className="col-12">
                       <Accordion>
-                        <AccordionTab header="Exercise Details">
+                        <AccordionTab header={intl.formatMessage({ id: 'training.exercise.details' })}>
                           {Object.keys(exercise).map(
                             (property, propertyIndex) =>
                               property !== 'exercise' &&
@@ -286,7 +293,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                               )
                           )}
                         </AccordionTab>
-                        <AccordionTab header="Exercise Progress">
+                        <AccordionTab header={intl.formatMessage({ id: 'training.exercise.progress' })}>
                           {isClientTraining ? (
                             <div className="exercise-inputs">
                               <div className="p-field-checkbox mb-2">
@@ -295,7 +302,9 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                                   checked={exerciseProgress[exercise.id]?.completedNotAsPlanned || false}
                                   onChange={() => handleCompletedChange(exercise.id, true)}
                                 />
-                                <label htmlFor={`completed-not-as-planned-${exercise.id}`} className="ml-2">Completed Not as Planned</label>
+                                <label htmlFor={`completed-not-as-planned-${exercise.id}`} className="ml-2">
+                                  <FormattedMessage id="training.checkbox.notAsPlanned" />
+                                </label>
                               </div>
                               {exerciseProgress[exercise.id]?.completedNotAsPlanned &&
                                 Array.from({ length: parseInt(exercise.sets) || group.set || 1 }).map((_, setIndex) => (
@@ -400,7 +409,7 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                 </Card>
               ))}
             </AccordionTab>
-          )})}
+          ))}
         </Accordion>
       </div>
 
@@ -561,8 +570,18 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
 
       {isClientTraining && (
         <div className="flex justify-content-between mt-3">
-          <Button label="Save Progress" icon="pi pi-save" className="p-button-sm md:p-button-normal" onClick={handleSaveProgress} />
-          <Button label="Finish Training" icon="pi pi-check" className="p-button-sm md:p-button-normal" onClick={handleFinishTraining} />
+          <Button 
+            label={intl.formatMessage({ id: 'training.buttons.saveProgress' })}
+            icon="pi pi-save" 
+            className="p-button-sm md:p-button-normal" 
+            onClick={handleSaveProgress} 
+          />
+          <Button 
+            label={intl.formatMessage({ id: 'training.buttons.finishTraining' })}
+            icon="pi pi-check" 
+            className="p-button-sm md:p-button-normal" 
+            onClick={() => setFinishDialogVisible(true)} 
+          />
         </div>
       )}
 

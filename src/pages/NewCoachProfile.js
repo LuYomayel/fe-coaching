@@ -17,7 +17,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchCoachWorkouts, fetchTrainingCyclesByCoachId, getRpeMethods } from '../services/workoutService';
-import { fetchCoach, fetchCoachPlans, fetchCoachStudents, fetchWorkoutProgressByCoachId } from '../services/usersService';
+import { fetchCoach, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
 import {
   createOrUpdateCoachPlan,
   fetchCoachSubscription,
@@ -29,12 +29,13 @@ import { extractYouTubeVideoId, getYouTubeThumbnail, isValidYouTubeUrl } from '.
 import { MultiSelect } from 'primereact/multiselect';
 import { FilterMatchMode } from 'primereact/api';
 import * as XLSX from 'xlsx';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import Spinner from '../utils/LittleSpinner';
+import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function CoachProfilePage() {
+  const intl = useIntl();
   const [activeIndex, setActiveIndex] = useState(0);
   const { user, coach } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
@@ -44,10 +45,14 @@ export default function CoachProfilePage() {
 
   const [isWorkoutsLoading, setIsWorkoutsLoading] = useState(true);
   const [isCoachInfoLoading, setIsCoachInfoLoading] = useState(true);
-  const [isCoachSubscriptionLoading, setIsCoachSubscriptionLoading] = useState(true);
-  const [isCoachPlansLoading, setIsCoachPlansLoading] = useState(true);
   const [isExercisesLoading, setIsExercisesLoading] = useState(true);
+  // eslint-disable-next-line
+  const [isCoachSubscriptionLoading, setIsCoachSubscriptionLoading] = useState(true);
+  // eslint-disable-next-line
+  const [isCoachPlansLoading, setIsCoachPlansLoading] = useState(true);
+  // eslint-disable-next-line
   const [isBodyAreasLoading, setIsBodyAreasLoading] = useState(true);
+  // eslint-disable-next-line
   const [isSubscriptionPlansLoading, setIsSubscriptionPlansLoading] = useState(true);
   // State variables
   const [refreshKey, setRefreshKey] = useState(0);
@@ -77,6 +82,7 @@ export default function CoachProfilePage() {
   const [currentVideoUrl, setCurrentVideoUrl] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedBodyAreas, setSelectedBodyAreas] = useState([]);
+  // eslint-disable-next-line
   const [selectedFile, setSelectedFile] = useState(null);
 
   const fileUploadRef = useRef(null);
@@ -87,6 +93,7 @@ export default function CoachProfilePage() {
     exerciseType: { value: null, matchMode: FilterMatchMode.CONTAINS },
     description: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
+  // eslint-disable-next-line
   const [numRows, setNumRows] = useState(0);
   const [dialogMode, setDialogMode] = useState('create'); // 'create' or 'edit'
   const [newExercise, setNewExercise] = useState({
@@ -305,17 +312,13 @@ export default function CoachProfilePage() {
       fetchRpeMethods(); 
       fetchClients();
       fetchTrainingPlans(); 
+      // eslint-disable-next-line
     }, [user.userId, showToast, navigate, refreshKey]);
 
   const handleViewPlanDetails = (workoutInstanceId) => {
     setLoading(true);
     setSelectedPlan(workoutInstanceId);
     setPlanDetailsVisible(true);
-  };
-
-  const hidePlanDetails = () => {
-    setPlanDetailsVisible(false);
-    setSelectedPlan(null);
   };
 
   // Handle save RPE method function
@@ -1157,24 +1160,28 @@ export default function CoachProfilePage() {
         {isCoachInfoLoading ? <Spinner/> : (
           <div className="flex flex-column md:flex-row">
             <div className="flex-grow-1">
-              <h1 className="text-3xl font-bold mb-2">Welcome, {coachInfo?.name}!</h1>
+              <h1 className="text-3xl font-bold mb-2">
+                <FormattedMessage id="coach.welcome" values={{ name: coachInfo?.name }} />
+              </h1>
               <p className="mb-2">
-                <strong>Email:</strong> {coachInfo?.user.email}
+                <strong><FormattedMessage id="coach.email" />:</strong> {coachInfo?.user.email}
               </p>
               <p className="mb-2">
-                <strong>Experience:</strong> {coachInfo?.experience}
+                <strong><FormattedMessage id="coach.experience" />:</strong> {coachInfo?.experience}
               </p>
               <p className="mb-2">
-                <strong>Training Type:</strong> {coachInfo?.trainingType.join(', ')}
+                <strong><FormattedMessage id="coach.trainingType" />:</strong> {coachInfo?.trainingType.join(', ')}
               </p>
               {coachInfo?.hasGym && (
                 <p>
-                  <strong>Gym Location:</strong> {coachInfo?.gymLocation}
+                  <strong><FormattedMessage id="coach.gymLocation" />:</strong> {coachInfo?.gymLocation}
                 </p>
               )}
             </div>
             <div className="flex-grow-1 mt-4 md:mt-0">
-              <h2 className="text-xl font-bold mb-2">Biography</h2>
+              <h2 className="text-xl font-bold mb-2">
+                <FormattedMessage id="coach.biography" />
+              </h2>
               <p>{coachInfo?.bio}</p>
             </div>
           </div>
@@ -1182,23 +1189,21 @@ export default function CoachProfilePage() {
       </Card>
 
       <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
-        <TabPanel header="Workouts">
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.workouts' })}>
           <DataTable
-              value={workouts}
-              responsiveLayout="scroll"
-              className="p-datatable-sm"
-              header={renderHeader('Workouts')}
-              loading={isWorkoutsLoading}
+            value={workouts}
+            responsiveLayout="scroll"
+            className="p-datatable-sm"
+            header={renderHeader(intl.formatMessage({ id: 'coach.tabs.workouts' }))}
+            loading={isWorkoutsLoading}
           >
-            <Column field="planName" header="Workout Name"></Column>
-            <Column
-              body={(rowData) => actionBodyTemplate(rowData, 'workout')}
-              style={{ width: '120px' }}
-            ></Column>
+            <Column field="planName" header={intl.formatMessage({ id: 'coach.exercise.name' })}></Column>
+            <Column body={(rowData) => actionBodyTemplate(rowData, 'workout')} style={{ width: '120px' }}></Column>
           </DataTable>
         </TabPanel>
-        <TabPanel header="Coach Plans">
-          <div> {renderHeader('Plans')} </div>
+
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.plans' })}>
+          <div>{renderHeader(intl.formatMessage({ id: 'coach.tabs.plans' }))}</div>
           <div className="grid">
             {coachPlans.map((plan) => (
               <div key={plan.id} className="col-12 md:col-6 lg:col-4">
@@ -1226,12 +1231,13 @@ export default function CoachProfilePage() {
             ))}
           </div>
         </TabPanel>
-        <TabPanel header="Exercise Library">
+
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.exercises' })}>
           <DataTable
             value={exercises}
             responsiveLayout="scroll"
             className="p-datatable-sm"
-            header={renderHeader('Exercises')}
+            header={renderHeader(intl.formatMessage({ id: 'coach.tabs.exercises' }))}
             filters={filters}
             globalFilterFields={['name', 'exerciseType', 'description']}
             onFilter={(e) => setFilters(e.filters)}
@@ -1239,46 +1245,62 @@ export default function CoachProfilePage() {
           >
             <Column
               field="name"
-              header="Exercise Name"
+              header={intl.formatMessage({ id: 'coach.exercise.name' })}
               style={{ width: '20%' }}
               filter
               filterElement={nameFilterTemplate}
             />
-            <Column field="multimedia" header="Video" body={videoBodyTemplate} />
-            <Column field="exerciseType" header="Type" filter filterElement={exerciseTypeFilterTemplate} />
+            <Column 
+              field="multimedia" 
+              header={intl.formatMessage({ id: 'coach.exercise.video' })} 
+              body={videoBodyTemplate} 
+            />
+            <Column 
+              field="exerciseType" 
+              header={intl.formatMessage({ id: 'coach.exercise.type' })} 
+              filter 
+              filterElement={exerciseTypeFilterTemplate} 
+            />
             <Column
               field="description"
-              header="Description"
+              header={intl.formatMessage({ id: 'coach.exercise.description' })}
               style={{ width: '30%' }}
               filter
               filterElement={descriptionFilterTemplate}
             />
-            <Column field="equipmentNeeded" header="Equipment Needed" />
+            <Column 
+              field="equipmentNeeded" 
+              header={intl.formatMessage({ id: 'coach.exercise.equipment' })} 
+            />
             <Column
               field="actions"
-              header="Actions"
+              header={intl.formatMessage({ id: 'common.actions' })}
               body={(rowData) => actionsBodyTemplate(rowData, 'exercise')}
             />
           </DataTable>
         </TabPanel>
-        <TabPanel header="Subscription Plans">
+
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.subscription' })}>
           <div className="grid">
             {subscriptionPlans.map((plan) => (
               <div key={plan.id} className="col-12 md:col-6 lg:col-4">
                 <Card
                   title={plan.name}
                   subTitle={`$${plan.price.toFixed(2)} / month`}
-                  className={classNames('h-full relative', { 'border-primary': plan.id == currentPlanId })}
+                  className={classNames('h-full relative', { 'border-primary': plan.id === currentPlanId })}
                 >
                   <ul className="list-none p-0 m-0">
                     <li className="flex align-items-center mb-2">
                       <i className="pi pi-check-circle mr-2 text-green-500"></i>
-                      <span>Max Clients: {plan.max_clients}</span>
+                      <FormattedMessage 
+                        id="coach.subscription.maxClients" 
+                        values={{ max: plan.max_clients }} 
+                      />
                     </li>
                   </ul>
-                  {plan.id == currentPlanId && (
+                  {plan.id === currentPlanId && (
                     <div className="absolute top-0 right-0 bg-primary text-white px-2 py-1 text-xs font-bold">
-                      Current Plan
+                      <FormattedMessage id="coach.subscription.currentPlan" />
                     </div>
                   )}
                 </Card>
@@ -1286,24 +1308,34 @@ export default function CoachProfilePage() {
             ))}
           </div>
         </TabPanel>
-        <TabPanel header="RPE Methods">
+
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.rpe' })}>
           <div className="flex justify-content-end mb-3">
-            <Button label="Add RPE Method" icon="pi pi-plus" onClick={() => setRpeDialogVisible(true)} />
-            <Button label="Assign RPE Method" icon="pi pi-plus" onClick={() => setRpeAssignmentDialogVisible(true)} />
+            <Button 
+              label={intl.formatMessage({ id: 'coach.buttons.add' }, { item: 'RPE Method' })} 
+              icon="pi pi-plus" 
+              onClick={() => setRpeDialogVisible(true)} 
+            />
+            <Button 
+              label={intl.formatMessage({ id: 'coach.buttons.assign' }, { item: 'RPE Method' })} 
+              icon="pi pi-plus" 
+              onClick={() => setRpeAssignmentDialogVisible(true)} 
+            />
           </div>
           <DataTable value={rpeMethods} className="mt-4" loading={isRpeLoading}>
-            <Column field="name" header="RPE Name" />
-            <Column field="minValue" header="Min Value" />
-            <Column field="maxValue" header="Max Value" />
-            <Column field="step" header="Step" />
-            <Column header="Actions" body={rpeActionsBodyTemplate} />
+            <Column field="name" header={intl.formatMessage({ id: 'coach.rpe.name' })} />
+            <Column field="minValue" header={intl.formatMessage({ id: 'coach.rpe.minValue' })} />
+            <Column field="maxValue" header={intl.formatMessage({ id: 'coach.rpe.maxValue' })} />
+            <Column field="step" header={intl.formatMessage({ id: 'coach.rpe.step' })} />
+            <Column header={intl.formatMessage({ id: 'common.actions' })} body={rpeActionsBodyTemplate} />
           </DataTable>
-          
         </TabPanel>
       </TabView>
 
       <Card className="mt-4">
-        <h2 className="text-xl font-bold mb-3">Import Exercises</h2>
+        <h2 className="text-xl font-bold mb-3">
+          <FormattedMessage id="coach.buttons.import" />
+        </h2>
         <FileUpload
           name="file"
           ref={fileUploadRef}
@@ -1315,7 +1347,11 @@ export default function CoachProfilePage() {
           onClear={onTemplateClear}
           accept=".csv,.xlsx"
           maxFileSize={1000000}
-          emptyTemplate={<p className="m-0">Drag and drop a file here to upload.</p>}
+          emptyTemplate={
+            <p className="m-0">
+              <FormattedMessage id="coach.exercise.dragDrop" />
+            </p>
+          }
         />
       </Card>
 

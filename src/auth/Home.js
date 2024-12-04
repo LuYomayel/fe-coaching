@@ -15,15 +15,11 @@ import { useSpinner } from '../utils/GlobalSpinner';
 import {jwtDecode} from 'jwt-decode';
 import { fetchClient, fetchCoach } from '../services/usersService';
 import { fetchCoachSubscriptionPlans } from '../services/subscriptionService';
-
-// Ensure you have these imports in your main application file:
-// import 'primereact/resources/themes/lara-light-indigo/theme.css';
-// import 'primereact/resources/primereact.min.css';
-// import 'primeicons/primeicons.css';
-// import 'primeflex/primeflex.css';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 export default function HomePage() {
+    const intl = useIntl();
     const [loginVisible, setLoginVisible] = useState(false);
     const [signUpVisible, setSignUpVisible] = useState(false);
     const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -46,7 +42,8 @@ export default function HomePage() {
         if (token) {
             const decodedToken = jwtDecode(token);
             if (!decodedToken.isVerified) {
-                showToast('error', 'Verify your email prior to logging in!', 'Check your email to verify it, please');
+                // showToast('error', 'Verify your email prior to logging in!', 'Check your email to verify it, please');
+                showToast('error', intl.formatMessage({id: 'home.error.verifyEmail' }), intl.formatMessage({id: 'home.error.checkEmail'}) )
             } else {
                 setUser(decodedToken);
                 if (decodedToken.userType === 'client') {
@@ -56,7 +53,7 @@ export default function HomePage() {
                 }
             }
         }
-    }, [navigate, setUser]);
+    }, [navigate, setUser, showToast]);
 
     useEffect(() => {
         const fetchSubscriptionPlans = async () => {
@@ -71,7 +68,8 @@ export default function HomePage() {
         };    
         fetchSubscriptionPlans();
     }
-    , []);
+    , [showToast]);
+    
     const validateLoginForm = () => {
         let isValid = true;
         const errors = { email: '', password: '' };
@@ -138,7 +136,7 @@ export default function HomePage() {
                     const decodedToken = jwtDecode(data.access_token);
                     setUser(decodedToken);
                     if (!decodedToken.isVerified) {
-                        showToast('error', 'Verify your email prior to logging in!', 'Check your email to verify it, please');
+                        showToast('error', `${intl.formatMessage({id: 'home.error.verifyEmail' })}`, `${intl.formatMessage({id: 'home.error.checkEmail'})}` )
                     } else {
                         if (decodedToken.userType === 'coach') {
                             const coachData = await fetchCoach(decodedToken.userId);
@@ -204,11 +202,11 @@ export default function HomePage() {
                     <span className="font-bold text-xl">EaseTrain</span>
                 </div>
                 <div>
-                    <Button label="Features" className="p-button-text mr-2" onClick={() => scrollToSection(featuresRef)} />
-                    <Button label="Pricing" className="p-button-text mr-2" onClick={() => scrollToSection(pricingRef)} />
-                    <Button label="About" className="p-button-text mr-2" onClick={() => scrollToSection(aboutRef)} />
-                    <Button label="Contact" className="p-button-text" onClick={() => scrollToSection(contactRef)} />
-                    <Button label="Login" className="p-button-text mr-2" onClick={() => setLoginVisible(true)} />
+                    <Button label={intl.formatMessage({ id: 'home.header.features' })} className="p-button-text mr-2" onClick={() => scrollToSection(featuresRef)} />
+                    <Button label={intl.formatMessage({ id: 'home.header.pricing' })} className="p-button-text mr-2" onClick={() => scrollToSection(pricingRef)} />
+                    <Button label={intl.formatMessage({ id: 'home.header.about' })} className="p-button-text mr-2" onClick={() => scrollToSection(aboutRef)} />
+                    <Button label={intl.formatMessage({ id: 'home.header.contact' })} className="p-button-text" onClick={() => scrollToSection(contactRef)} />
+                    <Button label={intl.formatMessage({ id: 'home.header.login' })} className="p-button-text mr-2" onClick={() => setLoginVisible(true)} />
                 </div>
             </div>
         );
@@ -232,33 +230,31 @@ export default function HomePage() {
                     <div className="grid align-items-center justify-content-between">
                         <div className="col-12 md:col-6 text-center md:text-left mb-6 md:mb-0">
                             <h1 style={{ fontSize: '3.5rem', fontWeight: '800', lineHeight: '1.2', marginBottom: '1.5rem', color: 'white' }}>
-                                Transform Your Fitness Journey with EaseTrain
+                                <FormattedMessage id="home.hero.title" />
                             </h1>
                             <p className="text-white" style={{ fontSize: '1.5rem', marginBottom: '2rem', color: '#E0BBE4' }}>
-                                Empower trainers, motivate clients, and achieve fitness goals together.
+                                <FormattedMessage id="home.hero.subtitle" />
                             </p>
                             <div className="grid justify-content-center md:justify-content-start mb-4">
                                 <div className="col-fixed mb-2 mr-2">
-                                <Button onClick={() => setSignUpVisible(true)} label="Get Started" className="p-button-lg p-button-raised p-button-rounded" style={{ color: '#7e5bef', backgroundColor: '#fff', borderColor: '#fff', padding: '1rem 2rem' }} />
+                                    <Button onClick={() => setSignUpVisible(true)} label={intl.formatMessage({ id: 'home.hero.getStarted' })} className="p-button-lg p-button-raised p-button-rounded" style={{ color: '#7e5bef', backgroundColor: '#fff', borderColor: '#fff', padding: '1rem 2rem' }} />
                                 </div>
                                 <div className="col-fixed">
-                                <Button label="Learn More" className="p-button-lg p-button-rounded p-button-outlined" style={{ color: '#fff', borderColor: '#fff', padding: '1rem 2rem' }} />
+                                    <Button label={intl.formatMessage({ id: 'home.hero.learnMore' })} className="p-button-lg p-button-rounded p-button-outlined" style={{ color: '#fff', borderColor: '#fff', padding: '1rem 2rem' }} />
                                 </div>
                             </div>
                         </div>
                         <div className="col-12 md:col-6">
                             <div className="relative">
-                                {/* <div className="absolute" style={{ inset: 0, backgroundColor: '#dcd6f7', borderRadius: '50%', opacity: 0.5, filter: 'blur(20px)' }} /> */}
-                                {/* <div className="relative bg-white p-8 border-round shadow-2xl"> */}
                                 <div style={{ backgroundColor: '#fff', borderRadius: '1rem', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', padding: '2rem' }}>
                                     <div className="flex align-items-center justify-content-center w-4rem h-4rem bg-purple-600 border-circle mb-4">
                                         <Dumbbell style={{ width: '32px', height: '32px', color: '#fff' }} />
                                     </div>
                                     <h3 style={{ fontSize: '2rem', color: '#333', marginBottom: '1rem' }}>
-                                        Personalized Training
+                                        <FormattedMessage id="home.features.customPlans" />
                                     </h3>
                                     <p style={{ color: '#666' }}>
-                                        Create personalized training plans, track progress, and communicate seamlessly with your clients.
+                                        <FormattedMessage id="home.features.customPlansDesc" />
                                     </p>
                                 </div>
                             </div>
@@ -271,17 +267,19 @@ export default function HomePage() {
 
     const renderFeatures = () => {
         const features = [
-            { icon: <Users size={32} />, title: 'Manage Clients', description: 'Easily manage your clients details and progress in one place.' },
-            { icon: <Dumbbell size={32} />, title: 'Custom Training Plans', description: `Create personalized workout routines tailored to each client's needs.` },
-            { icon: <LineChart size={32} />, title: 'Track Progress', description: 'Visualize client progress with data-driven charts and reports.' },
-            { icon: <MessageCircle size={32} />, title: 'In-App Messaging', description: 'Stay connected with clients through direct messaging.' },
-            { icon: <Video size={32} />, title: 'Video Tutorials', description: 'Share video tutorials to guide clients through exercises.' },
+            { icon: <Users size={32} />, title: intl.formatMessage({ id: 'home.features.manageClients' }), description: intl.formatMessage({ id: 'home.features.manageClientsDesc' }) },
+            { icon: <Dumbbell size={32} />, title: intl.formatMessage({ id: 'home.features.customPlans' }), description: intl.formatMessage({ id: 'home.features.customPlansDesc' }) },
+            { icon: <LineChart size={32} />, title: intl.formatMessage({ id: 'home.features.trackProgress' }), description: intl.formatMessage({ id: 'home.features.trackProgressDesc' }) },
+            { icon: <MessageCircle size={32} />, title: intl.formatMessage({ id: 'home.features.messaging' }), description: intl.formatMessage({ id: 'home.features.messagingDesc' }) },
+            { icon: <Video size={32} />, title: intl.formatMessage({ id: 'home.features.videoTutorials' }), description: intl.formatMessage({ id: 'home.features.videoTutorialsDesc' }) },
         ];
 
         return (
             <div className="bg-gray-100 py-8" ref={featuresRef}>
                 <div className="max-w-screen-lg mx-auto px-4">
-                    <h2 className="text-4xl font-bold text-center mb-8">Key Features</h2>
+                    <h2 className="text-4xl font-bold text-center mb-8">
+                        <FormattedMessage id="home.features.title" />
+                    </h2>
                     <div className="grid">
                         {features.map((feature, index) => (
                             <div key={index} className="col-12 md:col-6 lg:col-4">
@@ -303,41 +301,47 @@ export default function HomePage() {
     const renderPricing = () => {
         return (
             <div ref={pricingRef}>
-                <h2 className="text-4xl font-bold text-center mb-8">Pricing Plans</h2>
-                <div  className="grid">
+                <h2 className="text-4xl font-bold text-center mb-8">
+                    <FormattedMessage id="home.pricing.title" />
+                </h2>
+                <div className="grid">
                     {subscriptionPlans.map((plan) => (
-                    <div key={plan.id} className="col-12 md:col-3 lg:col-3">
-                        <Card
-                        title={plan.name}
-                        subTitle={`$${plan.price.toFixed(2)} / month`}
-                        className={classNames('h-full h-20rem relative')}
-                        style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.15)'}}
-                        >
-                        <ul className="list-none p-0 m-0">
-                            <li className="flex align-items-center mb-2">
-                            <i className="pi pi-check-circle mr-2 text-green-500"></i>
-                            <span>Max Clients: {plan.max_clients}</span>
-                            </li>
-                        </ul>
-                        </Card>
-                    </div>
+                        <div key={plan.id} className="col-12 md:col-3 lg:col-3">
+                            <Card
+                                title={plan.name}
+                                subTitle={`$${plan.price.toFixed(2)} / month`}
+                                className={classNames('h-full h-20rem relative')}
+                                style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}
+                            >
+                                <ul className="list-none p-0 m-0">
+                                    <li className="flex align-items-center mb-2">
+                                        <i className="pi pi-check-circle mr-2 text-green-500"></i>
+                                        <span>
+                                            <FormattedMessage id="home.pricing.maxClients" values={{ max: plan.max_clients }} />
+                                        </span>
+                                    </li>
+                                </ul>
+                            </Card>
+                        </div>
                     ))}
+                </div>
             </div>
-          </div>
         );
     };
 
     const renderTestimonials = () => {
         const testimonials = [
-            { text: "EaseTrain has revolutionized how I manage my clients. It's a game-changer for personal trainers!", author: "Sarah J., Personal Trainer" },
-            { text: "The progress tracking feature keeps me motivated. I love seeing my improvements over time.", author: "Mike T., Client" },
-            { text: "The custom training plans and video tutorials have helped me provide better service to my clients.", author: "Emily R., Fitness Coach" },
+            { text: intl.formatMessage({ id: 'home.testimonials.sarah' }), author: "Sarah J., Personal Trainer" },
+            { text: intl.formatMessage({ id: 'home.testimonials.mike' }), author: "Mike T., Client" },
+            { text: intl.formatMessage({ id: 'home.testimonials.emily' }), author: "Emily R., Fitness Coach" },
         ];
 
         return (
             <div ref={aboutRef} className="py-8">
                 <div className="max-w-screen-lg mx-auto px-4">
-                    <h2 className="text-4xl font-bold text-center mb-8">What Our Users Say</h2>
+                    <h2 className="text-4xl font-bold text-center mb-8">
+                        <FormattedMessage id="home.testimonials.title" />
+                    </h2>
                     <div className="grid">
                         {testimonials.map((testimonial, index) => (
                             <div key={index} className="col-12 md:col-4">
@@ -359,9 +363,9 @@ export default function HomePage() {
                 <div className="max-w-screen-lg mx-auto px-4 flex justify-content-between align-items-center">
                     <p className="text-sm">© 2023 EaseTrain. All rights reserved.</p>
                     <div>
-                        <Button label="Terms of Service" className="p-button-text p-button-sm mr-2" />
-                        <Button label="Privacy" className="p-button-text p-button-sm mr-2" />
-                        <Button label="Contact" className="p-button-text p-button-sm" />
+                        <Button label={intl.formatMessage({ id: 'home.footer.terms' })} className="p-button-text p-button-sm mr-2" />
+                        <Button label={intl.formatMessage({ id: 'home.footer.privacy' })} className="p-button-text p-button-sm mr-2" />
+                        <Button label={intl.formatMessage({ id: 'home.footer.contact' })} className="p-button-text p-button-sm" />
                     </div>
                 </div>
             </div>
@@ -370,21 +374,27 @@ export default function HomePage() {
 
     const renderLoginDialog = () => {
         return (
-            <Dialog header="Log In" visible={loginVisible} draggable={false} dismissableMask resizable={false}  style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setLoginVisible(false)}>
+            <Dialog header={intl.formatMessage({ id: 'home.login.title' })} visible={loginVisible} draggable={false} dismissableMask resizable={false} style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setLoginVisible(false)}>
                 <form onSubmit={handleLogin} className="p-fluid">
                     <div className="field">
-                        <label htmlFor="email" className="font-bold">Email</label>
+                        <label htmlFor="email" className="font-bold">
+                            <FormattedMessage id="home.login.email" />
+                        </label>
                         <InputText id="email" type="email" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} className={classNames({ 'p-invalid': loginErrors.email })} />
                         {loginErrors.email && <small className="p-error">{loginErrors.email}</small>}
                     </div>
                     <div className="field">
-                        <label htmlFor="password" className="font-bold">Password</label>
+                        <label htmlFor="password" className="font-bold">
+                            <FormattedMessage id="home.login.password" />
+                        </label>
                         <Password id="password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} toggleMask className={classNames({ 'p-invalid': loginErrors.password })} feedback={false} />
                         {loginErrors.password && <small className="p-error">{loginErrors.password}</small>}
                     </div>
-                    <Button type="submit" label="Log In" className="mt-2" loading={loading} />
+                    <Button type="submit" label={intl.formatMessage({ id: 'home.header.login' })} className="mt-2" loading={loading} />
                     <div className="text-center mt-2">
-                        <a href="/forgot-password" className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Forgot password?</a>
+                        <a href="/forgot-password" className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
+                            <FormattedMessage id="home.login.forgotPassword" />
+                        </a>
                     </div>
                 </form>
             </Dialog>
@@ -393,24 +403,30 @@ export default function HomePage() {
 
     const renderSignUpDialog = () => {
         return (
-            <Dialog header="Sign Up" visible={signUpVisible}  draggable={false} dismissableMask resizable={false}  style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setSignUpVisible(false)}>
+            <Dialog header={intl.formatMessage({ id: 'home.signup.title' })} visible={signUpVisible} draggable={false} dismissableMask resizable={false} style={{ width: '90%', maxWidth: '400px' }} modal onHide={() => setSignUpVisible(false)}>
                 <form onSubmit={handleSignUp} className="p-fluid">
                     <div className="field">
-                        <label htmlFor="signUpEmail" className="font-bold">Email</label>
+                        <label htmlFor="signUpEmail" className="font-bold">
+                            <FormattedMessage id="home.signup.email" />
+                        </label>
                         <InputText id="signUpEmail" type="email" value={signUpForm.email} onChange={(e) => setSignUpForm({ ...signUpForm, email: e.target.value })} className={classNames({ 'p-invalid': signUpErrors.email })} />
                         {signUpErrors.email && <small className="p-error">{signUpErrors.email}</small>}
                     </div>
                     <div className="field">
-                        <label htmlFor="signUpPassword" className="font-bold">Password</label>
+                        <label htmlFor="signUpPassword" className="font-bold">
+                            <FormattedMessage id="home.signup.password" />
+                        </label>
                         <Password id="signUpPassword" value={signUpForm.password} onChange={(e) => setSignUpForm({ ...signUpForm, password: e.target.value })} toggleMask className={classNames({ 'p-invalid': signUpErrors.password })} />
                         {signUpErrors.password && <small className="p-error">{signUpErrors.password}</small>}
                     </div>
                     <div className="field">
-                        <label htmlFor="confirmPassword" className="font-bold">Confirm Password</label>
+                        <label htmlFor="confirmPassword" className="font-bold">
+                            <FormattedMessage id="home.signup.confirmPassword" />
+                        </label>
                         <Password id="confirmPassword" value={signUpForm.confirmPassword} onChange={(e) => setSignUpForm({ ...signUpForm, confirmPassword: e.target.value })} toggleMask className={classNames({ 'p-invalid': signUpErrors.confirmPassword })} feedback={false} />
                         {signUpErrors.confirmPassword && <small className="p-error">{signUpErrors.confirmPassword}</small>}
                     </div>
-                    <Button type="submit" label="Sign Up" className="mt-2" loading={loading} />
+                    <Button type="submit" label={intl.formatMessage({ id: 'home.signup.title' })} className="mt-2" loading={loading} />
                 </form>
             </Dialog>
         );

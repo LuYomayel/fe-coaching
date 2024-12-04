@@ -10,6 +10,7 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { ProgressBar } from 'primereact/progressbar';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 import { useToast } from '../utils/ToastContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
@@ -22,6 +23,7 @@ import { fetchSubscriptionForStudent } from '../services/subscriptionService';
 import { UserContext } from '../utils/UserContext';
 
 export default function NewStudentDetails() {
+    const intl = useIntl();
     const navigate = useNavigate();
     const toast = useRef(null);
 
@@ -80,7 +82,7 @@ export default function NewStudentDetails() {
         };
 
         fetchData();
-    }, [studentId, refreshKey]);
+    }, [studentId, refreshKey, client.user.id, activities, currentPlans, completedPlans, progressData, showToast, setLoading]);
 
     const handleBack = () => {
         navigate(-1);
@@ -93,8 +95,8 @@ export default function NewStudentDetails() {
 
     const handleDeletePlan = (plan) => {
         showConfirmationDialog({
-            message: 'Are you sure you want to delete this plan?',
-            header: 'Confirm Delete',
+            message: intl.formatMessage({ id: 'studentDetails.dialog.confirmDelete' }),
+            header: intl.formatMessage({ id: 'studentDetails.dialog.confirmDeleteHeader' }),
             icon: 'pi pi-exclamation-triangle',
             accept: () => deletePlan(plan),
             reject: () => {}
@@ -105,7 +107,10 @@ export default function NewStudentDetails() {
         try {
             await deleteWorkoutPlan(plan.id, false);
             setCurrentPlans(currentPlans.filter(p => p.id !== plan.id));
-            showToast('success', 'Plan deleted!', `You have deleted the plan ${plan.workout.planName} successfully!`);
+            showToast('success', 
+                intl.formatMessage({ id: 'studentDetails.success.planDeleted' }, 
+                { name: plan.workout.planName })
+            );
             setRefreshKey(prev => prev + 1);
         } catch (error) {
             showToast('error', 'Error', error.message);
@@ -115,9 +120,21 @@ export default function NewStudentDetails() {
     const actionBodyTemplate = (rowData) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-eye" className="p-button-rounded p-button-info mr-2" onClick={() => handleViewPlanDetails(rowData)} tooltip="View Details" tooltipOptions={{ position: 'top' }} />
+                <Button 
+                    icon="pi pi-eye" 
+                    className="p-button-rounded p-button-info mr-2" 
+                    onClick={() => handleViewPlanDetails(rowData)} 
+                    tooltip={intl.formatMessage({ id: 'studentDetails.tooltip.viewDetails' })}
+                    tooltipOptions={{ position: 'top' }} 
+                />
                 {rowData.status !== 'completed' && (
-                    <Button icon="pi pi-trash" className="p-button-rounded p-button-danger" onClick={() => handleDeletePlan(rowData)} tooltip="Delete Plan" tooltipOptions={{ position: 'top' }} />
+                    <Button 
+                        icon="pi pi-trash" 
+                        className="p-button-rounded p-button-danger" 
+                        onClick={() => handleDeletePlan(rowData)}
+                        tooltip={intl.formatMessage({ id: 'studentDetails.tooltip.deletePlan' })}
+                        tooltipOptions={{ position: 'top' }}
+                    />
                 )}
             </React.Fragment>
         );
@@ -127,67 +144,123 @@ export default function NewStudentDetails() {
         return <ProgressBar value={rowData.progress} showValue={false} style={{ height: '8px' }} />;
     };
 
-    if (loading) return <div className="p-4">Loading...</div>;
-    if (error) return <div className="p-4 text-red-500">{error}</div>;
+    if (loading) return <div className="p-4">
+        <FormattedMessage id="studentDetails.loading" />
+    </div>;
+    if (error) return <div className="p-4 text-red-500">
+        <FormattedMessage id="studentDetails.error.fetchData" />
+    </div>;
 
     return (
         <div className="p-4">
             <Toast ref={toast} />
             <ConfirmDialog />
 
-            <Button icon="pi pi-arrow-left" label="Back" onClick={handleBack} className="mb-4" />
+            <Button 
+                icon="pi pi-arrow-left" 
+                label={intl.formatMessage({ id: 'studentDetails.back' })}
+                onClick={handleBack} 
+                className="mb-4" 
+            />
 
-            <h1 className="text-4xl font-bold mb-4">{student?.client?.name}'s Details</h1>
+            <h1 className="text-4xl font-bold mb-4">
+                <FormattedMessage 
+                    id="studentDetails.title" 
+                    values={{ name: student?.client?.name }} 
+                />
+            </h1>
 
             <div className="grid">
                 <div className="col-12 md:col-6 lg:col-4">
-                    <Card title="Personal Information" className="mb-4">
-                        <p><strong>Email:</strong> {student?.client?.user?.email}</p>
-                        <p><strong>Fitness Goal:</strong> {student?.client?.fitnessGoal}</p>
-                        <p><strong>Activity Level:</strong> {student?.client?.activityLevel}</p>
+                    <Card title={intl.formatMessage({ id: 'studentDetails.personalInfo.title' })} className="mb-4">
+                        <p>
+                            <strong><FormattedMessage id="studentDetails.personalInfo.email" />:</strong> {student?.client?.user?.email}
+                        </p>
+                        <p>
+                            <strong><FormattedMessage id="studentDetails.personalInfo.fitnessGoal" />:</strong> {student?.client?.fitnessGoal}
+                        </p>
+                        <p>
+                            <strong><FormattedMessage id="studentDetails.personalInfo.activityLevel" />:</strong> {student?.client?.activityLevel}
+                        </p>
                     </Card>
                 </div>
 
                 <div className="col-12 md:col-6 lg:col-4">
-                    <Card title="Recent Activities" className="mb-4">
-                        <Timeline value={activities} content={(item) => item.description} opposite={(item) => formatDate(item.timestamp)} />
+                    <Card title={intl.formatMessage({ id: 'studentDetails.activities.title' })} className="mb-4">
+                        <Timeline 
+                            value={activities} 
+                            content={(item) => item.description} 
+                            opposite={(item) => formatDate(item.timestamp)} 
+                        />
                     </Card>
                 </div>
 
                 <div className="col-12 md:col-6 lg:col-4">
-                    <Card title="Progress" className="mb-4">
+                    <Card title={intl.formatMessage({ id: 'studentDetails.progress.title' })} className="mb-4">
                         <Chart type="pie" data={progressData} options={{ responsive: true }} />
                     </Card>
                 </div>
             </div>
 
-            <Card title="Current Training Plans" className="mb-4">
+            <Card title={intl.formatMessage({ id: 'studentDetails.plans.current' })} className="mb-4">
                 <DataTable value={currentPlans} paginator rows={5} className="p-datatable-responsive">
-                    <Column field="workout.planName" header="Plan Name" />
-                    <Column field="instanceName" header="Description" />
-                    <Column field="personalizedNotes" header="Notes" />
-                    <Column field="expectedStartDate" header="Expected Start Date" body={(rowData) => formatDate(rowData.expectedStartDate)} />
-                    <Column field="expectedEndDate" header="Expected End Date" body={(rowData) => formatDate(rowData.expectedEndDate)} />
-                    <Column field="status" header="Status" />
-                    <Column field="progress" header="Progress" body={progressBodyTemplate} />
+                    <Column field="workout.planName" header={intl.formatMessage({ id: 'studentDetails.plans.name' })} />
+                    <Column field="instanceName" header={intl.formatMessage({ id: 'studentDetails.plans.description' })} />
+                    <Column field="personalizedNotes" header={intl.formatMessage({ id: 'studentDetails.plans.notes' })} />
+                    <Column 
+                        field="expectedStartDate" 
+                        header={intl.formatMessage({ id: 'studentDetails.plans.startDate' })} 
+                        body={(rowData) => formatDate(rowData.expectedStartDate)} 
+                    />
+                    <Column 
+                        field="expectedEndDate" 
+                        header={intl.formatMessage({ id: 'studentDetails.plans.endDate' })} 
+                        body={(rowData) => formatDate(rowData.expectedEndDate)} 
+                    />
+                    <Column field="status" header={intl.formatMessage({ id: 'studentDetails.plans.status' })} />
+                    <Column 
+                        field="progress" 
+                        header={intl.formatMessage({ id: 'studentDetails.plans.progress' })} 
+                        body={progressBodyTemplate} 
+                    />
                     <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }} />
                 </DataTable>
             </Card>
 
-            <Card title="Completed Training Plans" className="mb-4">
+            <Card title={intl.formatMessage({ id: 'studentDetails.plans.completed' })} className="mb-4">
                 <DataTable value={completedPlans} paginator rows={5} className="p-datatable-responsive">
-                    <Column field="workout.planName" header="Plan Name" />
-                    <Column field="instanceName" header="Description" />
-                    <Column field="personalizedNotes" header="Notes" />
-                    <Column field="expectedStartDate" header="Start Date" body={(rowData) => formatDate(rowData.expectedStartDate)} />
-                    <Column field="expectedEndDate" header="End Date" body={(rowData) => formatDate(rowData.expectedEndDate)} />
-                    <Column field="status" header="Status" />
-                    <Column field="progress" header="Progress" body={progressBodyTemplate} />
+                    <Column field="workout.planName" header={intl.formatMessage({ id: 'studentDetails.plans.name' })} />
+                    <Column field="instanceName" header={intl.formatMessage({ id: 'studentDetails.plans.description' })} />
+                    <Column field="personalizedNotes" header={intl.formatMessage({ id: 'studentDetails.plans.notes' })} />
+                    <Column 
+                        field="expectedStartDate" 
+                        header={intl.formatMessage({ id: 'studentDetails.plans.startDate' })} 
+                        body={(rowData) => formatDate(rowData.expectedStartDate)} 
+                    />
+                    <Column 
+                        field="expectedEndDate" 
+                        header={intl.formatMessage({ id: 'studentDetails.plans.endDate' })} 
+                        body={(rowData) => formatDate(rowData.expectedEndDate)} 
+                    />
+                    <Column field="status" header={intl.formatMessage({ id: 'studentDetails.plans.status' })} />
+                    <Column 
+                        field="progress" 
+                        header={intl.formatMessage({ id: 'studentDetails.plans.progress' })} 
+                        body={progressBodyTemplate} 
+                    />
                     <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }} />
                 </DataTable>
             </Card>
 
-            <Dialog draggable={false} resizable={false} dismissableMask header="Plan Details" visible={planDetailsVisible} style={{ width: '50vw' }} onHide={() => setPlanDetailsVisible(false)}>
+            <Dialog 
+                header={intl.formatMessage({ id: 'studentDetails.dialog.planDetails' })}
+                visible={planDetailsVisible} 
+                style={{ width: '50vw' }} 
+                onHide={() => setPlanDetailsVisible(false)}
+                draggable={false}
+                resizable={false}
+                dismissableMask
+            >
                 {selectedPlan && (
                     <PlanDetails
                         planId={selectedPlan}

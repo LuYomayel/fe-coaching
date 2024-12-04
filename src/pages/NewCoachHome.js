@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -8,7 +8,6 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Avatar } from 'primereact/avatar';
 import { Tag } from 'primereact/tag';
 import { Timeline } from 'primereact/timeline';
-import { Badge } from 'primereact/badge';
 import { Chart } from 'primereact/chart';
 import { Panel } from 'primereact/panel';
 import { ListBox } from 'primereact/listbox';
@@ -16,25 +15,25 @@ import { Calendar } from 'primereact/calendar';
 import { InputIcon } from 'primereact/inputicon';
 import { IconField } from 'primereact/iconfield';
 import { formatDate } from '../utils/UtilFunctions';
-
-import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useNavigate } from 'react-router-dom';
 import { fetchCoachStudents, fetchRecentActivitiesByCoachId, fetchWorkoutProgressByCoachId, fetchUpcomingSessionsByCoachId, fetchLastMessages } from '../services/usersService';
-import { fetchCoachWorkouts, fetchTrainingCyclesByCoachId } from '../services/workoutService';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { fetchCoachWorkouts } from '../services/workoutService';
 import Spinner from '../utils/LittleSpinner';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 export default function CoachHomePage() {
+    const intl = useIntl();
     const [globalFilter, setGlobalFilter] = useState('');
+    // eslint-disable-next-line
     const { setLoading } = useSpinner();
-    const showToast = useToast();
+    
     const { user, coach } = useContext(UserContext);
     const navigate = useNavigate();
     const [clients, setClients] = useState([]);
     const [trainingPlans, setTrainingPlans] = useState([]);
-    const [refreshKey, setRefreshKey] = useState(0);
+    
     const [recentActivities, setRecentActivities] = useState([]);
     const [workoutProgress, setWorkoutProgress] = useState([]);
     const [upcomingSessions, setUpcomingSessions] = useState([]);
@@ -42,6 +41,7 @@ export default function CoachHomePage() {
     const [lastMessages, setLastMessages] = useState([]);
 
     const [isClientsLoading, setIsClientsLoading] = useState(true);
+    // eslint-disable-next-line
     const [isTrainingPlansLoading, setIsTrainingPlansLoading] = useState(true);
     const [isRecentActivitiesLoading, setIsRecentActivitiesLoading] = useState(true);
     const [isUpcomingSessionsLoading, setIsUpcomingSessionsLoading] = useState(true);
@@ -192,13 +192,15 @@ export default function CoachHomePage() {
 
   const header = (
     <div className="flex justify-content-between align-items-center">
-      <h5 className="m-0">Manage Clients</h5>
+      <h5 className="m-0">
+        <FormattedMessage id="clients.title" />
+      </h5>
       <IconField iconPosition="left">
             <InputIcon className="pi pi-search"> </InputIcon>
             <InputText
                 type="search"
                 onInput={(e) => setGlobalFilter(e.target.value)}
-                placeholder="Search clients..."
+                placeholder={intl.formatMessage({ id: 'clients.search' })}
                 />
         </IconField>
     </div>
@@ -213,38 +215,33 @@ export default function CoachHomePage() {
         );
     };
 
-    const progressTemplate = (rowData) => {
+    const progressBodyTemplate = (rowData) => {
         if(!rowData.progress) {
             return null;
         }
         const progress = rowData.progress;
         const totalWorkouts = progress.length;
-
-        // Contar el número de entrenamientos completados, pendientes y expirados
         const completedCount = progress.filter(p => p.status === 'Completed').length;
         const pendingCount = progress.filter(p => p.status === 'Pending').length;
         const expiredCount = progress.filter(p => p.status === 'Expired').length;
 
         return (
             <div className="flex align-items-center gap-2">
-                {/* Etiquetas para los distintos estados */}
-                <Tag value={`Completed: ${completedCount}`} severity="success" />
-                <Tag value={`Pending: ${pendingCount}`} severity="warning" />
-                <Tag value={`Expired: ${expiredCount}`} severity="danger" />
-                {/* {completedCount > 0 && (
-                )}
-                {pendingCount >= 0 && (
-                )}
-                {expiredCount > 0 && (
-                )} */}
-                {/* Mostrar una barra de progreso del total */}
+                <Tag value={intl.formatMessage({ id: 'coach.progress.completed' }, { count: completedCount })} severity="success" />
+                <Tag value={intl.formatMessage({ id: 'coach.progress.pending' }, { count: pendingCount })} severity="warning" />
+                <Tag value={intl.formatMessage({ id: 'coach.progress.expired' }, { count: expiredCount })} severity="danger" />
                 <div style={{ width: '100%' }}>
                     <ProgressBar 
                         value={(completedCount / totalWorkouts) * 100} 
                         showValue={false} 
                         style={{ height: '10px', backgroundColor: '#e0e0e0' }}
                     />
-                    <small>{completedCount}/{totalWorkouts} Completed</small>
+                    <small>
+                        <FormattedMessage 
+                            id="coach.progress.total" 
+                            values={{ completed: completedCount, total: totalWorkouts }} 
+                        />
+                    </small>
                 </div>
             </div>
         );
@@ -253,30 +250,23 @@ export default function CoachHomePage() {
     const actionTemplate = (student) => {
         return (
         <div>
-            {/* <Button icon="pi pi-eye" className="p-button-rounded p-button-text" /> */}
             <Button icon="pi pi-eye" className="p-button-rounded p-button-text" onClick={() => navigateToClientProfile(student.id)} />
-            {/* <Button icon="pi pi-pencil" className="p-button-rounded p-button-text" /> */}
         </div>
         );
     };
 
     const statusTemplate = (rowData) => {
-
         const workoutInstanceTemplate = rowData.workoutInstances.find(w => w.isTemplate === true);
-
-        const statusMap = {
-            active: { severity: 'success', label: 'Active' },
-            pending: { severity: 'warning', label: 'Pending' },
-            completed: { severity: 'danger', label: 'Completed' },
-        };
-        const status = statusMap[rowData.status] || { severity: 'info', label: rowData.status };
-        // return <Tag severity={status.severity} value={status.label} />;
-        return <Button label="Edit Plan" icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit/${workoutInstanceTemplate.id}`)} />
+        return <Button label={intl.formatMessage({ id: 'common.edit' })} icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit/${workoutInstanceTemplate.id}`)} />
     };
 
     const { completedCount, pendingCount, expiredCount } = processWorkoutProgressData(workoutProgress);
     const chartData = {
-            labels: ['Completed', 'Pending', 'Expired'],
+            labels: [
+                intl.formatMessage({ id: 'coach.chart.completed' }),
+                intl.formatMessage({ id: 'coach.chart.pending' }),
+                intl.formatMessage({ id: 'coach.chart.expired' })
+            ],
             datasets: [
                 {
                     data: [completedCount, pendingCount, expiredCount],
@@ -307,16 +297,27 @@ export default function CoachHomePage() {
             <>
                 <div className="flex align-items-center justify-content-between">
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">Welcome back, {coach.name}!</h1>
+                    <h1 className="text-3xl font-bold mb-2">
+                        <FormattedMessage 
+                            id="welcome.back" 
+                            values={{ name: coach.name }}
+                        />
+                    </h1>
                     <div className="flex gap-4">
                     <div>
-                        <span className="font-bold">Total Clients:</span> {clients.length}
+                        <span className="font-bold">
+                            <FormattedMessage id="stats.totalClients" />:
+                        </span> {clients.length}
                     </div>
                     <div>
-                        <span className="font-bold">Active Plans:</span> {trainingPlans.filter(p => p.status === 'active').length}
+                        <span className="font-bold">
+                            <FormattedMessage id="stats.activePlans" />:
+                        </span> {trainingPlans.filter(p => p.status === 'active').length}
                     </div>
                     <div>
-                        <span className="font-bold">Upcoming Sessions:</span> {upcomingSessions.length}
+                        <span className="font-bold">
+                            <FormattedMessage id="stats.upcomingSessions" />:
+                        </span> {upcomingSessions.length}
                     </div>
                     </div>
                 </div>
@@ -331,12 +332,12 @@ export default function CoachHomePage() {
             value={clients}
             header={header}
             globalFilter={globalFilter}
-            emptyMessage="No clients found."
+            emptyMessage={intl.formatMessage({ id: 'clients.noClientsFound' })}
             className="p-datatable-sm"
             loading={isClientsLoading}
         >
-            <Column field="name" header="Client" body={clientNameTemplate} />
-            <Column field="progress" header="Progress" body={progressTemplate} />
+            <Column field="name" header={intl.formatMessage({ id: 'clients.title' })} body={clientNameTemplate} />
+            <Column field="progress" header={intl.formatMessage({ id: 'coach.sections.workoutProgress' })} body={progressBodyTemplate} />
             <Column body={actionTemplate} />
         </DataTable>
 
@@ -347,7 +348,9 @@ export default function CoachHomePage() {
       <Card className={isWorkoutProgressLoading ? 'flex justify-content-center mb-4' : 'mb-4'} >
             {isWorkoutProgressLoading ? <Spinner /> :
                 <>
-                    <h2 className="text-2xl font-bold mb-3">Training Plans</h2>
+                    <h2 className="text-2xl font-bold mb-3">
+                        <FormattedMessage id="coach.sections.trainingPlans" />
+                    </h2>
                     <div className="grid">
                         {workouts.map((plan, index) => (
                             <div key={index} className="col-12 md:col-4">
@@ -358,8 +361,7 @@ export default function CoachHomePage() {
                         ))}
                     </div>
                     <div className="flex justify-content-end gap-2">
-                        <Button label="New Plan" icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary" onClick={() => navigate('/plans/create')} />
-                        {/* <Button label="Edit Plan" icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate('/plans/edit')} /> */}
+                        <Button label={intl.formatMessage({ id: 'coach.buttons.newPlan' })} icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary" onClick={() => navigate('/plans/create')} />
                     </div>
                 </>
             }
@@ -372,8 +374,9 @@ export default function CoachHomePage() {
             {isRecentActivitiesLoading ? <Spinner /> :
                  <>
                     <div className="flex justify-content-between align-items-center mb-3">
-                    <h2 className="text-2xl font-bold m-0">Recent Activity</h2>
-                    {/* <Button icon="pi pi-bell" className="p-button-rounded p-button-text" badge="3" badgeClassName="p-badge-danger" /> */}
+                    <h2 className="text-2xl font-bold m-0">
+                        <FormattedMessage id="coach.sections.recentActivity" />
+                    </h2>
                     </div>
                     <Timeline value={recentActivities} conte className='overflow-hidden text-overflow-ellipsis' content={(item) => `${item.user.client.name} - ${item.description}`} opposite={(item) => formatDate(item.timestamp)} />
                 </>
@@ -384,7 +387,9 @@ export default function CoachHomePage() {
           <Card className={isLastMessagesLoading ? 'flex justify-content-center mb-4' : 'mb-4'} >
             {isLastMessagesLoading ? <Spinner /> :
                 <>
-                    <h2 className="text-2xl font-bold mb-3">Recent Messages</h2>
+                    <h2 className="text-2xl font-bold mb-3">
+                        <FormattedMessage id="coach.sections.recentMessages" />
+                    </h2>
                     <ListBox
                         options={lastMessages}
                         optionLabel="content"
@@ -396,7 +401,7 @@ export default function CoachHomePage() {
                             </div>
                         )}
                     />
-                    <Button label="Open Chat" icon="pi pi-comments" className="mt-3" />
+                    <Button label={intl.formatMessage({ id: 'coach.buttons.openChat' })} icon="pi pi-comments" className="mt-3" />
                 </>
                 }
           </Card>
@@ -407,7 +412,9 @@ export default function CoachHomePage() {
             <Card className={isWorkoutProgressLoading ? 'flex justify-content-center mb-4' : 'mb-4'}>
                 {isWorkoutProgressLoading ? <Spinner/> :
                     <>
-                        <h2 className="text-2xl font-bold mb-3">Workout Progress</h2>
+                        <h2 className="text-2xl font-bold mb-3">
+                            <FormattedMessage id="coach.sections.workoutProgress" />
+                        </h2>
                         <Chart type="pie" data={chartData} options={chartOptions} className="w-full" />
                     </>
                 }
@@ -415,10 +422,14 @@ export default function CoachHomePage() {
 
             {isClientsLoading ? <Spinner /> :
              
-                <Panel header="Subscription Status" className="mb-4">
-                    <p>Current Plan: Premium</p>
-                    <p>Clients Managed: {clients.length}/50</p>
-                    <Button label="Upgrade Plan" className="mt-3" />
+                <Panel header={intl.formatMessage({ id: 'coach.subscription.status' })} className="mb-4">
+                    <p>
+                        <FormattedMessage id="coach.subscription.currentPlan" />
+                    </p>
+                    <p>
+                        <FormattedMessage id="coach.subscription.clientsManaged" values={{ current: clients.length, max: 50 }} />
+                    </p>
+                    <Button label={intl.formatMessage({ id: 'coach.buttons.upgradePlan' })} className="mt-3" />
                 </Panel>
             }
         </div>
@@ -428,7 +439,9 @@ export default function CoachHomePage() {
           <Card className={isUpcomingSessionsLoading ? 'flex justify-content-center mb-4': 'mb-4'}>
             {isUpcomingSessionsLoading ? <Spinner /> :
                 <>
-                    <h2 className="text-2xl font-bold mb-3">Upcoming Sessions</h2>
+                    <h2 className="text-2xl font-bold mb-3">
+                        <FormattedMessage id="coach.sections.upcomingSessions" />
+                    </h2>
                     <ListBox
                         options={upcomingSessionsWithColors}
                         optionLabel="client"
@@ -436,7 +449,7 @@ export default function CoachHomePage() {
                         itemTemplate={(option) => (
                             <div className="flex align-items-center justify-content-between">
                                 <span style={{ color: option.color }}>{option.client}</span>
-                                <small>{option.nextSession ? formatDate(option.nextSession) : 'No upcoming session'}</small>
+                                <small>{option.nextSession ? formatDate(option.nextSession) : intl.formatMessage({ id: 'coach.calendar.noUpcomingSession' })}</small>
                             </div>
                         )}
                     />

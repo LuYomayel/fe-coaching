@@ -9,6 +9,7 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { updateExercisesInstace } from '../services/workoutService';
 import { useToast } from '../utils/ToastContext';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 const daysOfWeek = [
     { label: 'Monday', value: 1 },
@@ -21,10 +22,11 @@ const daysOfWeek = [
 ];
 
 export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey }) {
+    const intl = useIntl();
     const [cycle, setCycle] = useState(null);
     const [dayOfWeek, setDayOfWeek] = useState(null);
     const [exercises, setExercises] = useState([]);
-    const [originalExercises, setOriginalExercises] = useState([]); // Nuevo estado para el original
+    const [originalExercises, setOriginalExercises] = useState([]);
     const [numWeeks, setNumWeeks] = useState(0);
     const [properties, setProperties] = useState([]);
     const [planName, setPlanName] = useState('');
@@ -32,34 +34,31 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const showToast = useToast();
     const possibleProperties = ["sets", "repetitions", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance"];
     const [isLoading, setIsLoading] = useState(false);
+
     const renderTablesByDayNumber = () => {
         if (!exercises || exercises.length === 0) {
-            return <div>No training data available</div>;
+            return <div><FormattedMessage id="common.noData" defaultMessage="No training data available" /></div>;
         }
-    
-        // Agrupar ejercicios por `dayNumber`
+
         const exercisesByDayNumber = exercises.reduce((acc, exercise) => {
             exercise.sessionDates.forEach((sessionDate, index) => {
-                const dayNumber = new Date(sessionDate).getDay() -1; // Obtener el `dayNumber` de la fecha
-                // console.log(exercise)
+                const dayNumber = new Date(sessionDate).getDay() - 1;
                 if (!acc[dayNumber]) {
                     acc[dayNumber] = [];
                 }
-                
-                // Verificar si el ejercicio ya fue agregado al día correspondiente
                 if (!acc[dayNumber].some(e => e.name === exercise.name)) {
                     acc[dayNumber].push(exercise);
                 }
             });
             return acc;
         }, {});
-    
+
         return Object.entries(exercisesByDayNumber).map(([dayNumber, exercisesForDay]) => {
             const formattedDayLabel = daysOfWeek.find(day => day.value === parseInt(dayNumber))?.label || `Day ${dayNumber}`;
-    
+
             return (
                 <div key={`day-${dayNumber}`}>
-                    <h3>{`Training Day: ${formattedDayLabel}`}</h3>
+                    <h3>{intl.formatMessage({ id: 'workoutTable.trainingDay' }, { day: formattedDayLabel })}</h3>
                     <DataTable
                         value={exercisesForDay}
                         headerColumnGroup={headerGroup}
@@ -70,7 +69,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                         loading={isLoading}
                         rowClassName={rowClassName}
                     >
-                        <Column header="Ejercicio" body={rowData => `${rowData.groupNumber}. ${rowData.name}`} />
+                        <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} body={rowData => `${rowData.groupNumber}. ${rowData.name}`} />
                         {dataColumns}
                     </DataTable>
                 </div>
@@ -152,6 +151,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             setNumWeeks(numWeeks);
             setProperties(Array.from(propertiesSet));
         }
+        // eslint-disable-next-line
     }, [cycle, dayOfWeek, trainingCycles]);
 
     const propertyLabels = {
@@ -240,7 +240,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         // Por ejemplo:
         try {
             setIsLoading(true);
-            const response = await updateExercisesInstace(changes);
+            await updateExercisesInstace(changes);
+            // const response = await updateExercisesInstace(changes);
             // Manejar la respuesta si es necesario
         } catch (error) {
             console.error(error);
@@ -301,11 +302,11 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             return (
                 <div className='flex flex-colum justify-content-between'>
                     <div>
-                        {`Day ${dayOfWeek} - ${planName}`}
+                        {intl.formatMessage({ id: 'workoutTable.day' }, { day: dayOfWeek, plan: planName })}
                     </div>
                     <div>
                         <Button
-                            label={isEditing ? "Save" : "Edit"}
+                            label={intl.formatMessage({ id: isEditing ? 'common.save' : 'common.edit' })}
                             icon={isEditing ? "pi pi-save" : "pi pi-pencil"}
                             onClick={handleEditSave}
                             loading={isLoading}
@@ -315,48 +316,36 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             );
         }
 
-        return 'Select a cycle and day of the week';
+        return intl.formatMessage({ id: 'workoutTable.selectCycleDay' });
     }
+
     return (
         <Card title={renderCardTitle}>
             <div className='grid'>
                 <div className="col-6">
                     <div className="p-field">
-                        <label>Cycle:</label>
+                        <label><FormattedMessage id="workoutTable.cycle" /></label>
                         <Dropdown
                             value={cycle}
                             options={cycleOptions}
                             onChange={(e) => setCycle(e.value)}
-                            placeholder="Select Cycle"
+                            placeholder={intl.formatMessage({ id: 'workoutTable.selectCycle' })}
                         />
                     </div>
                 </div>
                 <div className="col-6">
                     <div className="p-field">
-                        <label>Day of the week:</label>
+                        <label><FormattedMessage id="workoutTable.dayOfWeek" /></label>
                         <Dropdown
                             value={dayOfWeek}
                             options={daysOfWeek}
                             onChange={(e) => setDayOfWeek(e.value)}
-                            placeholder="Select Day"
+                            placeholder={intl.formatMessage({ id: 'workoutTable.selectDay' })}
                             showClear
                         />
                     </div>
                 </div>
             </div>
-            {/* <DataTable
-                value={exercises}
-                headerColumnGroup={headerGroup}
-                responsiveLayout="scroll"
-                scrollable
-                scrollHeight="700px"
-                editMode="cell"
-                loading={isLoading}
-                rowClassName={rowClassName}
-            >
-                <Column header="Ejercicio" body={rowData => `${rowData.groupNumber}. ${rowData.name}`}/>
-                {dataColumns}
-            </DataTable> */}
             {renderTablesByDayNumber()}
         </Card>
     );

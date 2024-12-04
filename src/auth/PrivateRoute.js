@@ -3,11 +3,9 @@ import { Navigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
 import CoachProfileForm from '../pages/CoachProfileForm';
 import NotSubscribed from '../components/NotSubscribed';
-import { useSpinner } from '../utils/GlobalSpinner';
 import Spinner from '../utils/LittleSpinner';
 const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   const { user, coach, client, isLoading } = useContext(UserContext);
-  const { loading } = useSpinner();
 
   if (isLoading) {
     return (

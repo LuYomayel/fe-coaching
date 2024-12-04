@@ -1,0 +1,581 @@
+export default {
+  'app.welcome': 'Bienvenido',
+  'app.chat.placeholder': 'Escribe un mensaje...',
+  'app.chat.send': 'Enviar',
+  'app.chat.attach': 'Adjuntar archivo',
+  'app.connection.status.connected': 'Conectado',
+  'app.connection.status.disconnected': 'Desconectado',
+  // Mensajes para NewCoachHome
+  'welcome.back': '¡Bienvenido de nuevo, {name}!',
+  'stats.totalClients': 'Clientes Totales',
+  'stats.activePlans': 'Planes Activos',
+  'stats.upcomingSessions': 'Próximas Sesiones',
+  'clients.title': 'Gestionar Clientes',
+  'clients.search': 'Buscar clientes...',
+  'clients.noClientsFound': 'No se encontraron clientes.',
+  'clients.completed': 'Completado',
+  'clients.pending': 'Pendiente',
+  'clients.expired': 'Expirado',
+  'trainingPlans.title': 'Planes de Entrenamiento',
+  'trainingPlans.newPlan': 'Nuevo Plan',
+  'trainingPlans.editPlan': 'Editar Plan',
+  'recentActivity.title': 'Actividad Reciente',
+  'messages.title': 'Mensajes Recientes',
+  'messages.openChat': 'Abrir Chat',
+  'workoutProgress.title': 'Progreso de Entrenamientos',
+  'subscription.title': 'Estado de Suscripción',
+  'subscription.currentPlan': 'Plan Actual: Premium',
+  'subscription.clientsManaged': 'Clientes Gestionados: {current}/{total}',
+  'subscription.upgradePlan': 'Mejorar Plan',
+  'upcomingSessions.title': 'Próximas Sesiones',
+  'upcomingSessions.noSession': 'Sin sesiones próximas',
+  // NewClientDashboard
+  'clientDashboard.title': 'Panel del Cliente',
+  'clientDashboard.tabs.calendar': 'Calendario de Entrenamientos',
+  'clientDashboard.tabs.details': 'Detalles de Entrenamientos',
+  'clientDashboard.tabs.excelView': 'Vista Excel',
+  
+  'clientDashboard.buttons.assign': 'Asignar Entrenamientos',
+  'clientDashboard.buttons.unassign': 'Desasignar Entrenamientos',
+  'clientDashboard.buttons.createCycle': 'Crear Ciclo de Entrenamiento',
+  
+  'clientDashboard.workout.completedOn': 'Completado el',
+  'clientDashboard.workout.sessionTime': 'Tiempo de sesión',
+  'clientDashboard.workout.feedback': 'Retroalimentación',
+  'clientDashboard.workout.mood': 'Estado de ánimo',
+  'clientDashboard.workout.energy': 'Nivel de energía',
+  'clientDashboard.workout.difficulty': 'Dificultad',
+  'clientDashboard.workout.notes': 'Notas adicionales',
+  
+  'clientDashboard.dropdown.selectWorkout': 'Seleccionar Entrenamiento',
+  'clientDashboard.dropdown.selectExercise': 'Seleccionar Ejercicio',
+  
+  'clientDashboard.table.workoutName': 'Nombre del Entrenamiento',
+  'clientDashboard.table.details': 'Detalles',
+  'clientDashboard.table.set': 'Serie',
+  'clientDashboard.table.type': 'Tipo',
+  'clientDashboard.table.expected': 'Esperado',
+  'clientDashboard.table.completed': 'Completado',
+  
+  // NewClientProfile
+  'profile.title': 'Perfil del Cliente',
+  'profile.personalInfo': 'Información Personal',
+  'profile.name': 'Nombre',
+  'profile.email': 'Correo',
+  'profile.birthdate': 'Fecha de Nacimiento',
+  'profile.gender': 'Género',
+  'profile.phone': 'Teléfono',
+  'profile.edit': 'Editar',
+  
+  'profile.subscription': 'Suscripción Actual',
+  'profile.subscription.planName': 'Nombre del Plan',
+  'profile.subscription.startDate': 'Fecha de Inicio',
+  'profile.subscription.endDate': 'Fecha de Fin',
+  'profile.subscription.status': 'Estado',
+  
+  'profile.tabs.workoutHistory': 'Historial de Entrenamientos',
+  'profile.tabs.progress': 'Progreso',
+  'profile.tabs.activities': 'Actividades del Usuario',
+  
+  'profile.table.planName': 'Nombre del Plan',
+  'profile.table.details': 'Detalles',
+  'profile.table.trainingDate': 'Fecha de Entrenamiento',
+  'profile.table.dayTrained': 'Día Entrenado',
+  'profile.table.status': 'Estado',
+  'profile.table.date': 'Fecha',
+  'profile.table.action': 'Acción',
+  'profile.table.week': 'Semana',
+  'profile.table.day': 'Día',
+  
+  'profile.dialog.edit': 'Editar Información Personal',
+  'profile.dialog.fitnessGoal': 'Objetivo Fitness',
+  'profile.dialog.activityLevel': 'Nivel de Actividad',
+  'profile.dialog.cancel': 'Cancelar',
+  'profile.dialog.save': 'Guardar',
+  
+  'profile.goals.weightLoss': 'Pérdida de peso',
+  'profile.goals.muscleGain': 'Ganancia muscular',
+  'profile.goals.mobility': 'Mejorar movilidad',
+  'profile.goals.maintenance': 'Mantenimiento',
+  'profile.goals.flexibility': 'Flexibilidad',
+  
+  'profile.activity.sedentary': 'Sedentario',
+  'profile.activity.moderate': 'Moderadamente activo',
+  'profile.activity.active': 'Muy activo',
+  
+  'common.search': 'Buscar',
+  'common.selectDate': 'Seleccionar Fecha',
+  'common.noResults': 'No se encontraron resultados.',
+  'common.status': 'Estado',
+  'common.select': 'Seleccionar',
+  
+  // NewCoachProfile
+  'coach.welcome': 'Bienvenido, {name}!',
+  'coach.email': 'Correo',
+  'coach.experience': 'Experiencia',
+  'coach.trainingType': 'Tipo de Entrenamiento',
+  'coach.gymLocation': 'Ubicación del Gimnasio',
+  'coach.biography': 'Biografía',
+  
+  'coach.tabs.workouts': 'Entrenamientos',
+  'coach.tabs.plans': 'Planes',
+  'coach.tabs.exercises': 'Biblioteca de Ejercicios',
+  'coach.tabs.subscription': 'Planes de Suscripción',
+  'coach.tabs.rpe': 'Métodos RPE',
+  
+  'coach.buttons.add': 'Agregar {item}',
+  'coach.buttons.assign': 'Asignar {item}',
+  'coach.buttons.import': 'Importar Ejercicios',
+  
+  'coach.rpe.name': 'Nombre del RPE',
+  'coach.rpe.minValue': 'Valor Mínimo',
+  'coach.rpe.maxValue': 'Valor Máximo',
+  'coach.rpe.step': 'Incremento',
+  'coach.rpe.values': 'Valores Meta',
+  'coach.rpe.addValue': 'Agregar Valor',
+  'coach.rpe.selectType': 'Seleccionar Tipo de Asignación',
+  
+  'coach.subscription.currentPlan': 'Plan Actual',
+  'coach.subscription.maxClients': 'Clientes Máximos: {max}',
+  
+  'coach.exercise.dragDrop': 'Arrastra y suelta un archivo aquí para subir.',
+  'coach.exercise.name': 'Nombre del Ejercicio',
+  'coach.exercise.type': 'Tipo',
+  'coach.exercise.description': 'Descripción',
+  'coach.exercise.equipment': 'Equipamiento Necesario',
+  'coach.exercise.video': 'Video',
+  'coach.exercise.bodyArea': 'Área corporal involucrada',
+  
+  // NewManageStudents
+  'students.title': 'Gestionar Estudiantes',
+  'students.subtitle': 'Ver y gestionar el progreso de tus estudiantes',
+  'students.description': 'Usa esta página para seguir el progreso de tus estudiantes, asignar planes de entrenamiento y comunicarte directamente con ellos.',
+  
+  'students.search': 'Buscar estudiantes',
+  'students.addNew': 'Agregar Nuevo Estudiante',
+  'students.noStudents': 'No se encontraron estudiantes.',
+  
+  'students.table.name': 'Nombre',
+  'students.table.email': 'Correo',
+  'students.table.status': 'Estado',
+  'students.table.lastPayment': 'Último Pago',
+  'students.table.nextPayment': 'Próximo Pago',
+  'students.table.plan': 'Plan de Suscripción',
+  'students.table.actions': 'Acciones',
+  
+  'students.status.active': 'Activo',
+  'students.status.inactive': 'Inactivo',
+  
+  'students.actions.viewProfile': 'Ver Perfil',
+  'students.actions.registerPayment': 'Registrar Pago',
+  'students.actions.deleteSubscription': 'Eliminar Suscripción',
+  'students.actions.sendMessage': 'Enviar Mensaje',
+  'students.actions.deleteClient': 'Eliminar Cliente',
+  'students.actions.resendVerification': 'Reenviar Verificación',
+  'students.actions.assignSubscription': 'Asignar Suscripción',
+  
+  'students.dialog.newStudent': 'Nuevo Estudiante',
+  'students.dialog.assignSubscription': 'Asignar Suscripción',
+  'students.dialog.registerPayment': 'Registrar Pago',
+  'students.dialog.studentDetails': 'Detalles del Estudiante',
+  
+  'students.confirm.deleteSubscription': '¿Estás seguro que deseas eliminar la suscripción de este cliente?',
+  'students.confirm.deleteClient': '¿Estás seguro que deseas eliminar este cliente?',
+  'students.success.deleted': 'Cliente eliminado exitosamente!',
+  'students.success.verificationSent': 'Email de verificación enviado exitosamente!',
+  
+  // NewStudentHome
+  'studentHome.welcome': '¡Bienvenido, {name}!',
+  'studentHome.calendar.title': 'Tu Calendario de Entrenamiento',
+  'studentHome.calendar.filterMonth': 'Filtrar por Mes',
+  'studentHome.calendar.viewDetails': 'Ver Detalles',
+  'studentHome.calendar.startTraining': 'Comenzar Entrenamiento',
+  'studentHome.dialog.planDetails': 'Detalles del Plan',
+  
+  // Meses (si no existen ya)
+  'months.january': 'Enero',
+  'months.february': 'Febrero',
+  'months.march': 'Marzo',
+  'months.april': 'Abril',
+  'months.may': 'Mayo',
+  'months.june': 'Junio',
+  'months.july': 'Julio',
+  'months.august': 'Agosto',
+  'months.september': 'Septiembre',
+  'months.october': 'Octubre',
+  'months.november': 'Noviembre',
+  'months.december': 'Diciembre',
+  
+  // Calendario
+  'calendar.today': 'Hoy',
+  'calendar.month': 'Mes',
+  'calendar.week': 'Semana',
+  'calendar.day': 'Día',
+  'calendar.list': 'Lista',
+  
+  // Mensajes de error
+  'error.fetchTraining': 'Error al cargar los datos de entrenamiento',
+  
+  // NewStudentsDetails
+  'studentDetails.title': 'Detalles de {name}',
+  'studentDetails.back': 'Volver',
+  'studentDetails.loading': 'Cargando...',
+  
+  'studentDetails.personalInfo.title': 'Información Personal',
+  'studentDetails.personalInfo.email': 'Correo',
+  'studentDetails.personalInfo.fitnessGoal': 'Objetivo Fitness',
+  'studentDetails.personalInfo.activityLevel': 'Nivel de Actividad',
+  
+  'studentDetails.activities.title': 'Actividades Recientes',
+  'studentDetails.progress.title': 'Progreso',
+  
+  'studentDetails.plans.current': 'Planes de Entrenamiento Actuales',
+  'studentDetails.plans.completed': 'Planes de Entrenamiento Completados',
+  'studentDetails.plans.name': 'Nombre del Plan',
+  'studentDetails.plans.description': 'Descripción',
+  'studentDetails.plans.notes': 'Notas',
+  'studentDetails.plans.startDate': 'Fecha de Inicio',
+  'studentDetails.plans.endDate': 'Fecha de Fin',
+  'studentDetails.plans.status': 'Estado',
+  'studentDetails.plans.progress': 'Progreso',
+  
+  'studentDetails.dialog.planDetails': 'Detalles del Plan',
+  'studentDetails.dialog.confirmDelete': '¿Estás seguro que deseas eliminar este plan?',
+  'studentDetails.dialog.confirmDeleteHeader': 'Confirmar Eliminación',
+  
+  'studentDetails.success.planDeleted': '¡Has eliminado el plan {name} exitosamente!',
+  'studentDetails.error.fetchData': 'Error al cargar los datos del estudiante',
+  
+  'studentDetails.tooltip.viewDetails': 'Ver Detalles',
+  'studentDetails.tooltip.deletePlan': 'Eliminar Plan',
+  
+  // NewTrainingDetails
+  'training.title': 'Plan de Entrenamiento',
+  'training.status': 'Estado',
+  'training.group': 'Grupo {number}',
+  'training.setCount': 'Cantidad de Series',
+  'training.restInterval': 'Intervalo de Descanso',
+  'training.seconds': 'segundos',
+  
+  'training.exercise.details': 'Detalles del Ejercicio',
+  'training.exercise.progress': 'Progreso del Ejercicio',
+  'training.exercise.videoUrl': 'URL del Video',
+  'training.exercise.set': 'Serie {number}',
+  'training.exercise.rpe': 'RPE',
+  
+  'training.checkbox.completed': 'Completado',
+  'training.checkbox.notAsPlanned': 'Completado No Según lo Planeado',
+  'training.checkbox.readOnly': 'Solo Lectura',
+  
+  'training.session.finished': '¡Sesión finalizada!',
+  'training.session.congrats': '¡Felicitaciones, has terminado tu rutina!',
+  
+  'training.property.repetitions': 'Repeticiones',
+  'training.property.weight': 'Peso',
+  'training.property.time': 'Tiempo',
+  'training.property.distance': 'Distancia',
+  'training.property.tempo': 'Tempo',
+  'training.property.difficulty': 'Dificultad',
+  'training.property.duration': 'Duración',
+  'training.property.restInterval': 'Intervalo de Descanso',
+  
+  'training.dialog.finishTitle': 'Finalizar Entrenamiento',
+  'training.dialog.videoTitle': 'Video del Ejercicio',
+  
+  'training.buttons.saveProgress': 'Guardar Progreso',
+  'training.buttons.finishTraining': 'Finalizar Entrenamiento',
+  'training.buttons.viewDetails': 'Ver Detalles',
+  
+  'training.success.saved': 'Tu progreso ha sido guardado exitosamente.',
+  'training.success.finished': '¡Felicitaciones, has terminado tu rutina!',
+  
+  'training.error.noFeedback': 'No hay retroalimentación válida para enviar.',
+  'training.error.exerciseNotFound': 'Ejercicio original no encontrado.',
+  'training.error.fillAllFields': 'Todos los campos relevantes deben estar completos.',
+  
+  'training.loading': 'Cargando...',
+  
+  // TrainingDetails
+  'training.group.title': 'Grupo {number}',
+  'training.group.set': 'Serie',
+  'training.group.rest': 'Descanso (segundos)',
+  
+  'training.exercise.video': 'URL del Video',
+  'training.exercise.sets': 'Serie {number}',
+  'training.exercise.rpe': 'RPE',
+  'training.exercise.comments': 'Comentarios',
+  
+  'training.plan.name': 'Nombre del Plan',
+  'training.plan.status': 'Estado',
+  
+  'training.checkbox.completed': 'Completado',
+  'training.checkbox.notAsPlanned': 'Completado No Según lo Planeado',
+  
+  'training.buttons.save': 'Guardar Progreso',
+  'training.buttons.finish': 'Finalizar Entrenamiento',
+  
+  'training.success.saved': 'Tu progreso ha sido guardado exitosamente.',
+  'training.success.finished': '¡Felicitaciones, has terminado tu rutina!',
+  
+  'training.error.exerciseNotFound': 'Ejercicio original no encontrado.',
+  'training.error.fillFields': 'Todos los campos relevantes deben estar completos.',
+  'training.error.noFeedback': 'No hay retroalimentación válida para enviar.',
+  
+  // NewCreatePlan
+  'plan.create.title': 'Crear Plan',
+  'plan.edit.title': 'Editar Plan',
+  'plan.name': 'Nombre del Plan',
+  'plan.notes': 'Notas Personalizadas',
+  
+  'plan.buttons.import': 'Importar desde Imagen',
+  'plan.buttons.addGroup': 'Agregar Grupo',
+  'plan.buttons.undoDelete': 'Deshacer Eliminación',
+  'plan.buttons.clearPlan': 'Limpiar Plan',
+  'plan.buttons.createPlan': 'Crear Plan',
+  'plan.buttons.editPlan': 'Editar Plan',
+  
+  'plan.group.title': 'Grupo {number}',
+  'plan.group.name': 'Nombre del Grupo',
+  'plan.group.set': 'Serie',
+  'plan.group.rest': 'Descanso (segundos)',
+  'plan.group.addExercise': 'Agregar Ejercicio',
+  
+  'plan.exercise.select': 'Seleccionar un Ejercicio',
+  'plan.exercise.add': 'Agregar Ejercicio',
+  'plan.exercise.notes': 'Notas',
+  'plan.exercise.property.add': 'Agregar Propiedad',
+  
+  'plan.dialog.confirmClear': '¿Estás seguro que deseas limpiar todo el plan de entrenamiento?',
+  'plan.dialog.confirmCreate': '¿Estás seguro que deseas crear este plan?',
+  'plan.dialog.confirmEdit': '¿Estás seguro que deseas editar este plan?',
+  
+  'plan.success.created': '¡Has creado el plan {name} exitosamente!',
+  'plan.success.updated': '¡Has actualizado el plan {name} exitosamente!',
+  'plan.success.imported': 'El plan de entrenamiento ha sido importado desde la imagen exitosamente.',
+  
+  'plan.error.nameRequired': 'El nombre del plan es requerido.',
+  'plan.error.groupRequired': 'Se requiere al menos un grupo.',
+  'plan.error.exerciseRequired': 'Cada grupo debe tener al menos un ejercicio.',
+  'plan.error.exerciseSelect': 'Cada ejercicio debe estar seleccionado. {name} no está seleccionado.',
+  
+  // Traducciones adicionales
+  'common.actions': 'Acciones',
+  'common.loading': 'Cargando...',
+  'common.confirm': 'Confirmar',
+  'common.cancel': 'Cancelar',
+  'common.delete': 'Eliminar',
+  'common.edit': 'Editar',
+  'common.save': 'Guardar',
+  'common.close': 'Cerrar',
+  'common.search': 'Buscar',
+  'common.filter': 'Filtrar',
+  'common.yes': 'Sí',
+  'common.no': 'No',
+  
+  // Propiedades de ejercicios
+  'exercise.properties.sets': 'Series',
+  'exercise.properties.reps': 'Repeticiones',
+  'exercise.properties.time': 'Tiempo',
+  'exercise.properties.weight': 'Peso',
+  'exercise.properties.restInterval': 'Intervalo de Descanso',
+  'exercise.properties.tempo': 'Tempo',
+  'exercise.properties.difficulty': 'Dificultad',
+  'exercise.properties.duration': 'Duración',
+  'exercise.properties.distance': 'Distancia',
+  
+  // Mensajes de confirmación
+  'confirm.delete': '¿Estás seguro que deseas eliminar esto?',
+  'confirm.deleteGroup': '¿Estás seguro que deseas eliminar este grupo?',
+  'confirm.header': 'Confirmar Acción',
+  
+  // Mensajes de éxito/error
+  'success.saved': 'Guardado exitosamente',
+  'success.deleted': 'Eliminado exitosamente',
+  'success.updated': 'Actualizado exitosamente',
+  'error.generic': 'Algo salió mal',
+  'error.required': 'Este campo es requerido',
+  
+  // Tooltips
+  'tooltip.addExercise': 'Agregar ejercicio',
+  'tooltip.removeExercise': 'Eliminar ejercicio',
+  'tooltip.addProperty': 'Agregar propiedad',
+  'tooltip.removeProperty': 'Eliminar propiedad',
+  'tooltip.dragGroup': 'Arrastrar para reordenar',
+  
+  // Filtros y ordenamiento
+  'filter.byName': 'Filtrar por nombre',
+  'filter.byType': 'Filtrar por tipo',
+  'sort.ascending': 'Ascendente',
+  'sort.descending': 'Descendente',
+  
+  // NewClientDashboard - Adicionales
+  'dashboard.calendar.viewDetails': 'Ver Detalles del Entrenamiento',
+  'dashboard.calendar.assignWorkout': 'Asignar Entrenamiento al Día',
+  'dashboard.calendar.assignWorkoutTo': 'Asignar Entrenamiento',
+  
+  'dashboard.table.set': 'Serie',
+  'dashboard.table.type': 'Tipo',
+  'dashboard.table.expected': 'Esperado',
+  'dashboard.table.completed': 'Completado',
+  
+  'dashboard.exercise.status.completed': '✔',
+  'dashboard.exercise.status.notCompleted': '✘',
+  
+  'dashboard.dialog.planDetails': 'Detalles del Plan',
+  
+  'dashboard.chart.expectedReps': 'Repeticiones Esperadas',
+  'dashboard.chart.completedReps': 'Repeticiones Completadas',
+  'dashboard.chart.averageWeight': 'Peso Promedio (kg)',
+  'dashboard.chart.averageRpe': 'RPE Promedio',
+  
+  'dashboard.calendar.today': 'Hoy',
+  'dashboard.calendar.month': 'Mes',
+  'dashboard.calendar.week': 'Semana',
+  'dashboard.calendar.day': 'Día',
+  'dashboard.calendar.list': 'Lista',
+  
+  // NewCoachHome - Adicionales
+  'coach.sections.trainingPlans': 'Planes de Entrenamiento',
+  'coach.sections.recentActivity': 'Actividad Reciente',
+  'coach.sections.recentMessages': 'Mensajes Recientes',
+  'coach.sections.workoutProgress': 'Progreso de Entrenamientos',
+  'coach.sections.upcomingSessions': 'Próximas Sesiones',
+  
+  'coach.buttons.newPlan': 'Nuevo Plan',
+  'coach.buttons.editPlan': 'Editar Plan',
+  'coach.buttons.openChat': 'Abrir Chat',
+  'coach.buttons.upgradePlan': 'Mejorar Plan',
+  
+  'coach.subscription.status': 'Estado de Suscripción',
+  'coach.subscription.currentPlan': 'Plan Actual: Premium',
+  'coach.subscription.clientsManaged': 'Clientes Gestionados: {current}/{max}',
+  
+  'coach.progress.completed': 'Completado: {count}',
+  'coach.progress.pending': 'Pendiente: {count}',
+  'coach.progress.expired': 'Expirado: {count}',
+  'coach.progress.total': '{completed}/{total} Completados',
+  
+  'coach.calendar.noUpcomingSession': 'Sin sesiones próximas',
+  
+  'coach.chart.completed': 'Completados',
+  'coach.chart.pending': 'Pendientes',
+  'coach.chart.expired': 'Expirados',
+  
+  // ForgotPassword
+  'forgotPassword.title': 'Olvidé mi Contraseña',
+  'forgotPassword.email': 'Correo Electrónico',
+  'forgotPassword.sendLink': 'Enviar Enlace de Restablecimiento',
+  'forgotPassword.success': 'El enlace para restablecer la contraseña ha sido enviado a tu correo.',
+  'forgotPassword.error': 'Algo salió mal',
+  
+  // HomePage
+  'home.header.features': 'Características',
+  'home.header.pricing': 'Precios',
+  'home.header.about': 'Acerca de',
+  'home.header.contact': 'Contacto',
+  'home.header.login': 'Iniciar Sesión',
+  
+  'home.hero.title': 'Transforma tu Viaje Fitness con EaseTrain',
+  'home.hero.subtitle': 'Empodera a los entrenadores, motiva a los clientes y alcanza metas de fitness juntos.',
+  'home.hero.getStarted': 'Comenzar',
+  'home.hero.learnMore': 'Aprender Más',
+  
+  'home.features.title': 'Características Clave',
+  'home.features.manageClients': 'Gestionar Clientes',
+  'home.features.manageClientsDesc': 'Gestiona fácilmente los detalles y el progreso de tus clientes en un solo lugar.',
+  'home.features.customPlans': 'Planes de Entrenamiento Personalizados',
+  'home.features.customPlansDesc': 'Crea rutinas de entrenamiento personalizadas adaptadas a las necesidades de cada cliente.',
+  'home.features.trackProgress': 'Seguimiento del Progreso',
+  'home.features.trackProgressDesc': 'Visualiza el progreso del cliente con gráficos y reportes basados en datos.',
+  'home.features.messaging': 'Mensajería en la App',
+  'home.features.messagingDesc': 'Mantente conectado con los clientes a través de mensajes directos.',
+  'home.features.videoTutorials': 'Tutoriales en Video',
+  'home.features.videoTutorialsDesc': 'Comparte tutoriales en video para guiar a los clientes en los ejercicios.',
+  
+  'home.pricing.title': 'Planes de Precios',
+  'home.pricing.maxClients': 'Clientes Máximos: {max}',
+  
+  'home.testimonials.title': 'Lo que Dicen Nuestros Usuarios',
+  'home.testimonials.sarah': 'EaseTrain ha revolucionado cómo gestiono a mis clientes. ¡Es un cambio de juego para los entrenadores personales!',
+  'home.testimonials.mike': 'La función de seguimiento del progreso me mantiene motivado. Me encanta ver mis mejoras con el tiempo.',
+  'home.testimonials.emily': 'Los planes de entrenamiento personalizados y los tutoriales en video me han ayudado a brindar un mejor servicio a mis clientes.',
+  
+  'home.footer.terms': 'Términos de Servicio',
+  'home.footer.privacy': 'Privacidad',
+  'home.footer.contact': 'Contacto',
+  
+  'home.login.title': 'Iniciar Sesión',
+  'home.login.email': 'Correo Electrónico',
+  'home.login.password': 'Contraseña',
+  'home.login.forgotPassword': '¿Olvidaste tu contraseña?',
+  
+  'home.signup.title': 'Registrarse',
+  'home.signup.email': 'Correo Electrónico',
+  'home.signup.password': 'Contraseña',
+  'home.signup.confirmPassword': 'Confirmar Contraseña',
+  
+  'home.toast.verifyEmail': '¡Verifica tu correo antes de iniciar sesión!',
+  'home.toast.checkEmail': '¡Revisa tu correo para continuar!',
+  'home.toast.error': 'Error',
+  'home.toast.success': 'Éxito',
+  
+  // ResetPassword
+  'resetPassword.title': 'Restablecer Contraseña',
+  'resetPassword.newPassword': 'Nueva Contraseña',
+  'resetPassword.confirmPassword': 'Confirmar Contraseña',
+  'resetPassword.button': 'Restablecer Contraseña',
+  'resetPassword.success': 'Contraseña restablecida exitosamente',
+  'resetPassword.error.match': 'Las contraseñas no coinciden',
+  'resetPassword.error.generic': 'Algo salió mal',
+  
+  // NotSubscribed
+  'notSubscribed.title': 'Sin suscripción activa',
+  'notSubscribed.message': 'No tienes ninguna suscripción disponible. Habla con tu entrenador para solucionar esto.',
+  'notSubscribed.button': 'Ir al Inicio de Sesión',
+  
+  // Unauthorized
+  'unauthorized.title': 'No Autorizado',
+  'unauthorized.message': 'No tienes permiso para ver esta página.',
+  'unauthorized.button': 'Ir al Inicio de Sesión',
+  
+  // WorkoutTable
+  'workoutTable.trainingDay': 'Día de Entrenamiento: {day}',
+  'workoutTable.exercise': 'Ejercicio',
+  'workoutTable.day': 'Día {day} - {plan}',
+  'workoutTable.selectCycleDay': 'Selecciona un ciclo y un día de la semana',
+  'workoutTable.cycle': 'Ciclo:',
+  'workoutTable.dayOfWeek': 'Día de la semana:',
+  'workoutTable.selectCycle': 'Seleccionar Ciclo',
+  'workoutTable.selectDay': 'Seleccionar Día',
+  
+  // Header
+  'header.home': 'Inicio',
+  'header.profile': 'Perfil',
+  'header.clients': 'Clientes',
+  'header.logout': 'Cerrar Sesión',
+  'header.chat': 'Chat',
+  'header.notifications': 'Notificaciones',
+  'header.noNotifications': 'No hay nuevas notificaciones',
+  
+  // CoachProfileForm
+  'coachProfileForm.title': 'Completa tu Perfil de Entrenador',
+  'coachProfileForm.name': 'Nombre',
+  'coachProfileForm.trainingType': 'Tipo de Entrenamiento',
+  'coachProfileForm.selectTrainingTypes': 'Seleccionar Tipos de Entrenamiento',
+  'coachProfileForm.hasGym': 'Tiene Gimnasio',
+  'coachProfileForm.gymLocation': 'Ubicación del Gimnasio',
+  'coachProfileForm.bio': 'Biografía',
+  'coachProfileForm.experience': 'Experiencia',
+  'coachProfileForm.subscriptionType': 'Tipo de Suscripción',
+  'coachProfileForm.freeTrial': 'Prueba Gratuita (3 Clientes)',
+  'coachProfileForm.paid': 'Suscripción Mensual',
+  'coachProfileForm.choosePlan': 'Elegir Plan',
+  'coachProfileForm.subscriptionPlan': 'Plan de Suscripción',
+  'coachProfileForm.plan': 'Plan',
+  'coachProfileForm.price': 'Precio',
+  'coachProfileForm.clients': 'Clientes',
+  'coachProfileForm.submit': 'Enviar',
+  'coachProfileForm.success': '¡Perfil actualizado!',
+  'coachProfileForm.error': 'Error',
+  'coachProfileForm.dialog.header': 'Selecciona un Plan de Suscripción'
+}; 

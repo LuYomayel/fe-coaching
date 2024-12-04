@@ -13,11 +13,12 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import { fetchTrainingCyclesForClientByUserId } from '../services/workoutService';
-import PlanDetails from '../dialogs/PlanDetails';
 import NewPlanDetail from '../dialogs/NewPlanDetails';
 import { getDayMonthYear } from '../utils/UtilFunctions';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 export default function NewStudentHome() {
+  const intl = useIntl();
   const { user, client } = useContext(UserContext);
   const navigate = useNavigate();
   const [calendarEvents, setCalendarEvents] = useState([]);
@@ -47,51 +48,53 @@ export default function NewStudentHome() {
   };
 
   useEffect(() => {
+    const fetchTrainingData = async () => {
+      try {
+        setLoading(true);
+        const cycles = await fetchTrainingCyclesForClientByUserId(user.userId);
+        const events = cycles.flatMap(cycle =>
+          cycle.trainingWeeks.flatMap(week =>
+            week.trainingSessions.flatMap(session => {
+              const sessionEvents = session.workoutInstances.length > 0
+                ? session.workoutInstances.map(workoutInstance => {
+                    workoutInstance.status = updateStatus(workoutInstance, session);
+                    return {
+                      title: workoutInstance.workout.planName,
+                      start: getDayMonthYear(session).toISOString().split('T')[0],
+                      extendedProps: {
+                        status: workoutInstance.status,
+                        workoutInstanceId: workoutInstance.id,
+                        sessionId: session.id,
+                      },
+                    };
+                  })
+                : [
+                    {
+                      title: 'no title',
+                      start: getDayMonthYear(session).toISOString().split('T')[0],
+                      extendedProps: {
+                        sessionId: session.id,
+                      },
+                    },
+                  ];
+  
+              return sessionEvents;
+            })
+          )
+        );
+        setCalendarEvents(events);
+        setLoading(false);
+      } catch (error) {
+        setError('Failed to fetch training data');
+        setLoading(false);
+        toast.current.show({ severity: 'error', summary: 'Error', detail: error.message, life: 3000 });
+      }
+    };
+    
     fetchTrainingData();
   }, [user.userId, refreshKey]);
 
-  const fetchTrainingData = async () => {
-    try {
-      setLoading(true);
-      const cycles = await fetchTrainingCyclesForClientByUserId(user.userId);
-      const events = cycles.flatMap(cycle =>
-        cycle.trainingWeeks.flatMap(week =>
-          week.trainingSessions.flatMap(session => {
-            const sessionEvents = session.workoutInstances.length > 0
-              ? session.workoutInstances.map(workoutInstance => {
-                  workoutInstance.status = updateStatus(workoutInstance, session);
-                  return {
-                    title: workoutInstance.workout.planName,
-                    start: getDayMonthYear(session).toISOString().split('T')[0],
-                    extendedProps: {
-                      status: workoutInstance.status,
-                      workoutInstanceId: workoutInstance.id,
-                      sessionId: session.id,
-                    },
-                  };
-                })
-              : [
-                  {
-                    title: 'no title',
-                    start: getDayMonthYear(session).toISOString().split('T')[0],
-                    extendedProps: {
-                      sessionId: session.id,
-                    },
-                  },
-                ];
-
-            return sessionEvents;
-          })
-        )
-      );
-      setCalendarEvents(events);
-      setLoading(false);
-    } catch (error) {
-      setError('Failed to fetch training data');
-      setLoading(false);
-      toast.current.show({ severity: 'error', summary: 'Error', detail: error.message, life: 3000 });
-    }
-  };
+  
 
   const handleViewWorkoutDetails = (workoutInstanceId) => {
     setSelectedPlan(workoutInstanceId);
@@ -119,7 +122,7 @@ export default function NewStudentHome() {
                   e.stopPropagation();
                   handleViewWorkoutDetails(workoutInstanceId);
                 }}
-                tooltip="View Details"
+                tooltip={intl.formatMessage({ id: 'studentHome.calendar.viewDetails' })}
                 tooltipOptions={{ position: 'top' }}
               />
               {status !== 'completed' && (
@@ -130,7 +133,7 @@ export default function NewStudentHome() {
                     e.stopPropagation();
                     handleStartTrainingSession(workoutInstanceId);
                   }}
-                  tooltip="Start Training"
+                  tooltip={intl.formatMessage({ id: 'studentHome.calendar.startTraining' })}
                   tooltipOptions={{ position: 'top' }}
                 />
               )}
@@ -142,18 +145,18 @@ export default function NewStudentHome() {
   };
 
   const monthOptions = [
-    { label: 'January', value: 0 },
-    { label: 'February', value: 1 },
-    { label: 'March', value: 2 },
-    { label: 'April', value: 3 },
-    { label: 'May', value: 4 },
-    { label: 'June', value: 5 },
-    { label: 'July', value: 6 },
-    { label: 'August', value: 7 },
-    { label: 'September', value: 8 },
-    { label: 'October', value: 9 },
-    { label: 'November', value: 10 },
-    { label: 'December', value: 11 },
+    { label: intl.formatMessage({ id: 'months.january' }), value: 0 },
+    { label: intl.formatMessage({ id: 'months.february' }), value: 1 },
+    { label: intl.formatMessage({ id: 'months.march' }), value: 2 },
+    { label: intl.formatMessage({ id: 'months.april' }), value: 3 },
+    { label: intl.formatMessage({ id: 'months.may' }), value: 4 },
+    { label: intl.formatMessage({ id: 'months.june' }), value: 5 },
+    { label: intl.formatMessage({ id: 'months.july' }), value: 6 },
+    { label: intl.formatMessage({ id: 'months.august' }), value: 7 },
+    { label: intl.formatMessage({ id: 'months.september' }), value: 8 },
+    { label: intl.formatMessage({ id: 'months.october' }), value: 9 },
+    { label: intl.formatMessage({ id: 'months.november' }), value: 10 },
+    { label: intl.formatMessage({ id: 'months.december' }), value: 11 },
   ];
 
   const handleMonthChange = (e) => {
@@ -167,20 +170,37 @@ export default function NewStudentHome() {
       <Toast ref={toast} />
 
       <Card className="mb-4">
-        <h1 className="text-4xl font-bold mb-4">Welcome, {client?.name || ''}!</h1>
+        <h1 className="text-4xl font-bold mb-4">
+          <FormattedMessage 
+            id="studentHome.welcome" 
+            values={{ name: client?.name || '' }}
+          />
+        </h1>
       </Card>
 
       <Card className="mb-4">
         <div className="flex justify-content-between align-items-center mb-4">
-          <h2 className="text-2xl font-bold">Your Training Calendar</h2>
-          <Dropdown value={selectedMonth} options={monthOptions} onChange={handleMonthChange} placeholder="Filter by Month" />
+          <h2 className="text-2xl font-bold">
+            <FormattedMessage id="studentHome.calendar.title" />
+          </h2>
+          <Dropdown 
+            value={selectedMonth} 
+            options={monthOptions} 
+            onChange={handleMonthChange} 
+            placeholder={intl.formatMessage({ id: 'studentHome.calendar.filterMonth' })} 
+          />
         </div>
         {loading ? (
           <div className="flex justify-content-center">
             <ProgressSpinner />
+            <span className="ml-2">
+              <FormattedMessage id="common.loading" />
+            </span>
           </div>
         ) : error ? (
-          <div className="text-red-500">{error}</div>
+          <div className="text-red-500">
+            <FormattedMessage id="error.fetchTraining" />
+          </div>
         ) : (
           <FullCalendar
             ref={calendarRef}
@@ -192,6 +212,13 @@ export default function NewStudentHome() {
               left: 'prev,next today',
               center: 'title',
               right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth',
+            }}
+            buttonText={{
+              today: intl.formatMessage({ id: 'calendar.today' }),
+              month: intl.formatMessage({ id: 'calendar.month' }),
+              week: intl.formatMessage({ id: 'calendar.week' }),
+              day: intl.formatMessage({ id: 'calendar.day' }),
+              list: intl.formatMessage({ id: 'calendar.list' })
             }}
             height="auto"
             windowResize={(arg) => {
@@ -207,7 +234,7 @@ export default function NewStudentHome() {
       </Card>
 
       <Dialog
-        header="Plan Details"
+        header={intl.formatMessage({ id: 'studentHome.dialog.planDetails' })}
         draggable={false}
         resizable={false}
         dismissableMask

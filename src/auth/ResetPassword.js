@@ -4,9 +4,11 @@ import { Card } from 'primereact/card';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { useToast } from '../utils/ToastContext';
+import { useIntl, FormattedMessage } from 'react-intl';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ResetPassword = () => {
+  const intl = useIntl();
   const showToast = useToast();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,35 +19,34 @@ const ResetPassword = () => {
 
   const handleResetPassword = async () => {
     if (newPassword !== confirmPassword) {
-      showToast('error', 'Error', 'Passwords do not match');
+      showToast('error', 'Error', intl.formatMessage({ id: 'resetPassword.error.match' }));
       return;
     }
 
-    // setLoading(true);
+    setLoading(true);
     try {
-        const body = {
-            token,
-            newPassword
-        }
-        const response = await fetch(`${apiUrl}/auth/reset-password`, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData)
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        else{
-            showToast('success', 'Success', 'Password reset successfully');
-            navigate('/login');
-        } 
+      const body = {
+        token,
+        newPassword
+      }
+      const response = await fetch(`${apiUrl}/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log(errorData)
+        throw new Error(errorData.message || intl.formatMessage({ id: 'resetPassword.error.generic' }));
+      } else {
+        showToast('success', 'Success', intl.formatMessage({ id: 'resetPassword.success' }));
+        navigate('/login');
+      }
     } catch (error) {
-        console.log(error)
-        showToast('error', 'Error', error.message);
+      console.log(error)
+      showToast('error', 'Error', error.message);
     }
     setLoading(false);
   };
@@ -53,17 +54,26 @@ const ResetPassword = () => {
   return (
     <div className="flex flex-column align-items-center justify-content-center">
       <div className="reset-password-container">
-        <Card title="Reset Password">
+        <Card title={intl.formatMessage({ id: 'resetPassword.title' })}>
           <div className="p-field">
-            <label htmlFor="newPassword">New Password</label>
+            <label htmlFor="newPassword">
+              <FormattedMessage id="resetPassword.newPassword" />
+            </label>
             <Password id="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} toggleMask />
           </div>
           <div className="p-field">
-            <label htmlFor="confirmPassword">Confirm Password</label>
+            <label htmlFor="confirmPassword">
+              <FormattedMessage id="resetPassword.confirmPassword" />
+            </label>
             <Password id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} toggleMask />
           </div>
           <div className='flex align-items-center justify-content-center gap-1 pt-4'>
-            <Button label="Reset Password" icon="pi pi-check" loading={loading} onClick={handleResetPassword} />
+            <Button 
+              label={intl.formatMessage({ id: 'resetPassword.button' })} 
+              icon="pi pi-check" 
+              loading={loading} 
+              onClick={handleResetPassword} 
+            />
           </div>
         </Card>
       </div>

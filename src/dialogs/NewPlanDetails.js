@@ -293,16 +293,19 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                     return(
                     <AccordionTab key={group.groupNumber}header={
                         <>
-                          Group {group.groupNumber}
-                          <Badge
-                            value={allExercisesCompleted ? '✔' : '✘'}
-                            className="ml-2"
-                            severity={allExercisesCompleted ? 'success' : 'danger'}
-                          />
+                          Group {group.groupNumber} {group.name ? `: ${group.name}` : ''}
+                          {!workoutPlan.isTemplate &&
+                            <Badge
+                                value={allExercisesCompleted ? '✔' : '✘'}
+                                className="ml-2"
+                                severity={allExercisesCompleted ? 'success' : 'danger'}
+                            />
+                          }
                         </>
                       }>
-                        <p>Sets: {group.set}</p>
-                        <p>Rest between sets: {group.rest} sec</p>
+                        {/* <p>Sets: {group.set}</p> */}
+                        {/* <p>Rest between sets: {group.rest} sec</p> */}
+                        {/* {group.name && <p>Group name: {group.name}</p>} */}
                         {group.exercises.map((exercise) =>
                             workoutPlan.status === 'completed'
                                 ? renderExerciseDetailsWithFeedback(exercise, group.groupNumber)

@@ -23,6 +23,7 @@ import { useChatSidebar } from '../utils/ChatSideBarContext';
 import { formatDate } from '../utils/UtilFunctions';
 import { InputIcon } from 'primereact/inputicon';
 import { IconField } from 'primereact/iconfield';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 export default function NewManageStudentsPage() {
@@ -47,6 +48,8 @@ export default function NewManageStudentsPage() {
   const [ isSendingVerification, setIsSendingVerification ] = useState(false);
   const navigate = useNavigate();
 
+  const intl = useIntl();
+
   useEffect(() => {
     setLoading(true);
     const loadAllStudents = async () => {
@@ -70,7 +73,7 @@ export default function NewManageStudentsPage() {
     };
     return (
       <span className={`${statusColor[status]} text-white p-2 rounded-md`}>
-        {rowData.user.subscription.status}
+        <FormattedMessage id={`students.status.${status}`} />
       </span>
     );
   };
@@ -111,33 +114,31 @@ export default function NewManageStudentsPage() {
             icon="pi pi-user"
             className="p-button-rounded p-button-info"
             onClick={() => viewProfile(rowData.id)}
+            tooltip={intl.formatMessage({ id: 'students.actions.viewProfile' })}
           />
           <Button
             icon="pi pi-dollar"
             className="p-button-rounded p-button-success"
             onClick={() => openRegisterPaymentDialog(rowData)}
-            tooltip="Register payment"
+            tooltip={intl.formatMessage({ id: 'students.actions.registerPayment' })}
           />
           <Button
             icon="pi pi-times"
             className="p-button-rounded p-button-danger"
-            onClick={() =>
-              deleteCancelSubscription(
-                rowData.user.subscription.clientSubscription.id
-              )
-            }
-            tooltip="Delete Subscription"
+            onClick={() => deleteCancelSubscription(rowData.user.subscription.clientSubscription.id)}
+            tooltip={intl.formatMessage({ id: 'students.actions.deleteSubscription' })}
           />
           <Button
             icon="pi pi-comments"
             className="p-button-rounded p-button-warning"
             onClick={() => sendMessage(rowData)}
+            tooltip={intl.formatMessage({ id: 'students.actions.sendMessage' })}
           />
           <Button
             icon="pi pi-trash"
             className="p-button-rounded p-button-danger"
             onClick={() => deleteClientConfirm(rowData.id)}
-            tooltip="Delete Client"
+            tooltip={intl.formatMessage({ id: 'students.actions.deleteClient' })}
           />
         </div>
       );
@@ -148,13 +149,14 @@ export default function NewManageStudentsPage() {
             icon="pi pi-user"
             className="p-button-rounded p-button-info"
             onClick={() => viewProfile(rowData.id)}
+            tooltip={intl.formatMessage({ id: 'students.actions.viewProfile' })}
           />
           {!rowData.user.isVerified && (
             <Button
               icon="pi pi-envelope"
               className="p-button-rounded p-button-success"
               onClick={() => handleResendVerification(rowData.user.email)}
-              tooltip="Resend Verification Email"
+              tooltip={intl.formatMessage({ id: 'students.actions.resendVerificationEmail' })}
               loading={isSendingVerification  }
             />
           )  
@@ -163,18 +165,19 @@ export default function NewManageStudentsPage() {
             icon="pi pi-calendar-plus"
             className="p-button-rounded p-button-success"
             onClick={() => openSubscriptionDialog(rowData)}
-            tooltip="Assign Subscription"
+            tooltip={intl.formatMessage({ id: 'students.actions.assignSubscription' })}
           />
           <Button
             icon="pi pi-comments"
             className="p-button-rounded p-button-warning"
             onClick={() => sendMessage(rowData)}
+            tooltip={intl.formatMessage({ id: 'students.actions.sendMessage' })}
           />
           <Button
             icon="pi pi-trash"
             className="p-button-rounded p-button-danger"
             onClick={() => deleteClientConfirm(rowData.id)}
-            tooltip="Delete Client"
+            tooltip={intl.formatMessage({ id: 'students.actions.deleteClient' })}
           />
         </div>
       );
@@ -270,8 +273,8 @@ export default function NewManageStudentsPage() {
 
   const deleteClientConfirm = (clientId) => {
     showConfirmationDialog({
-      message: 'Are you sure you want to delete this client?',
-      header: 'Confirmation',
+      message: intl.formatMessage({ id: 'students.confirm.deleteClient' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDeleteUser(clientId),
       reject: () => console.log('Rejected'),
@@ -283,28 +286,33 @@ export default function NewManageStudentsPage() {
       <Toast ref={toast} />
       <ConfirmDialog />
 
-      <Card
-        title="Manage Students"
-        subTitle="View and manage your students' progress"
-        className="mb-4"
-      >
+      <Card className="mb-4">
+        <h1 className="text-3xl font-bold">
+          <FormattedMessage id="students.title" />
+        </h1>
+        <h2 className="text-xl text-gray-600">
+          <FormattedMessage id="students.subtitle" />
+        </h2>
         <p>
-          Use this page to track your students' progress, assign training plans,
-          and communicate with them directly.
+          <FormattedMessage id="students.description" />
         </p>
       </Card>
 
       <div className="flex justify-content-between align-items-center mb-4">
         <IconField iconPosition="left">
-              <InputIcon className="pi pi-search"> </InputIcon>
-              <InputText
-                placeholder="Search students"
-                value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-            />
-          </IconField>
+          <InputIcon className="pi pi-search" />
+          <InputText
+            placeholder={intl.formatMessage({ id: 'students.search' })}
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+          />
+        </IconField>
         
-        <Button label="Add New Student" icon="pi pi-plus" onClick={openNewStudentDialog} />
+        <Button 
+          label={intl.formatMessage({ id: 'students.addNew' })} 
+          icon="pi pi-plus" 
+          onClick={openNewStudentDialog} 
+        />
       </div>
 
       <DataTable
@@ -312,45 +320,44 @@ export default function NewManageStudentsPage() {
         paginator
         rows={10}
         globalFilter={globalFilter}
-        emptyMessage="No students found."
+        emptyMessage={intl.formatMessage({ id: 'students.noStudents' })}
         responsiveLayout="scroll"
       >
         <Column
           field="name"
-          header="Name"
+          header={intl.formatMessage({ id: 'students.table.name' })}
           body={(rowData) => (
             <div className="flex align-items-center">
-              <Avatar
-                label={rowData.name.charAt(0)}
-                shape="circle"
-                className="mr-2"
-              />
+              <Avatar label={rowData.name.charAt(0)} shape="circle" className="mr-2" />
               <span>{rowData.name}</span>
             </div>
           )}
         />
-        <Column field="user.email" header="Email" />
+        <Column 
+          field="user.email" 
+          header={intl.formatMessage({ id: 'students.table.email' })} 
+        />
         <Column
           field="user.subscription.status"
-          header="Status"
+          header={intl.formatMessage({ id: 'students.table.status' })}
           body={statusBodyTemplate}
         />
         <Column
           body={(e) => (
-            <span data-label="Last Payment">
+            <span data-label={intl.formatMessage({ id: 'students.table.lastPayment' })}>
               {formatDate(e.user.subscription.lastPaymentDate)}
             </span>
           )}
-          header="Last Payment"
+          header={intl.formatMessage({ id: 'students.table.lastPayment' })}
           className="last-payment-column"
         />
         <Column
           body={(e) => (
-            <span data-label="Next Payment">
+            <span data-label={intl.formatMessage({ id: 'students.table.nextPayment' })}>
               {formatDate(e.user.subscription.nextPaymentDate)}
             </span>
           )}
-          header="Next Payment"
+          header={intl.formatMessage({ id: 'students.table.nextPayment' })}
           className="next-payment-column"
         />
         <Column
@@ -359,20 +366,23 @@ export default function NewManageStudentsPage() {
               ? `${rowData.user.subscription.clientSubscription.coachPlan.name}`
               : ''
           }
-          header="Subscription Plan"
+          header={intl.formatMessage({ id: 'students.table.plan' })}
         />
-        <Column body={actionBodyTemplate} header="Actions" />
+        <Column 
+          body={actionBodyTemplate} 
+          header={intl.formatMessage({ id: 'students.table.actions' })} 
+        />
       </DataTable>
 
       <Dialog
+        header={intl.formatMessage({ id: 'students.dialog.newStudent' })}
+        visible={isNewStudentDialogVisible}
+        onHide={handleNewStudentDialogHide}
         draggable={false}
         resizable={false}
         dismissableMask
-        header="New Student"
         className="responsive-dialog"
-        visible={isNewStudentDialogVisible}
         style={{ width: '50vw' }}
-        onHide={handleNewStudentDialogHide}
       >
         <NewStudentDialog
           onClose={handleNewStudentDialogHide}

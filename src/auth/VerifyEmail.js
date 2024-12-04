@@ -14,37 +14,39 @@ const VerifyEmail = () => {
   const [status, setStatus] = useState('Verifying...');
 
   useEffect(() => {
+    const verifyEmail = async (token) => {
+      try {
+        const response = await fetch(`${apiUrl}/auth/verify-email?token=${token}`, {
+          method: 'GET',
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          setStatus('Email verification failed.');
+          throw new Error(data.message || 'Error en la verificación del email');
+        }
+        
+        setStatus('Email verified successfully!');
+        showToast('success', 'Éxito', 'Email verificado correctamente');
+        
+      } catch (error) {
+        setStatus('An error occurred while verifying your email.');
+        showToast('error', 'Error', error.message);
+      }
+    };
+
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get('token');
 
-    if (token) {
-      verifyEmail(token);
-    } else {
+    if (!token) {
       setStatus('Invalid verification link.');
+      showToast('error', 'Error', 'Link de verificación inválido');
+      return;
     }
-  }, [location]);
 
-  const verifyEmail = async (token) => {
-    try {
-      const response = await fetch(`${apiUrl}/auth/verify-email?token=${token}`, {
-        method: 'GET',
-      });
-     
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log(errorData)
-        setStatus('Email verification failed.');
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-      else {
-        const data = await response.json();
-        setStatus('Email verified successfully!');
-      }
-    } catch (error) {
-      setStatus('An error occurred while verifying your email.');
-      showToast('error', 'Error', error.message);
-    }
-  };
+    verifyEmail(token);
+  }, [location.search, showToast, navigate]);
 
   return (
     <div className="verify-email-container">

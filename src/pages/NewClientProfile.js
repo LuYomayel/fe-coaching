@@ -12,10 +12,10 @@ import { Chart } from 'primereact/chart';
 import { Tag } from 'primereact/tag';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import { Calendar } from 'primereact/calendar';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
@@ -29,8 +29,9 @@ export default function NewClientProfile() {
   const { user } = useContext(UserContext);
   const showToast = useToast();
   const { showConfirmationDialog } = useConfirmationDialog();
-  const { loading, setLoading } = useSpinner();
+  const { setLoading } = useSpinner();
   const toast = useRef(null);
+  const intl = useIntl();
 
   // State variables
   const [personalInfo, setPersonalInfo] = useState(null);
@@ -211,67 +212,85 @@ export default function NewClientProfile() {
   const setPlanDetails = (rowData) => {
     return (
       <p>
-        Week {rowData.trainingSession.trainingWeek.weekNumber} - Day {rowData.trainingSession.dayNumber}
+        <FormattedMessage 
+          id="profile.table.week" 
+          values={{ number: rowData.trainingSession.trainingWeek.weekNumber }}
+        /> - <FormattedMessage 
+          id="profile.table.day" 
+          values={{ number: rowData.trainingSession.dayNumber }}
+        />
       </p>
     );
   };
+
+  const fitnessGoalOptions = [
+    { label: intl.formatMessage({ id: 'profile.goals.weightLoss' }), value: 'weight loss' },
+    { label: intl.formatMessage({ id: 'profile.goals.muscleGain' }), value: 'muscle gain' },
+    { label: intl.formatMessage({ id: 'profile.goals.mobility' }), value: 'gain mobility' },
+    { label: intl.formatMessage({ id: 'profile.goals.maintenance' }), value: 'maintenance' },
+    { label: intl.formatMessage({ id: 'profile.goals.flexibility' }), value: 'flexibility' },
+  ];
+
+  const activityLevelOptions = [
+    { label: intl.formatMessage({ id: 'profile.activity.sedentary' }), value: 'sedentary' },
+    { label: intl.formatMessage({ id: 'profile.activity.moderate' }), value: 'moderately active' },
+    { label: intl.formatMessage({ id: 'profile.activity.active' }), value: 'very active' },
+  ];
 
   return (
     <div className="client-profile p-4">
       <Toast ref={toast} />
       <ConfirmDialog />
 
-      <h1 className="text-4xl font-bold mb-4">Client Profile</h1>
+      <h1 className="text-4xl font-bold mb-4">
+        <FormattedMessage id="profile.title" />
+      </h1>
 
       <div className="grid">
-        {/* Personal Information */}
         <div className="col-12 md:col-4">
-          <Card title="Personal Information" className="mb-4">
+          <Card title={intl.formatMessage({ id: 'profile.personalInfo' })} className="mb-4">
             <p>
-              <strong>Name:</strong> {personalInfo?.name}
+              <strong><FormattedMessage id="profile.name" />:</strong> {personalInfo?.name}
             </p>
             <p>
-              <strong>Email:</strong> {personalInfo?.user?.email}
+              <strong><FormattedMessage id="profile.email" />:</strong> {personalInfo?.user?.email}
             </p>
             <p>
-              <strong>Birthdate:</strong> {formatDate(personalInfo?.birthdate)}
+              <strong><FormattedMessage id="profile.birthdate" />:</strong> {formatDate(personalInfo?.birthdate)}
             </p>
             <p>
-              <strong>Gender:</strong> {personalInfo?.gender}
+              <strong><FormattedMessage id="profile.gender" />:</strong> {personalInfo?.gender}
             </p>
             <p>
-              <strong>Phone:</strong> {personalInfo?.phoneNumber}
+              <strong><FormattedMessage id="profile.phone" />:</strong> {personalInfo?.phoneNumber}
             </p>
             <Button
-              label="Edit"
+              label={intl.formatMessage({ id: 'profile.edit' })}
               icon="pi pi-pencil"
               className="p-button-rounded p-button-warning mt-3"
               onClick={handleEditPersonalInfo}
             />
           </Card>
 
-          {/* Current Subscription */}
-          <Card title="Current Subscription" className="mb-4">
+          <Card title={intl.formatMessage({ id: 'profile.subscription' })} className="mb-4">
             <p>
-              <strong>Plan Name:</strong> {subscription?.coachPlan?.name}
+              <strong><FormattedMessage id="profile.subscription.planName" />:</strong> {subscription?.coachPlan?.name}
             </p>
             <p>
-              <strong>Start Date:</strong> {formatDate(subscription?.subscription?.startDate)}
+              <strong><FormattedMessage id="profile.subscription.startDate" />:</strong> {formatDate(subscription?.subscription?.startDate)}
             </p>
             <p>
-              <strong>End Date:</strong> {formatDate(subscription?.subscription?.endDate)}
+              <strong><FormattedMessage id="profile.subscription.endDate" />:</strong> {formatDate(subscription?.subscription?.endDate)}
             </p>
             <p>
-              <strong>Status:</strong> {subscription?.subscription?.status}
+              <strong><FormattedMessage id="profile.subscription.status" />:</strong> {subscription?.subscription?.status}
             </p>
           </Card>
         </div>
 
-        {/* Tabs */}
         <div className="col-12 md:col-8">
           <TabView>
-            {/* Workout History */}
-            <TabPanel header="Workout History">
+            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.workoutHistory' })}>
               <DataTable
                 value={workoutHistory}
                 paginator
@@ -279,20 +298,23 @@ export default function NewClientProfile() {
                 filters={filters}
                 globalFilterFields={['workout.planName', 'status']}
                 onFilter={(e) => setFilters(e.filters)}
-                emptyMessage="No workouts found."
+                emptyMessage={intl.formatMessage({ id: 'common.noResults' })}
                 responsiveLayout="scroll"
               >
                 <Column
                   field="workout.planName"
-                  header="Plan Name"
+                  header={intl.formatMessage({ id: 'profile.table.planName' })}
                   sortable
                   filter
-                  filterPlaceholder="Search by name"
+                  filterPlaceholder={intl.formatMessage({ id: 'common.search' })}
                   filterElement={planNameFilterTemplate}
                 />
-                <Column header="Details" body={setPlanDetails} />
+                <Column 
+                  header={intl.formatMessage({ id: 'profile.table.details' })} 
+                  body={setPlanDetails} 
+                />
                 <Column
-                  header="Training Date"
+                  header={intl.formatMessage({ id: 'profile.table.trainingDate' })}
                   body={(rowData) => formatDate(getDayMonthYear(rowData.trainingSession).toISOString().split('T')[0])}
                   sortable
                   filter
@@ -301,7 +323,7 @@ export default function NewClientProfile() {
                 />
                 <Column
                   field="realEndDate"
-                  header="Day Trained"
+                  header={intl.formatMessage({ id: 'profile.table.dayTrained' })}
                   body={(rowData) => formatDate(rowData.realEndDate)}
                   sortable
                   filter
@@ -310,7 +332,7 @@ export default function NewClientProfile() {
                 />
                 <Column
                   field="status"
-                  header="Status"
+                  header={intl.formatMessage({ id: 'profile.table.status' })}
                   body={statusBodyTemplate}
                   sortable
                   filter
@@ -319,15 +341,13 @@ export default function NewClientProfile() {
               </DataTable>
             </TabPanel>
 
-            {/* Progress */}
-            <TabPanel header="Progress">
+            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.progress' })}>
               <div className="flex justify-content-center">
                 <Chart type="pie" data={progressData} options={{ responsive: true }} style={{ width: '50%' }} />
               </div>
             </TabPanel>
 
-            {/* User Historical Activities */}
-            <TabPanel header="User Historical Activities">
+            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.activities' })}>
               <DataTable
                 value={activities}
                 paginator
@@ -337,12 +357,12 @@ export default function NewClientProfile() {
                 filterDisplay="menu"
                 globalFilterFields={['description']}
                 onFilter={(e) => setFilters(e.filters)}
-                emptyMessage="No activities found."
+                emptyMessage={intl.formatMessage({ id: 'common.noResults' })}
                 responsiveLayout="scroll"
               >
                 <Column
                   field="timestamp"
-                  header="Date"
+                  header={intl.formatMessage({ id: 'profile.table.date' })}
                   body={(rowData) => formatDate(rowData.timestamp)}
                   sortable
                   filter
@@ -351,7 +371,7 @@ export default function NewClientProfile() {
                 />
                 <Column
                   field="description"
-                  header="Action"
+                  header={intl.formatMessage({ id: 'profile.table.action' })}
                   sortable
                   filter
                   filterElement={descriptionFilterTemplate}
@@ -362,9 +382,8 @@ export default function NewClientProfile() {
         </div>
       </div>
 
-      {/* Edit Personal Information Dialog */}
       <Dialog
-        header="Edit Personal Information"
+        header={intl.formatMessage({ id: 'profile.dialog.edit' })}
         visible={editDialogVisible}
         style={{ width: '50vw' }}
         onHide={handleEditDialogClose}
@@ -373,44 +392,50 @@ export default function NewClientProfile() {
         dismissableMask
         footer={
           <div>
-            <Button label="Cancel" icon="pi pi-times" onClick={handleEditDialogClose} className="p-button-text" />
-            <Button label="Save" icon="pi pi-check" onClick={handleSavePersonalInfo} autoFocus />
+            <Button 
+              label={intl.formatMessage({ id: 'profile.dialog.cancel' })} 
+              icon="pi pi-times" 
+              onClick={handleEditDialogClose} 
+              className="p-button-text" 
+            />
+            <Button 
+              label={intl.formatMessage({ id: 'profile.dialog.save' })} 
+              icon="pi pi-check" 
+              onClick={handleSavePersonalInfo} 
+              autoFocus 
+            />
           </div>
         }
       >
         <div className="p-fluid">
           <div className="p-field">
-            <label htmlFor="fitnessGoal">Fitness Goal</label>
+            <label htmlFor="fitnessGoal">
+              <FormattedMessage id="profile.dialog.fitnessGoal" />
+            </label>
             <MultiSelect
               id="fitnessGoal"
-              options={[
-                { label: 'Weight loss', value: 'weight loss' },
-                { label: 'Muscle gain', value: 'muscle gain' },
-                { label: 'Gain mobility', value: 'gain mobility' },
-                { label: 'Maintenance', value: 'maintenance' },
-                { label: 'Flexibility', value: 'flexibility' },
-              ]}
+              options={fitnessGoalOptions}
               value={fitnessGoal}
               onChange={(e) => setFitnessGoal(e.value)}
-              placeholder="Select Fitness Goals"
+              placeholder={intl.formatMessage({ id: 'common.select' })}
             />
           </div>
           <div className="p-field">
-            <label htmlFor="activityLevel">Activity Level</label>
+            <label htmlFor="activityLevel">
+              <FormattedMessage id="profile.dialog.activityLevel" />
+            </label>
             <Dropdown
               id="activityLevel"
-              options={[
-                { label: 'Sedentary', value: 'sedentary' },
-                { label: 'Moderately active', value: 'moderately active' },
-                { label: 'Very active', value: 'very active' },
-              ]}
+              options={activityLevelOptions}
               value={activityLevel}
               onChange={(e) => setActivityLevel(e.value)}
-              placeholder="Select Activity Level"
+              placeholder={intl.formatMessage({ id: 'common.select' })}
             />
           </div>
           <div className="p-field">
-            <label htmlFor="editPhone">Phone</label>
+            <label htmlFor="editPhone">
+              <FormattedMessage id="profile.phone" />
+            </label>
             <InputNumber
               maxLength={11}
               id="editPhone"
