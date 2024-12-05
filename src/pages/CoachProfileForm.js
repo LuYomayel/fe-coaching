@@ -15,6 +15,7 @@ import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { updateCoach } from '../services/usersService';
 import SubscriptionPaymentPage from './SubscriptionPayment';
+import { fetchCoachSubscriptionPlans } from '../services/subscriptionService';
 import '../styles/CoachProfileForm.css';
 
 const trainingTypes = [
@@ -37,16 +38,27 @@ const CoachProfileForm = () => {
   const [gymLocation, setGymLocation] = useState('');
   const [bio, setBio] = useState('');
   const [experience, setExperience] = useState('');
-  const [subscriptionType, setSubscriptionType] = useState('freeTrial');
+  const [subscriptionType, setSubscriptionType] = useState('');
   const [userPayment, setUserPayment] = useState(null);
   const [loading, setLoading] = useState(false);
   const showToast = useToast();
   const { user, setCoach, coach } = useContext(UserContext);
   const navigate = useNavigate();
   const [isPlanDialogVisible, setIsPlanDialogVisible] = useState(false);
-
+  const [plans, setPlans] = useState([]);
 
   useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await fetchCoachSubscriptionPlans();
+        setPlans(response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPlans();
+
     if (user && coach) navigate('/coach');
   }, [user, coach, navigate]);
 
@@ -57,11 +69,29 @@ const CoachProfileForm = () => {
     { label: intl.formatMessage({ id: 'coachProfileForm.step.confirmation' }) }
   ];
 
+  const validateStep = () => {
+    if (activeStep === 0 && !name) {
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'Name is required.');
+      return false;
+    }
+    if (activeStep === 1 && trainingType.length === 0) {
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'At least one training type must be selected.');
+      return false;
+    }
+    if (activeStep === 2 && !subscriptionType) {
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'Subscription type is required.');
+      return false;
+    }
+    return true;
+  };
+
   const handleNext = () => {
-    if (activeStep < steps.length - 1) {
-      setActiveStep(activeStep + 1);
-    } else {
-      handleSubmit();
+    if (validateStep()) {
+      if (activeStep < steps.length - 1) {
+        setActiveStep(activeStep + 1);
+      } else {
+        handleSubmit();
+      }
     }
   };
 
@@ -72,6 +102,15 @@ const CoachProfileForm = () => {
   };
 
   const handleSubmit = async () => {
+    const selectedPlanId = subscriptionType === 'freeTrial'
+      ? plans.find(plan => plan.name === 'Free Trial')?.id
+      : userPayment?.id;
+
+    if (!selectedPlanId) {
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
+      return;
+    }
+
     const body = {
       name,
       estimatedClients: subscriptionType === 'freeTrial' ? 3 : userPayment.max_clients,
@@ -81,11 +120,12 @@ const CoachProfileForm = () => {
       bio,
       experience,
       email: user.email,
-      subscriptionType,
+      subscriptionPlanId: selectedPlanId,
     };
 
+    console.log(body);
     if (subscriptionType === 'paid' && !userPayment) {
-      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'Please select a subscription plan.');
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
       return;
     }
 
@@ -223,7 +263,23 @@ const CoachProfileForm = () => {
           <div>
             <h2><FormattedMessage id="coachProfileForm.step.confirmation" /></h2>
             <p><FormattedMessage id="coachProfileForm.confirmationMessage" /></p>
-            {/* Aquí puedes mostrar un resumen de la información ingresada */}
+            <div className="confirmation-summary">
+              <h3><FormattedMessage id="coachProfileForm.summary" /></h3>
+              <p><strong><FormattedMessage id="coachProfileForm.name" />:</strong> {name}</p>
+              <p><strong><FormattedMessage id="coachProfileForm.trainingType" />:</strong> {trainingType.join(', ')}</p>
+              <p><strong><FormattedMessage id="coachProfileForm.hasGym" />:</strong> {hasGym ? intl.formatMessage({ id: 'common.yes' }) : intl.formatMessage({ id: 'common.no' })}</p>
+              {hasGym && <p><strong><FormattedMessage id="coachProfileForm.gymLocation" />:</strong> {gymLocation}</p>}
+              <p><strong><FormattedMessage id="coachProfileForm.bio" />:</strong> {bio}</p>
+              <p><strong><FormattedMessage id="coachProfileForm.experience" />:</strong> {experience}</p>
+              <p><strong><FormattedMessage id="coachProfileForm.subscriptionType" />:</strong> {subscriptionType === 'freeTrial' ? intl.formatMessage({ id: 'coachProfileForm.freeTrial' }) : intl.formatMessage({ id: 'coachProfileForm.paid' })}</p>
+              {userPayment && (
+                <>
+                  <p><strong><FormattedMessage id="coachProfileForm.plan" />:</strong> {userPayment.name}</p>
+                  <p><strong><FormattedMessage id="coachProfileForm.price" />:</strong> ${userPayment.price}</p>
+                  <p><strong><FormattedMessage id="coachProfileForm.clients" />:</strong> {userPayment.max_clients}</p>
+                </>
+              )}
+            </div>
           </div>
         )}
         <div className="flex justify-content-between mt-4">

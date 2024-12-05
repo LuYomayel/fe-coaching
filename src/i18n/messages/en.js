@@ -107,6 +107,9 @@ export default {
   'common.noResults': 'No results found.',
   'common.status': 'Status',
   'common.select': 'Select',
+  'common.yes': 'Yes',
+  'common.no': 'No',
+  
   // NewCoachProfile
   'coach.welcome': 'Welcome, {name}!',
   'coach.email': 'Email',
@@ -579,7 +582,19 @@ export default {
   'coachProfileForm.price': 'Price',
   'coachProfileForm.clients': 'Clients',
   'coachProfileForm.submit': 'Submit',
+  'coachProfileForm.summary': 'Profile Summary',
   'coachProfileForm.success': 'Profile updated!',
   'coachProfileForm.error': 'Error',
-  'coachProfileForm.dialog.header': 'Select a Subscription Plan'
+  'coachProfileForm.error.selectPlan': 'Please select a subscription plan.',
+  'coachProfileForm.error.trainingType': 'At least one training type must be selected.',
+  'coachProfileForm.error.subscriptionType': 'Subscription type is required.',
+  'coachProfileForm.error.name': 'Name is required.',
+  'coachProfileForm.dialog.header': 'Select a Subscription Plan',
+  'coachProfileForm.step.personalInfo': 'Personal Information',
+  'coachProfileForm.step.trainingDetails': 'Training Details',
+  'coachProfileForm.step.subscription': 'Subscription',
+  'coachProfileForm.step.confirmation': 'Confirmation',
+  'coachProfileForm.confirmationMessage': 'Please review all information before confirming.',
+  'common.back': 'Back',
+  'common.next': 'Next'
 }; 

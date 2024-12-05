@@ -77,16 +77,7 @@ export default function SubscriptionPaymentPage({ setUserPayment, setIsPlanDialo
                 error: null,
             }
             if (paymentResult.success) {
-                await updateCoachSubscription({
-                    userId: user.userId,  // El ID del usuario o coach
-                    planId: selectedPlan.id,  // El plan seleccionado
-                });
-                setUserPayment({
-                    cardholderName,
-                    // paymentMethodId: paymentMethod.id,
-                    paymentMethodId: 1,
-                    ...selectedPlan
-                });
+                setUserPayment(selectedPlan);
                 setIsPlanDialogVisible(false);
                 showToast('success', 'Payment Successful', `Your payment for ${selectedPlan.name} plan has been processed.`);
             } else {

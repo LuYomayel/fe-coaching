@@ -5,6 +5,7 @@ export default {
   'app.chat.attach': 'Adjuntar archivo',
   'app.connection.status.connected': 'Conectado',
   'app.connection.status.disconnected': 'Desconectado',
+
   // Mensajes para NewCoachHome
   'welcome.back': '¡Bienvenido de nuevo, {name}!',
   'stats.totalClients': 'Clientes Totales',
@@ -108,6 +109,8 @@ export default {
   'common.noResults': 'No se encontraron resultados.',
   'common.status': 'Estado',
   'common.select': 'Seleccionar',
+  'common.yes': 'Si',
+  'common.no': 'No',
   
   // NewCoachProfile
   'coach.welcome': 'Bienvenido, {name}!',
@@ -575,7 +578,19 @@ export default {
   'coachProfileForm.price': 'Precio',
   'coachProfileForm.clients': 'Clientes',
   'coachProfileForm.submit': 'Enviar',
+  'coachProfileForm.summary': 'Resumen del Perfil',
   'coachProfileForm.success': '¡Perfil actualizado!',
   'coachProfileForm.error': 'Error',
-  'coachProfileForm.dialog.header': 'Selecciona un Plan de Suscripción'
+  'coachProfileForm.error.selectPlan': 'Por favor, selecciona un plan de suscripción.',
+  'coachProfileForm.error.trainingType': 'Al menos un tipo de entrenamiento debe ser seleccionado.',
+  'coachProfileForm.error.subscriptionType': 'Tipo de suscripción es requerido.',
+  'coachProfileForm.error.name': 'Nombre es requerido.',
+  'coachProfileForm.dialog.header': 'Selecciona un Plan de Suscripción',
+  'coachProfileForm.step.personalInfo': 'Información Personal',
+  'coachProfileForm.step.trainingDetails': 'Detalles de Entrenamiento',
+  'coachProfileForm.step.subscription': 'Suscripción',
+  'coachProfileForm.step.confirmation': 'Confirmación',
+  'coachProfileForm.confirmationMessage': 'Por favor, revisa toda la información antes de confirmar.',
+  'common.back': 'Atrás',
+  'common.next': 'Siguiente'
 }; 

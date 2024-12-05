@@ -1,23 +1,32 @@
-.coach-profile-form-container{
-    width: 70%;
-    min-height: 100vh;
-    margin: 0 auto;
-    margin-top: 10rem;
-    overflow-y: unset;
-}
-.coach-profile-form-container label{
-    padding: 0;
-    margin: 0;
-}
-.coach-profile-form .p-card-title{
-    text-align: center;
+.coach-profile-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-.coach-profile-form .p-card-content{
-    width: 100%;
-    text-align: center;
+.coach-profile-form .p-field {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-.coach-profile-form .p-field{
-    text-align: left;
+.coach-profile-form .p-field label {
+  flex: 0 0 150px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.coach-profile-form .p-field input,
+.coach-profile-form .p-field textarea,
+.coach-profile-form .p-field .p-multiselect {
+  flex: 1;
+}
+
+.coach-profile-form .p-field .p-checkbox-label {
+  margin-left: 5px;
+}
+
+.coach-profile-form .p-button {
+  width: 100%;
+  margin-top: 20px;
 }
