@@ -338,6 +338,7 @@ export default {
   'plan.buttons.editPlan': 'Editar Plan',
   
   'plan.group.title': 'Grupo {number}',
+  'plan.group.addGroup': 'Agregar Grupo',
   'plan.group.name': 'Nombre del Grupo',
   'plan.group.set': 'Serie',
   'plan.group.rest': 'Descanso (segundos)',

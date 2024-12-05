@@ -16,7 +16,7 @@ import { useSpinner } from '../utils/GlobalSpinner';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
-
+import '../styles/CreatePlan.css';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -89,6 +89,7 @@ const NewCreatePlan = ({ isEdit }) => {
   const [exercises, setExercises] = useState([]);
   const toast = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [exerciseCounter, setExerciseCounter] = useState(0);
 
     useEffect(() => {
         setLoading(isUploading)
@@ -161,13 +162,10 @@ const NewCreatePlan = ({ isEdit }) => {
 
   const addGroup = () => {
     const newGroup = {
-      set: '',
-      rest: '',
       name: '',
       groupNumber: plan.groups.length + 1,
       exercises: []
     };
-    console.log(plan.groups)
     setPlan({ ...plan, groups: [...plan.groups, newGroup] });
   };
 
@@ -245,21 +243,22 @@ const NewCreatePlan = ({ isEdit }) => {
         exercise: {
           ...selectedExercise
         },
-        id: uuidv4(), // Generate unique ID
+        id: exerciseCounter,
         notes: '',
-        sets: propertyList.find( prop => prop.key === 'sets').default ? '' : null, // Agregado por defecto
-        repetitions: propertyList.find( prop => prop.key === 'repetitions').default ? '' : null, // Agregado por defecto
-        weight: propertyList.find( prop => prop.key === 'weight').default ? '' : null, // Agregado por defecto
-        time: propertyList.find( prop => prop.key === 'time').default ? '' : null, // Agregado por defecto
-        tempo: propertyList.find( prop => prop.key === 'tempo').default ? '' : null, // Agregado por defecto
-        distance: propertyList.find( prop => prop.key === 'distance').default ? '' : null, // Agregado por defecto
-        restInterval: propertyList.find( prop => prop.key === 'restInterval').default ? '' : null, // Agregado por defecto
-        difficulty: propertyList.find( prop => prop.key === 'difficulty').default ? '' : null, // Agregado por defecto
-        duration: propertyList.find( prop => prop.key === 'duration').default ? '' : null, // Agregado por defecto
+        sets: propertyList.find(prop => prop.key === 'sets').default ? '' : null,
+        repetitions: propertyList.find(prop => prop.key === 'repetitions').default ? '' : null,
+        weight: propertyList.find(prop => prop.key === 'weight').default ? '' : null,
+        time: propertyList.find(prop => prop.key === 'time').default ? '' : null,
+        tempo: propertyList.find(prop => prop.key === 'tempo').default ? '' : null,
+        distance: propertyList.find(prop => prop.key === 'distance').default ? '' : null,
+        restInterval: propertyList.find(prop => prop.key === 'restInterval').default ? '' : null,
+        difficulty: propertyList.find(prop => prop.key === 'difficulty').default ? '' : null,
+        duration: propertyList.find(prop => prop.key === 'duration').default ? '' : null,
       };
       const newGroups = [...plan.groups];
       newGroups[selectedGroup].exercises.push(newExercise);
       setPlan({ ...plan, groups: newGroups });
+      setExerciseCounter(exerciseCounter + 1);
       setShowExerciseDialog(false);
       setSelectedExercise(null);
     }
@@ -293,10 +292,9 @@ const NewCreatePlan = ({ isEdit }) => {
     setPlan({ ...plan, groups: newGroups });
   };
 
-  const updatePropertyValue = (groupIndex, exerciseIndex, propertyKey, value) => {
+  const updatePropertyValue = (groupIndex, exerciseIndex, key, value) => {
     const newGroups = [...plan.groups];
-    const exercise = newGroups[groupIndex].exercises[exerciseIndex];
-    exercise[propertyKey] = value;
+    newGroups[groupIndex].exercises[exerciseIndex][key] = value;
     setPlan({ ...plan, groups: newGroups });
   };
 
@@ -366,7 +364,7 @@ const NewCreatePlan = ({ isEdit }) => {
         }))
       }))
     }));
-    console.log(cleanPlan);
+    console.log('Clean plan', cleanPlan);
 
     showConfirmationDialog({
       message: intl.formatMessage({ 
@@ -539,12 +537,6 @@ const NewCreatePlan = ({ isEdit }) => {
                 onChange={handleImageUpload}
             />
             <Button 
-              label={intl.formatMessage({ id: 'plan.buttons.addGroup' })}
-              icon="pi pi-plus" 
-              onClick={addGroup} 
-              className="mr-2" 
-            />
-            <Button 
               label={intl.formatMessage({ id: 'plan.buttons.undoDelete' })}
               icon="pi pi-undo" 
               onClick={handleUndoDelete} 
@@ -597,10 +589,11 @@ const NewCreatePlan = ({ isEdit }) => {
                         </div>
                         <div className="grid mb-3">
                             <div className="col-6">
-                              <label htmlFor={`group-${group.name}-name`} className="block text-sm font-medium mb-1">Group name</label>
+                              <label htmlFor={`group-${group.name}-name`} className="block text-sm font-medium mb-1">
+                                <FormattedMessage id="plan.group.name" />
+                              </label>
                               <InputText id={`group-${group.name}-name`} value={group.name}  onChange={(e) => {
                                 const newGroups = [...plan.groups];
-                                console.log('e: ', e.target.value)
                                 newGroups[groupIndex].name = e.target.value;
                                 setPlan({ ...plan, groups: newGroups });
                               }} />

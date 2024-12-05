@@ -316,6 +316,7 @@ export default {
   'plan.buttons.editPlan': 'Edit Plan',
   
   'plan.group.title': 'Group {number}',
+  'plan.group.addGroup': 'Add Group',
   'plan.group.name': 'Group name',
   'plan.group.set': 'Set',
   'plan.group.rest': 'Rest (seconds)',

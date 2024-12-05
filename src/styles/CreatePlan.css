@@ -174,7 +174,11 @@ label {
     font-weight: bold;
 }
 
-input, .p-inputtext, .p-dropdown {
+input, .p-inputtext, .p-dropdown, .p-inputnumber {
+    width: 100%;
+}
+
+.p-inputnumber {
     width: 100%;
 }
 
@@ -182,10 +186,4 @@ input, .p-inputtext, .p-dropdown {
     padding: 0.5rem;
     background-color: #2b2b2b;
     border-radius: 5px;
-}
-
-.p-button-rounded.p-button-sm {
-}
-
-.p-button-rounded.p-button-lg {
 }
