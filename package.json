@@ -33,7 +33,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "npm i --force && react-scripts build",
+    "build": "npm cache clean --force && npm i --force && react-scripts build",
     "postbuild": "copyfiles _redirects build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
