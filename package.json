@@ -33,7 +33,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "prebuild": "rm -rf node_modules && rm -rf package-lock.json && npm install --legacy-peer-deps",
+    "prebuild": "rm -rf node_modules package-lock.json && npm install --legacy-peer-deps",
     "build": "react-scripts build",
     "postbuild": "copyfiles _redirects build",
     "test": "react-scripts test",
