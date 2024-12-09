@@ -17,7 +17,6 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
   const [cycles, setCycles] = useState([]);
   const { user } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
-  const [days, setDays] = useState([]); // Estado para manejar los días
   const [selectedDay, setSelectedDay] = useState(null); // Nuevo estado para el día seleccionado
   const [assignedWorkouts, setAssignedWorkouts] = useState([]); // Estado para manejar los entrenamientos asignados
   

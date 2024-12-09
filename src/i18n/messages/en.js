@@ -149,6 +149,23 @@ const messages = {
   'coach.workout.error.selectWorkoutAndDay': 'Please select a workout and a day of the week for the last assignment.',
   'coach.workout.error.selectAtLeastOneWorkout': 'Please select at least one workout.',
 
+  // NewCreatePlan  
+  'coach.createPlan.title': 'Create Training Plan',
+  'coach.createPlan.subtitle': 'Create a custom training plan for your clients',
+  'coach.createPlan.description': 'Use this page to create a custom training plan for your clients',
+  'coach.createPlan.buttons.add': 'Add {item}',
+  'coach.createPlan.buttons.assign': 'Assign {item}',
+  'coach.createPlan.buttons.import': 'Import Exercises',
+  'coach.createPlan.buttons.save': 'Save Plan',
+  'coach.createPlan.buttons.cancel': 'Cancel',
+  'coach.createPlan.buttons.delete': 'Delete',
+  'coach.createPlan.buttons.edit': 'Edit',
+  'coach.createPlan.buttons.addGroup': 'Add Group',
+  'coach.createPlan.buttons.addExercise': 'Add Exercise',
+  'coach.createPlan.buttons.addRestPeriod': 'Add Rest Period',
+  'coach.createPlan.buttons.addRestPeriod.label': 'Rest Period (seconds)',
+  'coach.createPlan.buttons.restPeriod.label': 'Rest Period',
+
   'coach.tabs.workouts': 'Workouts',
   'coach.tabs.plans': 'Plans',
   'coach.tabs.exercises': 'Exercise Library',
