@@ -16,7 +16,7 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchCoachWorkouts, fetchTrainingCyclesByCoachId, getRpeMethods } from '../services/workoutService';
+import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchCoachWorkouts, fetchTrainingCyclesByCoachId, getRpeMethods, deleteWorkoutPlan } from '../services/workoutService';
 import { fetchCoach, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
 import {
   createOrUpdateCoachPlan,
@@ -184,6 +184,7 @@ export default function CoachProfilePage() {
               workoutInstance: instance,
             };
           });
+          console.log('Mapped workouts', mappedWorkouts);
           setWorkouts(mappedWorkouts);
         } catch (error) {
           showToast('error', 'Error', error.message);
@@ -344,14 +345,18 @@ export default function CoachProfilePage() {
   };
 
   const renderHeader = (text) => {
+    console.log('text', text);
     return (
       <div className="flex justify-content-between align-items-center">
         <h2 className="text-xl font-bold">{text}</h2>
         <Button
-          label={`Add New ${text.slice(0, -1)}`}
+          label={intl.formatMessage(
+            { id: 'coach.buttons.add', defaultMessage: 'Add {item}' },
+            { item: text.slice(0, -1) }
+          )}
           icon="pi pi-plus"
           onClick={() =>
-            text === 'Exercises' ? openCreateExerciseDialog() : text === 'Workouts' ? navigate('/plans/create') : openCreatePlanDialog()
+            text === intl.formatMessage({ id: 'coach.tabs.exercises' }) ? openCreateExerciseDialog() : text === intl.formatMessage({ id: 'coach.tabs.workouts' }) ? navigate('/plans/create') : openCreatePlanDialog()
           }
         />
       </div>
@@ -388,21 +393,24 @@ export default function CoachProfilePage() {
           }}
         />
         <Button
-          tooltip="Delete"
+          tooltip={intl.formatMessage({ id: 'common.delete' })}
           icon="pi pi-trash"
           className="p-button-rounded p-button-danger p-button-text"
           onClick={() => {
             if (type === 'exercise') {
               showConfirmationDialog({
-                message: 'Are you sure you want to delete this exercise?',
-                header: 'Confirmation',
+                message: intl.formatMessage({ id: 'deleteExercise.confirmation.message' }),
+                header: intl.formatMessage({ id: 'common.confirmation' }),
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => handleDeleteExercise(rowData.id),
                 reject: () => console.log('Rejected'),
               });
             } else if (type === 'plan') {
               confirmDeletePlan(rowData.id);
+            } else if (type === 'workout') {
+              confirmDeleteWorkout(rowData.workoutInstance.id);
             }
+
           }}
         />
       </React.Fragment>
@@ -502,7 +510,7 @@ export default function CoachProfilePage() {
         draggable={false}
         resizable={false}
         dismissableMask
-        header={dialogMode === 'create' ? 'Create New Exercise' : 'Edit Exercise'}
+        header={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.exercise.create' }) : intl.formatMessage({ id: 'coach.exercise.edit' })}
         className="responsive-dialog"
         visible={exerciseDialogVisible}
         style={{ width: '50vw' }}
@@ -510,11 +518,11 @@ export default function CoachProfilePage() {
       >
         <div className="p-fluid">
           <div className="p-field">
-            <label htmlFor="name">{dialogMode === 'create' ? 'Exercise Name' : 'Edit Exercise Name'}</label>
+            <label htmlFor="name">{dialogMode === 'create' ? intl.formatMessage({ id: 'coach.exercise.name' }) : intl.formatMessage({ id: 'coach.exercise.name' })}</label>
             <InputText id="name" value={newExercise.name} onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })} />
           </div>
           <div className="p-field">
-            <label htmlFor="description">Description</label>
+            <label htmlFor="description">{intl.formatMessage({ id: 'coach.exercise.description' })}</label>
             <InputTextarea
               id="description"
               className="overflow-hidden text-overflow-ellipsis"
@@ -524,11 +532,11 @@ export default function CoachProfilePage() {
             />
           </div>
           <div className="p-field">
-            <label htmlFor="multimedia">Video URL</label>
+            <label htmlFor="multimedia">{intl.formatMessage({ id: 'coach.exercise.video' })}</label>
             <InputText id="multimedia" value={newExercise.multimedia} onChange={(e) => setNewExercise({ ...newExercise, multimedia: e.target.value })} />
           </div>
           <div className="p-field">
-            <label htmlFor="exerciseType">Type</label>
+            <label htmlFor="exerciseType">{intl.formatMessage({ id: 'coach.exercise.type' })}</label>
             <InputText
               id="exerciseType"
               value={newExercise.exerciseType}
@@ -536,7 +544,7 @@ export default function CoachProfilePage() {
             />
           </div>
           <div className="p-field">
-            <label htmlFor="equipmentNeeded">Equipment Needed</label>
+            <label htmlFor="equipmentNeeded">{intl.formatMessage({ id: 'coach.exercise.equipment' })}</label>
             <InputText
               id="equipmentNeeded"
               value={newExercise.equipmentNeeded}
@@ -544,7 +552,7 @@ export default function CoachProfilePage() {
             />
           </div>
           <div className="p-field">
-            <label htmlFor="equipmentNeeded">Body area involved</label>
+            <label htmlFor="equipmentNeeded">{intl.formatMessage({ id: 'coach.exercise.bodyArea' })}</label>
             <MultiSelect
               options={bodyAreas}
               filter
@@ -557,19 +565,19 @@ export default function CoachProfilePage() {
           </div>
           <div className="p-field">
             <Button
-              label={dialogMode === 'create' ? 'Create Exercise' : 'Update Exercise'}
+              label={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.exercise.create' }) : intl.formatMessage({ id: 'coach.exercise.edit' })}
               icon="pi pi-check"
               onClick={() => {
-                if (newExercise.name === '') return showToast('error', 'Error', 'Exercise name can not be empty.');
+                if (newExercise.name === '') return showToast('error', 'Error', intl.formatMessage({ id: 'coach.exercise.error.name.empty' }));
                 if (!isValidYouTubeUrl(newExercise.multimedia)) {
-                  return showToast('error', 'Error', 'Please enter a valid YouTube URL');
+                  return showToast('error', 'Error', intl.formatMessage({ id: 'coach.exercise.error.video.invalid' }));
                 }
                 showConfirmationDialog({
                   message:
                     dialogMode === 'create'
-                      ? 'Are you sure you want to create this exercise?'
-                      : 'Are you sure you want to update this exercise?',
-                  header: 'Confirmation',
+                      ? intl.formatMessage({ id: 'createExercise.confirmation.message' })
+                      : intl.formatMessage({ id: 'updateExercise.confirmation.message' }),
+                  header: intl.formatMessage({ id: 'common.confirmation' }),
                   icon: 'pi pi-exclamation-triangle',
                   accept: () => handleSaveExercise(),
                   reject: () => console.log('Rejected'),
@@ -588,7 +596,7 @@ export default function CoachProfilePage() {
         draggable={false}
         resizable={false}
         dismissableMask
-        header={dialogMode === 'create' ? 'Create New Coach Plan' : 'Edit Coach Plan'}
+        header={dialogMode === 'create' ?  intl.formatMessage({ id: 'coach.plan.create' }) : intl.formatMessage({ id: 'coach.plan.edit' })}
         className="responsive-dialog"
         visible={createPlanDialogVisible}
         style={{ width: '50vw' }}
@@ -596,15 +604,15 @@ export default function CoachProfilePage() {
       >
         <div className="p-fluid">
           <div className="p-field">
-            <label htmlFor="name">Plan Name</label>
+            <label htmlFor="name">{intl.formatMessage({ id: 'coach.plan.name' })}</label>
             <InputText id="name" value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })} />
           </div>
           <div className="p-field">
-            <label htmlFor="price">Price</label>
+            <label htmlFor="price">{intl.formatMessage({ id: 'coach.plan.price' })}</label>
             <InputNumber id="price" value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.value })} />
           </div>
           <div className="p-field">
-            <label htmlFor="workoutsPerWeek">Workouts per Week</label>
+            <label htmlFor="workoutsPerWeek">{intl.formatMessage({ id: 'coach.plan.workoutsPerWeek' })}</label>
             <InputNumber
               id="workoutsPerWeek"
               value={newPlan.workoutsPerWeek}
@@ -617,11 +625,11 @@ export default function CoachProfilePage() {
               checked={newPlan.includeMealPlan}
               onChange={(e) => setNewPlan({ ...newPlan, includeMealPlan: e.checked })}
             />
-            <label htmlFor="includeMealPlan">Include Meal Plan</label>
+            <label htmlFor="includeMealPlan">{intl.formatMessage({ id: 'coach.plan.includeMealPlan' })}</label>
           </div>
           <div className="p-field">
             <Button
-              label={dialogMode === 'create' ? 'Create Plan' : 'Update Plan'}
+              label={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.plan.create' }) : intl.formatMessage({ id: 'coach.plan.edit' })}
               icon="pi pi-check"
               onClick={confirmCreatePlan}
             />
@@ -652,7 +660,7 @@ export default function CoachProfilePage() {
         draggable={false}
         resizable={false}
         dismissableMask
-        header={dialogMode === 'create' ? 'Create New RPE Method' : 'Edit RPE Method'}
+        header={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.rpe.create' }) : intl.formatMessage({ id: 'coach.rpe.edit' })}
         className="responsive-dialog"
         visible={rpeDialogVisible}
         style={{ width: '50vw' }}
@@ -660,7 +668,7 @@ export default function CoachProfilePage() {
       >
         <div className="p-fluid">
           <div className="p-field">
-            <label htmlFor="name">RPE Method Name</label>
+            <label htmlFor="name">{intl.formatMessage({ id: 'coach.rpe.name' })}</label>
             <InputText
               id="name"
               value={newRpe.name}
@@ -668,7 +676,7 @@ export default function CoachProfilePage() {
             />
           </div>
           <div className="p-field">
-            <label htmlFor="minValue">Min Value</label>
+            <label htmlFor="minValue">{intl.formatMessage({ id: 'coach.rpe.minValue' })}</label>
             <InputNumber
               id="minValue"
               value={newRpe.minValue}
@@ -676,7 +684,7 @@ export default function CoachProfilePage() {
             />
           </div>
           <div className="p-field">
-            <label htmlFor="maxValue">Max Value</label>
+            <label htmlFor="maxValue">{intl.formatMessage({ id: 'coach.rpe.maxValue' })}</label>
             <InputNumber
               id="maxValue"
               value={newRpe.maxValue}
@@ -684,7 +692,7 @@ export default function CoachProfilePage() {
             />
           </div>
           <div className="p-field">
-            <label htmlFor="step">Step</label>
+            <label htmlFor="step">{intl.formatMessage({ id: 'coach.rpe.step' })}</label>
             <InputNumber
               id="step"
               value={newRpe.step}
@@ -694,7 +702,7 @@ export default function CoachProfilePage() {
     
           {/* Field to add valuesMeta */}
           <div className="p-field">
-            <label>Values Meta</label>
+            <label>{intl.formatMessage({ id: 'coach.rpe.valuesMeta' })}</label>
             {newRpe.valuesMeta && Array.isArray(newRpe.valuesMeta) && newRpe.valuesMeta.map((valueMeta, index) => (
               <div key={index} className="p-grid p-align-center p-mb-2">
                 <div className="p-col-3">
@@ -708,7 +716,7 @@ export default function CoachProfilePage() {
                         ),
                       })
                     }
-                    placeholder="Value"
+                    placeholder={intl.formatMessage({ id: 'coach.rpe.value' })}
                   />
                 </div>
                 <div className="p-col-3">
@@ -722,7 +730,7 @@ export default function CoachProfilePage() {
                         ),
                       })
                     }
-                    placeholder="Color (e.g., #FF0000)"
+                    placeholder={intl.formatMessage({ id: 'coach.rpe.color' })}
                   />
                 </div>
                 <div className="p-col-3">
@@ -736,7 +744,7 @@ export default function CoachProfilePage() {
                         ),
                       })
                     }
-                    placeholder="Emoji (e.g., 🔥)"
+                    placeholder={intl.formatMessage({ id: 'coach.rpe.emoji' })}
                   />
                 </div>
                 <div className="p-col-3">
@@ -755,7 +763,7 @@ export default function CoachProfilePage() {
             ))}
             {/* Button to add new value */}
             <Button
-              label="Add Value"
+              label={intl.formatMessage({ id: 'coach.rpe.addValue' })}
               icon="pi pi-plus"
               onClick={() =>
                 setNewRpe({
@@ -768,7 +776,7 @@ export default function CoachProfilePage() {
     
           <div className="p-field">
             <Button
-              label={dialogMode === 'create' ? 'Create RPE Method' : 'Update RPE Method'}
+              label={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.rpe.create' }) : intl.formatMessage({ id: 'coach.rpe.edit' })}
               icon="pi pi-check"
               onClick={handleSaveRpeMethod}
               loading={isRpeLoading}
@@ -781,11 +789,11 @@ export default function CoachProfilePage() {
     try {
       const data = await createOrUpdateCoachPlan(newPlan, newPlan.id, user.userId, dialogMode);
       if (dialogMode === 'create') {
-        if (data) showToast('success', 'Success', 'New plan created successfully');
+        if (data) showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message' }));
       } else {
-        if (data) showToast('success', 'Success', 'Plan updated successfully');
+        if (data) showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message' }));
         else {
-          showToast('error', 'Error', 'Plan not updated');
+          showToast('error', 'Error', intl.formatMessage({ id: 'coach.plan.error.not.updated' }));
         }
       }
       closeCreatePlanDialog();
@@ -796,14 +804,14 @@ export default function CoachProfilePage() {
   };
 
   const confirmCreatePlan = async () => {
-    if (newPlan.name === '') return showToast('error', 'Error', 'Plan name can not be empty');
-    if (newPlan.price <= 0) return showToast('error', 'Error', 'Price can not be 0 or less');
-    if (newPlan.workoutsPerWeek <= 0) return showToast('error', 'Error', 'Workouts per week can not be 0 or less');
+    if (newPlan.name === '') return showToast('error', 'Error', intl.formatMessage({ id: 'coach.plan.error.name.empty' }));
+    if (newPlan.price <= 0) return showToast('error', 'Error', intl.formatMessage({ id: 'coach.plan.error.price.zero' }));
+    if (newPlan.workoutsPerWeek <= 0) return showToast('error', 'Error', intl.formatMessage({ id: 'coach.plan.error.workouts.zero' }));
 
     showConfirmationDialog({
       message:
-        dialogMode === 'create' ? 'Are you sure you want to create this plan?' : 'Are you sure you want to update this plan?',
-      header: 'Confirmation',
+        dialogMode === 'create' ? intl.formatMessage({ id: 'coach.plan.confirm.create' }) : intl.formatMessage({ id: 'coach.plan.confirm.update' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleCreatePlan(),
       reject: () => console.log('Rejected'),
@@ -857,25 +865,39 @@ export default function CoachProfilePage() {
 
   const confirmDeletePlan = async (planId) => {
     showConfirmationDialog({
-      message: 'Are you sure you want to delete this plan?',
-      header: 'Confirmation',
+      message: intl.formatMessage({ id: 'coach.plan.confirm.delete' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDeletePlan(planId),
       reject: () => console.log('Rejected'),
     });
   };
 
+  const confirmDeleteWorkout = async (workoutId) => {
+    showConfirmationDialog({
+      message: intl.formatMessage({ id: 'coach.workout.confirm.delete' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => handleDeleteWorkout(workoutId),
+      reject: () => console.log('Rejected'),
+    });
+  };
+
+  const handleDeleteWorkout = async (workoutId) => {
+    try {
+      await deleteWorkoutPlan(workoutId, true);
+      showToast('success', intl.formatMessage({ id: 'coach.workout.success.deleted' }), intl.formatMessage({ id: 'coach.workout.success.deleted.message' }));
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    }
+  };
   // Excel import functions
   const onTemplateUpload = (e) => {
-    for (let file of e.files) {
-      console.log('Uploaded file:', file);
-    }
     console.log({ severity: 'info', summary: 'Success', detail: 'File Uploaded' });
   };
 
   const onTemplateSelect = (e) => {
     setSelectedFile(e.files[0]);
-    console.log('Selected file:', e.files);
   };
 
   const onTemplateError = (e) => {
@@ -928,8 +950,8 @@ export default function CoachProfilePage() {
     formData.append('file', files[0]);
     const rowsCount = await readFile(files[0]);
     showConfirmationDialog({
-      message: `Are you sure you want to upload ${rowsCount} exercises?`,
-      header: 'Confirmation',
+      message: intl.formatMessage({ id: 'coach.exercise.confirm.upload' }, { rowsCount }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleUpload(formData, files),
       reject: () => console.log('Rejected'),
@@ -1014,8 +1036,8 @@ export default function CoachProfilePage() {
         <Button icon="pi pi-trash" rounded text className=" p-button-danger p-button-sm" onClick={() => {
                 
                 showConfirmationDialog({
-                    message: "Are you sure you want to delete this exercise?",
-                    header: "Confirmation",
+                    message: intl.formatMessage({ id: 'deleteExercise.confirmation.message' }),
+                    header: intl.formatMessage({ id: 'common.confirmation' }),
                     icon: "pi pi-exclamation-triangle",
                     accept: () => handleDeleteExercise(rowData.id),
                     reject: () => console.log('Rejected'),
@@ -1039,8 +1061,8 @@ export default function CoachProfilePage() {
         className="p-button-rounded p-button-danger p-button-text"
         onClick={() =>
           showConfirmationDialog({
-            message: 'Are you sure you want to delete this RPE Method?',
-            header: 'Confirmation',
+            message: intl.formatMessage({ id: 'coach.rpe.confirm.delete' }),
+            header: intl.formatMessage({ id: 'common.confirmation' }),
             icon: 'pi pi-exclamation-triangle',
             accept: () => handleDeleteRpeMethod(rowData.id),
             reject: () => console.log('Rejected'),
@@ -1144,8 +1166,8 @@ export default function CoachProfilePage() {
   // Función para confirmar la asignación usando showConfirmationDialog
   const handleConfirmAssign = () => {
     showConfirmationDialog({
-      message: `Are you sure you want to assign ${rpeMethods.find((r) => r.id === selectedRpe)?.name} to the selected ${selectedType}?`,
-      header: 'Confirm Assignment',
+      message: intl.formatMessage({ id: 'coach.rpe.confirm.assign' }, { rpe: rpeMethods.find((r) => r.id === selectedRpe)?.name, type: selectedType }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: handleAssign,
       reject: () => console.log('Assignment cancelled.'),
@@ -1192,12 +1214,11 @@ export default function CoachProfilePage() {
         <TabPanel header={intl.formatMessage({ id: 'coach.tabs.workouts' })}>
           <DataTable
             value={workouts}
-            responsiveLayout="scroll"
             className="p-datatable-sm"
             header={renderHeader(intl.formatMessage({ id: 'coach.tabs.workouts' }))}
             loading={isWorkoutsLoading}
           >
-            <Column field="planName" header={intl.formatMessage({ id: 'coach.exercise.name' })}></Column>
+            <Column field="planName" header={intl.formatMessage({ id: 'coach.workouts.title' })}></Column>
             <Column body={(rowData) => actionBodyTemplate(rowData, 'workout')} style={{ width: '120px' }}></Column>
           </DataTable>
         </TabPanel>
@@ -1359,7 +1380,7 @@ export default function CoachProfilePage() {
         draggable={false}
         resizable={false}
         dismissableMask
-        header="Workout details"
+        header={intl.formatMessage({ id: 'coach.workout.details' })}
         visible={planDetailsVisible}
         className="responsive-dialog"
         style={{ width: '50vw' }}

@@ -1,5 +1,4 @@
 import React, { useState, useContext } from 'react';
-import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useToast } from '../utils/ToastContext';
@@ -10,9 +9,11 @@ import { InputNumber } from 'primereact/inputnumber';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { saveStudent } from '../services/usersService';
-const apiUrl = process.env.REACT_APP_API_URL;
+import { useIntl, FormattedMessage } from 'react-intl';
+
 
 const NewStudentDialog = ({ onClose, setRefreshKey }) => {
+  const intl = useIntl();
   const showToast = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,102 +29,101 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
   const [loading, setLoading] = useState(false);
 
   const genders = [
-    { label: 'Male', value: 'Male' },
-    { label: 'Female', value: 'Female' },
-    { label: 'Other', value: 'Other' },
-  ]
+    { label: intl.formatMessage({ id: 'gender.male' }), value: 'Male' },
+    { label: intl.formatMessage({ id: 'gender.female' }), value: 'Female' },
+    { label: intl.formatMessage({ id: 'gender.other' }), value: 'Other' },
+  ];
   const fitnessGoals = [
-    { label: 'Weight loss', value: 'weight loss'},
-    { label: 'Muscle gain', value: 'muscle gain' },
-    { label: 'Gain mobility', value: 'gain mobility' },
-    { label: 'Maintenance', value: 'maintenance' },
-    { label: 'Flexibility', value: 'flexibility' },
-    { label: 'Other', value: 'other' }
-  ]
+    { label: intl.formatMessage({ id: 'fitnessGoal.weightLoss' }), value: 'weight loss' },
+    { label: intl.formatMessage({ id: 'fitnessGoal.muscleGain' }), value: 'muscle gain' },
+    { label: intl.formatMessage({ id: 'fitnessGoal.gainMobility' }), value: 'gain mobility' },
+    { label: intl.formatMessage({ id: 'fitnessGoal.maintenance' }), value: 'maintenance' },
+    { label: intl.formatMessage({ id: 'fitnessGoal.flexibility' }), value: 'flexibility' },
+    { label: intl.formatMessage({ id: 'fitnessGoal.other' }), value: 'other' },
+  ];
   const activityLevels = [
-    { label: 'Sedentary', value: 'sedentary'},
-    { label: 'Moderately active', value: 'moderately active' },
-    { label: 'Very active', value: 'very active' },
-  ]
+    { label: intl.formatMessage({ id: 'activityLevel.sedentary' }), value: 'sedentary' },
+    { label: intl.formatMessage({ id: 'activityLevel.moderatelyActive' }), value: 'moderately active' },
+    { label: intl.formatMessage({ id: 'activityLevel.veryActive' }), value: 'very active' },
+  ];
 
   const handleSaveStudent = async (body) => {
-    
     try {
       setLoading(true);
-      const data = await saveStudent(body);
-      showToast('success', 'Success', 'Student added successfully');
-      onClose(); // Close modal or navigation function
-      setRefreshKey(old => old + 1); // Trigger refetch of data
+      await saveStudent(body);
+      showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.addedSuccessfully' }));
+      onClose();
+      setRefreshKey(old => old + 1);
     } catch (error) {
-      showToast('error', 'Error', error.message);
+      showToast('error', intl.formatMessage({ id: 'error' }), error.message);
     } finally {
       setLoading(false);
     }
-    
   };
 
   const onClickSaveStudent = async () => {
     const body = { name, email, fitnessGoal, activityLevel, gender, weight, height, birthdate, coachId: user.userId };
-  
+
     if (!name || !email) {
-      showToast('error', 'Error', 'Name and Email cannot be null or empty');
+      showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'student.error.nameEmailRequired' }));
       return;
     }
-  
-    if (birthdate &&  birthdate.getTime() > new Date().getTime()) {
-      return showToast('error', 'Error', 'Birthdate cannot be later than today');
+
+    if (birthdate && birthdate.getTime() > new Date().getTime()) {
+      return showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'student.error.birthdateInvalid' }));
     }
-  
-    if(birthdate){
+
+    if (birthdate) {
       const age = new Date().getFullYear() - birthdate.getFullYear();
       if (age >= 0 && age <= 10) {
-        showToast('warn', 'Warning', 'Client is very young, please double-check the birthdate');
+        showToast('warn', intl.formatMessage({ id: 'warning' }), intl.formatMessage({ id: 'student.warning.youngClient' }));
       }
     }
-  
+
     showConfirmationDialog({
-      message: "Are you sure you want to create this student?",
-      header: "Confirmation",
+      message: intl.formatMessage({ id: 'student.confirmation.create' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: "pi pi-exclamation-triangle",
       accept: () => handleSaveStudent(body),
       reject: () => console.log('Rejected')
     });
   };
+
   return (
     <div className="new-student-dialog">
       <div className="p-field">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email"><FormattedMessage id="email" /></label>
         <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div className="p-field">
-        <label htmlFor="name">Name</label>
+        <label htmlFor="name"><FormattedMessage id="name" /></label>
         <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="p-field">
-        <label htmlFor="fitnessGoal">Fitness Goal</label>
+        <label htmlFor="fitnessGoal"><FormattedMessage id="fitnessGoal" /></label>
         <MultiSelect id="fitnessGoal" options={fitnessGoals} value={fitnessGoal} onChange={(e) => setFitnessGoal(e.target.value)} />
       </div>
       <div className="p-field">
-        <label htmlFor="activityLevel">Activity Level</label>
+        <label htmlFor="activityLevel"><FormattedMessage id="activityLevel" /></label>
         <Dropdown id="activityLevel" options={activityLevels} value={activityLevel} onChange={(e) => setActivityLevel(e.target.value)} />
       </div>
       <div className="p-field">
-        <label htmlFor="activityLevel">Gender</label>
+        <label htmlFor="gender"><FormattedMessage id="gender" /></label>
         <Dropdown id="gender" options={genders} value={gender} optionLabel='label' optionValue='value' onChange={(e) => setGender(e.target.value)} />
       </div>
       <div className="p-field">
-        <label htmlFor="activityLevel">Height (cm)</label>
+        <label htmlFor="height"><FormattedMessage id="height" /></label>
         <InputNumber id="height" value={height} onChange={(e) => setHeight(e.value)} maxLength={3} min={0}/>
       </div>
       <div className="p-field">
-        <label htmlFor="activityLevel">Weight (kg)</label>
+        <label htmlFor="weight"><FormattedMessage id="weight" /></label>
         <InputNumber id="weight" value={weight} onChange={(e) => setWeight(e.value)} maxLength={3} min={0}/>
       </div>
       <div className="p-field">
-        <label htmlFor="activityLevel">Birhdate</label>
+        <label htmlFor="birthdate"><FormattedMessage id="birthdate" /></label>
         <Calendar id="birthdate" dateFormat='dd/mm/yy' value={birthdate} onChange={(e) => setBirthDate(e.target.value)}/>
       </div>
-      <Button label="Save" icon="pi pi-save" loading={loading} onClick={onClickSaveStudent} />
+      <Button label={intl.formatMessage({ id: 'save' })} icon="pi pi-save" loading={loading} onClick={onClickSaveStudent} />
     </div>
   );
 };

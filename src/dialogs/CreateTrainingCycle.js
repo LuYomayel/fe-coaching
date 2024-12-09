@@ -10,11 +10,11 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { InputNumber } from 'primereact/inputnumber';
 import { createTrainingCycle } from '../services/workoutService';
 import { fetchCoachStudents } from '../services/usersService';
-
-const apiUrl = process.env.REACT_APP_API_URL;
+import { useIntl } from 'react-intl';
 
 const CreateTrainingCycleDialog = ({ visible, onHide }) => {
   const { user } = useContext(UserContext);
+  const intl = useIntl();
   const showToast = useToast();
   const [cycleName, setCycleName] = useState('');
   const [startDate, setStartDate] = useState(null);
@@ -89,8 +89,8 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
     };
 
     showConfirmationDialog({
-      message: "Are you sure you want to create this plan?",
-      header: "Confirmation",
+      message: intl.formatMessage({ id: 'createCycle.confirmation.message' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: "pi pi-exclamation-triangle",
       accept: () => handleCreateCycle(body),
       reject: () => console.log('Rejected u mf')

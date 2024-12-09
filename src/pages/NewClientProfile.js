@@ -128,8 +128,8 @@ export default function NewClientProfile() {
     }
 
     showConfirmationDialog({
-      message: 'Are you sure you want to save these changes?',
-      header: 'Confirm Save',
+      message: intl.formatMessage({ id: 'common.confirmation.saveChanges' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {

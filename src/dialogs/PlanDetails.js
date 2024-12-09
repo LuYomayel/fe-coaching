@@ -18,11 +18,12 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctions';
 import VideoDialog from './VideoDialog';
 import { deleteWorkoutPlan, fetchWorkoutInstance } from '../services/workoutService';
-const apiUrl = process.env.REACT_APP_API_URL;
+import { useIntl } from 'react-intl';
 
 const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading }) => {
   // const { planId } = useParams();
   const { user } = useContext(UserContext);
+  const intl = useIntl();
   const { showConfirmationDialog } = useConfirmationDialog();
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [currentVideoUrl, setCurrentVideoUrl] = useState('');
@@ -94,8 +95,8 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
 
   const handleDeletePlan = (plan) =>{
     showConfirmationDialog({
-      message: "Are you sure you want to delete this plan?",
-      header: "Confirmation",
+      message: intl.formatMessage({ id: 'deletePlan.confirmation.message' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: "pi pi-exclamation-triangle",
       accept: () => fetchDeletePlan(),
       reject: () => console.log('Rejected')

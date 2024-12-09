@@ -11,8 +11,10 @@ import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
+import { useIntl } from 'react-intl';
 
 export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsIsVisible, setRefreshKey, setLoading }) {
+    const intl = useIntl();
     const [videoDialogVisible, setVideoDialogVisible] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState('');
     const toast = useRef(null);
@@ -55,8 +57,8 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
 
     const handleDelete = () => {
         showConfirmationDialog({
-            message: 'Are you sure you want to delete this workout plan?',
-            header: 'Confirm Delete',
+            message: intl.formatMessage({ id: 'deletePlan.confirmation.message' }),
+            header: intl.formatMessage({ id: 'common.confirmation' }),
             icon: 'pi pi-exclamation-triangle',
             accept: async () => {
                 try {

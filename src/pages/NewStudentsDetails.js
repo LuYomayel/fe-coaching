@@ -95,8 +95,8 @@ export default function NewStudentDetails() {
 
     const handleDeletePlan = (plan) => {
         showConfirmationDialog({
-            message: intl.formatMessage({ id: 'studentDetails.dialog.confirmDelete' }),
-            header: intl.formatMessage({ id: 'studentDetails.dialog.confirmDeleteHeader' }),
+            message: intl.formatMessage({ id: 'deletePlan.confirmation.message' }),
+            header: intl.formatMessage({ id: 'common.confirmation' }),
             icon: 'pi pi-exclamation-triangle',
             accept: () => deletePlan(plan),
             reject: () => {}

@@ -8,8 +8,10 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { validateDates } from '../utils/UtilFunctions';
 import { assignWorkout } from '../services/workoutService';
-const apiUrl = process.env.REACT_APP_API_URL;
+import { useIntl } from 'react-intl';
 const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
+  const intl = useIntl();
+  // eslint-disable-next-line
   const [currentPlans, setCurrentPlans] = useState(selectedPlans);
   const [activeIndex, setActiveIndex] = useState(0);
   const { showConfirmationDialog } = useConfirmationDialog();
@@ -44,15 +46,15 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
       ...assignmentData[index],
     };
 
-    const { isValid, message } = validateDates(data.expectedStartDate, data.expectedEndDate)
+    const { isValid, message } = validateDates(data.expectedStartDate, data.expectedEndDate, intl)
     if (!isValid) {
       showToast('error', 'Error', message);
       return;
     }
 
     showConfirmationDialog({
-        message: "Are you sure you want to assign this plan?",
-        header: "Confirmation",
+        message: intl.formatMessage({ id: 'assignPlan.confirmation.message' }),
+        header: intl.formatMessage({ id: 'common.confirmation' }),
         icon: "pi pi-exclamation-triangle",
         accept: () => confirmAssign(index),
         reject: () => console.log('Rejected u mf')
@@ -66,7 +68,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
     };
     try {
       setLoading(true);
-      const result = await assignWorkout(data);
+      await assignWorkout(data);
       showToast('success', 'Plan assigned successfully');
       onClose(); // Asumiendo que onClose hace algo relevante después de una asignación exitosa
     } catch (error) {

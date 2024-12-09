@@ -196,8 +196,8 @@ const NewCreatePlan = ({ isEdit }) => {
 
   const clearPlan = () => {
     showConfirmationDialog({
-      message: 'Are you sure you want to clear the entire workout plan?',
-      header: 'Confirm Clear Plan',
+      message: intl.formatMessage({ id: 'coach.plan.confirm.clear' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         setPlan({

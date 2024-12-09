@@ -8,31 +8,33 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { validateDates } from '../utils/UtilFunctions';
 import { fetchCoachPlans } from '../services/usersService';
 import { assignSubscription } from '../services/subscriptionService';
-const apiUrl = process.env.REACT_APP_API_URL;
+import { useIntl, FormattedMessage } from 'react-intl';
 
 const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
-  const {user} = useContext(UserContext);
+  const intl = useIntl();
+  const { user } = useContext(UserContext);
   const showToast = useToast();
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [coachPlans, setCoachPlans] =useState([]);
-  const [selectedCoachPlan, setSelectedCoachPlan] = useState()
+  const [coachPlans, setCoachPlans] = useState([]);
+  const [selectedCoachPlan, setSelectedCoachPlan] = useState();
   const { showConfirmationDialog } = useConfirmationDialog();
-    useEffect( () => {    
-      const loadCoachPlans = async () => {
-        try {
-          const plans = await fetchCoachPlans(user.userId);
-          setCoachPlans(plans);
-        } catch (error) {
-          showToast('error', 'Error', error.message);
-        }
-      };
-    
-      if (user && user.userId) {
-        loadCoachPlans();
+
+  useEffect(() => {
+    const loadCoachPlans = async () => {
+      try {
+        const plans = await fetchCoachPlans(user.userId);
+        setCoachPlans(plans);
+      } catch (error) {
+        showToast('error', intl.formatMessage({ id: 'error' }), error.message);
       }
-    }, [])
+    };
+
+    if (user && user.userId) {
+      loadCoachPlans();
+    }
+  }, [user, showToast, intl]);
 
   const assingSubscription = () => {
     const body = {
@@ -42,58 +44,55 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
       endDate,
       coachPlanId: selectedCoachPlan,
       userId: user.userId
-    }
-    const { isValid, message } = validateDates(startDate, endDate)
-
+    };
+    const { isValid, message } = validateDates(startDate, endDate, intl);
 
     if (!isValid) {
-      showToast('error', 'Error', message);
+      showToast('error', intl.formatMessage({ id: 'error' }), message);
       return;
     }
 
-    if(!selectedCoachPlan)
-      return showToast('error', 'Error', 'Please select a coach plan')
+    if (!selectedCoachPlan) {
+      return showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'assignSubscription.error.selectPlan' }));
+    }
 
     showConfirmationDialog({
-      message: "Are you sure you want to generate a subscription to this client?",
-      header: "Confirmation",
+      message: intl.formatMessage({ id: 'assignSubscription.confirmation.message' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: "pi pi-exclamation-triangle",
       accept: () => handleAssignSubscription(body),
-      reject: () => console.log('Rejected u mf')
+      reject: () => console.log('Rejected')
     });
-  }
+  };
+
   const handleAssignSubscription = async (body) => {
     try {
       setLoading(true);
-      console.log('Body: ', body)
-      // return
       await assignSubscription(body);
-      showToast('success', 'Success', 'Subscription assigned successfully');
-      onClose();  // Assuming onClose is a function to close a modal or similar
+      showToast('success', intl.formatMessage({ id: 'success' }), intl.formatMessage({ id: 'assignSubscription.success' }));
+      onClose();
     } catch (error) {
-      showToast('error', 'Error', error.message);
+      showToast('error', intl.formatMessage({ id: 'error' }), error.message);
     } finally {
       setLoading(false);
     }
   };
 
-
-
   return (
     <div className="assign-subscription-dialog">
       <div className="p-field">
-        <label htmlFor="startDate">Start Date</label>
+        <label htmlFor="startDate"><FormattedMessage id="startDate" /></label>
         <Calendar id="startDate" dateFormat='dd/mm/yy' value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
       </div>
       <div className="p-field">
-        <label htmlFor="endDate">End Date</label>
+        <label htmlFor="endDate"><FormattedMessage id="endDate" /></label>
         <Calendar id="endDate" dateFormat='dd/mm/yy' value={endDate} onChange={(e) => setEndDate(e.value)} showIcon />
       </div>
       <div className="p-field">
-        <label htmlFor="endDate">Plan</label>
+        <label htmlFor="coachPlan"><FormattedMessage id="plan" /></label>
         <Dropdown id="coachPlan" options={coachPlans} optionLabel='name' optionValue='id' value={selectedCoachPlan} onChange={(e) => setSelectedCoachPlan(e.value)} />
       </div>
-      <Button label="Assign Subscription" icon="pi pi-check" loading={loading} onClick={assingSubscription} />
+      <Button label={intl.formatMessage({ id: 'assignSubscription.button' })} icon="pi pi-check" loading={loading} onClick={assingSubscription} />
     </div>
   );
 };

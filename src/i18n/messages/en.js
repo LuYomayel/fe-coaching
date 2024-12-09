@@ -1,10 +1,32 @@
-export default {
+const messages = {
   'app.welcome': 'Welcome',
   'app.chat.placeholder': 'Type a message...',
   'app.chat.send': 'Send',
   'app.chat.attach': 'Attach file',
   'app.connection.status.connected': 'Connected',
   'app.connection.status.disconnected': 'Disconnected',
+
+  // Mensajes de confirmacion
+  'common.confirmation': 'Confirmation',
+  'assignPlan.confirmation.message': 'Are you sure you want to assign this plan?',
+  'assignSubscription.confirmation.message': 'Are you sure you want to generate a subscription for this client?',
+  'createCycle.confirmation.message': 'Are you sure you want to create this plan?',
+  'deletePlan.confirmation.message': 'Are you sure you want to delete this workout plan?',
+  'deleteStudent.confirmation.message': 'Are you sure you want to delete this student?',
+  'registerPayment.confirmation.message': 'Are you sure you want to register this payment and update the client\'s subscription?',
+  'common.confirmation.saveChanges': 'Are you sure you want to save these changes?',
+  'deleteExercise.confirmation.message': 'Are you sure you want to delete this exercise?',
+  'createExercise.confirmation.message': 'Are you sure you want to create this exercise?',
+  'updateExercise.confirmation.message': 'Are you sure you want to update this exercise?',
+  'coach.plan.confirm.create': 'Are you sure you want to create this plan?',
+  'coach.plan.confirm.update': 'Are you sure you want to update this plan?',
+  'coach.plan.confirm.delete': 'Are you sure you want to delete this plan?',
+  'coach.workout.confirm.delete': 'Are you sure you want to delete this workout?',
+  'coach.exercise.confirm.upload': 'Are you sure you want to upload {rowsCount} exercises?',
+  'coach.rpe.confirm.delete': 'Are you sure you want to delete this RPE Method?',
+  'coach.rpe.confirm.assign': 'Are you sure you want to assign {rpe} to the selected {type}?',
+  'coach.plan.confirm.clear': 'Are you sure you want to clear the entire workout plan?',
+  'coach.subscription.confirm.delete': 'Are you sure you want to delete this client\'s subscription?',
   // Messages for NewCoachHome
   'welcome.back': 'Welcome back, {name}!',
   'stats.totalClients': 'Total Clients',
@@ -102,13 +124,13 @@ export default {
   'profile.activity.moderate': 'Moderately active',
   'profile.activity.active': 'Very active',
   
-  'common.search': 'Search',
+  
   'common.selectDate': 'Select Date',
   'common.noResults': 'No results found.',
   'common.status': 'Status',
   'common.select': 'Select',
-  'common.yes': 'Yes',
-  'common.no': 'No',
+
+
   
   // NewCoachProfile
   'coach.welcome': 'Welcome, {name}!',
@@ -118,6 +140,9 @@ export default {
   'coach.gymLocation': 'Gym Location',
   'coach.biography': 'Biography',
   
+  'coach.workouts.title': 'Workouts',
+  'coach.workout.details': 'Workout Details',
+
   'coach.tabs.workouts': 'Workouts',
   'coach.tabs.plans': 'Plans',
   'coach.tabs.exercises': 'Exercise Library',
@@ -135,6 +160,8 @@ export default {
   'coach.rpe.values': 'Values Meta',
   'coach.rpe.addValue': 'Add Value',
   'coach.rpe.selectType': 'Select Assignment Type',
+  'coach.rpe.create': 'Create RPE Method',
+  'coach.rpe.update': 'Update RPE Method',
   
   'coach.subscription.currentPlan': 'Current Plan',
   'coach.subscription.maxClients': 'Max Clients: {max}',
@@ -146,6 +173,13 @@ export default {
   'coach.exercise.equipment': 'Equipment Needed',
   'coach.exercise.video': 'Video',
   'coach.exercise.bodyArea': 'Body area involved',
+  'coach.exercise.create': 'Create Exercise',
+  'coach.exercise.edit': 'Edit Exercise',
+  'coach.exercise.error.name.empty': 'Exercise name can not be empty.',
+  'coach.exercise.error.video.invalid': 'Please enter a valid YouTube URL', 
+  'coach.exercise.error.video.invalid.message': 'Please enter a valid YouTube URL',
+  'coach.exercise.error.video.invalid.header': 'Error',
+  
   // NewManageStudents
   'students.title': 'Manage Students',
   'students.subtitle': 'View and manage your students\' progress',
@@ -284,23 +318,23 @@ export default {
   'training.exercise.video': 'Video URL',
   'training.exercise.sets': 'Set {number}',
   'training.exercise.rpe': 'RPE',
-  'training.exercise.comments': 'Comments',
+
   
   'training.plan.name': 'Plan Name',
   'training.plan.status': 'Status',
   
-  'training.checkbox.completed': 'Completed',
-  'training.checkbox.notAsPlanned': 'Completed Not as Planned',
+
+
   
   'training.buttons.save': 'Save Progress',
   'training.buttons.finish': 'Finish Training',
   
-  'training.success.saved': 'Your progress has been saved successfully.',
-  'training.success.finished': 'Congratulations, you have finished your routine!',
+
+
   
-  'training.error.exerciseNotFound': 'Original exercise not found.',
+
   'training.error.fillFields': 'All relevant fields must be filled out.',
-  'training.error.noFeedback': 'No valid feedback to submit.',
+
   
   // NewCreatePlan
   'plan.create.title': 'Create Plan',
@@ -391,14 +425,8 @@ export default {
   'sort.descending': 'Descending',
   
   // NewTrainingDetails - Additional
-  'training.exercise.details': 'Exercise Details',
-  'training.exercise.progress': 'Exercise Progress',
   'training.exercise.videoUrl': 'Video URL',
-  'training.exercise.set': 'Set {number}',
-  'training.exercise.rpe': 'RPE',
   
-  'training.checkbox.completed': 'Completed',
-  'training.checkbox.notAsPlanned': 'Completed Not as Planned',
   'training.checkbox.readOnly': 'Read Only',
   
   'training.session.finished': 'Session finished!',
@@ -455,7 +483,6 @@ export default {
   'coach.buttons.upgradePlan': 'Upgrade Plan',
   
   'coach.subscription.status': 'Subscription Status',
-  'coach.subscription.currentPlan': 'Current Plan: Premium',
   'coach.subscription.clientsManaged': 'Clients Managed: {current}/{max}',
   
   'coach.progress.completed': 'Completed: {count}',
@@ -597,5 +624,87 @@ export default {
   'coachProfileForm.step.confirmation': 'Confirmation',
   'coachProfileForm.confirmationMessage': 'Please review all information before confirming.',
   'common.back': 'Back',
-  'common.next': 'Next'
+  'common.next': 'Next',
+  
+  // NewStudentDialog
+  'gender.male': 'Male',
+  'gender.female': 'Female',
+  'gender.other': 'Other',
+  'fitnessGoal.weightLoss': 'Weight loss',
+  'fitnessGoal.muscleGain': 'Muscle gain',
+  'fitnessGoal.gainMobility': 'Gain mobility',
+  'fitnessGoal.maintenance': 'Maintenance',
+  'fitnessGoal.flexibility': 'Flexibility',
+  'fitnessGoal.other': 'Other',
+  'activityLevel.sedentary': 'Sedentary',
+  'activityLevel.moderatelyActive': 'Moderately active',
+  'activityLevel.veryActive': 'Very active',
+  'student.success': 'Success',
+  'student.addedSuccessfully': 'Student added successfully',
+  'student.error.nameEmailRequired': 'Name and Email cannot be null or empty',
+  'student.error.birthdateInvalid': 'Birthdate cannot be later than today',
+  'student.warning.youngClient': 'Client is very young, please double-check the birthdate',
+  'student.confirmation.create': 'Are you sure you want to create this student?',
+  'confirmation': 'Confirmation',
+  'email': 'Email',
+  'name': 'Name',
+  'fitnessGoal': 'Fitness Goal',
+  'activityLevel': 'Activity Level',
+  'gender': 'Gender',
+  'height': 'Height (cm)',
+  'weight': 'Weight (kg)',
+  'birthdate': 'Birthdate',
+  'save': 'Save',
+  'error': 'Error',
+  'warning': 'Warning',
+  
+  // AssignSubscriptionDialog
+  'assignSubscription.error.selectPlan': 'Please select a coach plan',
+  'assignSubscription.success': 'Subscription assigned successfully',
+  'assignSubscription.button': 'Assign Subscription',
+  'startDate': 'Start Date',
+  'endDate': 'End Date',
+  'plan': 'Plan',
+  'success': 'Success',
+  
+  // Error messages from UtilFunctions
+  'error.selectStartDate': 'Please select a Start date',
+  'error.selectEndDate': 'Please select an End date',
+  'error.startDateAfterEndDate': 'Start date cannot be later than End date',
+  'error.nameRequired': 'Name is required',
+  'error.emailRequired': 'Email is required',
+  'error.fitnessGoalRequired': 'Fitness Goal is required',
+  'error.activityLevelRequired': 'Activity Level is required',
+  'error.birthdateRequired': 'Birthdate is required',
+  'error.birthdateInFuture': 'Birthdate cannot be in the future',
+  'error.ageRequirement': 'Age must be at least 10 years',
+  'error.genderRequired': 'Gender is required',
+  'error.heightRange': 'Height must be between 100 cm and 250 cm',
+  'error.weightRange': 'Weight must be between 30 kg and 300 kg',
+
+  // NewCoachProfile
+  'coach.plan.success.created': 'Plan created successfully',
+  'coach.plan.success.created.message': 'The plan has been created successfully',
+  'coach.plan.success.updated': 'Plan updated successfully',
+  'coach.plan.success.updated.message': 'The plan has been updated successfully',
+  'coach.plan.error.name.empty': 'The plan name cannot be empty',
+  'coach.plan.error.price.zero': 'The plan price cannot be 0',
+  'coach.plan.error.workouts.zero': 'The number of workouts per week cannot be 0',
+  'coach.plan.error.not.updated': 'Error updating the plan',
+  'coach.plan.create': 'Create New Coach Plan',
+  'coach.plan.edit': 'Edit Coach Plan',
+  'coach.plan.name': 'Plan Name',
+  'coach.plan.price': 'Price',
+  'coach.plan.workoutsPerWeek': 'Workouts per Week',
+  'coach.plan.includeMealPlan': 'Include Meal Plan',
+
+  // RPE Method
+
+  'coach.rpe.edit': 'Edit RPE Method',
+
+  'coach.rpe.valuesMeta': 'Values Meta',
+  'coach.rpe.value': 'Value',
+  'coach.rpe.color': 'Color (e.g., #FF0000)',
+  'coach.rpe.emoji': 'Emoji (e.g., 🔥)',
 }; 
+export default messages;

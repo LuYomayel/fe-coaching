@@ -8,9 +8,10 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { validateDates } from '../utils/UtilFunctions';
 import { fetchCoachPlans } from '../services/usersService';
 import { registerPayment } from '../services/subscriptionService';
-const apiUrl = process.env.REACT_APP_API_URL;
+import { useIntl } from 'react-intl'; 
 
 const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, oldCoachPlan }) => {
+  const intl = useIntl();
   const { user } = useContext(UserContext);
   const showToast = useToast();
   const [startDate, setStartDate] = useState(null);
@@ -41,7 +42,7 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
       }
     }
     loadCoachPlans();
-  }, [user.userId, oldSubscription, oldCoachPlan]);
+  }, [user.userId, oldSubscription, oldCoachPlan, showToast]);
 
   const onClickRegisterPayment = () => {
     const body = {
@@ -53,7 +54,7 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
       coachPlanId: selectedCoachPlan
     };
 
-    const { isValid, message } = validateDates(startDate, endDate)
+    const { isValid, message } = validateDates(startDate, endDate, intl)
     if (!isValid) {
       showToast('error', 'Error', message);
       return;
@@ -70,8 +71,8 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     }
 
     showConfirmationDialog({
-      message: "Are you sure you want to register this payment and update the client's subscription?",
-      header: "Confirmation",
+      message: intl.formatMessage({ id: 'registerPayment.confirmation.message' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: "pi pi-exclamation-triangle",
       accept: () => handleRegisterPayment(body),
       reject: () => console.log('Payment registration cancelled')

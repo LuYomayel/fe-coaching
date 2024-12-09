@@ -1,3 +1,5 @@
+import { useIntl } from 'react-intl';
+
 const formatDate = (value) => {
   if (!value) return '';
   const date = new Date(value);
@@ -86,37 +88,38 @@ const getSeverity = (status) => {
   }
 };
 
-const validateDates = (startDate, endDate) => {
+const validateDates = (startDate, endDate, intl) => {
+  
   if (!startDate) {
-    return { isValid: false, message: 'Please select a Start date' };
+    return { isValid: false, message: intl.formatMessage({ id: 'error.selectStartDate' }) };
   }
   if (!endDate) {
-    return { isValid: false, message: 'Please select an End date' };
+    return { isValid: false, message: intl.formatMessage({ id: 'error.selectEndDate' }) };
   }
   if (new Date(startDate) > new Date(endDate)) {
-    return { isValid: false, message: 'Start date cannot be later than End date' };
+    return { isValid: false, message: intl.formatMessage({ id: 'error.startDateAfterEndDate' }) };
   }
   return { isValid: true, message: '' };
 };
 
 // utils.js
-const validateStudentDetails = ({ name, email, fitnessGoal, activityLevel, birthdate, gender, height, weight }) => {
-  if (!name) return { isValid: false, message: 'Name is required' };
-  if (!email) return { isValid: false, message: 'Email is required' };
-  if (!fitnessGoal || fitnessGoal.length === 0) return { isValid: false, message: 'Fitness Goal is required' };
-  if (!activityLevel) return { isValid: false, message: 'Activity Level is required' };
-  if (!birthdate) return { isValid: false, message: 'Birthdate is required' };
+const validateStudentDetails = ({ name, email, fitnessGoal, activityLevel, birthdate, gender, height, weight }, intl) => {
+  if (!name) return { isValid: false, message: intl.formatMessage({ id: 'error.nameRequired' }) };
+  if (!email) return { isValid: false, message: intl.formatMessage({ id: 'error.emailRequired' }) };
+  if (!fitnessGoal || fitnessGoal.length === 0) return { isValid: false, message: intl.formatMessage({ id: 'error.fitnessGoalRequired' }) };
+  if (!activityLevel) return { isValid: false, message: intl.formatMessage({ id: 'error.activityLevelRequired' }) };
+  if (!birthdate) return { isValid: false, message: intl.formatMessage({ id: 'error.birthdateRequired' }) };
   
   const today = new Date();
   const minDate = new Date();
   minDate.setFullYear(today.getFullYear() - 10);
 
-  if (new Date(birthdate) > today) return { isValid: false, message: 'Birthdate cannot be in the future' };
-  if (new Date(birthdate) > minDate) return { isValid: false, message: 'Age must be at least 10 years' };
+  if (new Date(birthdate) > today) return { isValid: false, message: intl.formatMessage({ id: 'error.birthdateInFuture' }) };
+  if (new Date(birthdate) > minDate) return { isValid: false, message: intl.formatMessage({ id: 'error.ageRequirement' }) };
 
-  if (!gender) return { isValid: false, message: 'Gender is required' };
-  if (height < 100 || height > 250) return { isValid: false, message: 'Height must be between 100 cm and 250 cm' };
-  if (weight < 30 || weight > 300) return { isValid: false, message: 'Weight must be between 30 kg and 300 kg' };
+  if (!gender) return { isValid: false, message: intl.formatMessage({ id: 'error.genderRequired' }) };
+  if (height < 100 || height > 250) return { isValid: false, message: intl.formatMessage({ id: 'error.heightRange' }) };
+  if (weight < 30 || weight > 300) return { isValid: false, message: intl.formatMessage({ id: 'error.weightRange' }) };
   
   return { isValid: true, message: '' };
 };

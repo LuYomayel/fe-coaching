@@ -248,8 +248,8 @@ export default function NewManageStudentsPage() {
 
   const deleteCancelSubscription = (clientSubscriptionId) => {
     showConfirmationDialog({
-      message: "Are you sure you want to delete this client's subscription?",
-      header: 'Confirmation',
+      message: intl.formatMessage({ id: 'coach.subscription.confirm.delete' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleCancelSubscription(clientSubscriptionId),
       reject: () => console.log('Rejected'),
@@ -273,7 +273,7 @@ export default function NewManageStudentsPage() {
 
   const deleteClientConfirm = (clientId) => {
     showConfirmationDialog({
-      message: intl.formatMessage({ id: 'students.confirm.deleteClient' }),
+      message: intl.formatMessage({ id: 'deleteStudent.confirmation.message' }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDeleteUser(clientId),

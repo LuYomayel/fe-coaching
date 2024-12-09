@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
@@ -6,9 +6,11 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
 import { useToast } from '../utils/ToastContext';
 import { validateStudentDetails } from '../utils/UtilFunctions';
+import { useIntl } from 'react-intl';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentDetailDialog = ({ student, onClose }) => {
+  const intl = useIntl();
   const showToast = useToast();
   const [name, setName] = useState(student.name);
   const [email, setEmail] = useState(student.email);
@@ -42,7 +44,7 @@ const StudentDetailDialog = ({ student, onClose }) => {
 
   const handleSaveStudent = async () => {
     const body = { name, email, fitnessGoal: fitnessGoal.join(','), activityLevel, birthdate, gender, height, weight };
-    const { isValid, message } = validateStudentDetails(body);
+    const { isValid, message } = validateStudentDetails(body, intl);
 
     if (!isValid) {
       showToast('error', 'Error', message);
