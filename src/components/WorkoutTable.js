@@ -11,18 +11,20 @@ import { updateExercisesInstace } from '../services/workoutService';
 import { useToast } from '../utils/ToastContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 
-const daysOfWeek = [
-    { label: 'Monday', value: 1 },
-    { label: 'Tuesday', value: 2 },
-    { label: 'Wednesday', value: 3 },
-    { label: 'Thursday', value: 4 },
-    { label: 'Friday', value: 5 },
-    { label: 'Saturday', value: 6 },
-    { label: 'Sunday', value: 7 },
-];
+
 
 export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey }) {
     const intl = useIntl();
+    const daysOfWeek = [
+        { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
+        { label: intl.formatMessage({ id: 'workoutTable.tuesday' }), value: 2 },
+        { label: intl.formatMessage({ id: 'workoutTable.wednesday' }), value: 3 },
+        { label: intl.formatMessage({ id: 'workoutTable.thursday' }), value: 4 },
+        { label: intl.formatMessage({ id: 'workoutTable.friday' }), value: 5 },
+        { label: intl.formatMessage({ id: 'workoutTable.saturday' }), value: 6 },
+        { label: intl.formatMessage({ id: 'workoutTable.sunday' }), value: 7 },
+    ];
+    
     const [cycle, setCycle] = useState(null);
     const [dayOfWeek, setDayOfWeek] = useState(null);
     const [exercises, setExercises] = useState([]);

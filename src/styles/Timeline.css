@@ -1,0 +1,16 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.timeline .p-timeline-event-opposite {
+  flex: 0 0 15%; /* Ajusta el ancho de la columna de la fecha */
+  text-align: right;
+  padding-right: 1rem;
+}
+
+.timeline .p-timeline-event-content {
+  flex: 0 0 75%; /* Ajusta el ancho de la columna del contenido */
+  padding-left: 1rem; /* Añade espacio a la izquierda del contenido */
+} 

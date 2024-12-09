@@ -6,10 +6,10 @@ import { Card } from 'primereact/card';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { assignWorkoutsToCycle, fetchCoachWorkouts, fetchAssignedWorkoutsForCycleDay, unassignWorkoutsFromCycle } from '../services/workoutService';
-
-const apiUrl = process.env.REACT_APP_API_URL;
+import { useIntl } from 'react-intl';
 
 const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, cycleOptions, actionType }) => {
+  const intl = useIntl();
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [assignments, setAssignments] = useState([{ workoutId: null, dayOfWeek: null }]);
@@ -43,8 +43,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
 
   useEffect(() => {
     if (cycleOptions) {
-      const options = cycleOptions.map((cycle) => ({ label: cycle.name, value: cycle.id }));
-      setCycles(options);
+      setCycles(cycleOptions);
     }
   }, [cycleOptions]);
 
@@ -67,13 +66,13 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
 }, [showToast, actionType, cycle, selectedDay]); // Incluye selectedDay como dependencia
 
   const daysOfWeek = [
-    { label: 'Monday', value: 1 },
-    { label: 'Tuesday', value: 2 },
-    { label: 'Wednesday', value: 3 },
-    { label: 'Thursday', value: 4 },
-    { label: 'Friday', value: 5 },
-    { label: 'Saturday', value: 6 },
-    { label: 'Sunday', value: 7 },
+    { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
+    { label: intl.formatMessage({ id: 'workoutTable.tuesday' }), value: 2 },
+    { label: intl.formatMessage({ id: 'workoutTable.wednesday' }), value: 3 },
+    { label: intl.formatMessage({ id: 'workoutTable.thursday' }), value: 4 },
+    { label: intl.formatMessage({ id: 'workoutTable.friday' }), value: 5 },
+    { label: intl.formatMessage({ id: 'workoutTable.saturday' }), value: 6 },
+    { label: intl.formatMessage({ id: 'workoutTable.sunday' }), value: 7 },
   ];
 
   const handleAction = async () => {
@@ -111,7 +110,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
       !assignments[assignments.length - 1].workoutId ||
       assignments[assignments.length - 1].dayOfWeek === null
     )
-      return showToast('error', 'Error', 'Please select a workout and a day of week for the last assignment.');
+      return showToast('error', 'Error', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.error.selectWorkoutAndDay' }));
     setAssignments([...assignments, { workoutId: null, dayOfWeek: null }]);
   };
 
@@ -125,7 +124,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
     const updatedAssignments = assignments.filter((assignments, i) => index !== i);
     if (updatedAssignments.length > 0) setAssignments(updatedAssignments);
     else {
-      showToast('error', 'Error', 'Select at least one workout.');
+      showToast('error', 'Error', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.error.selectAtLeastOneWorkout' }));
     }
   };
 
@@ -134,7 +133,7 @@ return (
   <Dialog
     draggable={false} dismissableMask
     resizable={false}
-    header={actionType === 'assign' ? 'Assign Workouts to Cycle' : 'Unassign Workouts from Cycle'}
+    header={actionType === 'assign' ? intl.formatMessage({ id: 'assignWorkoutToCycleDialog.assignWorkoutsToCycle' }) : intl.formatMessage({ id: 'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle' })}
     className="responsive-dialog"
     visible={visible}
     onHide={onHide}
@@ -142,18 +141,18 @@ return (
   >
     <div className="col-12">
       <div className="p-field">
-        <label>Cycle:</label>
+        <label>{intl.formatMessage({ id: 'assignWorkoutToCycleDialog.cycle' })}:</label>
         <Dropdown
           value={cycle}
-          options={cycles}
+          options={cycles.map(cycle => ({ label: cycle.label, value: cycle.value }))}
           onChange={(e) => {
-            setCycle(e.value); // Update the selected cycle
+            setCycle(e.value);
             if (actionType === 'unassign') {
-              setSelectedDay(null); // Reset selected day when changing cycle for unassign
-              setAssignedWorkouts([]); // Clear assigned workouts when changing cycle for unassign
+              setSelectedDay(null);
+              setAssignedWorkouts([]);
             }
           }}
-          placeholder="Select Cycle"
+          placeholder={intl.formatMessage({ id: 'assignWorkoutToCycleDialog.selectCycle' })}
         />
       </div>
     </div>
@@ -161,7 +160,7 @@ return (
     {actionType === 'unassign' && cycle !== -1 && (
       <div className="p-field grid">
         <div className="col-6">
-          <label>Day of Week:</label>
+          <label>{intl.formatMessage({ id: 'assignWorkoutToCycleDialog.dayOfWeek' })}:</label>
           <Dropdown
             value={selectedDay}
             options={daysOfWeek}
@@ -170,16 +169,16 @@ return (
               // Resetea los assignments y carga los workouts para desasignar
               setAssignments([{ workoutId: null, dayOfWeek: e.value }]);
             }}
-            placeholder="Select Day of Week"
+            placeholder={intl.formatMessage({ id: 'assignWorkoutToCycleDialog.selectDayOfWeek' })}
           />
         </div>
         <div className="col-6">
-          <label>Select Workout:</label>
+          <label>{intl.formatMessage({ id: 'assignWorkoutToCycleDialog.selectWorkout' })}:</label>
           <Dropdown
-            value={assignments[0].workoutId} // Accede al workoutId del primer assignment
-            options={assignedWorkouts} // Usa los workouts asignados
+            value={assignments[0].workoutId}
+            options={assignedWorkouts.map(workout => ({ label: workout.label, value: workout.value }))}
             onChange={(e) => handleAssignmentChange(0, 'workoutId', e.value)}
-            placeholder="Select Workout to Unassign"
+            placeholder={intl.formatMessage({ id: 'assignWorkoutToCycleDialog.selectWorkoutToUnassign' })}
             disabled={selectedDay === null} // Deshabilita si no hay día seleccionado
           />
         </div>
@@ -194,7 +193,7 @@ return (
               value={assignment.workoutId}
               options={workouts.map((workout) => ({ label: workout.planName, value: workout.id }))}
               onChange={(e) => handleAssignmentChange(index, 'workoutId', e.value)}
-              placeholder="Select Workout"
+              placeholder={intl.formatMessage({ id: 'assignWorkoutToCycleDialog.selectWorkout' })}
             />
           </div>
           <div className="col-5">
@@ -203,7 +202,7 @@ return (
               options={daysOfWeek}
               optionValue='value'
               onChange={(e) => handleAssignmentChange(index, 'dayOfWeek', e.value)}
-              placeholder="Select Day of Week"
+              placeholder={intl.formatMessage({ id: 'assignWorkoutToCycleDialog.selectDayOfWeek' })}
             />
           </div>
           <div className='col-1'>
@@ -216,14 +215,14 @@ return (
     <div className="flex justify-content-between">
       {actionType === 'assign' && (
         <Button
-          label="Add Assignment"
+          label={intl.formatMessage({ id: 'assignWorkoutToCycleDialog.addAssignment' })}
           icon="pi pi-plus"
           onClick={handleAddAssignment}
           className="p-button-secondary"
         />
       )}
       <Button
-        label={actionType === 'assign' ? 'Assign Workouts' : 'Unassign Workouts'}
+        label={actionType === 'assign' ? intl.formatMessage({ id: 'assignWorkoutToCycleDialog.assignWorkouts' }) : intl.formatMessage({ id: 'assignWorkoutToCycleDialog.unassignWorkouts' })}
         icon={actionType === 'assign' ? 'pi pi-check' : 'pi pi-trash'}
         onClick={handleAction}
         className="p-button-primary"

@@ -150,6 +150,11 @@ const messages = {
   
   'coach.workouts.title': 'Entrenamientos',
   'coach.workout.details': 'Detalles del Entrenamiento',
+  'coach.workout.success.deleted.message': 'Entrenamiento eliminado exitosamente!',
+  'coach.workout.success.assigned.message': 'Entrenamiento asignado exitosamente!',
+  'coach.workout.success.unassigned.message': 'Entrenamiento desasignado exitosamente!',
+  'coach.workout.error.selectWorkoutAndDay': 'Por favor, selecciona un entrenamiento y un día de la semana para la última asignación.',
+  'coach.workout.error.selectAtLeastOneWorkout': 'Por favor, selecciona al menos un entrenamiento.',
   
   'coach.buttons.add': 'Agregar {item}',
   'coach.buttons.assign': 'Asignar {item}',
@@ -583,6 +588,13 @@ const messages = {
   'workoutTable.dayOfWeek': 'Día de la semana:',
   'workoutTable.selectCycle': 'Seleccionar Ciclo',
   'workoutTable.selectDay': 'Seleccionar Día',
+  'workoutTable.monday': 'Lunes',
+  'workoutTable.tuesday': 'Martes',
+  'workoutTable.wednesday': 'Miércoles',
+  'workoutTable.thursday': 'Jueves',
+  'workoutTable.friday': 'Viernes',
+  'workoutTable.saturday': 'Sábado',
+  'workoutTable.sunday': 'Domingo',
   
   // Header
   'header.home': 'Inicio',
@@ -707,6 +719,19 @@ const messages = {
   'coach.rpe.value': 'Valor',
   'coach.rpe.color': 'Color (e.g., #FF0000)',
   'coach.rpe.emoji': 'Emoji (e.g., 🔥)',
-  
+
+  // AssignWorkoutToCycleDialog
+  'assignWorkoutToCycleDialog.cycle': 'Ciclo',
+  'assignWorkoutToCycleDialog.assignWorkouts': 'Asignar Entrenamientos',
+  'assignWorkoutToCycleDialog.unassignWorkouts': 'Desasignar Entrenamientos',
+  'assignWorkoutToCycleDialog.addAssignment': 'Agregar Asignación',
+  'assignWorkoutToCycleDialog.assignWorkoutsToCycle': 'Asignar Entrenamientos al Ciclo',
+  'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle': 'Desasignar Entrenamientos del Ciclo',
+  'assignWorkoutToCycleDialog.selectCycle': 'Seleccionar Ciclo',
+  'assignWorkoutToCycleDialog.selectDayOfWeek': 'Seleccionar Día de la Semana',
+  'assignWorkoutToCycleDialog.selectWorkout': 'Seleccionar Entrenamiento',
+  'assignWorkoutToCycleDialog.selectWorkoutToUnassign': 'Seleccionar Entrenamiento para Desasignar',
+  'assignWorkoutToCycleDialog.error.selectWorkoutAndDay': 'Por favor, selecciona un entrenamiento y un día de la semana para la última asignación.',
+  'assignWorkoutToCycleDialog.error.selectAtLeastOneWorkout': 'Por favor, selecciona al menos un entrenamiento.',
 }; 
 export default messages;

@@ -22,6 +22,7 @@ const messages = {
   'coach.plan.confirm.update': 'Are you sure you want to update this plan?',
   'coach.plan.confirm.delete': 'Are you sure you want to delete this plan?',
   'coach.workout.confirm.delete': 'Are you sure you want to delete this workout?',
+  
   'coach.exercise.confirm.upload': 'Are you sure you want to upload {rowsCount} exercises?',
   'coach.rpe.confirm.delete': 'Are you sure you want to delete this RPE Method?',
   'coach.rpe.confirm.assign': 'Are you sure you want to assign {rpe} to the selected {type}?',
@@ -142,6 +143,11 @@ const messages = {
   
   'coach.workouts.title': 'Workouts',
   'coach.workout.details': 'Workout Details',
+  'coach.workout.success.deleted.message': 'Workout deleted successfully!',
+  'coach.workout.success.assigned.message': 'Workout assigned successfully!',
+  'coach.workout.success.unassigned.message': 'Workout unassigned successfully!',
+  'coach.workout.error.selectWorkoutAndDay': 'Please select a workout and a day of the week for the last assignment.',
+  'coach.workout.error.selectAtLeastOneWorkout': 'Please select at least one workout.',
 
   'coach.tabs.workouts': 'Workouts',
   'coach.tabs.plans': 'Plans',
@@ -582,6 +588,13 @@ const messages = {
   'workoutTable.dayOfWeek': 'Day of the week:',
   'workoutTable.selectCycle': 'Select Cycle',
   'workoutTable.selectDay': 'Select Day',
+  'workoutTable.monday': 'Monday',
+  'workoutTable.tuesday': 'Tuesday',
+  'workoutTable.wednesday': 'Wednesday',
+  'workoutTable.thursday': 'Thursday',
+  'workoutTable.friday': 'Friday',
+  'workoutTable.saturday': 'Saturday',
+  'workoutTable.sunday': 'Sunday',
   
   // Header
   'header.home': 'Home',
@@ -706,5 +719,17 @@ const messages = {
   'coach.rpe.value': 'Value',
   'coach.rpe.color': 'Color (e.g., #FF0000)',
   'coach.rpe.emoji': 'Emoji (e.g., 🔥)',
+
+  // AssignWorkoutToCycleDialog
+  'assignWorkoutToCycleDialog.cycle': 'Cycle',
+  'assignWorkoutToCycleDialog.assignWorkouts': 'Assign Workouts',
+  'assignWorkoutToCycleDialog.unassignWorkouts': 'Unassign Workouts',
+  'assignWorkoutToCycleDialog.addAssignment': 'Add Assignment',
+  'assignWorkoutToCycleDialog.assignWorkoutsToCycle': 'Assign Workouts to Cycle',
+  'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle': 'Unassign Workouts from Cycle',
+  'assignWorkoutToCycleDialog.selectCycle': 'Select Cycle',
+  'assignWorkoutToCycleDialog.selectDayOfWeek': 'Select Day of Week',
+  'assignWorkoutToCycleDialog.selectWorkout': 'Select Workout',
+  'assignWorkoutToCycleDialog.selectWorkoutToUnassign': 'Select Workout to Unassign',
 }; 
 export default messages;

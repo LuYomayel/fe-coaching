@@ -22,6 +22,7 @@ import { fetchCoachStudents, fetchRecentActivitiesByCoachId, fetchWorkoutProgres
 import { fetchCoachWorkouts } from '../services/workoutService';
 import Spinner from '../utils/LittleSpinner';
 import { useIntl, FormattedMessage } from 'react-intl';
+import '../styles/Timeline.css';
 
 export default function CoachHomePage() {
     const intl = useIntl();
@@ -378,7 +379,12 @@ export default function CoachHomePage() {
                         <FormattedMessage id="coach.sections.recentActivity" />
                     </h2>
                     </div>
-                    <Timeline value={recentActivities} conte className='overflow-hidden text-overflow-ellipsis' content={(item) => `${item.user.client.name} - ${item.description}`} opposite={(item) => formatDate(item.timestamp)} />
+                    <Timeline
+                        value={recentActivities}
+                        className="timeline"
+                        content={(item) => `${item.user.client.name} - ${item.description}`}
+                        opposite={(item) => formatDate(item.timestamp)}
+                    />
                 </>
                 }
           </Card>
