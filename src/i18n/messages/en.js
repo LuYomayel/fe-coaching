@@ -165,6 +165,11 @@ const messages = {
   'coach.createPlan.buttons.addRestPeriod': 'Add Rest Period',
   'coach.createPlan.buttons.addRestPeriod.label': 'Rest Period (seconds)',
   'coach.createPlan.buttons.restPeriod.label': 'Rest Period',
+  'coach.delete.confirmation': 'Are you sure you want to delete this workout plan?',
+  'coach.delete.header': 'Confirm Delete',
+  'coach.delete.error.referenced': 'Error',
+  'coach.delete.error.referenced.detail': 'This workout plan is being used by a client',
+  'coach.delete.error.generic': 'Error',
 
   'coach.tabs.workouts': 'Workouts',
   'coach.tabs.plans': 'Plans',
@@ -748,5 +753,14 @@ const messages = {
   'assignWorkoutToCycleDialog.selectDayOfWeek': 'Select Day of Week',
   'assignWorkoutToCycleDialog.selectWorkout': 'Select Workout',
   'assignWorkoutToCycleDialog.selectWorkoutToUnassign': 'Select Workout to Unassign',
+  'assignWorkoutToCycleDialog.dayOfWeek': 'Day of Week',
+  'assignWorkoutToCycleDialog.success.assign': 'Success',
+  'assignWorkoutToCycleDialog.success.assign.detail': 'Workouts assigned to cycle successfully',
+  'assignWorkoutToCycleDialog.error.assign': 'Error',
+  'assignWorkoutToCycleDialog.error.assign.detail': 'No workouts were assigned',
+  'assignWorkoutToCycleDialog.success.unassign': 'Success',
+  'assignWorkoutToCycleDialog.success.unassign.detail': 'Workouts unassigned from cycle successfully',
+  'assignWorkoutToCycleDialog.error.unassign': 'Error',
+  'assignWorkoutToCycleDialog.error.unassign.detail': 'No workouts were unassigned because they are being used by a client',
 }; 
 export default messages;

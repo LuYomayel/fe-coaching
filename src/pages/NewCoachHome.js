@@ -19,17 +19,19 @@ import { UserContext } from '../utils/UserContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useNavigate } from 'react-router-dom';
 import { fetchCoachStudents, fetchRecentActivitiesByCoachId, fetchWorkoutProgressByCoachId, fetchUpcomingSessionsByCoachId, fetchLastMessages } from '../services/usersService';
-import { fetchCoachWorkouts } from '../services/workoutService';
+import { fetchCoachWorkouts, deleteWorkoutPlan } from '../services/workoutService';
 import Spinner from '../utils/LittleSpinner';
 import { useIntl, FormattedMessage } from 'react-intl';
 import '../styles/Timeline.css';
-
+import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
+import { useToast } from '../utils/ToastContext';
 export default function CoachHomePage() {
     const intl = useIntl();
     const [globalFilter, setGlobalFilter] = useState('');
     // eslint-disable-next-line
     const { setLoading } = useSpinner();
-    
+    const { showConfirmationDialog } = useConfirmationDialog();
+    const showToast = useToast();
     const { user, coach } = useContext(UserContext);
     const navigate = useNavigate();
     const [clients, setClients] = useState([]);
@@ -48,6 +50,20 @@ export default function CoachHomePage() {
     const [isUpcomingSessionsLoading, setIsUpcomingSessionsLoading] = useState(true);
     const [isLastMessagesLoading, setIsLastMessagesLoading] = useState(true);
     const [isWorkoutProgressLoading, setIsWorkoutProgressLoading] = useState(true);
+
+    const [refreshWorkouts, setRefreshWorkouts] = useState(0);
+    // eslint-disable-next-line
+    const [refreshClients, setRefreshClients] = useState(0);
+    // eslint-disable-next-line
+    const [refreshTrainingPlans, setRefreshTrainingPlans] = useState(0);
+    // eslint-disable-next-line
+    const [refreshActivities, setRefreshActivities] = useState(0);
+    // eslint-disable-next-line
+    const [refreshSessions, setRefreshSessions] = useState(0);
+    // eslint-disable-next-line
+    const [refreshMessages, setRefreshMessages] = useState(0);
+    // eslint-disable-next-line
+    const [refreshProgress, setRefreshProgress] = useState(0);
 
     const processWorkoutProgressData = (workoutProgress) => {
         let completedCount = 0;
@@ -81,115 +97,166 @@ export default function CoachHomePage() {
 
     const upcomingSessionsWithColors = assignColorsToClients(upcomingSessions);
 
+    const fetchClients = async () => {
+        try {
+          setIsClientsLoading(true);
+          const clientsData = await fetchCoachStudents(user.userId);
+          const activeClients = clientsData.filter(client => client.user.subscription.status === 'Active');
+          setClients(activeClients);
+        } catch (error) {
+          console.error('Error fetching clients:', error);
+        } finally {
+          setIsClientsLoading(false);
+        }
+      };
+  
+      const fetchTrainingPlans = async () => {
+        try {
+          setIsTrainingPlansLoading(true);
+          console.log('Logueando', user.userId)
+          const trainingPlansData = await fetchWorkoutProgressByCoachId(coach.id);
+          const plans = trainingPlansData.map(cycle => ({
+              name: cycle.name,
+              status: cycle.status, // Puedes mapear el estado real de cada ciclo
+          }));
+          setTrainingPlans(plans);
+        } catch (error) {
+          console.error('Error fetching training plans:', error);
+        } finally {
+          setIsTrainingPlansLoading(false);
+        }
+      };
+  
+      const fetchActivities = async () => {
+        try {
+          setIsRecentActivitiesLoading(true);
+          const activities = await fetchRecentActivitiesByCoachId(coach.id);
+          setRecentActivities(activities);
+        } catch (error) {
+          console.error('Error fetching activities:', error);
+        } finally {
+          setIsRecentActivitiesLoading(false);
+        }
+      };
+  
+      const fetchSessions = async () => {
+        try {
+          setIsUpcomingSessionsLoading(true);
+          const sessions = await fetchUpcomingSessionsByCoachId(coach.id);
+          setUpcomingSessions(sessions);
+        } catch (error) {
+          console.error('Error fetching upcoming sessions:', error);
+        } finally {
+          setIsUpcomingSessionsLoading(false);
+        }
+      };
+  
+      const fetchMessages = async () => {
+        try {
+          setIsLastMessagesLoading(true);
+          const messages = await fetchLastMessages(user.userId);
+          setLastMessages(messages);
+        } catch (error) {
+          console.error('Error fetching messages:', error);
+        } finally {
+          setIsLastMessagesLoading(false);
+        }
+      };
+  
+      const fetchProgress = async () => {
+        try {
+          setIsWorkoutProgressLoading(true);
+          const workoutProgress = await fetchWorkoutProgressByCoachId(coach.id);
+
+          const clientsData = await fetchCoachStudents(user.userId);
+          // Assign workout progress to client via email
+          const clientsWithProgress = clientsData.map(client => {
+              const progress = workoutProgress.find(progress => progress.client === client.user.email);    
+              return {
+                  ...client,
+                  progress: progress ? progress.progress : 0,
+              };
+          });
+          setClients(clientsWithProgress);
+
+          setWorkoutProgress(workoutProgress);
+        } catch (error) {
+          console.error('Error fetching workout progress:', error);
+        } finally {
+          setIsWorkoutProgressLoading(false);
+        }
+      };
+  
+      const fetchWorkouts = async () => {
+          try {
+              const workouts = await fetchCoachWorkouts(user.userId);
+              setWorkouts(workouts);
+              console.log(workouts)
+          } catch (error) {
+              console.error('Error fetching workouts:', error);
+          }
+      };
+
     useEffect(() => {
-        const fetchClients = async () => {
-          try {
-            setIsClientsLoading(true);
-            const clientsData = await fetchCoachStudents(user.userId);
-            const activeClients = clientsData.filter(client => client.user.subscription.status === 'Active');
-            setClients(activeClients);
-          } catch (error) {
-            console.error('Error fetching clients:', error);
-          } finally {
-            setIsClientsLoading(false);
-          }
-        };
-    
-        const fetchTrainingPlans = async () => {
-          try {
-            setIsTrainingPlansLoading(true);
-            console.log('Logueando', user.userId)
-            const trainingPlansData = await fetchWorkoutProgressByCoachId(coach.id);
-            const plans = trainingPlansData.map(cycle => ({
-                name: cycle.name,
-                status: cycle.status, // Puedes mapear el estado real de cada ciclo
-            }));
-            setTrainingPlans(plans);
-          } catch (error) {
-            console.error('Error fetching training plans:', error);
-          } finally {
-            setIsTrainingPlansLoading(false);
-          }
-        };
-    
-        const fetchActivities = async () => {
-          try {
-            setIsRecentActivitiesLoading(true);
-            const activities = await fetchRecentActivitiesByCoachId(coach.id);
-            setRecentActivities(activities);
-          } catch (error) {
-            console.error('Error fetching activities:', error);
-          } finally {
-            setIsRecentActivitiesLoading(false);
-          }
-        };
-    
-        const fetchSessions = async () => {
-          try {
-            setIsUpcomingSessionsLoading(true);
-            const sessions = await fetchUpcomingSessionsByCoachId(coach.id);
-            setUpcomingSessions(sessions);
-          } catch (error) {
-            console.error('Error fetching upcoming sessions:', error);
-          } finally {
-            setIsUpcomingSessionsLoading(false);
-          }
-        };
-    
-        const fetchMessages = async () => {
-          try {
-            setIsLastMessagesLoading(true);
-            const messages = await fetchLastMessages(user.userId);
-            setLastMessages(messages);
-          } catch (error) {
-            console.error('Error fetching messages:', error);
-          } finally {
-            setIsLastMessagesLoading(false);
-          }
-        };
-    
-        const fetchProgress = async () => {
-          try {
-            setIsWorkoutProgressLoading(true);
-            const workoutProgress = await fetchWorkoutProgressByCoachId(coach.id);
-
-            const clientsData = await fetchCoachStudents(user.userId);
-            // Assign workout progress to client via email
-            const clientsWithProgress = clientsData.map(client => {
-                const progress = workoutProgress.find(progress => progress.client === client.user.email);    
-                return {
-                    ...client,
-                    progress: progress ? progress.progress : 0,
-                };
-            });
-            setClients(clientsWithProgress);
-
-            setWorkoutProgress(workoutProgress);
-          } catch (error) {
-            console.error('Error fetching workout progress:', error);
-          } finally {
-            setIsWorkoutProgressLoading(false);
-          }
-        };
-    
-        const fetchWorkouts = async () => {
-            try {
-                const workouts = await fetchCoachWorkouts(user.userId);
-                setWorkouts(workouts);
-            } catch (error) {
-                console.error('Error fetching workouts:', error);
-            }
-        };
-
-        // Llama las funciones de forma asíncrona
-        fetchClients();
-        fetchTrainingPlans();
-        fetchActivities();
-        fetchSessions();
-        fetchMessages();
-        fetchProgress();
         fetchWorkouts();
-      }, [user.userId, coach.id]);
+        // eslint-disable-next-line
+    }, [refreshWorkouts]);
+
+    useEffect(() => {
+        fetchClients();
+        // eslint-disable-next-line
+    }, [refreshClients]);
+
+    useEffect(() => {
+        fetchTrainingPlans();
+        // eslint-disable-next-line
+    }, [refreshTrainingPlans]);
+
+    useEffect(() => {
+        fetchActivities();
+        // eslint-disable-next-line
+    }, [refreshActivities]);
+
+    useEffect(() => {
+        fetchSessions();
+        // eslint-disable-next-line
+    }, [refreshSessions]);
+
+    useEffect(() => {
+        fetchMessages();
+        // eslint-disable-next-line
+    }, [refreshMessages]);
+
+    useEffect(() => {
+        fetchProgress();
+        // eslint-disable-next-line
+    }, [refreshProgress]);
+
+  const handleDelete = async (workoutInstanceTemplateId) => {
+    showConfirmationDialog({
+      message: intl.formatMessage({ id: 'coach.delete.confirmation' }),
+      header: intl.formatMessage({ id: 'coach.delete.header' }),
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          await deleteWorkoutPlan(workoutInstanceTemplateId, true);
+          setRefreshWorkouts(prev => prev + 1);
+        } catch (error) {
+          console.error('Error deleting workout plan:', error.message);
+          
+          if(error.message === 'ER_ROW_IS_REFERENCED_2') {
+            showToast('error', intl.formatMessage({ id: 'coach.delete.error.referenced' }), intl.formatMessage({ id: 'coach.delete.error.referenced.detail' }));
+          } else {
+            showToast('error', intl.formatMessage({ id: 'coach.delete.error.generic' }), error.message);
+          }
+        }
+      },
+      reject: () => {
+        // Manejar el rechazo si es necesario
+      }
+
+    });
+  }
 
   const header = (
     <div className="flex justify-content-between align-items-center">
@@ -258,7 +325,13 @@ export default function CoachHomePage() {
 
     const statusTemplate = (rowData) => {
         const workoutInstanceTemplate = rowData.workoutInstances.find(w => w.isTemplate === true);
-        return <Button label={intl.formatMessage({ id: 'common.edit' })} icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit/${workoutInstanceTemplate.id}`)} />
+        return (
+            <div>
+                <Button label={intl.formatMessage({ id: 'common.edit' })} icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit/${workoutInstanceTemplate.id}`)} />
+                <Button label={intl.formatMessage({ id: 'common.delete' })} icon="pi pi-trash" className="p-button-danger" onClick={() => handleDelete(workoutInstanceTemplate.id)} />
+            </div>
+        )
+        
     };
 
     const { completedCount, pendingCount, expiredCount } = processWorkoutProgressData(workoutProgress);

@@ -172,6 +172,11 @@ const messages = {
   'coach.createPlan.buttons.addRestPeriod': 'Agregar Período de Descanso',
   'coach.createPlan.buttons.addRestPeriod.label': 'Período de Descanso (segundos)',
   'coach.createPlan.buttons.restPeriod.label': 'Período de Descanso',
+  'coach.delete.confirmation': '¿Estás seguro de que deseas eliminar este plan?',
+  'coach.delete.header': 'Confirmar Eliminación',
+  'coach.delete.error.referenced': 'Error',
+  'coach.delete.error.referenced.detail': 'Este plan de entrenamiento está siendo utilizado por un cliente',
+  'coach.delete.error.generic': 'Error',
   
   'coach.rpe.name': 'Nombre del RPE',
   'coach.rpe.minValue': 'Valor Mínimo',
@@ -746,5 +751,14 @@ const messages = {
   'assignWorkoutToCycleDialog.selectWorkoutToUnassign': 'Seleccionar Entrenamiento para Desasignar',
   'assignWorkoutToCycleDialog.error.selectWorkoutAndDay': 'Por favor, selecciona un entrenamiento y un día de la semana para la última asignación.',
   'assignWorkoutToCycleDialog.error.selectAtLeastOneWorkout': 'Por favor, selecciona al menos un entrenamiento.',
+  'assignWorkoutToCycleDialog.dayOfWeek': 'Día de la Semana',
+  'assignWorkoutToCycleDialog.success.assign': 'Éxito',
+  'assignWorkoutToCycleDialog.success.assign.detail': 'Entrenamientos asignados al ciclo exitosamente',
+  'assignWorkoutToCycleDialog.error.assign': 'Error',
+  'assignWorkoutToCycleDialog.error.assign.detail': 'No se asignaron entrenamientos',
+  'assignWorkoutToCycleDialog.success.unassign': 'Éxito',
+  'assignWorkoutToCycleDialog.success.unassign.detail': 'Entrenamientos desasignados del ciclo exitosamente',
+  'assignWorkoutToCycleDialog.error.unassign': 'Error',
+  'assignWorkoutToCycleDialog.error.unassign.detail': 'No se desasignaron entrenamientos porque están siendo utilizados por un cliente',
 }; 
 export default messages;
