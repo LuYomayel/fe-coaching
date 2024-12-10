@@ -1,4 +1,4 @@
-import { useIntl } from 'react-intl';
+
 
 const formatDate = (value) => {
   if (!value) return '';
@@ -84,6 +84,8 @@ const getSeverity = (status) => {
           return 'warning';
 
       case 'renewal':
+          return null;
+      default:
           return null;
   }
 };

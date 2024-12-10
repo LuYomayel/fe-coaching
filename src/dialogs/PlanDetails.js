@@ -56,7 +56,6 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
     notes: '',
   });
   const showToast = useToast();
-  const [loadingSubmit, setLoadingSubmit] = useState(false)
   const navigate = useNavigate();
   useEffect(() => {
     const getPlanDetails = async () => {
@@ -104,7 +103,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
   }
 
   const fetchDeletePlan = () => {
-    setLoadingSubmit(true);
+    
     deleteWorkoutPlan(planId, plan.isTemplate)
       .then(() => {
         showToast('success', 'Plan deleted', 'You have deleted the plan with success!');
@@ -116,7 +115,7 @@ const PlanDetails = ({ planId, setPlanDetailsVisible, setRefreshKey, setLoading 
         showToast('error', 'Error', error.message);
       })
       .finally(() => {
-        setLoadingSubmit(false);
+        
       });
     
   }

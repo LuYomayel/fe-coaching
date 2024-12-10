@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { fetchUnreadMessages } from '../services/usersService';
 import { UserContext } from './UserContext';
 import io from 'socket.io-client';
@@ -17,7 +17,9 @@ export const ChatSidebarProvider = ({ children }) => {
   const openChatSidebar = () => setIsChatSidebarOpen(true);
   const closeChatSidebar = () => setIsChatSidebarOpen(false);
   const {user} = useContext(UserContext)
+  // eslint-disable-next-line 
   const [socket, setSocket] = useState(null);
+  // eslint-disable-next-line 
   const [isConnected, setIsConnected] = useState(false); // Estado de conexión del socket
   const showToast = useToast();
   useEffect(() => {
@@ -45,6 +47,7 @@ export const ChatSidebarProvider = ({ children }) => {
     });
 
     return () => newSocket.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChat]);
 
   useEffect(() => {

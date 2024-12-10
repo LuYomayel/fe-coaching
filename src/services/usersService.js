@@ -16,7 +16,7 @@ const fetchUser = async (userId) => {
       return { valid: false }; // O maneja el caso de respuesta vacía como prefieras
     }
 
-    const data = JSON.parse(text); // Parsea el texto a JSON
+    // const data = JSON.parse(text); // Parsea el texto a JSON
     // console.log('Response fetch coach: ', data);
     return { valid: true };
   } else {

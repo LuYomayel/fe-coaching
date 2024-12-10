@@ -4,7 +4,7 @@ import { useSpinner } from './GlobalSpinner';
 import { fetchClient, fetchCoach, fetchUser } from '../services/usersService';
 
 export const UserContext = createContext();
-const apiUrl = process.env.REACT_APP_API_URL;
+
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -79,7 +79,6 @@ export const UserProvider = ({ children }) => {
     try {
       const data = await fetchCoach(userId)
       return data
-      setCoach(data);
     } catch (error) {
       console.log(error);
       setCoach(null);
@@ -90,7 +89,6 @@ export const UserProvider = ({ children }) => {
     try {
       const data = await fetchClient(userId)
       return data
-      setClient(data);
     } catch (error) {
       console.log(error);
       setClient(null);

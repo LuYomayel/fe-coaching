@@ -5,7 +5,6 @@ import { Button } from 'primereact/button';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { assignSession, fetchCoachWorkouts } from '../services/workoutService';
-const apiUrl = process.env.REACT_APP_API_URL;
 
 const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey }) => {
   const showToast = useToast();
@@ -45,7 +44,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
     // return;
     try {
       setLoading(true)
-      const result = await assignSession(sessionId, body);
+      await assignSession(sessionId, body);
       showToast('success', 'Session assigned successfully');
       onHide();
       setRefreshKey(old=>old+1);

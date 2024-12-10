@@ -43,6 +43,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
     if (user && user.userId) {
       loadCoachStudents();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showToast, user.userId]);
 
   const handleCreateCycle = async (body) => {
