@@ -160,11 +160,24 @@ const NewCreatePlan = ({ isEdit }) => {
       .catch(error => showToast('error', 'Error fetching exercises', `${error.message}`));
   }, [showToast]);
 
-  const addGroup = () => {
+  const addExerciseGroup = () => {
     const newGroup = {
       name: '',
       groupNumber: plan.groups.length + 1,
-      exercises: []
+      exercises: [],
+      isRestPeriod: false,
+      restDuration: 0
+    };
+    setPlan({ ...plan, groups: [...plan.groups, newGroup] });
+  };
+
+  const addRestPeriod = () => {
+    const newGroup = {
+      name: intl.formatMessage({ id: 'plan.group.restPeriod' }),
+      groupNumber: plan.groups.length + 1,
+      exercises: [],
+      isRestPeriod: true,
+      restDuration: 0
     };
     setPlan({ ...plan, groups: [...plan.groups, newGroup] });
   };
@@ -178,7 +191,7 @@ const NewCreatePlan = ({ isEdit }) => {
     setDeletedGroup(groupToRemove);
     setDeletedGroupIndex(index);
     setPlan({ ...plan, groups: newGroups });
-    showToast('info', 'Group Removed', `The group number ${groupToRemove.groupNumber} has been removed`);
+    showToast('info', intl.formatMessage({ id: 'plan.group.removed' }), intl.formatMessage({ id: 'plan.group.removed.message' }, { number: groupToRemove.groupNumber }));
   };
 
   const handleUndoDelete = () => {
@@ -325,18 +338,25 @@ const NewCreatePlan = ({ isEdit }) => {
     }
 
     for (const group of plan.groups) {
-      if (group.exercises.length === 0) {
+      if (!group.isRestPeriod && group.exercises.length === 0) {
         showToast('error', 'Error', intl.formatMessage({ id: 'plan.error.exerciseRequired' }));
         return;
       }
 
-      for (const exercise of group.exercises) {
-        if (!exercise.exercise.id) {
-          showToast('error', 'Error', intl.formatMessage(
-            { id: 'plan.error.exerciseSelect' }, 
-            { name: exercise.exercise.name }
-          ));
-          return;
+      if (group.isRestPeriod && group.restDuration === 0) {
+        showToast('error', 'Error', intl.formatMessage({ id: 'plan.error.restDurationRequired' }));
+        return;
+      }
+
+      if(!group.isRestPeriod) {
+        for (const exercise of group.exercises) {
+          if (!exercise.exercise.id) {
+            showToast('error', 'Error', intl.formatMessage(
+              { id: 'plan.error.exerciseSelect' }, 
+              { name: exercise.exercise.name }
+            ));
+            return;
+          }
         }
       }
     }
@@ -580,42 +600,48 @@ const NewCreatePlan = ({ isEdit }) => {
                       <Card className="h-full">
                         <div className="flex justify-content-between align-items-center mb-3">
                           <h3 className="text-xl m-0">
-                            <FormattedMessage 
-                              id="plan.group.title" 
-                              values={{ number: group.groupNumber }} 
-                            />
+                            {group.isRestPeriod ? (
+                              <FormattedMessage id="plan.group.restPeriod" />
+                            ) : (
+                              <FormattedMessage id="plan.group.title" values={{ number: group.groupNumber }} />
+                            )}
                           </h3>
                           <Button icon="pi pi-trash" className="p-button-danger p-button-text" onClick={() => removeGroup(groupIndex)} />
                         </div>
                         <div className="grid mb-3">
+                            {!group.isRestPeriod && (
                             <div className="col-6">
-                              <label htmlFor={`group-${group.name}-name`} className="block text-sm font-medium mb-1">
-                                <FormattedMessage id="plan.group.name" />
-                              </label>
-                              <InputText id={`group-${group.name}-name`} value={group.name}  onChange={(e) => {
-                                const newGroups = [...plan.groups];
-                                newGroups[groupIndex].name = e.target.value;
-                                setPlan({ ...plan, groups: newGroups });
-                              }} />
-                            </div> 
-                          {/* <div className="col-6">
-                            <label htmlFor={`group-${group.groupNumber}-set`} className="block text-sm font-medium mb-1">Set</label>
-                            <InputNumber id={`group-${group.groupNumber}-set`} value={group.set} onValueChange={(e) => {
+                              
+                                <label htmlFor={`group-${group.name}-name`} className="block text-sm font-medium mb-1">
+                                  <FormattedMessage id="plan.group.name" />
+                                </label>
+                            
+                            <InputText id={`group-${group.name}-name`} value={group.name} onChange={(e) => {
                               const newGroups = [...plan.groups];
-                              newGroups[groupIndex].set = e.value;
+                              newGroups[groupIndex].name = e.target.value;
                               setPlan({ ...plan, groups: newGroups });
-                            }} min={0} />
+                            }} />
                           </div>
-                          <div className="col-6">
-                            <label htmlFor={`group-${group.groupNumber}-rest`} className="block text-sm font-medium mb-1">Rest (seconds)</label>
-                            <InputNumber id={`group-${group.groupNumber}-rest`} value={group.rest} onValueChange={(e) => {
-                              const newGroups = [...plan.groups];
-                              newGroups[groupIndex].rest = e.value;
-                              setPlan({ ...plan, groups: newGroups });
-                            }} min={0} />
-                          </div> */}
+                            
+                            )}
+                          {group.isRestPeriod && (
+                            <div className="col-6">
+                              <label htmlFor={`group-${group.groupNumber}-restDuration`} className="block text-sm font-medium mb-1">
+                                <FormattedMessage id="plan.group.restDuration" />
+                              </label>
+                              <InputText
+                                id={`group-${group.groupNumber}-restDuration`}
+                                value={group.restDuration}
+                                onChange={(e) => {
+                                  const newGroups = [...plan.groups];
+                                  newGroups[groupIndex].restDuration = e.target.value;
+                                  setPlan({ ...plan, groups: newGroups });
+                                }}
+                              />
+                            </div>
+                          )}
                         </div>
-                        {group.exercises.map((exercise, exerciseIndex) => (
+                        {!group.isRestPeriod && group.exercises.map((exercise, exerciseIndex) => (
                           <div key={exercise.id} className="mb-3 p-2 border-1 border-gray-200 border-round">
                             <div className="flex justify-content-between align-items-center mb-2">
                               <h4 className="text-lg m-0">{exercise.exercise?.name}</h4>
@@ -633,7 +659,7 @@ const NewCreatePlan = ({ isEdit }) => {
                               </div>
                             </div>
                             <div className="grid">
-                            {Object.entries(exercise).map(([key, value]) => {
+                              {Object.entries(exercise).map(([key, value]) => {
                                 if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes') {
                                   return (
                                     <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
@@ -672,22 +698,34 @@ const NewCreatePlan = ({ isEdit }) => {
                             </div>
                           </div>
                         ))}
-                        <Button 
-                          label={intl.formatMessage({ id: 'plan.group.addExercise' })} 
-                          icon="pi pi-plus" 
-                          className="p-button-text" 
-                          onClick={() => openExerciseDialog(groupIndex)} 
-                        />
+                        {!group.isRestPeriod && (
+                          <Button
+                            label={intl.formatMessage({ id: 'plan.group.addExercise' })}
+                            icon="pi pi-plus"
+                            className="p-button-text"
+                            onClick={() => openExerciseDialog(groupIndex)}
+                          />
+                        )}
                       </Card>
                     </div>
                   )}
                 </Draggable>
               ))}
               <div className="col-12 md:col-6 lg:col-4 xl:col-3 p-2">
-                <Card className="h-full flex justify-content-center align-items-center cursor-pointer" onClick={addGroup}>
+                <Card className="h-full flex justify-content-center align-items-center cursor-pointer">
                   <div className="text-center">
-                    <i className="pi pi-plus-circle text-4xl mb-2"></i>
-                    <p className="m-0">{intl.formatMessage({ id: 'plan.group.addGroup' })}</p>
+                    <Button
+                      label={intl.formatMessage({ id: 'plan.group.addGroup' })}
+                      icon="pi pi-plus-circle"
+                      onClick={addExerciseGroup}
+                      className="p-button-text mb-2"
+                    />
+                    <Button
+                      label={intl.formatMessage({ id: 'plan.group.addRest' })}
+                      icon="pi pi-plus-circle"
+                      onClick={addRestPeriod}
+                      className="p-button-text"
+                    />
                   </div>
                 </Card>
               </div>
@@ -698,19 +736,19 @@ const NewCreatePlan = ({ isEdit }) => {
       </DragDropContext>
 
       <div className="flex justify-content-end mt-2">
-        <Button 
-          label={intl.formatMessage({ 
-            id: isEdit ? 'plan.buttons.editPlan' : 'plan.buttons.createPlan' 
-          })} 
-          icon="pi pi-check" 
-          onClick={submitPlanClick} 
-          className="p-button-success" 
+        <Button
+          label={intl.formatMessage({
+            id: isEdit ? 'plan.buttons.editPlan' : 'plan.buttons.createPlan'
+          })}
+          icon="pi pi-check"
+          onClick={submitPlanClick}
+          className="p-button-success"
         />
       </div>
 
-      <Dialog 
+      <Dialog
         header={intl.formatMessage({ id: 'plan.exercise.add' })}
-        visible={showExerciseDialog} 
+        visible={showExerciseDialog}
         onHide={() => setShowExerciseDialog(false)}
         className="w-30rem"
         dismissableMask
@@ -733,21 +771,21 @@ const NewCreatePlan = ({ isEdit }) => {
             </div>
           )}
         />
-        <Button 
+        <Button
           label={intl.formatMessage({ id: 'plan.exercise.add' })}
-          icon="pi pi-plus" 
-          onClick={addExercise} 
-          disabled={!selectedExercise} 
+          icon="pi pi-plus"
+          onClick={addExercise}
+          disabled={!selectedExercise}
         />
       </Dialog>
 
-      <Dialog 
+      <Dialog
         header={intl.formatMessage({ id: 'plan.exercise.property.add' })}
-        draggable={false} 
-        resizable={false} 
-        dismissableMask 
-        visible={showPropertyDialog} 
-        onHide={() => setShowPropertyDialog(false)} 
+        draggable={false}
+        resizable={false}
+        dismissableMask
+        visible={showPropertyDialog}
+        onHide={() => setShowPropertyDialog(false)}
         className="w-30rem"
       >
         {propertyList.map((property) => (

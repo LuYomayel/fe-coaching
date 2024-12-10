@@ -345,7 +345,6 @@ export default function CoachProfilePage() {
   };
 
   const renderHeader = (text) => {
-    console.log('text', text);
     return (
       <div className="flex justify-content-between align-items-center">
         <h2 className="text-xl font-bold">{text}</h2>
