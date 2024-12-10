@@ -90,7 +90,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
         }
     };
 
-    const renderExerciseDetails = (exercise, groupId) => (
+    const renderExerciseDetails = (exercise, group) => (
         <div className="flex flex-column md:flex-row align-items-center mb-3" key={exercise.id}>
             <div className="w-full md:w-4 mb-2 md:mb-0">
                 <div className="mr-2 flex-shrink-0">
@@ -150,7 +150,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
         </div>
     );
 
-    const renderExerciseDetailsWithFeedback = (exercise, groupId) => (
+    const renderExerciseDetailsWithFeedback = (exercise) => (
         <div className="flex flex-column md:flex-row align-items-center mb-3" key={exercise.id}>
             {/* Detalles del ejercicio */}
             <div className="w-full md:w-4 mb-2 md:mb-0">
@@ -208,10 +208,6 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                     )}
                 </div>
             </div>
-            {/* Separador */}
-            {/* <div className="col-12">
-                <Divider />
-            </div> */}
             {/* Datos de feedback */}
             <div className="w-full md:w-12">
                 <div className="grid">
@@ -308,10 +304,13 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                         {/* <p>Sets: {group.set}</p> */}
                         {/* <p>Rest between sets: {group.rest} sec</p> */}
                         {/* {group.name && <p>Group name: {group.name}</p>} */}
+                        {group.isRestPeriod && (
+                            <p>{intl.formatMessage({ id: 'plan.group.restPeriod' })}: {group.restDuration} {intl.formatMessage({ id: 'plan.group.seconds' })}</p>
+                        )}
                         {group.exercises.map((exercise) =>
                             workoutPlan.status === 'completed'
-                                ? renderExerciseDetailsWithFeedback(exercise, group.groupNumber)
-                                : renderExerciseDetails(exercise, group.groupNumber)
+                                ? renderExerciseDetailsWithFeedback(exercise, group)
+                                : renderExerciseDetails(exercise, group)
                         )}
                     </AccordionTab>
                 )})}

@@ -375,6 +375,12 @@ const messages = {
   'plan.buttons.editPlan': 'Editar Plan',
   
   'plan.group.title': 'Grupo {number}',
+  'plan.group.restPeriod': 'Descanso',
+  'plan.group.isRestPeriod': 'Es Descanso',
+  'plan.group.addRest': 'Agregar Descanso',
+  'plan.group.restDuration': 'Duración del Descanso (segundos)',
+  'plan.group.restDurationRequired': 'La duración del descanso es requerida.',
+  'plan.group.seconds': 'segundos',
   'plan.group.addGroup': 'Agregar Grupo',
   'plan.group.name': 'Nombre del Grupo',
   'plan.group.set': 'Serie',
