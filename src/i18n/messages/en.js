@@ -367,6 +367,8 @@ const messages = {
   'plan.group.set': 'Set',
   'plan.group.rest': 'Rest (seconds)',
   'plan.group.addExercise': 'Add Exercise',
+  'plan.group.removed': 'Group Removed',
+  'plan.group.removed.message': 'The group number {number} has been removed',
   
   'plan.exercise.select': 'Select an Exercise',
   'plan.exercise.add': 'Add Exercise',

@@ -386,6 +386,8 @@ const messages = {
   'plan.group.set': 'Serie',
   'plan.group.rest': 'Descanso (segundos)',
   'plan.group.addExercise': 'Agregar Ejercicio',
+  'plan.group.removed': 'Grupo Eliminado',
+  'plan.group.removed.message': 'El grupo número {number} ha sido eliminado',
   
   'plan.exercise.select': 'Seleccionar un Ejercicio',
   'plan.exercise.add': 'Agregar Ejercicio',
