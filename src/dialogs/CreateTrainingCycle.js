@@ -10,7 +10,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { InputNumber } from 'primereact/inputnumber';
 import { createTrainingCycle } from '../services/workoutService';
 import { fetchCoachStudents } from '../services/usersService';
-import { useIntl } from 'react-intl';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 const CreateTrainingCycleDialog = ({ visible, onHide }) => {
   const { user } = useContext(UserContext);
@@ -24,6 +24,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
   const [selectedClientId, setSelectedClientId] = useState(null);
   const { showConfirmationDialog } = useConfirmationDialog();
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const loadCoachStudents = async () => {
       try {
@@ -36,25 +37,24 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
           }));
         setClients(activeStudents);
       } catch (error) {
-        showToast('error', 'Error fetching students', error.message);
+        showToast('error', intl.formatMessage({ id: 'error.fetchingStudents' }), error.message);
       }
     };
-  
+
     if (user && user.userId) {
       loadCoachStudents();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showToast, user.userId]);
+  }, [showToast, user.userId, intl]);
 
   const handleCreateCycle = async (body) => {
     try {
-      setLoading(true)
+      setLoading(true);
       const result = await createTrainingCycle(body);
-      showToast('success', 'Training cycle created successfully!');
-      console.log('Created cycle:', result); // Example of handling the received data
+      showToast('success', intl.formatMessage({ id: 'success.cycleCreated' }));
+      console.log('Created cycle:', result);
       onHide();
     } catch (error) {
-      showToast('error', 'Error', error.message);
+      showToast('error', intl.formatMessage({ id: 'error' }), error.message);
     } finally {
       setLoading(false);
     }
@@ -62,24 +62,25 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
 
   const onDurationMonthChange = (e) => {
     setDurationInMonths(e.value);
-    setDurationInWeeks(null); // Clear weeks when months is set
+    setDurationInWeeks(null);
   };
 
   const onDurationWeekChange = (e) => {
     setDurationInWeeks(e.value);
-    setDurationInMonths(null); // Clear months when weeks is set
+    setDurationInMonths(null);
   };
 
-  const clickCreateCycle =() => {
+  const clickCreateCycle = () => {
     if (!cycleName || !startDate || !selectedClientId) {
-      showToast('error', 'Error', 'All fields are required');
+      showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'error.allFieldsRequired' }));
       return;
     }
 
     if (!durationInMonths && !durationInWeeks) {
-      showToast('error', 'Error', 'Please enter a duration in weeks or months');
+      showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'error.enterDuration' }));
       return;
     }
+
     const body = {
       name: cycleName,
       coachId: user.userId,
@@ -94,32 +95,33 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: "pi pi-exclamation-triangle",
       accept: () => handleCreateCycle(body),
-      reject: () => console.log('Rejected u mf')
-  });
-  }
+      reject: () => console.log('Rejected')
+    });
+  };
+
   return (
-    <Dialog draggable={false}  resizable={false} dismissableMask header="Create Training Cycle" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+    <Dialog draggable={false} resizable={false} dismissableMask header={intl.formatMessage({ id: 'createCycle.dialog.header' })} className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
       <div className="p-field">
-        <label htmlFor="cycleName">Cycle Name</label>
+        <label htmlFor="cycleName"><FormattedMessage id="createCycle.cycleName" /></label>
         <InputText id="cycleName" value={cycleName} onChange={(e) => setCycleName(e.target.value)} />
       </div>
       <div className="p-field">
-        <label htmlFor="startDate">Start Date</label>
+        <label htmlFor="startDate"><FormattedMessage id="startDate" /></label>
         <Calendar id="startDate" value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
       </div>
       <div className="p-field">
-        <label htmlFor="durationInMonths">Duration in Months</label>
+        <label htmlFor="durationInMonths"><FormattedMessage id="createCycle.durationInMonths" /></label>
         <InputNumber id="durationInMonths" value={durationInMonths} onValueChange={onDurationMonthChange} mode="decimal" min={1} max={12} />
       </div>
       <div className="p-field">
-        <label htmlFor="durationInWeeks">Duration in Weeks</label>
+        <label htmlFor="durationInWeeks"><FormattedMessage id="createCycle.durationInWeeks" /></label>
         <InputNumber id="durationInWeeks" value={durationInWeeks} onValueChange={onDurationWeekChange} mode="decimal" min={1} max={52} />
       </div>
       <div className="p-field">
-          <label htmlFor="client">Client</label>
-          <Dropdown id="client" value={selectedClientId} options={clients} onChange={(e) => setSelectedClientId(e.value)} placeholder="Select a client" />
-        </div>
-      <Button label="Create Cycle" icon="pi pi-check" onClick={clickCreateCycle} loading={loading}/>
+        <label htmlFor="client"><FormattedMessage id="client" /></label>
+        <Dropdown id="client" value={selectedClientId} options={clients} onChange={(e) => setSelectedClientId(e.value)} placeholder={intl.formatMessage({ id: 'selectClient' })} />
+      </div>
+      <Button label={intl.formatMessage({ id: 'createCycle.button.create' })} icon="pi pi-check" onClick={clickCreateCycle} loading={loading} />
     </Dialog>
   );
 };

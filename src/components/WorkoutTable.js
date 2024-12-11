@@ -10,8 +10,11 @@ import { InputText } from 'primereact/inputtext';
 import { updateExercisesInstace } from '../services/workoutService';
 import { useToast } from '../utils/ToastContext';
 import { useIntl, FormattedMessage } from 'react-intl';
-
-
+import { getExercises } from '../services/workoutService';
+import { useContext } from 'react';
+import { UserContext } from '../utils/UserContext';
+import { Dialog } from 'primereact/dialog';
+import { Checkbox } from 'primereact/checkbox';
 
 export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey }) {
     const intl = useIntl();
@@ -24,10 +27,12 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         { label: intl.formatMessage({ id: 'workoutTable.saturday' }), value: 6 },
         { label: intl.formatMessage({ id: 'workoutTable.sunday' }), value: 7 },
     ];
-    
+    const { user } = useContext(UserContext);
+    const [exercisesDB, setExercisesDB] = useState([]);
     const [cycle, setCycle] = useState(null);
     const [dayOfWeek, setDayOfWeek] = useState(null);
     const [exercises, setExercises] = useState([]);
+    // eslint-disable-next-line
     const [originalExercises, setOriginalExercises] = useState([]);
     const [numWeeks, setNumWeeks] = useState(0);
     const [properties, setProperties] = useState([]);
@@ -36,10 +41,28 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const showToast = useToast();
     const possibleProperties = ["sets", "repetitions", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance"];
     const [isLoading, setIsLoading] = useState(false);
+    const [editedExercises, setEditedExercises] = useState([]);
+    const [isDialogVisible, setIsDialogVisible] = useState(false);
+    const [selectedWeeks, setSelectedWeeks] = useState([]);
+    const [currentExercise, setCurrentExercise] = useState(null);
+
+    useEffect(() => {
+        const fetchExercises = async () => {
+            const exercises = await getExercises(user.userId);
+            const exercisesDB = exercises.map(exercise => ({ label: exercise.name, value: exercise.id }));
+            setExercisesDB(exercisesDB);
+        };
+        fetchExercises();
+    }, [user.userId]);
+
+    const renderExerciseName = (rowData) => {
+        const allNamesEqual = rowData.name.every(name => name === rowData.name[0]);
+        return allNamesEqual ? rowData.name[0] : rowData.name.join(', ');
+    };
 
     const renderTablesByDayNumber = () => {
         if (!exercises || exercises.length === 0) {
-            return <div><FormattedMessage id="common.noData" defaultMessage="No training data available" /></div>;
+            return <div><FormattedMessage id="common.noData"/></div>;
         }
 
         const exercisesByDayNumber = exercises.reduce((acc, exercise) => {
@@ -55,28 +78,41 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             return acc;
         }, {});
 
-        return Object.entries(exercisesByDayNumber).map(([dayNumber, exercisesForDay]) => {
-            const formattedDayLabel = daysOfWeek.find(day => day.value === parseInt(dayNumber))?.label || `Day ${dayNumber}`;
-
-            return (
-                <div key={`day-${dayNumber}`}>
-                    <h3>{intl.formatMessage({ id: 'workoutTable.trainingDay' }, { day: formattedDayLabel })}</h3>
-                    <DataTable
-                        value={exercisesForDay}
-                        headerColumnGroup={headerGroup}
-                        responsiveLayout="scroll"
-                        scrollable
-                        scrollHeight="700px"
-                        editMode="cell"
-                        loading={isLoading}
-                        rowClassName={rowClassName}
-                    >
-                        <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} body={rowData => `${rowData.groupNumber}. ${rowData.name}`} />
-                        {dataColumns}
-                    </DataTable>
-                </div>
-            );
-        });
+        return (
+            <>
+                {Object.entries(exercisesByDayNumber).map(([dayNumber, exercisesForDay]) => {
+                    const formattedDayLabel = daysOfWeek.find(day => day.value === parseInt(dayNumber))?.label || `Day ${dayNumber}`;
+                    return (
+                        <div key={`day-${dayNumber}`}>
+                            <h3>{intl.formatMessage({ id: 'workoutTable.trainingDay' }, { day: formattedDayLabel })}</h3>
+                            <DataTable
+                                value={[...exercisesForDay, { name: 'Agregar nuevo ejercicio', isNew: true }]}
+                                headerColumnGroup={headerGroup}
+                                responsiveLayout="scroll"
+                                scrollable
+                                scrollHeight="700px"
+                                editMode="cell"
+                                loading={isLoading}
+                                rowClassName={rowClassName}
+                            >
+                                <Column
+                                    header={intl.formatMessage({ id: 'workoutTable.exercise' })}
+                                    body={(rowData) => rowData.isNew ? (
+                                        <Button
+                                            label={intl.formatMessage({ id: 'workoutTable.addTraining' })}
+                                            icon="pi pi-plus"
+                                            onClick={handleAddTraining}
+                                        />
+                                    ) : renderExerciseName(rowData)}
+                                    editor={exerciseEditor}
+                                />
+                                {dataColumns}
+                            </DataTable>
+                        </div>
+                    );
+                })}
+            </>
+        );
     };
 
     useEffect(() => {
@@ -102,12 +138,10 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                 const exerciseName = exerciseData.exercise?.name || 'Unnamed Exercise';
                                 const key = `${exerciseName}-${group.groupNumber}`;
     
-                                // Verificar si el ejercicio ya existe en el `Map`
                                 if (exercisesMap.has(key)) {
                                     const existingExercise = exercisesMap.get(key);
-                                    // Solo actualizar las semanas correspondientes sin agregar un nuevo ejercicio
                                     existingExercise.sessionDates.push(session.sessionDate);
-                                    existingExercise.id[weekIndex] = exerciseData.id; // Actualizar ID de la instancia
+                                    existingExercise.id[weekIndex] = exerciseData.id;
                                     possibleProperties.forEach(prop => {
                                         const value = exerciseData[prop] || group[prop] || '-';
                                         if (value !== '-') {
@@ -120,9 +154,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                         return;
                                     }
     
-                                    // Crear un nuevo objeto de ejercicio
                                     const exerciseObj = {
-                                        name: exerciseName,
+                                        name: Array(numWeeks).fill(exerciseName),
                                         groupNumber: group.groupNumber,
                                         sessionDates: [session.sessionDate],
                                         id: Array(numWeeks).fill(null),
@@ -139,7 +172,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                         }
                                     });
                                     exercisesMap.set(key, exerciseObj);
-                                    // console.log(exercisesMap)
                                 }
                             });
                         });
@@ -170,7 +202,12 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     };
 
     const renderProperty = (rowData, property, weekIndex) => {
-        return rowData[property][weekIndex] || '-';
+        // Verifica si rowData[property] es un array y si weekIndex es un índice válido
+        if (Array.isArray(rowData[property]) && weekIndex < rowData[property].length) {
+            return rowData[property][weekIndex] || '-';
+        }
+        // Si no es un array o el índice no es válido, devuelve un guion
+        return '-';
     };
 
     const cellEditor = (options, property, weekIndex) => {
@@ -178,59 +215,109 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             return options.value;
         }
 
+        
+            return (
+                <InputText
+                    type="text"
+                    value={options.rowData[property][weekIndex]}
+                    onChange={(e) => onEditorValueChange(options, e.target.value, property, weekIndex)}
+                />
+            );
+        
+    };
+
+    const handleExerciseNameEdit = (e, options) => {
+        const exercise = exercisesDB.find(exercise => exercise.value === e.value);
+        const fullExercise = {  
+            ...options,
+            ...exercise
+        }
+        setCurrentExercise(fullExercise);
+        setIsDialogVisible(true);
+    };
+
+    const updateExerciseNameForWeeks = (exercise) => {
+        let updatedExercises = [...exercises];
+        console.log(exercise)
+        selectedWeeks.forEach(weekIndex => {
+            updatedExercises[currentExercise.rowIndex].name[weekIndex] = exercise.label;
+        });
+        setExercises(updatedExercises);
+        setIsDialogVisible(false);
+    };
+
+    const exerciseEditor = (options) => {
         return (
-            <InputText
-                type="text"
-                value={options.rowData[property][weekIndex]}
-                onChange={(e) => onEditorValueChange(options, e.target.value, property, weekIndex)}
-            />
+            <>
+                <Dropdown
+                    options={exercisesDB}
+                    onChange={(e) => handleExerciseNameEdit(e, options)}
+                    placeholder={intl.formatMessage({ id: 'workoutTable.selectExercise' })}
+                />
+                <Dialog header={intl.formatMessage({ id: 'workoutTable.selectWeeks' })} visible={isDialogVisible} onHide={() => setIsDialogVisible(false)}>
+                    <div>
+                        {Array.from({ length: numWeeks }, (_, i) => (
+                            <div key={i} className='flex align-items-center justify-content-between'>
+                                <label>{intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}</label>
+                                <Checkbox
+                                    checked={selectedWeeks.includes(i)}
+                                    onChange={(e) => {
+                                        const newSelectedWeeks = e.target.checked
+                                            ? [...selectedWeeks, i]
+                                            : selectedWeeks.filter(week => week !== i);
+                                        setSelectedWeeks(newSelectedWeeks);
+                                    }}
+                                />
+                                
+                            </div>
+                        ))}
+                    </div>
+                    <Button
+                        label={intl.formatMessage({ id: 'common.update' })}
+                        onClick={() => updateExerciseNameForWeeks(currentExercise)}
+                    />
+                </Dialog>
+            </>
         );
     };
 
     const onEditorValueChange = (options, value, property, weekIndex) => {
         let updatedExercises = [...exercises];
-        updatedExercises[options.rowIndex][property][weekIndex] = value;
+        console.log(updatedExercises);
+        if (!Array.isArray(updatedExercises[options.rowIndex][property])) {
+            updatedExercises[options.rowIndex][property] = [];
+        }
+        const exerciseSelected = exercisesDB.find(exercise => exercise.value === value);
+        updatedExercises[options.rowIndex][property][weekIndex] = exerciseSelected.label;
         setExercises(updatedExercises);
+
+        // Actualizar el array de ejercicios editados
+        const updatedEditedExercises = [...editedExercises];
+        const exerciseIndex = updatedEditedExercises.findIndex(ex => ex.id === updatedExercises[options.rowIndex].id[weekIndex]);
+        
+        if (exerciseIndex !== -1) {
+            updatedEditedExercises[exerciseIndex] = {
+                ...updatedEditedExercises[exerciseIndex],
+                [property]: exerciseSelected.label
+            };
+        } else {
+            updatedEditedExercises.push({
+                id: updatedExercises[options.rowIndex].id[weekIndex],
+                [property]: exerciseSelected.label
+            });
+        }
+
+        setEditedExercises(updatedEditedExercises);
     };
 
     const handleEditSave = async () => {
         if (isEditing) {
-            const changes = [];
-
-            exercises.forEach((exercise, exerciseIndex) => {
-                for (let weekIndex = 0; weekIndex < numWeeks; weekIndex++) {
-                    const exerciseInstanceId = exercise.id[weekIndex];
-                    if (exerciseInstanceId) {
-                        const updatedProperties = {};
-                        let hasChanges = false;
-
-                        properties.forEach((property) => {
-                            const originalValue = originalExercises[exerciseIndex][property][weekIndex];
-                            const currentValue = exercise[property][weekIndex];
-
-                            if (originalValue !== currentValue) {
-                                updatedProperties[property] = currentValue;
-                                hasChanges = true;
-                            }
-                        });
-
-                        if (hasChanges) {
-                            changes.push({
-                                id: exerciseInstanceId,
-                                ...updatedProperties,
-                            });
-                        }
-                    }
-                }
-            });
-
-            // Enviar `changes` al backend
+            // Enviar `editedExercises` al backend
             try {
-                await saveExercisesToBackend(changes);
+                await saveExercisesToBackend(editedExercises);
                 setOriginalExercises(JSON.parse(JSON.stringify(exercises))); // Actualizar el original
-                // Mostrar mensaje de éxito si lo deseas
+                setEditedExercises([]); // Limpiar el array de ejercicios editados
             } catch (error) {
-                // Manejar errores
                 console.error(error);
             }
         }
@@ -242,6 +329,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         // Por ejemplo:
         try {
             setIsLoading(true);
+            console.log('saveExercisesToBackend', changes);
+            return
             await updateExercisesInstace(changes);
             // const response = await updateExercisesInstace(changes);
             // Manejar la respuesta si es necesario
@@ -302,24 +391,50 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const renderCardTitle = () => {
         if (cycle) {
             return (
-                <div className='flex flex-colum justify-content-between'>
+                <div className='flex justify-content-between align-items-center'>
                     <div>
                         {intl.formatMessage({ id: 'workoutTable.day' }, { day: dayOfWeek, plan: planName })}
                     </div>
                     <div>
-                        <Button
-                            label={intl.formatMessage({ id: isEditing ? 'common.save' : 'common.edit' })}
-                            icon={isEditing ? "pi pi-save" : "pi pi-pencil"}
-                            onClick={handleEditSave}
-                            loading={isLoading}
-                        />
+                        {hasData ? (
+                            <Button
+                                label={intl.formatMessage({ id: isEditing ? 'common.save' : 'common.edit' })}
+                                icon={isEditing ? "pi pi-save" : "pi pi-pencil"}
+                                onClick={handleEditSave}
+                                loading={isLoading}
+                            />
+                        ) : (
+                            <Button
+                                label={intl.formatMessage({ id: 'workoutTable.addTraining' })}
+                                icon="pi pi-plus"
+                                onClick={handleAddTraining}
+                            />
+                        )}
                     </div>
                 </div>
             );
         }
 
         return intl.formatMessage({ id: 'workoutTable.selectCycleDay' });
-    }
+    };
+
+    const hasData = exercises && exercises.length > 0;
+    console.log(hasData);
+    const handleAddTraining = () => {
+        const emptyExercise = {
+            name: 'New Exercise',
+            groupNumber: exercises.length + 1,
+            sessionDates: Array(numWeeks).fill(null),
+            id: Array(numWeeks).fill(null),
+        };
+
+        possibleProperties.forEach(prop => {
+            emptyExercise[prop] = Array(numWeeks).fill('-');
+        });
+
+        setExercises([...exercises, emptyExercise]);
+        setIsEditing(true); // Permitir edición inmediata
+    };
 
     return (
         <Card title={renderCardTitle}>

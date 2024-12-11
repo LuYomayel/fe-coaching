@@ -474,6 +474,20 @@ const deletePlan = async (workoutInstanceId) => {
       throw error; 
     }
   }
+
+  const getExercises = async (coachId) => {
+    try {
+      const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${coachId}`);
+      if (!exercisesResponse.ok) {
+        const errorData = await exercisesResponse.json();
+      throw new Error(errorData.message || 'Something went wrong');
+    }
+    return exercisesResponse.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
 export { 
     fetchTrainingCyclesByCoachId,
     fetchCoachWorkouts, 
@@ -496,5 +510,6 @@ export {
     createOrUpdateRpeMethod,
     assignRpeToTarget,
     getRpeAssignmentsByTarget,
-    deleteRpe
+    deleteRpe,
+    getExercises
 };

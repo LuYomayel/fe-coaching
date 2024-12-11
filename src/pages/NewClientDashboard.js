@@ -27,6 +27,7 @@ import { formatDate } from '../utils/UtilFunctions';
 import WorkoutTable from '../components/WorkoutTable';
 import { Badge } from 'primereact/badge';
 import { useIntl, FormattedMessage } from 'react-intl';
+import allLocales from '@fullcalendar/core/locales-all';
 
 export default function ClientDashboard() {
   const { clientId } = useParams();
@@ -410,6 +411,8 @@ export default function ClientDashboard() {
               fixedWeekCount={false}
               className="custom-calendar"
               contentHeight="auto"
+              locales={allLocales}
+              locale="es"
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
                 if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {

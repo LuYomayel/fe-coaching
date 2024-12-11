@@ -131,7 +131,7 @@ const messages = {
   'common.noResults': 'No se encontraron resultados.',
   'common.status': 'Estado',
   'common.select': 'Seleccionar',
-  
+  'common.update': 'Actualizar',
   
   
   // NewCoachProfile
@@ -438,6 +438,7 @@ const messages = {
   'common.filter': 'Filtrar',
   'common.yes': 'Sí',
   'common.no': 'No',
+  'common.noData': 'No hay datos disponibles',
   
   
   // Propiedades de ejercicios
@@ -621,6 +622,12 @@ const messages = {
   'workoutTable.friday': 'Viernes',
   'workoutTable.saturday': 'Sábado',
   'workoutTable.sunday': 'Domingo',
+  'workoutTable.createNewWorkout': 'Crear Nuevo Entrenamiento',
+  'workoutTable.addTraining': 'Agregar Entrenamiento',
+  'workoutTable.addExercise': 'Agregar Ejercicio',
+  'workoutTable.selectExercise': 'Seleccionar Ejercicio',
+  'workoutTable.selectWeeks': 'Seleccionar Semanas',
+  'workoutTable.week': 'Semana {week}',
   
   // Header
   'header.home': 'Inicio',
@@ -768,5 +775,18 @@ const messages = {
   'assignWorkoutToCycleDialog.success.unassign.detail': 'Entrenamientos desasignados del ciclo exitosamente',
   'assignWorkoutToCycleDialog.error.unassign': 'Error',
   'assignWorkoutToCycleDialog.error.unassign.detail': 'No se desasignaron entrenamientos porque están siendo utilizados por un cliente',
+
+  // CreateTrainingCycleDialog
+  'createCycle.dialog.header': 'Crear Ciclo de Entrenamiento',
+  'createCycle.cycleName': 'Nombre del Ciclo',
+  'createCycle.durationInMonths': 'Duración en Meses',
+  'createCycle.durationInWeeks': 'Duración en Semanas',
+  'createCycle.button.create': 'Crear Ciclo',
+  'error.fetchingStudents': 'Error al obtener estudiantes',
+  'success.cycleCreated': '¡Ciclo de entrenamiento creado exitosamente!',
+  'error.allFieldsRequired': 'Todos los campos son obligatorios',
+  'error.enterDuration': 'Por favor, ingresa una duración en semanas o meses',
+  'selectClient': 'Selecciona un cliente',
+  'client': 'Cliente',
 }; 
 export default messages;
