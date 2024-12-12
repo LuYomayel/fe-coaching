@@ -632,7 +632,20 @@ const messages = {
   'workoutTable.selectExercise': 'Select Exercise',
   'workoutTable.selectWeeks': 'Select Weeks',
   'workoutTable.week': 'Week {week}',
-  
+  'workoutTable.modifyAll': 'Modify All',
+  'workoutTable.addNewExercise': 'Add New Exercise',
+  'workoutTable.sets': 'Sets',
+  'workoutTable.repetitions': 'Repetitions',
+  'workoutTable.weight': 'Weight',
+  'workoutTable.time': 'Time',
+  'workoutTable.restInterval': 'Rest Interval',
+  'workoutTable.tempo': 'Tempo',
+  'workoutTable.notes': 'Notes',
+  'workoutTable.difficulty': 'Difficulty',
+  'workoutTable.duration': 'Duration',
+  'workoutTable.distance': 'Distance',
+  'workoutTable.newExercise': 'New Exercise',
+
   // Header
   'header.home': 'Home',
   'header.profile': 'Profile',
