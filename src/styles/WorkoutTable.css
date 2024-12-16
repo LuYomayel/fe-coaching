@@ -1,0 +1,22 @@
+.drag-handle {
+    cursor: move;
+    margin-right: 8px;
+    color: #666;
+}
+
+.dragging {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.exercise-row {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.group-indicator {
+    width: 4px;
+    height: 100%;
+    margin-right: 8px;
+}

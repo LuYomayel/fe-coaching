@@ -439,6 +439,9 @@ const messages = {
   'common.yes': 'Sí',
   'common.no': 'No',
   'common.noData': 'No hay datos disponibles',
+  'common.back': 'Atrás',
+  'common.next': 'Siguiente',
+  'common.errorSavingChanges': 'Error al guardar los cambios',
   
   
   // Propiedades de ejercicios
@@ -641,6 +644,8 @@ const messages = {
   'workoutTable.duration': 'Duración',
   'workoutTable.distance': 'Distancia', 
   'workoutTable.newExercise': 'Nuevo Ejercicio',
+  'workoutTable.selectGroup': 'Seleccionar Grupo',
+  'workoutTable.addNewGroup': 'Agregar Nuevo Grupo',
   
   // Header
   'header.home': 'Inicio',
@@ -682,8 +687,7 @@ const messages = {
   'coachProfileForm.step.subscription': 'Suscripción',
   'coachProfileForm.step.confirmation': 'Confirmación',
   'coachProfileForm.confirmationMessage': 'Por favor, revisa toda la información antes de confirmar.',
-  'common.back': 'Atrás',
-  'common.next': 'Siguiente',
+  
   
   // NewStudentDialog
   'gender.male': 'Masculino',

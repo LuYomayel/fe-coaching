@@ -424,6 +424,7 @@ const messages = {
   'common.yes': 'Yes',
   'common.no': 'No',
   'common.noData': 'No data available',
+  'common.errorSavingChanges': 'Error saving changes',
   
   // Exercise properties
   'exercise.properties.sets': 'Sets',
@@ -645,6 +646,8 @@ const messages = {
   'workoutTable.duration': 'Duration',
   'workoutTable.distance': 'Distance',
   'workoutTable.newExercise': 'New Exercise',
+  'workoutTable.selectGroup': 'Select Group',
+  'workoutTable.addNewGroup': 'Add New Group',
 
   // Header
   'header.home': 'Home',
