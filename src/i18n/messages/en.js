@@ -648,6 +648,9 @@ const messages = {
   'workoutTable.newExercise': 'New Exercise',
   'workoutTable.selectGroup': 'Select Group',
   'workoutTable.addNewGroup': 'Add New Group',
+  'workoutTable.enterTrainingName': 'Enter the name of the training',
+  'workoutTable.enterName': 'Enter the name of the training',
+  'workoutTable.trainingName': 'Training Name',
 
   // Header
   'header.home': 'Home',

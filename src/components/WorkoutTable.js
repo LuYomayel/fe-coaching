@@ -50,6 +50,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const [selectedExercise, setSelectedExercise] = useState(null);
     const [newTraining, setNewTraining] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState(1);
+    const [showTrainingNameDialog, setShowTrainingNameDialog] = useState(false);
+
     useEffect(() => {
         const fetchExercises = async () => {
             const exercises = await getExercises(user.userId);
@@ -609,7 +611,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                             <Button
                                 label={intl.formatMessage({ id: 'workoutTable.addTraining' })}
                                 icon="pi pi-plus"
-                                onClick={handleAddTraining}
+                                onClick={createNewTraining}
                             />
                         ) : (
                             <>  </>
@@ -623,9 +625,13 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     };
 
     const hasData = exercises && exercises.length > 0;
+    const createNewTraining = () => {
+        setShowTrainingNameDialog(true); // Mostrar diálogo para el nombre del entrenamiento
+    }
+
     const handleAddTraining = () => {
         // Definir las propiedades básicas que siempre queremos mostrar
-        const defaultProperties = ["sets", "repetitions", "weight", "restInterval"];
+        const defaultProperties = ["sets", "repetitions", "weight"];
         setProperties(defaultProperties);
 
         const emptyExercise = {
@@ -634,7 +640,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             sessionDates: Array(numWeeks).fill(null),
             id: Array(numWeeks).fill(null),
             groupId: Array(numWeeks).fill(null),
-            isNew: true
+            isNew: true,
+            dayNumber: dayOfWeek
         };
 
         // Inicializar todas las propiedades posibles
@@ -651,6 +658,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         setIsEditing(true);
         setNewTraining(true);
     };
+
 
     const handleAddNewExercise = (rowData, index) => {
 
@@ -749,6 +757,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                             options={cycleOptions}
                             onChange={(e) => setCycle(e.value)}
                             placeholder={intl.formatMessage({ id: 'workoutTable.selectCycle' })}
+                            showClear
+                            disabled={newTraining || isEditing}
                         />
                     </div>
                 </div>
@@ -761,6 +771,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                             onChange={(e) => setDayOfWeek(e.value)}
                             placeholder={intl.formatMessage({ id: 'workoutTable.selectDay' })}
                             showClear
+                            disabled={newTraining || isEditing}
                         />
                     </div>
                 </div>
@@ -806,6 +817,35 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     onClick={() => updateExerciseNameForWeeks(currentExercise)}
                 />
         </Dialog>
-    </div>
+        <Dialog
+            draggable={false}
+            resizable={false}
+            className='responsive-dialog'
+            header={intl.formatMessage({ id: 'workoutTable.enterTrainingName' })}
+            visible={showTrainingNameDialog}
+            onHide={() => setShowTrainingNameDialog(false)}
+            footer={
+                <Button
+                    label={intl.formatMessage({ id: 'common.save' })}
+                    icon="pi pi-check"
+                    onClick={() => {
+                        handleAddTraining();
+                        setShowTrainingNameDialog(false);
+                    }}
+                />
+            }
+        >
+            <div className="p-field">
+                <label htmlFor="trainingName">{intl.formatMessage({ id: 'workoutTable.trainingName' })}</label>
+                <InputText
+                    id="trainingName"
+                    value={planName}
+                    onChange={(e) => setPlanName(e.target.value)}
+                    placeholder={intl.formatMessage({ id: 'workoutTable.enterName' })}
+                    autoFocus
+                />
+            </div>
+        </Dialog>
+        </div>
     );
 }
