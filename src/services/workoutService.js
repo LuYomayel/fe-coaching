@@ -230,6 +230,25 @@ const submitPlan = async (plan, planId, isEdit) => {
     return response.json();
 };
 
+const createNewTrainingFromExcelView = async (plan) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/from-excel-view`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(plan),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Something went wrong');
+    }
+    return response.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
 const submitFeedback = async (planId, body) => {
     const url = `${apiUrl}/workout/feedback/${planId}`;
     try {
@@ -511,5 +530,6 @@ export {
     assignRpeToTarget,
     getRpeAssignmentsByTarget,
     deleteRpe,
-    getExercises
+    getExercises,
+    createNewTrainingFromExcelView
 };

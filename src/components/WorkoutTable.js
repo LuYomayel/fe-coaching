@@ -7,7 +7,7 @@ import { Row } from 'primereact/row';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { updateExercisesInstace } from '../services/workoutService';
+import { createNewTrainingFromExcelView, updateExercisesInstace } from '../services/workoutService';
 import { useToast } from '../utils/ToastContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { getExercises } from '../services/workoutService';
@@ -29,7 +29,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         { label: intl.formatMessage({ id: 'workoutTable.saturday' }), value: 6 },
         { label: intl.formatMessage({ id: 'workoutTable.sunday' }), value: 7 },
     ];
-    const { user } = useContext(UserContext);
+    const { user, coach } = useContext(UserContext);
     const [exercisesDB, setExercisesDB] = useState([]);
     const [cycle, setCycle] = useState(null);
     const [dayOfWeek, setDayOfWeek] = useState(null);
@@ -51,7 +51,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const [newTraining, setNewTraining] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState(1);
     const [showTrainingNameDialog, setShowTrainingNameDialog] = useState(false);
-
+    const [newTrainingSessions, setNewTrainingSessions] = useState([]);
     useEffect(() => {
         const fetchExercises = async () => {
             const exercises = await getExercises(user.userId);
@@ -71,18 +71,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         }
     
         const exercisesByDayNumber = exercises.reduce((acc, exercise) => {
-            // Usando sessionDates
-            // exercise.sessionDates.forEach((sessionDate, index) => {
-            //     const dayNumber = new Date(sessionDate).getDay() - 1;
-            //     if (!acc[dayNumber]) {
-            //         acc[dayNumber] = [];
-            //     }
-            //     if (!acc[dayNumber].some(e => e.name === exercise.name && e.groupNumber === exercise.groupNumber)) {
-            //         acc[dayNumber].push({...exercise, uniqueId: `${exercise.id || 'new'}-${dayNumber}-${acc[dayNumber].length}`});
-            //     }
-            // });
-
-            // Usando dayNumber
             if (!acc[exercise.dayNumber]) {
                 acc[exercise.dayNumber] = [];
             }
@@ -257,10 +245,12 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             const numWeeks = selectedCycle.trainingWeeks?.length || 0;
             selectedCycle.trainingWeeks.forEach((week, weekIndex) => {
                 if (!week.trainingSessions) return;
-    
+
                 week.trainingSessions.forEach(session => {
                     if (!session.workoutInstances) return;
-
+                    if(session.dayNumber === dayOfWeek){
+                        setNewTrainingSessions(prev => [...prev, session]);
+                    }
                     session.workoutInstances.forEach(instance => {
                         const nombre = instance.workout.planName;
                         setPlanName(nombre);
@@ -302,7 +292,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                     exerciseObj.groupId[weekIndex] = group.id;
                                     exerciseObj.workoutInstanceId[weekIndex] = instance.id;
                                     possibleProperties.forEach(prop => {
-                                        exerciseObj[prop] = Array(numWeeks).fill('-');
+                                        exerciseObj[prop] = Array(numWeeks).fill('');
                                     });
                                     possibleProperties.forEach(prop => {
                                         const value = exerciseData[prop] || group[prop] || '-';
@@ -521,9 +511,19 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             try {
                 setIsLoading(true);
                 if (newTraining) {
+                    const cleanPlan = {
+                        workout: {
+                            planName: planName,
+                            coachId: coach.id,
+                            isTemplate: true
+                        },
+                        exercises: exercises
+                    };
                     // Lógica para guardar nuevo entrenamiento
                     // Aquí deberías tener una función diferente para crear nuevo entrenamiento
-                    console.log("Guardando nuevo entrenamiento:", exercises);
+                    console.log("Guardando nuevo entrenamiento:", cleanPlan);
+                    const response = await createNewTrainingFromExcelView(cleanPlan);
+                    console.log("response", response);
                 } else {
                     // Lógica para actualizar entrenamiento existente
                     await updateExercisesInstace(editedExercises);
@@ -630,6 +630,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     }
 
     const handleAddTraining = () => {
+        console.log('handleAddTraining', planName, cycle, newTrainingSessions);
         // Definir las propiedades básicas que siempre queremos mostrar
         const defaultProperties = ["sets", "repetitions", "weight"];
         setProperties(defaultProperties);
@@ -637,13 +638,14 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         const emptyExercise = {
             name: intl.formatMessage({ id: 'workoutTable.newExercise' }),
             groupNumber: 1,
-            sessionDates: Array(numWeeks).fill(null),
+            sessionDates: newTrainingSessions.map(session => session.sessionDate),
+            trainingSessionId: newTrainingSessions.map(session => session.id),
             id: Array(numWeeks).fill(null),
             groupId: Array(numWeeks).fill(null),
             isNew: true,
             dayNumber: dayOfWeek
         };
-
+        console.log('emptyExercise', emptyExercise);
         // Inicializar todas las propiedades posibles
         possibleProperties.forEach(prop => {
             emptyExercise[prop] = Array(numWeeks).fill('');
@@ -684,6 +686,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             sessionDates: newTraining ? Array(numWeeks).fill(null) : trainingSessionDates,
             id: Array(numWeeks).fill(null),
             groupId: newTraining ? Array(numWeeks).fill(null) : trainingGroupId,
+            trainingSessionId: newTraining ?  newTrainingSessions.map(session => session.id) : Array(numWeeks).fill(null),
             isNew: true,
             uniqueId: `new-exercise-${Date.now()}`,
             newExerciseId: Array(numWeeks).fill(null),
@@ -736,10 +739,11 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             newExerciseId: Array(numWeeks).fill(null),
             workoutInstanceId: workoutInstanceId,
             dayNumber: dayNumber,
+            trainingSessionId: newTraining ?  newTrainingSessions.map(session => session.id) : Array(numWeeks).fill(null),
         };
 
         possibleProperties.forEach(prop => {
-            emptyExercise[prop] = Array(numWeeks).fill('-');
+            emptyExercise[prop] = Array(numWeeks).fill('');
         });
 
         setExercises([...exercises, emptyExercise]);
