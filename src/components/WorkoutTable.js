@@ -7,7 +7,7 @@ import { Row } from 'primereact/row';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { createNewTrainingFromExcelView, updateExercisesInstace } from '../services/workoutService';
+import { createNewTrainingFromExcelView, updateExercisesInstace, verifyExerciseChanges } from '../services/workoutService';
 import { useToast } from '../utils/ToastContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { getExercises } from '../services/workoutService';
@@ -69,8 +69,11 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         if (!exercises || exercises.length === 0) {
             return <div><FormattedMessage id="common.noData"/></div>;
         }
-    
-        const exercisesByDayNumber = exercises.reduce((acc, exercise) => {
+        
+        // Ordenar los ejercicios por rowIndex
+        const sortedExercises = [...exercises].sort((a, b) => a.rowIndex - b.rowIndex);
+        console.log("sortedExercises", sortedExercises);
+        const exercisesByDayNumber = sortedExercises.reduce((acc, exercise) => {
             if (!acc[exercise.dayNumber]) {
                 acc[exercise.dayNumber] = [];
             }
@@ -84,62 +87,49 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             if (!result.destination) return;
 
             const { source, destination } = result;
-            
-            // Crear una copia profunda de los ejercicios actuales
             let updatedExercises = [...exercises];
             
-            // Obtener el ejercicio directamente usando el índice de origen
-            const movedExercise = updatedExercises[source.index];
-            
-            if (!movedExercise) return;
+            const exerciseSource = updatedExercises[source.index];
+            const exerciseDestination = updatedExercises[destination.index];
+            if (!exerciseSource) return;
 
             if (newTraining) {
-                // Lógica para nuevo entrenamiento
-                // Remover el ejercicio de su posición original
                 updatedExercises.splice(source.index, 1);
                 
-                // Insertar el ejercicio en su nueva posición
                 updatedExercises.splice(destination.index, 0, {
-                    ...movedExercise,
-                    groupNumber: exercises[destination.index]?.groupNumber || movedExercise.groupNumber
+                    ...exerciseSource,
+                    groupNumber: exerciseDestination?.groupNumber || exerciseSource.groupNumber
                 });
                 
                 setExercises(updatedExercises);
-                
-                // No necesitamos agregar a editedExercises aquí ya que todo se enviará como nuevo
             } else {
-                // Lógica para edición de entrenamiento existente
-                const destinationGroupNumber = exercises[destination.index]?.groupNumber || 
+                const destinationGroupNumber = exerciseDestination?.groupNumber || 
                     exercises[destination.index - 1]?.groupNumber + 1;
-                const destinationGroupId = exercises[destination.index]?.groupId || 
+                const destinationGroupId = exerciseDestination?.groupId || 
                     exercises[destination.index - 1]?.groupId;
-                console.log('movedExercise', destinationGroupId);
-                // Actualizar el ejercicio movido
-                const updatedExercise = {
-                    ...movedExercise,
-                    groupNumber: destinationGroupNumber,
-                    groupId: destinationGroupId
-                };
 
-                // Remover el ejercicio de su posición original
+                // No es necesario ajustar los índices manualmente
+                const updatedExercise = {
+                    ...exerciseSource,
+                    groupNumber: destinationGroupNumber,
+                    groupId: destinationGroupId,
+                    rowIndex: destination.index
+                };
                 updatedExercises.splice(source.index, 1);
-                
-                // Insertar el ejercicio en su nueva posición
                 updatedExercises.splice(destination.index, 0, updatedExercise);
                 
                 setExercises(updatedExercises);
-                
-                // Agregar el cambio a editedExercises solo para ejercicios existentes
+                console.log("updatedExercises", updatedExercises);
+                // Actualizar editedExercises con todos los cambios
                 setEditedExercises(prev => [
                     ...prev,
-                    ...movedExercise.id.map((id, index) => ({
+                    ...exerciseSource.id.map((id, index) => ({
                         id: id,
                         groupNumber: destinationGroupNumber,
                         newGroupId: destinationGroupId[index],
-                        groupId: movedExercise.groupId[index]
+                        groupId: exerciseSource.groupId[index]
                     }))
                 ]);
-                console.log('editedExercises', editedExercises);
             }
         };
 
@@ -236,6 +226,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     };
 
     useEffect(() => {
+        setIsLoading(true);
         if (cycle && trainingCycles && trainingCycles.length > 0) {
             const selectedCycle = trainingCycles.find(c => c.id === cycle);
             if (!selectedCycle) return;
@@ -246,11 +237,11 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             selectedCycle.trainingWeeks.forEach((week, weekIndex) => {
                 if (!week.trainingSessions) return;
 
+
                 week.trainingSessions.forEach(session => {
                     if (!session.workoutInstances) return;
-                    if(session.dayNumber === dayOfWeek){
-                        setNewTrainingSessions(prev => [...prev, session]);
-                    }
+                    
+                    if(session.dayNumber === dayOfWeek) setNewTrainingSessions(prev => [...prev, session]);
                     session.workoutInstances.forEach(instance => {
                         const nombre = instance.workout.planName;
                         setPlanName(nombre);
@@ -277,7 +268,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                     if (dayOfWeek && session.dayNumber !== dayOfWeek) {
                                         return;
                                     }
-                                    
                                     const exerciseObj = {
                                         name: exerciseName,
                                         groupNumber: group.groupNumber,
@@ -286,7 +276,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                         id: Array(numWeeks).fill(null),
                                         uniqueId: `exercise-${exerciseName}-${group.groupNumber}-${Date.now()}`,
                                         workoutInstanceId: Array(numWeeks).fill(null),
-                                        dayNumber: session.dayNumber
+                                        dayNumber: session.dayNumber,
+                                        rowIndex: exerciseData.rowIndex
                                     };
                                     exerciseObj.id[weekIndex] = exerciseData.id;
                                     exerciseObj.groupId[weekIndex] = group.id;
@@ -315,7 +306,20 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             setNumWeeks(numWeeks);
             setProperties(Array.from(propertiesSet));
         }
+        setIsLoading(false);
         // eslint-disable-next-line
+    }, [cycle, dayOfWeek, trainingCycles]);
+
+    useEffect(() => {
+        if (cycle && dayOfWeek && trainingCycles) { 
+            const selectedCycle = trainingCycles.find(c => c.id === cycle);
+            if (!selectedCycle) return;
+            const planName = selectedCycle.trainingWeeks[0].trainingSessions.find(s => s.dayNumber === dayOfWeek).workoutInstances[0]?.workout.planName || '';
+            setPlanName(planName);
+        } else {
+            setExercises([]);
+            setPlanName('');
+        }
     }, [cycle, dayOfWeek, trainingCycles]);
 
     const propertyLabels = {
@@ -517,15 +521,41 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                             coachId: coach.id,
                             isTemplate: true
                         },
-                        exercises: exercises
+                        exercises: exercises.map((ex,index) => ({
+                            ...ex,
+                            rowIndex: index
+                        }))
                     };
                     // Lógica para guardar nuevo entrenamiento
                     // Aquí deberías tener una función diferente para crear nuevo entrenamiento
                     console.log("Guardando nuevo entrenamiento:", cleanPlan);
                     const response = await createNewTrainingFromExcelView(cleanPlan);
-                    console.log("response", response);
+                    //console.log("response", response);
                 } else {
-                    // Lógica para actualizar entrenamiento existente
+                    // Preparar los datos para enviar al nuevo endpoint
+                    console.log("editedExercises", editedExercises);
+                    const exerciseData = exercises.flatMap((exercise, index) => {
+                        return exercise.id.map((id, weekIndex) => {
+                            return {
+                                id: id,
+                                rowIndex: index,
+                                groupNumber: exercise.groupNumber,
+                                groupId: exercise.groupId[weekIndex],
+                                newGroupId: editedExercises.find(ex => ex.id === id)?.newGroupId
+                            }
+                        })
+                    });
+                    console.log("exerciseData", exerciseData);
+                    try {
+                        // Enviar los datos al nuevo endpoint
+                        const response = await verifyExerciseChanges(exerciseData);
+                        console.log("response", response);
+                    } catch (error) {
+                        console.error('Error al enviar datos al endpoint:', error);
+                        showToast('error', intl.formatMessage({ id: 'common.error' }), 
+                                 intl.formatMessage({ id: 'common.errorVerifyingChanges' }));
+                    }
+
                     await updateExercisesInstace(editedExercises);
                 }
             } catch (error) {
@@ -630,7 +660,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     }
 
     const handleAddTraining = () => {
-        console.log('handleAddTraining', planName, cycle, newTrainingSessions);
+
         // Definir las propiedades básicas que siempre queremos mostrar
         const defaultProperties = ["sets", "repetitions", "weight"];
         setProperties(defaultProperties);
@@ -645,7 +675,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             isNew: true,
             dayNumber: dayOfWeek
         };
-        console.log('emptyExercise', emptyExercise);
         // Inicializar todas las propiedades posibles
         possibleProperties.forEach(prop => {
             emptyExercise[prop] = Array(numWeeks).fill('');
@@ -693,7 +722,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             workoutInstanceId: workoutInstanceId,
             dayNumber: dayNumber,
         };
-        console.log('emptyExercise', emptyExercise);
+
         possibleProperties.forEach(prop => {
             emptyExercise[prop] = Array(numWeeks).fill('');
         });

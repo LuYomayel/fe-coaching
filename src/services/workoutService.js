@@ -201,6 +201,22 @@ const updateExercisesInstace = async (exercises) => {
   }
 }
 
+const verifyExerciseChanges = async (exerciseData) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/verify-exercise-changes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(exerciseData)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Something went wrong');
+    }
+    return response.json();
+  } catch (error) {
+    throw error;
+  }
+}
 
 const submitPlan = async (plan, planId, isEdit) => {
     
@@ -209,7 +225,7 @@ const submitPlan = async (plan, planId, isEdit) => {
       ? `${apiUrl}/workout/${plan.isTemplate ? 'template' : 'instance'}/${planId}` 
       : `${apiUrl}/workout`;
   
-    console.log('Plan: ', plan)
+    console.log('Plan: ', plan, endpoint, requestMethod)
     const response = await fetch(endpoint, {
       method: requestMethod,
       headers: {
@@ -531,5 +547,6 @@ export {
     getRpeAssignmentsByTarget,
     deleteRpe,
     getExercises,
-    createNewTrainingFromExcelView
+    createNewTrainingFromExcelView,
+    verifyExerciseChanges
 };

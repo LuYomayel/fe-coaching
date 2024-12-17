@@ -360,7 +360,7 @@ const NewCreatePlan = ({ isEdit }) => {
         }
       }
     }
-
+    let contador = 0;  
     // Create a clean version of the plan object
     const cleanPlan = JSON.parse(JSON.stringify({
       ...plan,
@@ -373,19 +373,25 @@ const NewCreatePlan = ({ isEdit }) => {
           }
         }
       },
-      groups: plan.groups.map(group => ({
-        ...group,
-        exercises: group.exercises.map(exercise => ({
-          ...exercise,
+      groups: plan.groups.map((group) => {
+
+        return {
+          ...group,
+          exercises: group.exercises.map((exercise) => {
+            return {
+              ...exercise,
+              rowIndex: contador++,
           exercise: {
             id: exercise.exercise.id,
-            name: exercise.exercise.name
-          }
-        }))
-      }))
+                name: exercise.exercise.name
+              }
+            }
+          })
+        }
+      })
     }));
-    console.log('Clean plan', cleanPlan);
 
+    
     showConfirmationDialog({
       message: intl.formatMessage({ 
         id: isEdit ? 'plan.dialog.confirmEdit' : 'plan.dialog.confirmCreate' 
@@ -395,11 +401,13 @@ const NewCreatePlan = ({ isEdit }) => {
       }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => fetchSubmit(cleanPlan),
+      //accept: () => console.log("cleanPlan", cleanPlan),
     });
   };
 
   const fetchSubmit = async (cleanPlan) => {
     try {
+      console.log("cleanPlan", cleanPlan);
       await submitPlan(cleanPlan, planId, isEdit);
       if (isEdit) {
         showToast('success', 'Plan updated!', `You have updated the plan ${cleanPlan.workout.planName} successfully!`);
