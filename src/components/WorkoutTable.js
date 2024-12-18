@@ -72,7 +72,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         
         // Ordenar los ejercicios por rowIndex
         const sortedExercises = [...exercises].sort((a, b) => a.rowIndex - b.rowIndex);
-        console.log("sortedExercises", sortedExercises);
         const exercisesByDayNumber = sortedExercises.reduce((acc, exercise) => {
             if (!acc[exercise.dayNumber]) {
                 acc[exercise.dayNumber] = [];
@@ -119,7 +118,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                 updatedExercises.splice(destination.index, 0, updatedExercise);
                 
                 setExercises(updatedExercises);
-                console.log("updatedExercises", updatedExercises);
                 // Actualizar editedExercises con todos los cambios
                 setEditedExercises(prev => [
                     ...prev,
@@ -528,12 +526,12 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     };
                     // Lógica para guardar nuevo entrenamiento
                     // Aquí deberías tener una función diferente para crear nuevo entrenamiento
-                    console.log("Guardando nuevo entrenamiento:", cleanPlan);
-                    const response = await createNewTrainingFromExcelView(cleanPlan);
+
+                    await createNewTrainingFromExcelView(cleanPlan);
                     //console.log("response", response);
                 } else {
                     // Preparar los datos para enviar al nuevo endpoint
-                    console.log("editedExercises", editedExercises);
+
                     const exerciseData = exercises.flatMap((exercise, index) => {
                         return exercise.id.map((id, weekIndex) => {
                             return {
@@ -545,11 +543,10 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                             }
                         })
                     });
-                    console.log("exerciseData", exerciseData);
+
                     try {
-                        // Enviar los datos al nuevo endpoint
-                        const response = await verifyExerciseChanges(exerciseData);
-                        console.log("response", response);
+                        await verifyExerciseChanges(exerciseData);
+
                     } catch (error) {
                         console.error('Error al enviar datos al endpoint:', error);
                         showToast('error', intl.formatMessage({ id: 'common.error' }), 
