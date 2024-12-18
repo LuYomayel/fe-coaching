@@ -523,6 +523,23 @@ const deletePlan = async (workoutInstanceId) => {
   }
 }
 
+const deleteExercises = async (exercises) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/delete-exercises`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(exercises)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Something went wrong');
+    }
+    return response.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
 export { 
     fetchTrainingCyclesByCoachId,
     fetchCoachWorkouts, 
@@ -548,5 +565,6 @@ export {
     deleteRpe,
     getExercises,
     createNewTrainingFromExcelView,
-    verifyExerciseChanges
+    verifyExerciseChanges,
+    deleteExercises
 };

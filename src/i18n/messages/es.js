@@ -132,6 +132,7 @@ const messages = {
   'common.status': 'Estado',
   'common.select': 'Seleccionar',
   'common.update': 'Actualizar',
+  'common.success': 'Éxito',
   
   
   // NewCoachProfile
@@ -649,6 +650,13 @@ const messages = {
   'workoutTable.enterTrainingName': 'Ingresa el nombre del entrenamiento',
   'workoutTable.enterName': 'Ingresa el nombre del entrenamiento',
   'workoutTable.trainingName': 'Nombre del Entrenamiento',
+  'workoutTable.error.verifyChanges': 'Error al verificar los cambios',
+  'workoutTable.error.deleteExercises': 'Error al eliminar los ejercicios',
+  'workoutTable.deleteExercise': 'Eliminar Ejercicio',
+  'workoutTable.exercisesDeleted': 'Ejercicios eliminados: ',
+  'workoutTable.exercisesUpdated': 'Ejercicios actualizados: ',
+  'common.errorVerifyingChanges': 'Error al verificar los cambios',
+  'common.error': 'Error',
   
   // Header
   'header.home': 'Inicio',

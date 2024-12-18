@@ -651,6 +651,14 @@ const messages = {
   'workoutTable.enterTrainingName': 'Enter the name of the training',
   'workoutTable.enterName': 'Enter the name of the training',
   'workoutTable.trainingName': 'Training Name',
+  'workoutTable.error.verifyChanges': 'Error verifying changes',
+  'workoutTable.error.deleteExercises': 'Error deleting exercises',
+  'workoutTable.deleteExercise': 'Delete Exercise',
+  'workoutTable.exercisesDeleted': 'Exercises deleted: ',
+  'workoutTable.exercisesUpdated': 'Exercises updated: ',
+  'common.errorVerifyingChanges': 'Error verifying changes',
+  'common.error': 'Error',
+  'common.success': 'Success',
 
   // Header
   'header.home': 'Home',

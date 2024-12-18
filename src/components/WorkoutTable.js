@@ -7,7 +7,7 @@ import { Row } from 'primereact/row';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { createNewTrainingFromExcelView, updateExercisesInstace, verifyExerciseChanges } from '../services/workoutService';
+import { createNewTrainingFromExcelView, deleteExercises, updateExercisesInstace, verifyExerciseChanges } from '../services/workoutService';
 import { useToast } from '../utils/ToastContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { getExercises } from '../services/workoutService';
@@ -52,6 +52,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const [selectedGroup, setSelectedGroup] = useState(1);
     const [showTrainingNameDialog, setShowTrainingNameDialog] = useState(false);
     const [newTrainingSessions, setNewTrainingSessions] = useState([]);
+    const [deletedExercises, setDeletedExercises] = useState([]);
+    const [originalExercisesSnapshot, setOriginalExercisesSnapshot] = useState([]);
     useEffect(() => {
         const fetchExercises = async () => {
             const exercises = await getExercises(user.userId);
@@ -69,7 +71,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         if (!exercises || exercises.length === 0) {
             return <div><FormattedMessage id="common.noData"/></div>;
         }
-        
         // Ordenar los ejercicios por rowIndex
         const sortedExercises = [...exercises].sort((a, b) => a.rowIndex - b.rowIndex);
         const exercisesByDayNumber = sortedExercises.reduce((acc, exercise) => {
@@ -161,6 +162,22 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                             loading={isLoading}
                                             rowClassName={rowClassName}
                                         >
+                                            {isEditing && <Column
+                                                header={intl.formatMessage({ id: 'workoutTable.deleteExercise' })}
+                                                body={(rowData, options) => {
+                                                    if (!rowData.isNew) {
+                                                        return (
+                                                            <Button
+                                                                icon="pi pi-trash"
+                                                                className="p-button-danger"
+                                                                onClick={() => handleDeleteExercise(options.rowIndex)}
+                                                            />
+                                                        );
+                                                    }
+                                                    return null;
+                                                }}
+                                                style={{ width: '50px' }}
+                                            />}
                                             <Column
                                                 header={intl.formatMessage({ id: 'workoutTable.exercise' })}
                                                 body={(rowData, options) => {
@@ -181,8 +198,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                                             </div>
                                                         );
                                                     }
-                                                    if (rowData.name !== intl.formatMessage({ id: 'workoutTable.addNewExercise' })) {
-                                                        return (
+                                                    return (
+                                                        <div className="flex align-items-center">
                                                             <Draggable
                                                                 key={rowData.uniqueId}
                                                                 draggableId={rowData.uniqueId}
@@ -203,9 +220,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                                                     </div>
                                                                 )}
                                                             </Draggable>
-                                                        );
-                                                    }
-                                                    return renderExerciseName(rowData);
+                                                        </div>
+                                                    );
                                                 }}
                                                 editor={(options) => exerciseEditor(options)}
                                                 editorOptions={{ disabled: !isEditing }}
@@ -299,6 +315,18 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             });
             const sortedExercises = Array.from(exercisesMap.values()).sort((a, b) => a.groupNumber - b.groupNumber);
             const justExercises = Array.from(exercisesMap.values());
+            const exerciseData = justExercises.flatMap((exercise, index) => {
+                return exercise.id.map((id, weekIndex) => {
+                    return {
+                        id: id,
+                        rowIndex: index,
+                        groupNumber: exercise.groupNumber,
+                        groupId: exercise.groupId[weekIndex],
+                        newGroupId: editedExercises.find(ex => ex.id === id)?.newGroupId
+                    }
+                })
+            });
+            setOriginalExercisesSnapshot(exerciseData);
             setExercises(justExercises);
             setOriginalExercises(JSON.parse(JSON.stringify(sortedExercises)));
             setNumWeeks(numWeeks);
@@ -531,22 +559,47 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     //console.log("response", response);
                 } else {
                     // Preparar los datos para enviar al nuevo endpoint
-
-                    const exerciseData = exercises.flatMap((exercise, index) => {
-                        return exercise.id.map((id, weekIndex) => {
-                            return {
-                                id: id,
-                                rowIndex: index,
-                                groupNumber: exercise.groupNumber,
-                                groupId: exercise.groupId[weekIndex],
-                                newGroupId: editedExercises.find(ex => ex.id === id)?.newGroupId
-                            }
-                        })
-                    });
-
+                    
                     try {
-                        await verifyExerciseChanges(exerciseData);
+                        if(deletedExercises.length > 0){
+                            const cleanExercises = {
+                                exerciseIds: deletedExercises.filter(ex => ex !== null)
+                            };
+                            const response = await deleteExercises(cleanExercises);
+                            if(response.message){
+                                showToast('success', intl.formatMessage({ id: 'common.success' }), 
+                                         `${intl.formatMessage({ id: 'workoutTable.exercisesDeleted' })} ${response.deletedExercises}`);
+                            }
+                        }
 
+                        // Filtrar los ejercicios eliminados del originalExercisesSnapshot
+                        const filteredOriginalSnapshot = originalExercisesSnapshot.filter(
+                            exercise => !deletedExercises.includes(exercise.id)
+                        );
+                        // Preparar los datos de ejercicios actuales
+                        const exerciseData = exercises.flatMap((exercise, index) => {
+                            return exercise.id.map((id, weekIndex) => {
+                                return {
+                                    id: id,
+                                    rowIndex: index,
+                                    groupNumber: exercise.groupNumber,
+                                    groupId: exercise.groupId[weekIndex],
+                                    newGroupId: editedExercises.find(ex => ex.id === id)?.newGroupId
+                                }
+                            })
+                        });
+
+                        // Comparar los snapshots filtrados con los datos actuales
+                        const hasChanges = JSON.stringify(exerciseData) !== JSON.stringify(filteredOriginalSnapshot);
+                        console.log('hasChanges', hasChanges, exerciseData, filteredOriginalSnapshot);
+                        if(hasChanges){
+                            //console.log("exerciseData", exerciseData, originalExercisesSnapshot);
+                            const response = await verifyExerciseChanges(exerciseData);
+                            if(response.message){
+                                showToast('success', intl.formatMessage({ id: 'common.success' }), 
+                                         `${intl.formatMessage({ id: 'workoutTable.exercisesUpdated' })} ${response.contador}`);
+                            }
+                        }
                     } catch (error) {
                         console.error('Error al enviar datos al endpoint:', error);
                         showToast('error', intl.formatMessage({ id: 'common.error' }), 
@@ -570,7 +623,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         setIsEditing(!isEditing);
         // limpiar todos los arrays de ejercicios
         setEditedExercises([]);
-
+        setDeletedExercises([]);
 
     };
 
@@ -586,6 +639,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const headerGroup = (
         <ColumnGroup>
             <Row>
+                {isEditing && <Column header="" rowSpan={2} style={{ width: '100%' }} />}   
                 <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} rowSpan={2} style={{ width: '100%' }} />
                 {Array.from({ length: numWeeks }, (_, i) => (
                     <Column header={`${intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}`} colSpan={properties.length} key={`week-${i}`} />
@@ -773,6 +827,17 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         });
 
         setExercises([...exercises, emptyExercise]);
+    };
+
+    const handleDeleteExercise = (exerciseIndex) => {
+        if(!newTraining){
+            // También puedes actualizar editedExercises si es necesario
+            const updatedDeletedExercises = exercises.find(ex => ex.rowIndex === exerciseIndex).id.map(id => id);
+            setDeletedExercises(updatedDeletedExercises);
+        }
+
+        const updatedExercises = exercises.filter((_, index) => index !== exerciseIndex);
+        setExercises(updatedExercises);
     };
 
     return (
