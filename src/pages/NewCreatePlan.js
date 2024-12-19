@@ -250,7 +250,8 @@ const NewCreatePlan = ({ isEdit }) => {
     setShowExerciseDialog(true);
   };
 
-  const addExercise = () => {
+  const addExercise = (groupIndex) => {
+    console.log('groupIndex', groupIndex, exercises[0]);
     if (selectedExercise) {
       const newExercise = {
         exercise: {
@@ -269,7 +270,7 @@ const NewCreatePlan = ({ isEdit }) => {
         duration: propertyList.find(prop => prop.key === 'duration').default ? '' : null,
       };
       const newGroups = [...plan.groups];
-      newGroups[selectedGroup].exercises.push(newExercise);
+      newGroups[groupIndex].exercises.push(newExercise);
       setPlan({ ...plan, groups: newGroups });
       setExerciseCounter(exerciseCounter + 1);
       setShowExerciseDialog(false);
@@ -614,7 +615,7 @@ const NewCreatePlan = ({ isEdit }) => {
                               <FormattedMessage id="plan.group.title" values={{ number: group.groupNumber }} />
                             )}
                           </h3>
-                          <Button icon="pi pi-trash" className="p-button-danger p-button-text" onClick={() => removeGroup(groupIndex)} />
+                          <Button icon="pi pi-trash" raised className="p-button-danger p-button-text" onClick={() => removeGroup(groupIndex)} />
                         </div>
                         <div className="grid mb-3">
                             {!group.isRestPeriod && (
@@ -657,11 +658,13 @@ const NewCreatePlan = ({ isEdit }) => {
                                 <Button
                                   icon="pi pi-plus"
                                   className="p-button-text p-button-sm"
+                                  raised
                                   onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
                                 />
                                 <Button
                                   icon="pi pi-trash"
                                   className="p-button-danger p-button-text p-button-sm"
+                                  raised
                                   onClick={() => removeExercise(groupIndex, exerciseIndex)}
                                 />
                               </div>
@@ -681,6 +684,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                           />
                                           <Button
                                             icon="pi pi-times"
+                                            raised
                                             className="p-button-danger p-button-text p-button-sm"
                                             onClick={() => removeProperty(groupIndex, exerciseIndex, key)}
                                           />
@@ -707,12 +711,37 @@ const NewCreatePlan = ({ isEdit }) => {
                           </div>
                         ))}
                         {!group.isRestPeriod && (
-                          <Button
-                            label={intl.formatMessage({ id: 'plan.group.addExercise' })}
-                            icon="pi pi-plus"
-                            className="p-button-text"
-                            onClick={() => openExerciseDialog(groupIndex)}
-                          />
+                          <div className="flex align-items-center">
+                            <div className="w-full">
+                              <Dropdown
+                                value={selectedExercise}
+                                options={exercises}
+                                onChange={(e) => setSelectedExercise(e.value)}
+                                optionLabel="name"
+                                filter
+                              filterBy="name,exerciseType"
+                              placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
+                              className="w-full"
+                              itemTemplate={(option) => (
+                                <div className='flex flex-column'>
+                                  <span>{option.name}</span>
+                                  <small className='text-xs'>{option.exerciseType}</small>
+                                </div>
+                              )}
+                              //style={{ height: '40px' }}
+                            />
+                            </div>
+                            <div className="w-1/5">
+                            <Button
+                                icon="pi pi-plus"
+                                raised
+                                text
+
+                                onClick={() => addExercise(groupIndex)}
+                                style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              />
+                            </div>
+                          </div>
                         )}
                       </Card>
                     </div>
@@ -721,18 +750,22 @@ const NewCreatePlan = ({ isEdit }) => {
               ))}
               <div className="col-12 md:col-6 lg:col-4 xl:col-3 p-2">
                 <Card className="h-full flex justify-content-center align-items-center cursor-pointer">
-                  <div className="text-center">
+                  <div className="flex flex-column sm:flex-row gap-2 justify-content-center align-items-center">
                     <Button
+                      raised
+                      text
                       label={intl.formatMessage({ id: 'plan.group.addGroup' })}
                       icon="pi pi-plus-circle"
                       onClick={addExerciseGroup}
-                      className="p-button-text mb-2"
+                      className="p-button-text w-full sm:w-auto"
                     />
                     <Button
+                      raised
+                      text
                       label={intl.formatMessage({ id: 'plan.group.addRest' })}
                       icon="pi pi-plus-circle"
-                      onClick={addRestPeriod}
-                      className="p-button-text"
+                      onClick={addRestPeriod} 
+                      className="p-button-text w-full sm:w-auto"
                     />
                   </div>
                 </Card>
