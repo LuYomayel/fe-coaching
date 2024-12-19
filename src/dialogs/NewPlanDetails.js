@@ -241,7 +241,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                         <div className="flex gap-2">
                            {workoutPlan.status === 'pending' && (
                                 <Button
-                                    label="Edit"
+                                    label={intl.formatMessage({ id: 'common.edit' })}
                                     icon="pi pi-pencil"
                                     className="p-button-primary"
                                     onClick={handleEdit}
@@ -249,12 +249,21 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                             )}
                             {workoutPlan.status === 'pending' && (
                                 <Button
-                                    label="Delete"
+                                    label={intl.formatMessage({ id: 'common.delete' })}
                                     icon="pi pi-trash"
                                     className="p-button-danger"
                                     onClick={handleDelete}
                                 />
                             )}
+                            <Button
+                                label={intl.formatMessage({ id: 'common.template' })}
+                                tooltip={intl.formatMessage({ id: 'common.useAsTemplate' })}
+                                icon="pi pi-copy" 
+                                className="p-button-secondary"
+                                onClick={() => navigate(`/plans/edit/${workoutPlan.id}`, {
+                                    state: { isEdit: true, changeToTemplate: true }
+                                })}
+                            />
                         </div>
                     )}
                     {user.userType === 'client' && workoutPlan.status === 'pending' && (

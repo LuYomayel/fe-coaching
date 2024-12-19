@@ -225,7 +225,6 @@ const submitPlan = async (plan, planId, isEdit) => {
       ? `${apiUrl}/workout/${plan.isTemplate ? 'template' : 'instance'}/${planId}` 
       : `${apiUrl}/workout`;
   
-    console.log('Plan: ', plan, endpoint, requestMethod)
     const response = await fetch(endpoint, {
       method: requestMethod,
       headers: {

@@ -6,15 +6,44 @@ const messages = {
   'app.connection.status.connected': 'Connected',
   'app.connection.status.disconnected': 'Disconnected',
 
-  // Mensajes de confirmacion
+  // Common
   'common.confirmation': 'Confirmation',
+  'common.actions': 'Actions',
+  'common.loading': 'Loading...',
+  'common.confirm': 'Confirm',
+  'common.cancel': 'Cancel',
+  'common.delete': 'Delete',
+  'common.edit': 'Edit',
+  'common.save': 'Save',
+  'common.copy': 'Copy',
+  'common.template': 'Template',
+  'common.useAsTemplate': 'Use as Template',
+  'common.close': 'Close',
+  'common.search': 'Search',
+  'common.filter': 'Filter',
+  'common.yes': 'Yes',
+  'common.no': 'No',
+  'common.noData': 'No data available',
+  'common.back': 'Back',
+  'common.next': 'Next',
+  'common.confirmation.saveChanges': 'Are you sure you want to save these changes?',
+  'common.selectDate': 'Select Date',
+  'common.noResults': 'No results found.',
+  'common.status': 'Status',
+  'common.select': 'Select',
+  'common.update': 'Update',
+  'common.errorSavingChanges': 'Error saving changes',
+  'common.errorVerifyingChanges': 'Error verifying changes',
+  'common.error': 'Error',
+  'common.success': 'Success',
+
+  // Mensajes de confirmacion
   'assignPlan.confirmation.message': 'Are you sure you want to assign this plan?',
   'assignSubscription.confirmation.message': 'Are you sure you want to generate a subscription for this client?',
   'createCycle.confirmation.message': 'Are you sure you want to create this plan?',
   'deletePlan.confirmation.message': 'Are you sure you want to delete this workout plan?',
   'deleteStudent.confirmation.message': 'Are you sure you want to delete this student?',
   'registerPayment.confirmation.message': 'Are you sure you want to register this payment and update the client\'s subscription?',
-  'common.confirmation.saveChanges': 'Are you sure you want to save these changes?',
   'deleteExercise.confirmation.message': 'Are you sure you want to delete this exercise?',
   'createExercise.confirmation.message': 'Are you sure you want to create this exercise?',
   'updateExercise.confirmation.message': 'Are you sure you want to update this exercise?',
@@ -126,11 +155,7 @@ const messages = {
   'profile.activity.active': 'Very active',
   
   
-  'common.selectDate': 'Select Date',
-  'common.noResults': 'No results found.',
-  'common.status': 'Status',
-  'common.select': 'Select',
-  'common.update': 'Update',
+
 
   
   // NewCoachProfile
@@ -410,21 +435,8 @@ const messages = {
   'plan.error.exerciseRequired': 'Each group must have at least one exercise.',
   'plan.error.exerciseSelect': 'Each exercise must be selected. {name} is not selected.',
   
-  // Additional translations
-  'common.actions': 'Actions',
-  'common.loading': 'Loading...',
-  'common.confirm': 'Confirm',
-  'common.cancel': 'Cancel',
-  'common.delete': 'Delete',
-  'common.edit': 'Edit',
-  'common.save': 'Save',
-  'common.close': 'Close',
-  'common.search': 'Search',
-  'common.filter': 'Filter',
-  'common.yes': 'Yes',
-  'common.no': 'No',
-  'common.noData': 'No data available',
-  'common.errorSavingChanges': 'Error saving changes',
+
+
   
   // Exercise properties
   'exercise.properties.sets': 'Sets',
@@ -656,9 +668,7 @@ const messages = {
   'workoutTable.deleteExercise': 'Delete Exercise',
   'workoutTable.exercisesDeleted': 'Exercises deleted: ',
   'workoutTable.exercisesUpdated': 'Exercises updated: ',
-  'common.errorVerifyingChanges': 'Error verifying changes',
-  'common.error': 'Error',
-  'common.success': 'Success',
+
 
   'fitnessGoal.custom': 'Custom Fitness Goal',
   // Header
@@ -701,8 +711,6 @@ const messages = {
   'coachProfileForm.step.subscription': 'Subscription',
   'coachProfileForm.step.confirmation': 'Confirmation',
   'coachProfileForm.confirmationMessage': 'Please review all information before confirming.',
-  'common.back': 'Back',
-  'common.next': 'Next',
   
   // NewStudentDialog
   'gender.male': 'Male',

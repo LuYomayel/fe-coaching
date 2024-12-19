@@ -57,7 +57,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     useEffect(() => {
         const fetchExercises = async () => {
             const exercises = await getExercises(user.userId);
-            const exercisesDB = exercises.map(exercise => ({ label: exercise.name, value: exercise.id }));
+            const exercisesDB = exercises.map(exercise => ({ label: exercise.name, value: exercise.id, exerciseType: exercise.exerciseType, name: exercise.name }));
             setExercisesDB(exercisesDB);
         }; 
         fetchExercises();
@@ -473,6 +473,25 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         if (!isEditing) {
             return options.rowData.name;
         }
+        return  (
+            <Dropdown
+                value={selectedExercise}
+                options={exercisesDB}
+                onChange={(e) => handleExerciseNameEdit(e, options)}
+                optionLabel="name"
+                filter
+                filterBy="name,exerciseType"
+                placeholder={intl.formatMessage({ id: 'workoutTable.selectExercise' })}
+                className="w-full"
+                itemTemplate={(option) => (
+                <div className='flex flex-column'>
+                    <span>{option.name}</span>
+                    <small className='text-xs'>{option.exerciseType}</small>
+                </div>
+                )}
+                //style={{ height: '40px' }}
+            />
+        )
         return (
             <Dropdown
                 value={selectedExercise}

@@ -6,15 +6,46 @@ const messages = {
   'app.connection.status.connected': 'Conectado',
   'app.connection.status.disconnected': 'Desconectado',
 
-  // Mensajes de confirmacion
+  // Common
+
+  'common.selectDate': 'Seleccionar Fecha',
+  'common.noResults': 'No se encontraron resultados.',
+  'common.status': 'Estado',
+  'common.select': 'Seleccionar',
+  'common.update': 'Actualizar',
+  'common.success': 'Éxito',
+  'common.confirmation.saveChanges': '¿Estás seguro de que deseas guardar estos cambios?',
   'common.confirmation': 'Confirmación',
+  'common.actions': 'Acciones',
+  'common.loading': 'Cargando...',
+  'common.confirm': 'Confirmar',
+  'common.cancel': 'Cancelar',
+  'common.delete': 'Eliminar',
+  'common.template': 'Plantilla',
+  'common.useAsTemplate': 'Usar como Plantilla',
+  'common.edit': 'Editar',
+  'common.save': 'Guardar',
+  'common.copy': 'Copiar',
+  'common.close': 'Cerrar',
+  'common.search': 'Buscar',
+  'common.filter': 'Filtrar',
+  'common.yes': 'Sí',
+  'common.no': 'No',
+  'common.noData': 'No hay datos disponibles',
+  'common.back': 'Atrás',
+  'common.next': 'Siguiente',
+  'common.errorSavingChanges': 'Error al guardar los cambios',
+  'common.error': 'Error',
+  'common.errorVerifyingChanges': 'Error al verificar los cambios',
+
+  // Mensajes de confirmacion
   'assignPlan.confirmation.message': '¿Estás seguro de que deseas asignar este plan?',
   'assignSubscription.confirmation.message': '¿Estás seguro de que deseas generar una suscripción para este cliente?',
   'createCycle.confirmation.message': '¿Estás seguro de que deseas crear este plan?',
   'deletePlan.confirmation.message': '¿Estás seguro de que deseas eliminar este plan?',
   'deleteStudent.confirmation.message': '¿Estás seguro de que deseas eliminar este estudiante?',
   'registerPayment.confirmation.message': '¿Estás seguro de que deseas registrar este pago y actualizar la suscripción del cliente?',
-  'common.confirmation.saveChanges': '¿Estás seguro de que deseas guardar estos cambios?',
+  
   'deleteExercise.confirmation.message': '¿Estás seguro de que deseas eliminar este ejercicio?',
   'createExercise.confirmation.message': '¿Estás seguro de que deseas crear este ejercicio?',
   'updateExercise.confirmation.message': '¿Estás seguro de que deseas actualizar este ejercicio?',
@@ -127,12 +158,7 @@ const messages = {
   'profile.activity.active': 'Muy activo',
   
   
-  'common.selectDate': 'Seleccionar Fecha',
-  'common.noResults': 'No se encontraron resultados.',
-  'common.status': 'Estado',
-  'common.select': 'Seleccionar',
-  'common.update': 'Actualizar',
-  'common.success': 'Éxito',
+
 
   'fitnessGoal.custom': 'Objetivo Fitness Personalizado',
   
@@ -429,22 +455,7 @@ const messages = {
   'plan.error.exerciseSelect': 'Cada ejercicio debe estar seleccionado. {name} no está seleccionado.',
   
   // Traducciones adicionales
-  'common.actions': 'Acciones',
-  'common.loading': 'Cargando...',
-  'common.confirm': 'Confirmar',
-  'common.cancel': 'Cancelar',
-  'common.delete': 'Eliminar',
-  'common.edit': 'Editar',
-  'common.save': 'Guardar',
-  'common.close': 'Cerrar',
-  'common.search': 'Buscar',
-  'common.filter': 'Filtrar',
-  'common.yes': 'Sí',
-  'common.no': 'No',
-  'common.noData': 'No hay datos disponibles',
-  'common.back': 'Atrás',
-  'common.next': 'Siguiente',
-  'common.errorSavingChanges': 'Error al guardar los cambios',
+  
   
   
   // Propiedades de ejercicios
@@ -657,8 +668,7 @@ const messages = {
   'workoutTable.deleteExercise': 'Eliminar Ejercicio',
   'workoutTable.exercisesDeleted': 'Ejercicios eliminados: ',
   'workoutTable.exercisesUpdated': 'Ejercicios actualizados: ',
-  'common.errorVerifyingChanges': 'Error al verificar los cambios',
-  'common.error': 'Error',
+
   
   // Header
   'header.home': 'Inicio',

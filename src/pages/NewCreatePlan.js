@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
@@ -23,6 +24,8 @@ const apiUrl = process.env.REACT_APP_API_URL;
 
 const NewCreatePlan = ({ isEdit }) => {
   const intl = useIntl();
+  const { state} = useLocation();
+  const changeToTemplate = state?.changeToTemplate;
   const propertyList = [
     { name: intl.formatMessage({ id: 'exercise.properties.sets' }), key: 'sets', default: true },
     { name: intl.formatMessage({ id: 'exercise.properties.reps' }), key: 'repetitions', default: true },
@@ -251,7 +254,7 @@ const NewCreatePlan = ({ isEdit }) => {
   };
 
   const addExercise = (groupIndex) => {
-    console.log('groupIndex', groupIndex, exercises[0]);
+
     if (selectedExercise) {
       const newExercise = {
         exercise: {
@@ -362,6 +365,10 @@ const NewCreatePlan = ({ isEdit }) => {
       }
     }
     let contador = 0;  
+    console.log("changeToTemplate", changeToTemplate);
+    if (changeToTemplate) {
+      plan.isTemplate = true;
+    }
     // Create a clean version of the plan object
     const cleanPlan = JSON.parse(JSON.stringify({
       ...plan,
@@ -408,8 +415,7 @@ const NewCreatePlan = ({ isEdit }) => {
 
   const fetchSubmit = async (cleanPlan) => {
     try {
-      console.log("cleanPlan", cleanPlan);
-      await submitPlan(cleanPlan, planId, isEdit);
+      await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
       if (isEdit) {
         showToast('success', 'Plan updated!', `You have updated the plan ${cleanPlan.workout.planName} successfully!`);
       } else {
@@ -671,7 +677,7 @@ const NewCreatePlan = ({ isEdit }) => {
                             </div>
                             <div className="grid">
                               {Object.entries(exercise).map(([key, value]) => {
-                                if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes') {
+                                if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes' && key !== 'rowIndex') {
                                   return (
                                     <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
                                       <div className="flex flex-column">
