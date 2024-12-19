@@ -23,6 +23,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
   const [gender, setGender] = useState('');
   const [height, setHeight] = useState(0);
   const [weight, setWeight] = useState(0);
+  const [customFitnessGoal, setCustomFitnessGoal] = useState('');
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
 
@@ -62,7 +63,11 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
   };
 
   const onClickSaveStudent = async () => {
-    const body = { name, email, fitnessGoal, activityLevel, gender, weight, height, birthdate, coachId: user.userId };
+    let finalFitnessGoals = fitnessGoal;
+    if (fitnessGoal.includes('other') && customFitnessGoal) {
+      finalFitnessGoals = fitnessGoal.filter(goal => goal !== 'other').concat(customFitnessGoal);
+    }
+    const body = { name, email, fitnessGoal: finalFitnessGoals, activityLevel, gender, weight, height, birthdate, coachId: user.userId };
 
     if (!name || !email) {
       showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'student.error.nameEmailRequired' }));
@@ -84,7 +89,8 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
       message: intl.formatMessage({ id: 'student.confirmation.create' }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: "pi pi-exclamation-triangle",
-      accept: () => handleSaveStudent(body),
+      //accept: () => handleSaveStudent(body),
+      accept: () => console.log(body),
       reject: () => console.log('Rejected')
     });
   };
@@ -103,6 +109,12 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
         <label htmlFor="fitnessGoal"><FormattedMessage id="fitnessGoal" /></label>
         <MultiSelect id="fitnessGoal" options={fitnessGoals} value={fitnessGoal} onChange={(e) => setFitnessGoal(e.target.value)} />
       </div>
+      {fitnessGoal.includes('other') && (
+        <div className="p-field">
+          <label htmlFor="customFitnessGoal"><FormattedMessage id="fitnessGoal.custom" /></label>
+          <InputText id="customFitnessGoal" value={customFitnessGoal} onChange={(e) => setCustomFitnessGoal(e.target.value)} />
+        </div>
+      )}
       <div className="p-field">
         <label htmlFor="activityLevel"><FormattedMessage id="activityLevel" /></label>
         <Dropdown id="activityLevel" options={activityLevels} value={activityLevel} onChange={(e) => setActivityLevel(e.target.value)} />

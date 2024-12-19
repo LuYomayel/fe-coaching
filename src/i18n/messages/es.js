@@ -133,6 +133,8 @@ const messages = {
   'common.select': 'Seleccionar',
   'common.update': 'Actualizar',
   'common.success': 'Éxito',
+
+  'fitnessGoal.custom': 'Objetivo Fitness Personalizado',
   
   
   // NewCoachProfile

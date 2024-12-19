@@ -660,6 +660,7 @@ const messages = {
   'common.error': 'Error',
   'common.success': 'Success',
 
+  'fitnessGoal.custom': 'Custom Fitness Goal',
   // Header
   'header.home': 'Home',
   'header.profile': 'Profile',
