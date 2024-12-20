@@ -107,7 +107,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide }) => {
       </div>
       <div className="p-field">
         <label htmlFor="startDate"><FormattedMessage id="startDate" /></label>
-        <Calendar id="startDate" value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
+        <Calendar id="startDate" value={startDate} dateFormat="dd/mm/yy" onChange={(e) => setStartDate(e.value)} showIcon />
       </div>
       <div className="p-field">
         <label htmlFor="durationInMonths"><FormattedMessage id="createCycle.durationInMonths" /></label>

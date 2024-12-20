@@ -70,7 +70,7 @@ const messages = {
   'clients.completed': 'Completado',
   'clients.pending': 'Pendiente',
   'clients.expired': 'Expirado',
-  'trainingPlans.title': 'Planes de Entrenamiento',
+  'trainingPlans.title': 'Sesiones de Entrenamiento',
   'trainingPlans.newPlan': 'Nuevo Plan',
   'trainingPlans.editPlan': 'Editar Plan',
   'recentActivity.title': 'Actividad Reciente',
@@ -237,7 +237,7 @@ const messages = {
   // NewManageStudents
   'students.title': 'Gestionar Estudiantes',
   'students.subtitle': 'Ver y gestionar el progreso de tus estudiantes',
-  'students.description': 'Usa esta página para seguir el progreso de tus estudiantes, asignar planes de entrenamiento y comunicarte directamente con ellos.',
+  'students.description': 'Usa esta página para seguir el progreso de tus estudiantes, asignar sesiones de entrenamiento y comunicarte directamente con ellos.',
   
   'students.search': 'Buscar estudiantes',
   'students.addNew': 'Agregar Nuevo Estudiante',
@@ -317,8 +317,8 @@ const messages = {
   'studentDetails.activities.title': 'Actividades Recientes',
   'studentDetails.progress.title': 'Progreso',
   
-  'studentDetails.plans.current': 'Planes de Entrenamiento Actuales',
-  'studentDetails.plans.completed': 'Planes de Entrenamiento Completados',
+  'studentDetails.plans.current': 'Sesiones de Entrenamiento Actuales',
+  'studentDetails.plans.completed': 'Sesiones de Entrenamiento Completados',
   'studentDetails.plans.name': 'Nombre del Plan',
   'studentDetails.plans.description': 'Descripción',
   'studentDetails.plans.notes': 'Notas',
@@ -521,7 +521,7 @@ const messages = {
   'dashboard.calendar.list': 'Lista',
   
   // NewCoachHome - Adicionales
-  'coach.sections.trainingPlans': 'Planes de Entrenamiento',
+  'coach.sections.trainingPlans': 'Sesiones de Entrenamiento',
   'coach.sections.recentActivity': 'Actividad Reciente',
   'coach.sections.recentMessages': 'Mensajes Recientes',
   'coach.sections.workoutProgress': 'Progreso de Entrenamientos',
@@ -568,7 +568,7 @@ const messages = {
   'home.features.title': 'Características Clave',
   'home.features.manageClients': 'Gestionar Clientes',
   'home.features.manageClientsDesc': 'Gestiona fácilmente los detalles y el progreso de tus clientes en un solo lugar.',
-  'home.features.customPlans': 'Planes de Entrenamiento Personalizados',
+  'home.features.customPlans': 'Sesiones de Entrenamiento Personalizados',
   'home.features.customPlansDesc': 'Crea rutinas de entrenamiento personalizadas adaptadas a las necesidades de cada cliente.',
   'home.features.trackProgress': 'Seguimiento del Progreso',
   'home.features.trackProgressDesc': 'Visualiza el progreso del cliente con gráficos y reportes basados en datos.',
@@ -583,7 +583,7 @@ const messages = {
   'home.testimonials.title': 'Lo que Dicen Nuestros Usuarios',
   'home.testimonials.sarah': 'EaseTrain ha revolucionado cómo gestiono a mis clientes. ¡Es un cambio de juego para los entrenadores personales!',
   'home.testimonials.mike': 'La función de seguimiento del progreso me mantiene motivado. Me encanta ver mis mejoras con el tiempo.',
-  'home.testimonials.emily': 'Los planes de entrenamiento personalizados y los tutoriales en video me han ayudado a brindar un mejor servicio a mis clientes.',
+  'home.testimonials.emily': 'Las sesiones de entrenamiento personalizados y los tutoriales en video me han ayudado a brindar un mejor servicio a mis clientes.',
   
   'home.footer.terms': 'Términos de Servicio',
   'home.footer.privacy': 'Privacidad',

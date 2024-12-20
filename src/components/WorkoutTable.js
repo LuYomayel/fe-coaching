@@ -165,7 +165,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                             {isEditing && <Column
                                                 header={intl.formatMessage({ id: 'workoutTable.deleteExercise' })}
                                                 body={(rowData, options) => {
-                                                    if (!rowData.isNew) {
+                                                    if(rowData.name !== intl.formatMessage({ id: 'workoutTable.addNewExercise' }) && exercises.length > 1){
                                                         return (
                                                             <Button
                                                                 icon="pi pi-trash"
@@ -580,7 +580,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     // Preparar los datos para enviar al nuevo endpoint
                     
                     try {
-                        if(deletedExercises.length > 0){
+                        if(deletedExercises.length > 0 && !newTraining){
                             const cleanExercises = {
                                 exerciseIds: deletedExercises.filter(ex => ex !== null)
                             };
@@ -610,8 +610,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
 
                         // Comparar los snapshots filtrados con los datos actuales
                         const hasChanges = JSON.stringify(exerciseData) !== JSON.stringify(filteredOriginalSnapshot);
-                        console.log('hasChanges', hasChanges, exerciseData, filteredOriginalSnapshot);
-                        if(hasChanges){
+                        if(hasChanges && !newTraining){
                             //console.log("exerciseData", exerciseData, originalExercisesSnapshot);
                             const response = await verifyExerciseChanges(exerciseData);
                             if(response.message){
@@ -658,8 +657,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const headerGroup = (
         <ColumnGroup>
             <Row>
-                {isEditing && <Column header="" rowSpan={2} style={{ width: '100%' }} />}   
-                <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} rowSpan={2} style={{ width: '100%' }} />
+                {isEditing && <Column header="" rowSpan={2} style={{ width: '10%' }} />}   
+                <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} rowSpan={2} style={{ width: '40%' }} />
                 {Array.from({ length: numWeeks }, (_, i) => (
                     <Column header={`${intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}`} colSpan={properties.length} key={`week-${i}`} />
                 ))}

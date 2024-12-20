@@ -592,7 +592,7 @@ const NewCreatePlan = ({ isEdit }) => {
         <label htmlFor="personalized-notes" className="block text-sm font-medium mb-1">
           <FormattedMessage id="plan.notes" />
         </label>
-        <InputTextarea  id="personalized-notes" value={plan.personalizedNotes} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })}  className="w-full" />
+        <InputTextarea rows={1} id="personalized-notes" value={plan.personalizedNotes} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })}  className="w-full" />
       </Card>
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -710,7 +710,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                 id={`exercise-${exercise.id}-notes`}
                                 value={exercise.notes}
                                 onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, 'notes', e.target.value)}
-                                rows={2}
+                                rows={1}
                                 className="w-full"
                               />
                             </div>
@@ -725,15 +725,16 @@ const NewCreatePlan = ({ isEdit }) => {
                                 onChange={(e) => setSelectedExercise(e.value)}
                                 optionLabel="name"
                                 filter
-                              filterBy="name,exerciseType"
-                              placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
-                              className="w-full"
-                              itemTemplate={(option) => (
-                                <div className='flex flex-column'>
-                                  <span>{option.name}</span>
-                                  <small className='text-xs'>{option.exerciseType}</small>
-                                </div>
-                              )}
+                                filterBy="name,exerciseType"
+                                resetFilterOnHide
+                                placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
+                                className="w-full"
+                                itemTemplate={(option) => (
+                                  <div className='flex flex-column'>
+                                    <span>{option.name}</span>
+                                    <small className='text-xs'>{option.exerciseType}</small>
+                                  </div>
+                                )}
                               //style={{ height: '40px' }}
                             />
                             </div>
