@@ -770,9 +770,9 @@ const messages = {
 
   // NewCoachProfile
   'coach.plan.success.created': 'Plan created successfully',
-  'coach.plan.success.created.message': 'The plan has been created successfully',
+  'coach.plan.success.created.message': 'The plan {name} has been created successfully',
   'coach.plan.success.updated': 'Plan updated successfully',
-  'coach.plan.success.updated.message': 'The plan has been updated successfully',
+  'coach.plan.success.updated.message': 'The plan {name} has been updated successfully',
   'coach.plan.error.name.empty': 'The plan name cannot be empty',
   'coach.plan.error.price.zero': 'The plan price cannot be 0',
   'coach.plan.error.workouts.zero': 'The number of workouts per week cannot be 0',

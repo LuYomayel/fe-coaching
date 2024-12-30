@@ -492,6 +492,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                 //style={{ height: '40px' }}
             />
         )
+        /*
         return (
             <Dropdown
                 value={selectedExercise}
@@ -503,6 +504,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                 filter
             />
         );
+        */
     };
 
     const onEditorValueChange = (options, value, property, weekIndex) => {

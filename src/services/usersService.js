@@ -50,6 +50,15 @@ const fetchClient = async (userId) => {
     }
 };
 
+const fetchClientByClientId = async (clientId) => {
+  const response = await fetch(`${apiUrl}/users/client/clientId/${clientId}`);
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error('Unable to fetch client data');
+  }
+};
+
 const fetchCoachPlans = async (userId) => {
     try {
       const response = await fetch(`${apiUrl}/users/coach/coachPlan/${userId}`);
@@ -313,6 +322,7 @@ export {
     fetchRecentActivitiesByCoachId,
     fetchWorkoutProgressByCoachId,
     fetchUpcomingSessionsByCoachId,
+    fetchClientByClientId,
     fetchLastMessages,
     fetchClientActivities,
     saveStudent,

@@ -22,6 +22,7 @@ import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialo
 import NewPlanDetail from '../dialogs/NewPlanDetails';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId } from '../services/workoutService';
+import { fetchClientByClientId } from '../services/usersService';
 import '../styles/ClientDashboard.css';
 import { formatDate } from '../utils/UtilFunctions';
 import WorkoutTable from '../components/WorkoutTable';
@@ -31,6 +32,7 @@ import allLocales from '@fullcalendar/core/locales-all';
 
 export default function ClientDashboard() {
   const { clientId } = useParams();
+  const [ clientData, setClientData ] = useState(null);
   const toast = useRef(null);
   const showToast = useToast();
   const { setLoading } = useSpinner();
@@ -99,6 +101,14 @@ export default function ClientDashboard() {
         showToast('error', 'Error fetching client workouts', error.message);
       })
       .finally(() => setLoading(false));
+
+      fetchClientByClientId(clientId)
+      .then(data => {
+        setClientData(data);
+      })
+      .catch(error => {
+        showToast('error', 'Error fetching client data', error.message);
+      });
   }, [clientId, showToast, setLoading, refreshKey]);
 
   // Update chart data when selectedExercise changes
@@ -377,6 +387,9 @@ export default function ClientDashboard() {
         <h1 className="text-4xl font-bold text-center text-white">
           <FormattedMessage id="clientDashboard.title" />
         </h1>
+        <h2 className="text-xl font-bold text-center text-white">
+          {clientData?.name}
+        </h2>
       </Card>
 
       <TabView>

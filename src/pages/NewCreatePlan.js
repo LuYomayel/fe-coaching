@@ -248,17 +248,12 @@ const NewCreatePlan = ({ isEdit }) => {
     });
   };
 
-  const openExerciseDialog = (groupIndex) => {
-    setSelectedGroup(groupIndex);
-    setShowExerciseDialog(true);
-  };
-
   const addExercise = (groupIndex) => {
 
-    if (selectedExercise) {
+    if (selectedExercise?.[groupIndex]) {
       const newExercise = {
         exercise: {
-          ...selectedExercise
+          ...selectedExercise[groupIndex]
         },
         id: exerciseCounter,
         notes: '',
@@ -417,9 +412,9 @@ const NewCreatePlan = ({ isEdit }) => {
     try {
       await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
       if (isEdit) {
-        showToast('success', 'Plan updated!', `You have updated the plan ${cleanPlan.workout.planName} successfully!`);
+        showToast('success', intl.formatMessage({ id: 'plan.success.updated' }), intl.formatMessage({ id: 'plan.success.updated.message' }, { name: cleanPlan.workout.planName }));
       } else {
-        showToast('success', 'Plan created!', intl.formatMessage({ id: 'plan.success.created' }, { name: cleanPlan.workout.planName }));
+        showToast('success', intl.formatMessage({ id: 'plan.success.created' }), intl.formatMessage({ id: 'plan.success.created.message' }, { name: cleanPlan.workout.planName }));
       }
       localStorage.removeItem('unsavedPlan');
       navigate(-1);
@@ -720,9 +715,14 @@ const NewCreatePlan = ({ isEdit }) => {
                           <div className="flex align-items-center">
                             <div className="w-full">
                               <Dropdown
-                                value={selectedExercise}
+                                id={`exercise-dropdown-${groupIndex}`}
+                                value={selectedExercise?.[groupIndex]}
                                 options={exercises}
-                                onChange={(e) => setSelectedExercise(e.value)}
+                                onChange={(e) => {
+                                  const newSelectedExercises = {...selectedExercise};
+                                  newSelectedExercises[groupIndex] = e.value;
+                                  setSelectedExercise(newSelectedExercises);
+                                }}
                                 optionLabel="name"
                                 filter
                                 filterBy="name,exerciseType"
