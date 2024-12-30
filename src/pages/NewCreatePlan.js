@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
 import '../styles/CreatePlan.css';
+import { FaGripVertical } from 'react-icons/fa'; // Importa el ícono de "handle"
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -313,15 +314,39 @@ const NewCreatePlan = ({ isEdit }) => {
   const onDragEnd = (result) => {
     if (!result.destination) return;
 
-    const newGroups = Array.from(plan.groups);
-    const [reorderedGroup] = newGroups.splice(result.source.index, 1);
-    newGroups.splice(result.destination.index, 0, reorderedGroup);
+    const { source, destination } = result;
 
-    newGroups.forEach((group, index) => {
-      group.groupNumber = index + 1;
-    });
+    if (source.droppableId === 'groups' && destination.droppableId === 'groups') {
+      // Mover grupos
+      const newGroups = Array.from(plan.groups);
+      const [movedGroup] = newGroups.splice(source.index, 1);
+      newGroups.splice(destination.index, 0, movedGroup);
 
-    setPlan({ ...plan, groups: newGroups });
+      // Actualizar el número de grupo
+      newGroups.forEach((group, index) => {
+        group.groupNumber = index + 1;
+      });
+
+      setPlan({ ...plan, groups: newGroups });
+    } else {
+      // Mover ejercicios
+      const sourceGroupIndex = parseInt(source.droppableId.split('-')[1]);
+      const destinationGroupIndex = parseInt(destination.droppableId.split('-')[1]);
+
+      const newGroups = Array.from(plan.groups);
+      const [movedExercise] = newGroups[sourceGroupIndex].exercises.splice(source.index, 1);
+      newGroups[destinationGroupIndex].exercises.splice(destination.index, 0, movedExercise);
+
+      // Actualizar el índice de cada ejercicio en ambos grupos
+      newGroups[sourceGroupIndex].exercises.forEach((exercise, index) => {
+        exercise.rowIndex = index;
+      });
+      newGroups[destinationGroupIndex].exercises.forEach((exercise, index) => {
+        exercise.rowIndex = index;
+      });
+
+      setPlan({ ...plan, groups: newGroups });
+    }
   };
 
 
@@ -394,7 +419,7 @@ const NewCreatePlan = ({ isEdit }) => {
       })
     }));
 
-    
+    console.log("cleanPlan", cleanPlan);
     showConfirmationDialog({
       message: intl.formatMessage({ 
         id: isEdit ? 'plan.dialog.confirmEdit' : 'plan.dialog.confirmCreate' 
@@ -412,9 +437,9 @@ const NewCreatePlan = ({ isEdit }) => {
     try {
       await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
       if (isEdit) {
-        showToast('success', intl.formatMessage({ id: 'plan.success.updated' }), intl.formatMessage({ id: 'plan.success.updated.message' }, { name: cleanPlan.workout.planName }));
+        showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message' }, { name: cleanPlan.workout.planName }));
       } else {
-        showToast('success', intl.formatMessage({ id: 'plan.success.created' }), intl.formatMessage({ id: 'plan.success.created.message' }, { name: cleanPlan.workout.planName }));
+        showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message' }, { name: cleanPlan.workout.planName }));
       }
       localStorage.removeItem('unsavedPlan');
       navigate(-1);
@@ -591,16 +616,15 @@ const NewCreatePlan = ({ isEdit }) => {
       </Card>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="groups" direction="horizontal">
+        <Droppable droppableId="groups" direction="horizontal" type="group">
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="grid">
               {plan.groups.map((group, groupIndex) => (
-                <Draggable key={group.groupNumber} draggableId={`group-${group.groupNumber}`} index={groupIndex}>
+                <Draggable key={`group-${group.groupNumber}`} draggableId={`group-${group.groupNumber}`} index={groupIndex}>
                   {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      {...provided.dragHandleProps}
                       className={`col-12 md:col-6 lg:col-4 xl:col-3 p-2 ${snapshot.isDragging ? 'opacity-50' : ''}`}
                       style={{
                         ...provided.draggableProps.style,
@@ -609,108 +633,102 @@ const NewCreatePlan = ({ isEdit }) => {
                     >
                       <Card className="h-full">
                         <div className="flex justify-content-between align-items-center mb-3">
-                          <h3 className="text-xl m-0">
-                            {group.isRestPeriod ? (
-                              <FormattedMessage id="plan.group.restPeriod" />
-                            ) : (
-                              <FormattedMessage id="plan.group.title" values={{ number: group.groupNumber }} />
-                            )}
-                          </h3>
+                          <div className="flex align-items-center">
+                            <span {...provided.dragHandleProps}>
+                              <FaGripVertical className="mr-2 cursor-pointer" />
+                            </span>
+                            <h3 className="text-xl m-0">
+                              {group.isRestPeriod ? (
+                                <FormattedMessage id="plan.group.restPeriod" />
+                              ) : (
+                                <FormattedMessage id="plan.group.title" values={{ number: group.groupNumber }} />
+                              )}
+                            </h3>
+                          </div>
                           <Button icon="pi pi-trash" raised className="p-button-danger p-button-text" onClick={() => removeGroup(groupIndex)} />
                         </div>
-                        <div className="grid mb-3">
-                            {!group.isRestPeriod && (
-                            <div className="col-6">
-                              
-                                <label htmlFor={`group-${group.name}-name`} className="block text-sm font-medium mb-1">
-                                  <FormattedMessage id="plan.group.name" />
-                                </label>
-                            
-                            <InputText id={`group-${group.name}-name`} value={group.name} onChange={(e) => {
-                              const newGroups = [...plan.groups];
-                              newGroups[groupIndex].name = e.target.value;
-                              setPlan({ ...plan, groups: newGroups });
-                            }} />
-                          </div>
-                            
-                            )}
-                          {group.isRestPeriod && (
-                            <div className="col-6">
-                              <label htmlFor={`group-${group.groupNumber}-restDuration`} className="block text-sm font-medium mb-1">
-                                <FormattedMessage id="plan.group.restDuration" />
-                              </label>
-                              <InputText
-                                id={`group-${group.groupNumber}-restDuration`}
-                                value={group.restDuration}
-                                onChange={(e) => {
-                                  const newGroups = [...plan.groups];
-                                  newGroups[groupIndex].restDuration = e.target.value;
-                                  setPlan({ ...plan, groups: newGroups });
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                        {!group.isRestPeriod && group.exercises.map((exercise, exerciseIndex) => (
-                          <div key={exercise.id} className="mb-3 p-2 border-1 border-gray-200 border-round">
-                            <div className="flex justify-content-between align-items-center mb-2">
-                              <h4 className="text-lg m-0">{exercise.exercise?.name}</h4>
-                              <div>
-                                <Button
-                                  icon="pi pi-plus"
-                                  className="p-button-text p-button-sm"
-                                  raised
-                                  onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
-                                />
-                                <Button
-                                  icon="pi pi-trash"
-                                  className="p-button-danger p-button-text p-button-sm"
-                                  raised
-                                  onClick={() => removeExercise(groupIndex, exerciseIndex)}
-                                />
-                              </div>
-                            </div>
-                            <div className="grid">
-                              {Object.entries(exercise).map(([key, value]) => {
-                                if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes' && key !== 'rowIndex') {
-                                  return (
-                                    <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
-                                      <div className="flex flex-column">
-                                        <label className="">{propertyList.find(p => p.key === key)?.name || key}</label>
-                                        <div className="flex align-items-center">
-                                          <InputText
-                                            value={exercise[key]}
-                                            onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, key, e.target.value)}
+                        <Droppable droppableId={`group-${groupIndex}`} type="exercise">
+                          {(provided) => (
+                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                              {!group.isRestPeriod && group.exercises
+                                .sort((a, b) => a.rowIndex - b.rowIndex)
+                                .map((exercise, exerciseIndex) => (
+                                  <Draggable key={`exercise-${exercise.id}`} draggableId={`exercise-${exercise.id}`} index={exerciseIndex}>
+                                    {(provided) => (
+                                      <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        className="mb-3 p-2 border-1 border-gray-200 border-round"
+                                      >
+                                        <div className="flex justify-content-between align-items-center mb-2">
+                                          <div className="flex align-items-center">
+                                            <span {...provided.dragHandleProps}>
+                                              <FaGripVertical className="mr-2 cursor-pointer" />
+                                            </span>
+                                            <h4 className="text-lg m-0">{exercise.exercise?.name}</h4>
+                                          </div>
+                                          <div>
+                                            <Button
+                                              icon="pi pi-plus"
+                                              className="p-button-text p-button-sm"
+                                              raised
+                                              onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
+                                            />
+                                            <Button
+                                              icon="pi pi-trash"
+                                              className="p-button-danger p-button-text p-button-sm"
+                                              raised
+                                              onClick={() => removeExercise(groupIndex, exerciseIndex)}
+                                            />
+                                          </div>
+                                        </div>
+                                        <div className="grid">
+                                          {Object.entries(exercise).map(([key, value]) => {
+                                            if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes' && key !== 'rowIndex') {
+                                              return (
+                                                <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
+                                                  <div className="flex flex-column">
+                                                    <label className="">{propertyList.find(p => p.key === key)?.name || key}</label>
+                                                    <div className="flex align-items-center">
+                                                      <InputText
+                                                        value={exercise[key]}
+                                                        onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, key, e.target.value)}
+                                                        className="w-full"
+                                                      />
+                                                      <Button
+                                                        icon="pi pi-times"
+                                                        raised
+                                                        className="p-button-danger p-button-text p-button-sm"
+                                                        onClick={() => removeProperty(groupIndex, exerciseIndex, key)}
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              );
+                                            }
+                                            return null;
+                                          })}
+                                        </div>
+                                        <div className="mt-2">
+                                          <label htmlFor={`exercise-${exercise.id}-notes`} className="block text-sm font-medium mb-1">
+                                            <FormattedMessage id="plan.exercise.notes" />
+                                          </label>
+                                          <InputTextarea
+                                            id={`exercise-${exercise.id}-notes`}
+                                            value={exercise.notes}
+                                            onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, 'notes', e.target.value)}
+                                            rows={1}
                                             className="w-full"
-                                          />
-                                          <Button
-                                            icon="pi pi-times"
-                                            raised
-                                            className="p-button-danger p-button-text p-button-sm"
-                                            onClick={() => removeProperty(groupIndex, exerciseIndex, key)}
                                           />
                                         </div>
                                       </div>
-                                    </div>
-                                  );
-                                }
-                                return null;
-                              })}
+                                    )}
+                                  </Draggable>
+                                ))}
+                              {provided.placeholder}
                             </div>
-                            <div className="mt-2">
-                              <label htmlFor={`exercise-${exercise.id}-notes`} className="block text-sm font-medium mb-1">
-                                <FormattedMessage id="plan.exercise.notes" />
-                              </label>
-                              <InputTextarea
-                                id={`exercise-${exercise.id}-notes`}
-                                value={exercise.notes}
-                                onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, 'notes', e.target.value)}
-                                rows={1}
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-                        ))}
+                          )}
+                        </Droppable>
                         {!group.isRestPeriod && (
                           <div className="flex align-items-center">
                             <div className="w-full">
@@ -755,6 +773,7 @@ const NewCreatePlan = ({ isEdit }) => {
                   )}
                 </Draggable>
               ))}
+              {provided.placeholder}
               <div className="col-12 md:col-6 lg:col-4 xl:col-3 p-2">
                 <Card className="h-full flex justify-content-center align-items-center cursor-pointer">
                   <div className="flex flex-column sm:flex-row gap-2 justify-content-center align-items-center">
@@ -777,7 +796,6 @@ const NewCreatePlan = ({ isEdit }) => {
                   </div>
                 </Card>
               </div>
-              {provided.placeholder}
             </div>
           )}
         </Droppable>
