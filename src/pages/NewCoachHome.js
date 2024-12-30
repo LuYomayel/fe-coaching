@@ -4,7 +4,6 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { ProgressBar } from 'primereact/progressbar';
 import { Avatar } from 'primereact/avatar';
 import { Tag } from 'primereact/tag';
 import { Timeline } from 'primereact/timeline';
@@ -113,7 +112,6 @@ export default function CoachHomePage() {
       const fetchTrainingPlans = async () => {
         try {
           setIsTrainingPlansLoading(true);
-          console.log('Logueando', user.userId)
           const trainingPlansData = await fetchWorkoutProgressByCoachId(coach.id);
           const plans = trainingPlansData.map(cycle => ({
               name: cycle.name,
@@ -191,7 +189,6 @@ export default function CoachHomePage() {
           try {
               const workouts = await fetchCoachWorkouts(user.userId);
               setWorkouts(workouts);
-              console.log(workouts)
           } catch (error) {
               console.error('Error fetching workouts:', error);
           }

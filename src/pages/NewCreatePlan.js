@@ -21,6 +21,7 @@ import '../styles/CreatePlan.css';
 import { FaGripVertical } from 'react-icons/fa'; // Importa el ícono de "handle"
 
 
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const NewCreatePlan = ({ isEdit }) => {
@@ -38,15 +39,14 @@ const NewCreatePlan = ({ isEdit }) => {
     { name: intl.formatMessage({ id: 'exercise.properties.duration' }), key: 'duration', default: false },
     { name: intl.formatMessage({ id: 'exercise.properties.distance' }), key: 'distance', default: false },
   ];
-
+  const navigate = useNavigate();
   const { planId } = useParams();
   const { user } = useContext(UserContext);
   const showToast = useToast();
   const { setLoading } = useSpinner();
-    const { showConfirmationDialog } = useConfirmationDialog();
+  const { showConfirmationDialog } = useConfirmationDialog();
   const [deletedGroup, setDeletedGroup] = useState(null);
   const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
-
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
     return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
@@ -85,7 +85,7 @@ const NewCreatePlan = ({ isEdit }) => {
     }
   }, [plan, isEdit]);
 
-  const navigate = useNavigate();
+
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
@@ -94,6 +94,7 @@ const NewCreatePlan = ({ isEdit }) => {
   const toast = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [exerciseCounter, setExerciseCounter] = useState(0);
+  const [isBlocking, setIsBlocking] = useState(true);
 
     useEffect(() => {
         setLoading(isUploading)
@@ -134,21 +135,6 @@ const NewCreatePlan = ({ isEdit }) => {
 
     fetchPlanDetails();
   }, [isEdit, planId, setLoading, setPlan, showToast]);
-
-  useEffect(() => {
-    const handlePopState = (event) => {
-      console.log('User pressed the back button');
-      alert('HOLA')
-      // Puedes agregar aquí la lógica que necesitas al detectar la acción de retroceso
-      // navigate(-1); // Ejemplo para navegar hacia atrás programáticamente si lo deseas
-    };
-
-    window.addEventListener('onbeforeunload', handlePopState);
-
-    return () => {
-      window.removeEventListener('onbeforeunload', handlePopState);
-    };
-  }, [navigate]);
 
   useEffect(() => {
     fetch(`${apiUrl}/exercise`)
@@ -273,7 +259,7 @@ const NewCreatePlan = ({ isEdit }) => {
       setPlan({ ...plan, groups: newGroups });
       setExerciseCounter(exerciseCounter + 1);
       setShowExerciseDialog(false);
-      setSelectedExercise(null);
+      setSelectedExercise((prev) => ({...prev, [groupIndex]: null}));
     }
   };
 
