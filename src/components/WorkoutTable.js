@@ -17,6 +17,7 @@ import { Dialog } from 'primereact/dialog';
 import { Checkbox } from 'primereact/checkbox';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import '../styles/WorkoutTable.css';
+import { FaGripVertical } from 'react-icons/fa';
 
 export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey }) {
     const intl = useIntl();
@@ -68,8 +69,17 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         fetchExercises();
     }, [user.userId]);
 
-    const renderExerciseName = (rowData) => {
-        return rowData.name;
+    const renderExerciseName = (rowData, provided) => {
+        return (
+            <div className="flex align-items-center">
+                {isEditing && (
+                    <span {...provided.dragHandleProps}>
+                        <FaGripVertical className="mr-2 cursor-pointer" />
+                    </span>
+                )}
+                {rowData.name}
+            </div>
+        );
     };
 
     const renderTablesByDayNumber = () => {
@@ -204,28 +214,26 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                                         );
                                                     }
                                                     return (
-                                                        <div className="flex align-items-center">
-                                                            <Draggable
-                                                                key={rowData.uniqueId}
-                                                                draggableId={rowData.uniqueId}
-                                                                index={exercisesForDay.indexOf(rowData)}
-                                                                isDragDisabled={!(isEditing || newTraining)}
-                                                            >
-                                                                {(provided) => (
-                                                                    <div
-                                                                        ref={provided.innerRef}
-                                                                        {...provided.draggableProps}
-                                                                        {...provided.dragHandleProps}
-                                                                        style={{
-                                                                            ...provided.draggableProps.style,
-                                                                            cursor: 'move'
-                                                                        }}
-                                                                    >
-                                                                        {renderExerciseName(rowData)}
-                                                                    </div>
-                                                                )}
-                                                            </Draggable>
-                                                        </div>
+                                                        <Draggable
+                                                            key={rowData.uniqueId}
+                                                            draggableId={rowData.uniqueId}
+                                                            index={exercisesForDay.indexOf(rowData)}
+                                                            isDragDisabled={!(isEditing || newTraining)}
+                                                        >
+                                                            {(provided) => (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    style={{
+                                                                        ...provided.draggableProps.style,
+                                                                        display: 'flex',
+                                                                        alignItems: 'center'
+                                                                    }}
+                                                                >
+                                                                    {renderExerciseName(rowData, provided)}
+                                                                </div>
+                                                            )}
+                                                        </Draggable>
                                                     );
                                                 }}
                                                 editor={(options) => exerciseEditor(options)}
@@ -333,7 +341,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             });
             setOriginalExercisesSnapshot(exerciseData);
             setExercises(justExercises);
-            setOriginalExercises(JSON.parse(JSON.stringify(sortedExercises)));
+            setOriginalExercises(justExercises);
             setNumWeeks(numWeeks);
             setProperties(Array.from(propertiesSet));
         }
@@ -885,13 +893,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         setProperties([...properties, ...newProperties]);
     };
 
-    const openNewTrainingDialog = () => {
-        setDialogContext('newTraining');
-        setOriginalProperties([]); // No hay propiedades originales en nuevo entrenamiento
-        setSelectedProperties(defaultProperties); // Seleccionar propiedades por defecto
-        setShowTrainingNameDialog(true);
-    };
-
     const openPropertyDialog = () => {
         setDialogContext('addProperties');
         setSelectedProperties(properties); // Mantener las propiedades actuales seleccionadas
@@ -905,6 +906,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             // limpiar todos los arrays de ejercicios
             setEditedExercises([]);
             setDeletedExercises([]);
+            setExercises(originalExercises);
 
         } else if (dialogContext === 'newTraining') {
             setProperties([]); // Limpiar todo para nuevo entrenamiento
