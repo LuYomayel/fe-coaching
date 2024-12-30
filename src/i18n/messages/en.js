@@ -62,7 +62,7 @@ const messages = {
   'stats.totalClients': 'Total Clients',
   'stats.activePlans': 'Active Plans',
   'stats.upcomingSessions': 'Upcoming Sessions',
-  'clients.title': 'Manage Clients',
+  'clients.title': 'Clients',
   'clients.search': 'Search clients...',
   'clients.noClientsFound': 'No clients found.',
   'clients.completed': 'Completed',

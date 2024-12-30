@@ -64,7 +64,7 @@ const messages = {
   'stats.totalClients': 'Clientes Totales',
   'stats.activePlans': 'Planes Activos',
   'stats.upcomingSessions': 'Próximas Sesiones',
-  'clients.title': 'Gestionar Clientes',
+  'clients.title': 'Clientes',
   'clients.search': 'Buscar clientes...',
   'clients.noClientsFound': 'No se encontraron clientes.',
   'clients.completed': 'Completado',

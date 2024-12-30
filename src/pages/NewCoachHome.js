@@ -260,9 +260,9 @@ export default function CoachHomePage() {
 
   const header = (
     <div className="flex justify-content-between align-items-center">
-      <h5 className="m-0">
+      {/* <h5 className="m-0">
         <FormattedMessage id="clients.title" />
-      </h5>
+      </h5> */}
       <IconField iconPosition="left">
             <InputIcon className="pi pi-search"> </InputIcon>
             <InputText
@@ -284,7 +284,7 @@ export default function CoachHomePage() {
     };
 
     const progressBodyTemplate = (rowData) => {
-        if(!rowData.progress) {
+        if (!rowData.progress) {
             return null;
         }
         const progress = rowData.progress;
@@ -293,24 +293,26 @@ export default function CoachHomePage() {
         const pendingCount = progress.filter(p => p.status === 'Pending').length;
         const expiredCount = progress.filter(p => p.status === 'Expired').length;
 
+        const completedPercentage = (completedCount / totalWorkouts) * 100;
+        const pendingPercentage = (pendingCount / totalWorkouts) * 100;
+        const expiredPercentage = (expiredCount / totalWorkouts) * 100;
+
         return (
             <div className="flex align-items-center gap-2">
                 <Tag value={intl.formatMessage({ id: 'coach.progress.completed' }, { count: completedCount })} severity="success" />
                 <Tag value={intl.formatMessage({ id: 'coach.progress.pending' }, { count: pendingCount })} severity="warning" />
                 <Tag value={intl.formatMessage({ id: 'coach.progress.expired' }, { count: expiredCount })} severity="danger" />
-                <div style={{ width: '100%' }}>
-                    <ProgressBar 
-                        value={(completedCount / totalWorkouts) * 100} 
-                        showValue={false} 
-                        style={{ height: '10px', backgroundColor: '#e0e0e0' }}
-                    />
-                    <small>
-                        <FormattedMessage 
-                            id="coach.progress.total" 
-                            values={{ completed: completedCount, total: totalWorkouts }} 
-                        />
-                    </small>
+                <div style={{ width: '100%', position: 'relative', height: '10px', backgroundColor: '#e0e0e0' }}>
+                    <div style={{ width: `${completedPercentage}%`, backgroundColor: '#22C55E', height: '100%', position: 'absolute', left: 0 }} />
+                    <div style={{ width: `${pendingPercentage}%`, backgroundColor: '#FACC15', height: '100%', position: 'absolute', left: `${completedPercentage}%` }} />
+                    <div style={{ width: `${expiredPercentage}%`, backgroundColor: '#EF4444', height: '100%', position: 'absolute', left: `${completedPercentage + pendingPercentage}%` }} />
                 </div>
+                <small>
+                    <FormattedMessage 
+                        id="coach.progress.total" 
+                        values={{ completed: completedCount, total: totalWorkouts }} 
+                    />
+                </small>
             </div>
         );
     };
