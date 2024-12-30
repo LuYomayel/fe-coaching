@@ -668,6 +668,10 @@ const messages = {
   'workoutTable.deleteExercise': 'Eliminar Ejercicio',
   'workoutTable.exercisesDeleted': 'Ejercicios eliminados: ',
   'workoutTable.exercisesUpdated': 'Ejercicios actualizados: ',
+  'workoutTable.selectProperties': 'Seleccionar Propiedades',
+  'workoutTable.newTraining': 'Nuevo Entrenamiento',
+  'workoutTable.editTraining': 'Editar Entrenamiento',
+  'workoutTable.addProperties': 'Agregar Propiedades',
 
   
   // Header

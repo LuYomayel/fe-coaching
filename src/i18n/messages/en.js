@@ -668,6 +668,10 @@ const messages = {
   'workoutTable.deleteExercise': 'Delete Exercise',
   'workoutTable.exercisesDeleted': 'Exercises deleted: ',
   'workoutTable.exercisesUpdated': 'Exercises updated: ',
+  'workoutTable.selectProperties': 'Select Properties',
+  'workoutTable.newTraining': 'New Training',
+  'workoutTable.editTraining': 'Edit Training',
+  'workoutTable.addProperties': 'Add Properties',
 
 
   'fitnessGoal.custom': 'Custom Fitness Goal',

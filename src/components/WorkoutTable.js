@@ -54,6 +54,11 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const [newTrainingSessions, setNewTrainingSessions] = useState([]);
     const [deletedExercises, setDeletedExercises] = useState([]);
     const [originalExercisesSnapshot, setOriginalExercisesSnapshot] = useState([]);
+    const [selectedProperties, setSelectedProperties] = useState(['sets', 'repetitions', 'weight']);
+    const [dialogContext, setDialogContext] = useState(null); // 'edit', 'newTraining', o 'addProperties'
+    const [originalProperties, setOriginalProperties] = useState([]); // Para almacenar las propiedades originales
+    const defaultProperties = ['sets', 'repetitions', 'weight']; // Propiedades por defecto para nuevo entrenamiento
+
     useEffect(() => {
         const fetchExercises = async () => {
             const exercises = await getExercises(user.userId);
@@ -639,12 +644,17 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     setNewTraining(false);
                 }
             }
+        } else {
+            // Mostrar el diálogo para seleccionar propiedades al iniciar la edición
+            setDialogContext('edit');
+            setOriginalProperties(properties); // Guardar las propiedades originales
+            setSelectedProperties(properties); // Seleccionar propiedades actuales
+            setShowTrainingNameDialog(true);
         }
         setIsEditing(!isEditing);
         // limpiar todos los arrays de ejercicios
         setEditedExercises([]);
         setDeletedExercises([]);
-
     };
 
     const subHeaderColumns = [];
@@ -701,12 +711,20 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     </div>
                     <div>
                         {hasData && dayOfWeek ? (
-                            <Button
-                                label={intl.formatMessage({ id: isEditing ? 'common.save' : 'common.edit' })}
-                                icon={isEditing ? "pi pi-save" : "pi pi-pencil"}
-                                onClick={handleEditSave}
-                                loading={isLoading}
-                            />
+                            <>
+                                {isEditing && <Button 
+                                    label={intl.formatMessage({ id: 'common.cancel' })}
+                                    icon="pi pi-times"
+                                    onClick={handleCancel}
+                                    className="p-button-secondary"
+                                />}
+                                <Button
+                                    label={intl.formatMessage({ id: isEditing ? 'common.save' : 'common.edit' })}
+                                    icon={isEditing ? "pi pi-save" : "pi pi-pencil"}
+                                    onClick={handleEditSave}
+                                    loading={isLoading}
+                                />
+                            </>
                         ) : 
                         dayOfWeek ? (
                             <Button
@@ -727,14 +745,15 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
 
     const hasData = exercises && exercises.length > 0;
     const createNewTraining = () => {
-        setShowTrainingNameDialog(true); // Mostrar diálogo para el nombre del entrenamiento
+        setDialogContext('newTraining');
+        setOriginalProperties([]); // No hay propiedades originales en nuevo entrenamiento
+        setSelectedProperties(defaultProperties); // Seleccionar propiedades por defecto
+        setShowTrainingNameDialog(true);
     }
 
     const handleAddTraining = () => {
-
         // Definir las propiedades básicas que siempre queremos mostrar
-        const defaultProperties = ["sets", "repetitions", "weight"];
-        setProperties(defaultProperties);
+        setProperties([...defaultProperties, ...selectedProperties]);
 
         const emptyExercise = {
             name: intl.formatMessage({ id: 'workoutTable.newExercise' }),
@@ -860,6 +879,43 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         setExercises(updatedExercises);
     };
 
+
+    const updateProperties = () => {
+        const newProperties = selectedProperties.filter(prop => !properties.includes(prop));
+        setProperties([...properties, ...newProperties]);
+    };
+
+    const openNewTrainingDialog = () => {
+        setDialogContext('newTraining');
+        setOriginalProperties([]); // No hay propiedades originales en nuevo entrenamiento
+        setSelectedProperties(defaultProperties); // Seleccionar propiedades por defecto
+        setShowTrainingNameDialog(true);
+    };
+
+    const openPropertyDialog = () => {
+        setDialogContext('addProperties');
+        setSelectedProperties(properties); // Mantener las propiedades actuales seleccionadas
+        setShowTrainingNameDialog(true);
+    };
+
+    const handleCancel = () => {
+        if (dialogContext === 'edit' || dialogContext === 'addProperties') {
+            setDialogContext(null);
+            setProperties(originalProperties); // Restaurar las propiedades originales            
+            // limpiar todos los arrays de ejercicios
+            setEditedExercises([]);
+            setDeletedExercises([]);
+
+        } else if (dialogContext === 'newTraining') {
+            setProperties([]); // Limpiar todo para nuevo entrenamiento
+            setPlanName(''); // Limpiar el nombre del plan
+            setExercises([]);
+            setNewTraining(false);
+        }
+        setIsEditing(!isEditing);
+        setSelectedProperties(defaultProperties);
+    };
+
     return (
         <div>
         <Card title={renderCardTitle}>
@@ -892,6 +948,14 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                 </div>
             </div>
             {renderTablesByDayNumber()}
+            {(isEditing) && (
+                <Button
+                    label={intl.formatMessage({ id: 'workoutTable.addProperties' })}
+                    icon="pi pi-plus"
+                    onClick={openPropertyDialog}
+                    className="p-button-secondary"
+                />
+            )}
         </Card>
 
         <Dialog
@@ -936,29 +1000,54 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             draggable={false}
             resizable={false}
             className='responsive-dialog'
-            header={intl.formatMessage({ id: 'workoutTable.enterTrainingName' })}
+            header={dialogContext === 'addProperties' ? intl.formatMessage({ id: 'workoutTable.addProperties' }) : intl.formatMessage({ id: 'workoutTable.enterTrainingName' })}
             visible={showTrainingNameDialog}
             onHide={() => setShowTrainingNameDialog(false)}
             footer={
-                <Button
-                    label={intl.formatMessage({ id: 'common.save' })}
-                    icon="pi pi-check"
-                    onClick={() => {
-                        handleAddTraining();
-                        setShowTrainingNameDialog(false);
-                    }}
-                />
+                <div>
+                    <Button
+                        label={intl.formatMessage({ id: 'common.save' })}
+                        icon="pi pi-check"
+                        onClick={() => {
+                            if (dialogContext === 'newTraining') {
+                                handleAddTraining();
+                            } else if (dialogContext === 'edit' || dialogContext === 'addProperties') {
+                                updateProperties();
+                            }
+                            setShowTrainingNameDialog(false);
+                        }}
+                    />
+                </div>
             }
         >
+            {dialogContext !== 'addProperties' && (
+                <div className="p-field">
+                    <label htmlFor="trainingName">{intl.formatMessage({ id: 'workoutTable.trainingName' })}</label>
+                    <InputText
+                        id="trainingName"
+                        value={planName}
+                        onChange={(e) => setPlanName(e.target.value)}
+                        placeholder={intl.formatMessage({ id: 'workoutTable.enterName' })}
+                        autoFocus
+                    />
+                </div>
+            )}
             <div className="p-field">
-                <label htmlFor="trainingName">{intl.formatMessage({ id: 'workoutTable.trainingName' })}</label>
-                <InputText
-                    id="trainingName"
-                    value={planName}
-                    onChange={(e) => setPlanName(e.target.value)}
-                    placeholder={intl.formatMessage({ id: 'workoutTable.enterName' })}
-                    autoFocus
-                />
+                <label>{intl.formatMessage({ id: 'workoutTable.selectProperties' })}</label>
+                {possibleProperties.map((property) => (
+                    <div key={property} className='flex align-items-center'>
+                        <Checkbox
+                            checked={selectedProperties.includes(property)}
+                            onChange={(e) => {
+                                const newSelectedProperties = e.checked
+                                    ? [...selectedProperties, property]
+                                    : selectedProperties.filter(prop => prop !== property);
+                                setSelectedProperties(newSelectedProperties);
+                            }}
+                        />
+                        <label>{propertyLabels[property]}</label>
+                    </div>
+                ))}
             </div>
         </Dialog>
         </div>
