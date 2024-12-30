@@ -326,7 +326,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     });
                 });
             });
-            const sortedExercises = Array.from(exercisesMap.values()).sort((a, b) => a.groupNumber - b.groupNumber);
+            // const sortedExercises = Array.from(exercisesMap.values()).sort((a, b) => a.groupNumber - b.groupNumber);
             const justExercises = Array.from(exercisesMap.values());
             const exerciseData = justExercises.flatMap((exercise, index) => {
                 return exercise.id.map((id, weekIndex) => {
