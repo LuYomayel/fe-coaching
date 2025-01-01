@@ -820,7 +820,7 @@ const messages = {
   'assignWorkoutToCycleDialog.success.unassign.detail': 'Entrenamientos desasignados del ciclo exitosamente',
   'assignWorkoutToCycleDialog.error.unassign': 'Error',
   'assignWorkoutToCycleDialog.error.unassign.detail': 'No se desasignaron entrenamientos porque están siendo utilizados por un cliente',
-
+  'assignWorkoutToCycleDialog.assignment': 'Asignación',
   // CreateTrainingCycleDialog
   'createCycle.dialog.header': 'Crear Ciclo de Entrenamiento',
   'createCycle.cycleName': 'Nombre del Ciclo',

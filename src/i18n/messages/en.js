@@ -819,7 +819,7 @@ const messages = {
   'assignWorkoutToCycleDialog.success.unassign.detail': 'Workouts unassigned from cycle successfully',
   'assignWorkoutToCycleDialog.error.unassign': 'Error',
   'assignWorkoutToCycleDialog.error.unassign.detail': 'No workouts were unassigned because they are being used by a client',
-
+  'assignWorkoutToCycleDialog.assignment': 'Assignment',
   // CreateTrainingCycleDialog
   'createCycle.dialog.header': 'Create Training Cycle',
   'createCycle.cycleName': 'Cycle Name',

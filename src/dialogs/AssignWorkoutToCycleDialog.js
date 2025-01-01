@@ -7,6 +7,7 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { assignWorkoutsToCycle, fetchCoachWorkouts, fetchAssignedWorkoutsForCycleDay, unassignWorkoutsFromCycle } from '../services/workoutService';
 import { useIntl } from 'react-intl';
+import '../styles/AssignWorkoutToCycleDialog.css';
 
 const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, cycleOptions, actionType }) => {
   const intl = useIntl();
@@ -143,10 +144,9 @@ return (
     draggable={false} dismissableMask
     resizable={false}
     header={actionType === 'assign' ? intl.formatMessage({ id: 'assignWorkoutToCycleDialog.assignWorkoutsToCycle' }) : intl.formatMessage({ id: 'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle' })}
-    className="responsive-dialog"
+    className="responsive-dialog assign-workout-dialog"
     visible={visible}
     onHide={onHide}
-    style={{ width: '50vw' }}
   >
     <div className="col-12">
       <div className="p-field">
@@ -174,8 +174,7 @@ return (
             value={selectedDay}
             options={daysOfWeek}
             onChange={(e) => {
-              setSelectedDay(e.value); // Actualiza el día seleccionado
-              // Resetea los assignments y carga los workouts para desasignar
+              setSelectedDay(e.value);
               setAssignments([{ workoutId: null, dayOfWeek: e.value }]);
             }}
             placeholder={intl.formatMessage({ id: 'assignWorkoutToCycleDialog.selectDayOfWeek' })}
@@ -188,14 +187,14 @@ return (
             options={assignedWorkouts.map(workout => ({ label: workout.label, value: workout.value }))}
             onChange={(e) => handleAssignmentChange(0, 'workoutId', e.value)}
             placeholder={intl.formatMessage({ id: 'assignWorkoutToCycleDialog.selectWorkoutToUnassign' })}
-            disabled={selectedDay === null} // Deshabilita si no hay día seleccionado
+            disabled={selectedDay === null}
           />
         </div>
       </div>
     )}
 
     {actionType === 'assign' && assignments.map((assignment, index) => (
-      <Card key={index} title={`Assignment ${index + 1}`} className="mb-3">
+      <Card key={index} title={`${intl.formatMessage({ id: 'assignWorkoutToCycleDialog.assignment' })} ${index + 1}`} className="mb-2">
         <div className="p-field grid">
           <div className="col-6">
             <Dropdown
