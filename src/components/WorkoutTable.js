@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Card } from 'primereact/card';
@@ -59,7 +59,9 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const [selectedProperties, setSelectedProperties] = useState(['sets', 'repetitions', 'weight']);
     const [dialogContext, setDialogContext] = useState(null); // 'edit', 'newTraining', o 'addProperties'
     const [originalProperties, setOriginalProperties] = useState([]); // Para almacenar las propiedades originales
+    const [daysUsed, setDaysUsed] = useState([]);
     const defaultProperties = ['sets', 'repetitions', 'weight']; // Propiedades por defecto para nuevo entrenamiento
+    const prevDepsRef = useRef({ cycle: null, dayOfWeek: null, trainingCycles: null });
 
     useEffect(() => {
         const fetchExercises = async () => {
@@ -98,7 +100,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             }
             return acc;
         }, {});
-
+        
         const handleDragEnd = (result) => {
             if (!result.destination) return;
 
@@ -254,21 +256,34 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     };
 
     useEffect(() => {
+        // Creamos una función para detectar qué variables cambiaron
+        const detectChanges = (prevDeps) => {
+            const changes = [];
+            if (prevDeps.cycle !== cycle) changes.push('cycle');
+            if (prevDeps.dayOfWeek !== dayOfWeek) changes.push('dayOfWeek');
+            if (prevDeps.trainingCycles !== trainingCycles) changes.push('trainingCycles');
+            return changes;
+        };
+
+        const currentDeps = { cycle, dayOfWeek, trainingCycles };
+        const changes = detectChanges(prevDepsRef.current);
+        prevDepsRef.current = currentDeps; 
+        console.log(changes);
+        if(changes.includes('cycle')){
+            setDaysUsed([]);
+        }
         setIsLoading(true);
         if (cycle && trainingCycles && trainingCycles.length > 0) {
             const selectedCycle = trainingCycles.find(c => c.id === cycle);
-            if (!selectedCycle) return;
+            if(!selectedCycle) return;
     
             const exercisesMap = new Map();
             const propertiesSet = new Set();
             const numWeeks = selectedCycle.trainingWeeks?.length || 0;
             selectedCycle.trainingWeeks.forEach((week, weekIndex) => {
                 if (!week.trainingSessions) return;
-
-
                 week.trainingSessions.forEach(session => {
                     if (!session.workoutInstances) return;
-                    
                     if(session.dayNumber === dayOfWeek) setNewTrainingSessions(prev => [...prev, session]);
                     session.workoutInstances.forEach(instance => {
                         const nombre = instance.workout.planName;
@@ -342,8 +357,15 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     }
                 })
             });
+
+            if (changes.includes('cycle')) {
+                const daysUsed = Array.from(new Set(justExercises.map(day => day.dayNumber)));
+                console.log(justExercises);
+                setDaysUsed(daysUsed);
+            }
             setOriginalExercisesSnapshot(exerciseData);
             setExercises(justExercises);
+
             setOriginalExercises(justExercises);
             setNumWeeks(numWeeks);
             setProperties(Array.from(propertiesSet));
@@ -976,6 +998,11 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                             placeholder={intl.formatMessage({ id: 'workoutTable.selectDay' })}
                             showClear
                             disabled={newTraining || isEditing}
+                            itemTemplate={(option) => (
+                                <div className={(daysUsed).includes(option.value) ? 'highlighted-option' : ''}>
+                                    {option.label}
+                                </div>
+                            )}
                         />
                     </div>
                 </div>

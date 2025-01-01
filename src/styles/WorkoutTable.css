@@ -20,3 +20,18 @@
     height: 100%;
     margin-right: 8px;
 }
+
+.highlighted-option {
+    background: linear-gradient(135deg, #e8eaf6, #c5cae9); /* Fondo degradado en tonos índigo claros */
+    border-radius: 8px; /* Bordes redondeados */
+    padding: 4px 8px; /* Espaciado interno */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    font-weight: bold; /* Texto en negrita */
+    color: #3f51b5; /* Color del texto en índigo */
+    transition: background 0.3s ease, box-shadow 0.3s ease; /* Transiciones suaves */
+}
+
+.highlighted-option:hover {
+    background: linear-gradient(135deg, #c5cae9, #9fa8da); /* Cambio de fondo al pasar el ratón */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada al pasar el ratón */
+}
