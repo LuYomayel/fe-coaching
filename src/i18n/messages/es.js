@@ -37,6 +37,7 @@ const messages = {
   'common.errorSavingChanges': 'Error al guardar los cambios',
   'common.error': 'Error',
   'common.errorVerifyingChanges': 'Error al verificar los cambios',
+  'common.errorNameRequired': 'El nombre del plan es requerido',
 
   // Mensajes de confirmacion
   'assignPlan.confirmation.message': '¿Estás seguro de que deseas asignar este plan?',

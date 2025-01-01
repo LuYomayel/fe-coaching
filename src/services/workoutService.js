@@ -218,6 +218,15 @@ const verifyExerciseChanges = async (exerciseData) => {
   }
 }
 
+const updatePlanName = async (planId, planName) => {
+  const response = await fetch(`${apiUrl}/workout/update-name/${planId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: planName })
+  });
+  return response.json();
+}
+
 const submitPlan = async (plan, planId, isEdit) => {
     
     const requestMethod = isEdit ? 'PUT' : 'POST';
@@ -548,6 +557,7 @@ export {
     fetchWorkoutsByClientId,
     createTrainingCycle,
     updateExercisesInstace,
+    updatePlanName,
     submitPlan,
     submitFeedback,
     assignWorkout, 

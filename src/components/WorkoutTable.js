@@ -7,7 +7,7 @@ import { Row } from 'primereact/row';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { createNewTrainingFromExcelView, deleteExercises, updateExercisesInstace, verifyExerciseChanges } from '../services/workoutService';
+import { createNewTrainingFromExcelView, deleteExercises, updateExercisesInstace, updatePlanName, verifyExerciseChanges } from '../services/workoutService';
 import { useToast } from '../utils/ToastContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { getExercises } from '../services/workoutService';
@@ -40,6 +40,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const [numWeeks, setNumWeeks] = useState(0);
     const [properties, setProperties] = useState([]);
     const [planName, setPlanName] = useState('');
+    const [planId, setPlanId] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const showToast = useToast();
     const possibleProperties = ["sets", "repetitions", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance"];
@@ -272,6 +273,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     session.workoutInstances.forEach(instance => {
                         const nombre = instance.workout.planName;
                         setPlanName(nombre);
+                        setPlanId(instance.workout.id);
+
                         instance.groups.forEach(group => {
                             group.exercises.forEach(exerciseData => {
                                 const exerciseName = exerciseData.exercise?.name || 'Unnamed Exercise';
@@ -571,10 +574,19 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     };
 
     const handleEditSave = async () => {
+        let keepEditing = false;
+        console.log("isEditing", isEditing);
         if (isEditing) {
             try {
                 setIsLoading(true);
+                
                 if (newTraining) {
+                    if(planName === ''){
+                        keepEditing = true;
+                        return showToast('error', intl.formatMessage({ id: 'common.error' }), 
+                                 intl.formatMessage({ id: 'common.errorNameRequired' }));
+                        
+                    }
                     const cleanPlan = {
                         workout: {
                             planName: planName,
@@ -595,6 +607,9 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     // Preparar los datos para enviar al nuevo endpoint
                     
                     try {
+                        if(planId){
+                            await updatePlanName(planId, planName);
+                        }
                         if(deletedExercises.length > 0 && !newTraining){
                             const cleanExercises = {
                                 exerciseIds: deletedExercises.filter(ex => ex !== null)
@@ -647,8 +662,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                          intl.formatMessage({ id: 'common.errorSavingChanges' }));
             } finally {
                 setIsLoading(false);
-                setRefreshKey((prevKey) => prevKey + 1);
-                if (newTraining) {
+                if (!keepEditing)setRefreshKey((prevKey) => prevKey + 1);
+                if (newTraining && !keepEditing) {
                     setNewTraining(false);
                 }
             }
@@ -657,12 +672,14 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             setDialogContext('edit');
             setOriginalProperties(properties); // Guardar las propiedades originales
             setSelectedProperties(properties); // Seleccionar propiedades actuales
-            setShowTrainingNameDialog(true);
+            // setShowTrainingNameDialog(true);
         }
+    
         setIsEditing(!isEditing);
         // limpiar todos los arrays de ejercicios
         setEditedExercises([]);
         setDeletedExercises([]);
+        
     };
 
     const subHeaderColumns = [];
@@ -715,7 +732,20 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             return (
                 <div className='flex justify-content-between align-items-center'>
                     <div>
-                        {intl.formatMessage({ id: 'workoutTable.day' }, { day: dayOfWeek, plan: planName })}
+                        
+                        {isEditing && newTraining ? (
+                            <div className="flex align-items-center">
+                                <InputText
+                                    value={planName}
+                                    disabled={!isEditing}
+                                    onChange={(e) => setPlanName(e.target.value)}
+                                    className="mr-2"
+                                    placeholder={intl.formatMessage({ id: 'workoutTable.enterTrainingName' })}
+                                />
+                            </div>
+                        ) : (
+                            <span>{intl.formatMessage({ id: 'workoutTable.day' }, { day: dayOfWeek, plan: planName })}</span>
+                        )}
                     </div>
                     <div>
                         {hasData && dayOfWeek ? (
@@ -755,13 +785,14 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const createNewTraining = () => {
         setDialogContext('newTraining');
         setOriginalProperties([]); // No hay propiedades originales en nuevo entrenamiento
-        setSelectedProperties(defaultProperties); // Seleccionar propiedades por defecto
-        setShowTrainingNameDialog(true);
+        // setSelectedProperties(defaultProperties); // Seleccionar propiedades por defecto
+        handleAddTraining();
+        // setShowTrainingNameDialog(true);
     }
 
     const handleAddTraining = () => {
         // Definir las propiedades básicas que siempre queremos mostrar
-        setProperties([...defaultProperties, ...selectedProperties]);
+        setProperties([...defaultProperties]);
 
         const emptyExercise = {
             name: intl.formatMessage({ id: 'workoutTable.newExercise' }),

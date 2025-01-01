@@ -36,6 +36,7 @@ const messages = {
   'common.errorVerifyingChanges': 'Error verifying changes',
   'common.error': 'Error',
   'common.success': 'Success',
+  'common.errorNameRequired': 'The plan name is required',
 
   // Mensajes de confirmacion
   'assignPlan.confirmation.message': 'Are you sure you want to assign this plan?',
