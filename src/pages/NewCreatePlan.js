@@ -94,7 +94,6 @@ const NewCreatePlan = ({ isEdit }) => {
   const toast = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [exerciseCounter, setExerciseCounter] = useState(0);
-  const [isBlocking, setIsBlocking] = useState(true);
 
     useEffect(() => {
         setLoading(isUploading)
@@ -405,7 +404,6 @@ const NewCreatePlan = ({ isEdit }) => {
       })
     }));
 
-    console.log("cleanPlan", cleanPlan);
     showConfirmationDialog({
       message: intl.formatMessage({ 
         id: isEdit ? 'plan.dialog.confirmEdit' : 'plan.dialog.confirmCreate' 
@@ -635,83 +633,107 @@ const NewCreatePlan = ({ isEdit }) => {
                         </div>
                         <Droppable droppableId={`group-${groupIndex}`} type="exercise">
                           {(provided) => (
-                            <div {...provided.droppableProps} ref={provided.innerRef}>
-                              {!group.isRestPeriod && group.exercises
-                                .sort((a, b) => a.rowIndex - b.rowIndex)
-                                .map((exercise, exerciseIndex) => (
-                                  <Draggable key={`exercise-${exercise.id}`} draggableId={`exercise-${exercise.id}`} index={exerciseIndex}>
-                                    {(provided) => (
-                                      <div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        className="mb-3 p-2 border-1 border-gray-200 border-round"
-                                      >
-                                        <div className="flex justify-content-between align-items-center mb-2">
-                                          <div className="flex align-items-center">
-                                            <span {...provided.dragHandleProps}>
-                                              <FaGripVertical className="mr-2 cursor-pointer" />
-                                            </span>
-                                            <h4 className="text-lg m-0">{exercise.exercise?.name}</h4>
-                                          </div>
-                                          <div>
-                                            <Button
-                                              icon="pi pi-plus"
-                                              className="p-button-text p-button-sm"
-                                              raised
-                                              onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
-                                            />
-                                            <Button
-                                              icon="pi pi-trash"
-                                              className="p-button-danger p-button-text p-button-sm"
-                                              raised
-                                              onClick={() => removeExercise(groupIndex, exerciseIndex)}
-                                            />
-                                          </div>
-                                        </div>
-                                        <div className="grid">
-                                          {Object.entries(exercise).map(([key, value]) => {
-                                            if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes' && key !== 'rowIndex') {
-                                              return (
-                                                <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
-                                                  <div className="flex flex-column">
-                                                    <label className="">{propertyList.find(p => p.key === key)?.name || key}</label>
-                                                    <div className="flex align-items-center">
-                                                      <InputText
-                                                        value={exercise[key]}
-                                                        onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, key, e.target.value)}
-                                                        className="w-full"
-                                                      />
-                                                      <Button
-                                                        icon="pi pi-times"
-                                                        raised
-                                                        className="p-button-danger p-button-text p-button-sm"
-                                                        onClick={() => removeProperty(groupIndex, exerciseIndex, key)}
-                                                      />
+                            <div 
+                              {...provided.droppableProps} 
+                              ref={provided.innerRef} 
+                              className="exercise-container"
+                              style={{
+                                minHeight: '50px',
+                                border: group.exercises.length === 0 ? '2px dashed #ccc' : 'none',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'stretch',
+                                justifyContent: 'center',
+                                backgroundColor: group.exercises.length === 0 ? '#f9f9f9' : 'transparent'
+                              }}
+                            >
+                              {!group.isRestPeriod && (
+                                <>
+                                  {group.exercises.length === 0 && (
+                                    <span style={{ color: '#999' }}>{intl.formatMessage({ id: 'plan.group.empty' })}</span> // Texto visible si está vacío
+                                  )}
+                                  {group.exercises
+                                    .sort((a, b) => a.rowIndex - b.rowIndex)
+                                    .map((exercise, exerciseIndex) => (
+                                      <Draggable key={`exercise-${exercise.id}`} draggableId={`exercise-${exercise.id}`} index={exerciseIndex}>
+                                        {(provided) => (
+                                          <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            className="mb-3 p-2 border-1 border-gray-200 border-round"
+                                            style={{
+                                              ...provided.draggableProps.style,
+                                              width: '100%',
+                                            }}
+                                          >
+                                            <div className="flex justify-content-between align-items-center mb-2">
+                                              <div className="flex align-items-center">
+                                                <span {...provided.dragHandleProps}>
+                                                  <FaGripVertical className="mr-2 cursor-pointer" />
+                                                </span>
+                                                <h4 className="text-lg m-0">{exercise.exercise?.name}</h4>
+                                              </div>
+                                              <div>
+                                                <Button
+                                                  icon="pi pi-plus"
+                                                  className="p-button-text p-button-sm"
+                                                  raised
+                                                  onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
+                                                />
+                                                <Button
+                                                  icon="pi pi-trash"
+                                                  className="p-button-danger p-button-text p-button-sm"
+                                                  raised
+                                                  onClick={() => removeExercise(groupIndex, exerciseIndex)}
+                                                />
+                                              </div>
+                                            </div>
+                                            <div className="grid">
+                                              {Object.entries(exercise).map(([key, value]) => {
+                                                if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes' && key !== 'rowIndex') {
+                                                  return (
+                                                    <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
+                                                      <div className="flex flex-column">
+                                                        <label className="">{propertyList.find(p => p.key === key)?.name || key}</label>
+                                                        <div className="flex align-items-center">
+                                                          <InputText
+                                                            value={exercise[key]}
+                                                            onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, key, e.target.value)}
+                                                            className="w-full"
+                                                          />
+                                                          <Button
+                                                            icon="pi pi-times"
+                                                            raised
+                                                            className="p-button-danger p-button-text p-button-sm"
+                                                            onClick={() => removeProperty(groupIndex, exerciseIndex, key)}
+                                                          />
+                                                        </div>
+                                                      </div>
                                                     </div>
-                                                  </div>
-                                                </div>
-                                              );
-                                            }
-                                            return null;
-                                          })}
-                                        </div>
-                                        <div className="mt-2">
-                                          <label htmlFor={`exercise-${exercise.id}-notes`} className="block text-sm font-medium mb-1">
-                                            <FormattedMessage id="plan.exercise.notes" />
-                                          </label>
-                                          <InputTextarea
-                                            id={`exercise-${exercise.id}-notes`}
-                                            value={exercise.notes}
-                                            onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, 'notes', e.target.value)}
-                                            rows={1}
-                                            className="w-full"
-                                          />
-                                        </div>
-                                      </div>
-                                    )}
-                                  </Draggable>
-                                ))}
-                              {provided.placeholder}
+                                                  );
+                                                }
+                                                return null;
+                                              })}
+                                            </div>
+                                            <div className="mt-2">
+                                              <label htmlFor={`exercise-${exercise.id}-notes`} className="block text-sm font-medium mb-1">
+                                                <FormattedMessage id="plan.exercise.notes" />
+                                              </label>
+                                              <InputTextarea
+                                                id={`exercise-${exercise.id}-notes`}
+                                                value={exercise.notes}
+                                                onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, 'notes', e.target.value)}
+                                                rows={1}
+                                                className="w-full"
+                                              />
+                                            </div>
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                  {provided.placeholder}
+                                </>
+                              )}
                             </div>
                           )}
                         </Droppable>
