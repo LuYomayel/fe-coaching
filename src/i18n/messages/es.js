@@ -532,6 +532,7 @@ const messages = {
   'coach.buttons.editPlan': 'Editar Plan',
   'coach.buttons.openChat': 'Abrir Chat',
   'coach.buttons.upgradePlan': 'Mejorar Plan',
+  'coach.buttons.import': 'Importar desde CSV',
   
   'coach.subscription.status': 'Estado de Suscripción',
   'coach.subscription.clientsManaged': 'Clientes Gestionados: {current}/{max}',

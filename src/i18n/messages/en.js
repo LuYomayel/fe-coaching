@@ -206,6 +206,7 @@ const messages = {
   'coach.buttons.add': 'Add {item}',
   'coach.buttons.assign': 'Assign {item}',
   'coach.buttons.import': 'Import Exercises',
+  'coach.buttons.import.csv': 'Import from CSV',
   
   'coach.rpe.name': 'RPE Name',
   'coach.rpe.minValue': 'Min Value',

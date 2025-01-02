@@ -84,7 +84,6 @@ export default function CoachProfilePage() {
   const [selectedBodyAreas, setSelectedBodyAreas] = useState([]);
   // eslint-disable-next-line
   const [selectedFile, setSelectedFile] = useState(null);
-
   const fileUploadRef = useRef(null);
 
   const [filters, setFilters] = useState({
@@ -1262,6 +1261,9 @@ export default function CoachProfilePage() {
             globalFilterFields={['name', 'exerciseType', 'description']}
             onFilter={(e) => setFilters(e.filters)}
             loading={isExercisesLoading}
+            paginator
+            rows={10}
+            rowsPerPageOptions={[10, 20, 50]}
           >
             <Column
               field="name"
@@ -1352,7 +1354,7 @@ export default function CoachProfilePage() {
         </TabPanel>
       </TabView>
 
-      <Card className="mt-4">
+      {activeIndex === 2 && <Card className="mt-4">
         <h2 className="text-xl font-bold mb-3">
           <FormattedMessage id="coach.buttons.import" />
         </h2>
@@ -1373,7 +1375,7 @@ export default function CoachProfilePage() {
             </p>
           }
         />
-      </Card>
+      </Card>}
 
       <Dialog
         draggable={false}
