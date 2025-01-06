@@ -63,6 +63,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const defaultProperties = ['sets', 'repetitions', 'weight']; // Propiedades por defecto para nuevo entrenamiento
     const prevDepsRef = useRef({ cycle: null, dayOfWeek: null, trainingCycles: null });
 
+    
+
     useEffect(() => {
         const fetchExercises = async () => {
             const exercises = await getExercises(user.userId);
@@ -153,10 +155,11 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         return (
             <DragDropContext onDragEnd={handleDragEnd}>
                 {Object.entries(exercisesByDayNumber).map(([dayNumber, exercisesForDay]) => {
+                    // eslint-disable-next-line
                     const formattedDayLabel = daysOfWeek.find(day => day.value === parseInt(dayNumber))?.label || `Day ${dayNumber}`;
                     return (
                         <div key={`day-${dayNumber}`}>
-                            <h3>{intl.formatMessage({ id: 'workoutTable.trainingDay' }, { day: formattedDayLabel })}</h3>
+                            {/* <h3>{intl.formatMessage({ id: 'workoutTable.trainingDay' }, { day: formattedDayLabel })}</h3> */}
                             <Droppable droppableId={dayNumber.toString()}>
                                 {(provided) => (
                                     <div
@@ -172,10 +175,14 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                                 }] 
                                                 : exercisesForDay
                                             }
+                                            
                                             headerColumnGroup={headerGroup}
-                                            responsiveLayout="scroll"
+                                            
+                                            
+                                            
                                             scrollable
-                                            scrollHeight="700px"
+                                            // scrollHeight="700px"
+                                            
                                             editMode="cell"
                                             loading={isLoading}
                                             rowClassName={rowClassName}
@@ -185,19 +192,23 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                                 body={(rowData, options) => {
                                                     if(rowData.name !== intl.formatMessage({ id: 'workoutTable.addNewExercise' }) && exercises.length > 1){
                                                         return (
+                                                            <div className='flex justify-content-center align-items-center'>
                                                             <Button
                                                                 icon="pi pi-trash"
-                                                                className="p-button-danger"
+                                                                className="p-button-danger p-button-sm"
+                                                                style={{ width: '1.5rem', height: '1.5rem', padding: '0.15rem', fontSize: '0.8rem' }}
                                                                 onClick={() => handleDeleteExercise(options.rowIndex)}
                                                             />
+                                                            </div>
                                                         );
                                                     }
                                                     return null;
                                                 }}
-                                                style={{ width: '50px' }}
+                                                style={{ padding: '0.15rem' }}
                                             />}
                                             <Column
                                                 header={intl.formatMessage({ id: 'workoutTable.exercise' })}
+                                                style={{ padding: '0.15rem', minWidth: '15rem' }}
                                                 body={(rowData, options) => {
                                                     if (rowData.name === intl.formatMessage({ id: 'workoutTable.addNewExercise' }) && isEditing) {
                                                         return (
@@ -714,18 +725,19 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     }
 
     const headerGroup = (
-        <ColumnGroup>
-            <Row>
-                {isEditing && <Column header="" rowSpan={2} style={{ width: '10%' }} />}   
-                <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} rowSpan={2} style={{ width: '40%' }} />
-                {Array.from({ length: numWeeks }, (_, i) => (
-                    <Column header={`${intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}`} colSpan={properties.length} key={`week-${i}`} />
-                ))}
-            </Row>
-            <Row>
-                {subHeaderColumns}
-            </Row>
+        <ColumnGroup >
+            <Row >
+                    {isEditing && <Column header="" rowSpan={2} style={{ width: '1rem' }} />}   
+                    <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} rowSpan={2} style={{ width: '40rem' }} />
+                    {Array.from({ length: numWeeks }, (_, i) => (
+                        <Column header={`${intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}`} colSpan={properties.length} key={`week-${i}`} />
+                    ))}
+                </Row>
+                <Row>
+                    {subHeaderColumns}
+                </Row>
         </ColumnGroup>
+
     );
 
     const dataColumns = [];
@@ -746,7 +758,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     }
 
     const rowClassName = (rowData) => {
-        return rowData.groupNumber % 2 === 0 ? 'group-even' : 'group-odd';
+        return rowData.groupNumber % 2 === 0 ? 'group-even improved-row' : 'group-odd improved-row';
     };
 
     const renderCardTitle = () => {
@@ -766,7 +778,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                 />
                             </div>
                         ) : (
-                            <span>{intl.formatMessage({ id: 'workoutTable.day' }, { day: dayOfWeek, plan: planName })}</span>
+                            <span>{intl.formatMessage({ id: 'workoutTable.day' }, { day: daysOfWeek.find(day => day.value === dayOfWeek)?.label, plan: planName })}</span>
                         )}
                     </div>
                     <div>
@@ -783,6 +795,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                     icon={isEditing ? "pi pi-save" : "pi pi-pencil"}
                                     onClick={handleEditSave}
                                     loading={isLoading}
+                                    className="floating-button" 
                                 />
                             </>
                         ) : 
@@ -804,6 +817,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     };
 
     const hasData = exercises && exercises.length > 0;
+
     const createNewTraining = () => {
         setDialogContext('newTraining');
         setOriginalProperties([]); // No hay propiedades originales en nuevo entrenamiento
@@ -973,7 +987,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
 
     return (
         <div>
-        <Card title={renderCardTitle}>
+        <Card title={renderCardTitle} className="mb-4 workout-table-card font-medium" cardTitleClassName="font-medium">
             <div className='grid'>
                 <div className="col-6">
                     <div className="p-field">
@@ -1007,7 +1021,9 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     </div>
                 </div>
             </div>
-            {renderTablesByDayNumber()}
+            
+                {renderTablesByDayNumber()}
+            
             {(isEditing) && (
                 <Button
                     label={intl.formatMessage({ id: 'workoutTable.addProperties' })}

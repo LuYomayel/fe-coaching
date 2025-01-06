@@ -628,7 +628,7 @@ const messages = {
   // WorkoutTable
   'workoutTable.trainingDay': 'Día de Entrenamiento: {day}',
   'workoutTable.exercise': 'Ejercicio',
-  'workoutTable.day': 'Día {day} - {plan}',
+  'workoutTable.day': '{day} - {plan}',
   'workoutTable.selectCycleDay': 'Selecciona un ciclo y un día de la semana',
   'workoutTable.cycle': 'Ciclo:',
   'workoutTable.dayOfWeek': 'Día de la semana:',

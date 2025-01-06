@@ -629,7 +629,7 @@ const messages = {
   // WorkoutTable
   'workoutTable.trainingDay': 'Training Day: {day}',
   'workoutTable.exercise': 'Exercise',
-  'workoutTable.day': 'Day {day} - {plan}',
+  'workoutTable.day': '{day} - {plan}',
   'workoutTable.selectCycleDay': 'Select a cycle and day of the week',
   'workoutTable.cycle': 'Cycle:',
   'workoutTable.dayOfWeek': 'Day of the week:',

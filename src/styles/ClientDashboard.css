@@ -44,3 +44,46 @@
   background-color: transparent !important;
   border: none !important;
 }
+
+.improved-table {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fafafa; 
+  font-size: 0.8rem;
+  padding: 0.15rem;
+}
+
+.improved-row {
+  height: 1.5rem;  /* makes rows taller */
+  padding: 0.15rem;
+  font-size: 0.8rem;
+}
+
+.panel-client-dashboard {
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.panel-client-dashboard .p-panel-header {
+  padding: 0.75rem;
+  margin: 0;
+}
+
+.panel-client-dashboard .p-panel-content {
+  padding: 0.15rem;
+  margin: 0;
+}
+
+.panel-client-dashboard .p-tabview-panels {
+  padding: 0.15rem;
+  margin: 0;
+}
+
+.panel-client-dashboard .p-card-body {
+  padding: 0.35rem;
+  margin: 0;
+}
+
+.panel-client-dashboard .font-medium {
+  font-size: 0.8rem;
+}

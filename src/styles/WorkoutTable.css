@@ -35,3 +35,21 @@
     background: linear-gradient(135deg, #c5cae9, #9fa8da); /* Cambio de fondo al pasar el ratón */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada al pasar el ratón */
 }
+
+.improved-table {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fafafa; 
+    font-size: 0.8rem;
+    padding: 0.15rem;
+  }
+  
+  .improved-row {
+    height: 1.5rem;  /* makes rows taller */
+    padding: 0.15rem;
+    font-size: 0.8rem;
+  }
+
+.font-medium .p-card-title {
+  font-size: 1.2rem;
+}

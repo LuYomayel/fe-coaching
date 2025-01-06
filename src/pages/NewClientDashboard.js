@@ -7,7 +7,6 @@ import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -29,11 +28,12 @@ import WorkoutTable from '../components/WorkoutTable';
 import { Badge } from 'primereact/badge';
 import { useIntl, FormattedMessage } from 'react-intl';
 import allLocales from '@fullcalendar/core/locales-all';
+import { Avatar } from 'primereact/avatar';
+import { Panel } from 'primereact/panel';
 
 export default function ClientDashboard() {
   const { clientId } = useParams();
   const [ clientData, setClientData ] = useState(null);
-  const toast = useRef(null);
   const showToast = useToast();
   const { setLoading } = useSpinner();
   
@@ -380,18 +380,8 @@ export default function ClientDashboard() {
     );
   };
 
-  return (
-    <div className="client-dashboard p-4">
-      <Toast ref={toast} />
-      <Card className="mb-4" style={{ backgroundImage: 'linear-gradient(to right, #6366F1, #A5B4FC)' }}>
-        <h1 className="text-4xl font-bold text-center text-white">
-          <FormattedMessage id="clientDashboard.title" />
-        </h1>
-        <h2 className="text-xl font-bold text-center text-white">
-          {clientData?.name}
-        </h2>
-      </Card>
-
+  const renderTabView = () => {
+    return (
       <TabView>
         <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.calendar' })}>
           <div className="mb-3 flex flex-wrap gap-2">
@@ -467,9 +457,14 @@ export default function ClientDashboard() {
                 options={workoutOptions} 
                 onChange={(e) => setSelectedWorkout(e.value)} 
                 placeholder={intl.formatMessage({ id: 'clientDashboard.dropdown.selectWorkout' })}
-                className="w-full mb-3" 
+                className="w-full mb-2" 
+                style={{ maxWidth: '300px' }}
               />
-              <DataTable value={filteredWorkouts}>
+              <DataTable 
+                value={filteredWorkouts}
+                className="improved-table"
+                rowClassName="improved-row"
+              >
                 <Column 
                   body={renderPlanName} 
                   header={intl.formatMessage({ id: 'clientDashboard.table.workoutName' })} 
@@ -485,13 +480,39 @@ export default function ClientDashboard() {
         </TabPanel>
 
         <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.excelView' })}>
-          <WorkoutTable 
-            trainingCycles={cycleOptions} 
-            cycleOptions={cycleDropdownOptions} 
-            setRefreshKey={setRefreshKey}
-          />
+            <WorkoutTable 
+              trainingCycles={cycleOptions} 
+              cycleOptions={cycleDropdownOptions} 
+              setRefreshKey={setRefreshKey}
+            />
         </TabPanel>
       </TabView>
+    )
+  }
+
+  const headerTemplate = (options) => {
+    const className = `${options.className} justify-content-space-between`;
+
+    return (
+        <div className={className}>
+            <div className="flex align-items-center gap-2">
+                <Avatar image={clientData?.profilePicture || '/image.webp'} shape="circle" />
+                <span className="font-bold">{clientData?.name}</span>
+            </div>
+            <div>
+              &nbsp;
+            </div>
+        </div>
+    );
+};
+
+  return (
+    <div className="client-dashboard p-1">
+      
+
+      <Panel headerTemplate={headerTemplate} className='panel-client-dashboard' >
+        {renderTabView()}
+      </Panel>
 
     </div>
   );
