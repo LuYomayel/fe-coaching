@@ -19,7 +19,8 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
 import '../styles/CreatePlan.css';
 import { FaGripVertical } from 'react-icons/fa'; // Importa el ícono de "handle"
-
+import { useTheme } from '../utils/ThemeContext';
+import { extractYouTubeVideoId } from '../utils/UtilFunctions';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -27,6 +28,8 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const NewCreatePlan = ({ isEdit }) => {
   const intl = useIntl();
   const { state} = useLocation();
+  const [videoDialogVisible, setVideoDialogVisible] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
   const changeToTemplate = state?.changeToTemplate;
   const propertyList = [
     { name: intl.formatMessage({ id: 'exercise.properties.sets' }), key: 'sets', default: true },
@@ -47,7 +50,7 @@ const NewCreatePlan = ({ isEdit }) => {
   const { showConfirmationDialog } = useConfirmationDialog();
   const [deletedGroup, setDeletedGroup] = useState(null);
   const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
-
+  const { isDarkMode } = useTheme();
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
     return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
@@ -558,6 +561,16 @@ const NewCreatePlan = ({ isEdit }) => {
     return data;
   };
 
+  const handleVideoClick = (url) => {
+    try {
+      const videoId = extractYouTubeVideoId(url);
+      const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      setSelectedVideo(embedUrl);
+      setVideoDialogVisible(true);
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    }
+  };
   return (
     <div className="workout-plan-builder p-4 ">
       <Toast ref={toast} />
@@ -672,12 +685,13 @@ const NewCreatePlan = ({ isEdit }) => {
                               className="exercise-container"
                               style={!group.isRestPeriod ? {
                                 minHeight: '50px',
+                                padding: '5px',
                                 border: group.exercises.length === 0 ? '2px dashed #ccc' : 'none',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'stretch',
                                 justifyContent: 'center',
-                                backgroundColor: group.exercises.length === 0 ? '#f9f9f9' : 'transparent'
+                                backgroundColor: group.exercises.length === 0 ? (isDarkMode ? '#2a2a2a' : '#f9f9f9') : 'transparent'
                               } : {}}
                             >
                               {!group.isRestPeriod && (
@@ -704,9 +718,16 @@ const NewCreatePlan = ({ isEdit }) => {
                                                 <span {...provided.dragHandleProps}>
                                                   <FaGripVertical className="mr-2 cursor-pointer" />
                                                 </span>
-                                                <h4 className="text-lg m-0">{exercise.exercise?.name}</h4>
+                                                <h6 className="text-lg m-0">{exercise.exercise?.name}</h6>
                                               </div>
-                                              <div>
+                                              <div className="flex align-items-center">
+                                              <Button
+                                                  icon="pi pi-video" 
+                                                  className="p-button-text p-button-sm"
+                                                  raised
+                                                  tooltip={intl.formatMessage({ id: 'exercise.video.view' })}
+                                                  onClick={() => {handleVideoClick(exercise.exercise?.multimedia)}}
+                                                />
                                                 <Button
                                                   icon="pi pi-plus"
                                                   className="p-button-text p-button-sm"
@@ -913,6 +934,27 @@ const NewCreatePlan = ({ isEdit }) => {
             />
           </div>
         ))}
+      </Dialog>
+
+      <Dialog
+        header={intl.formatMessage({ id: 'exercise.video.view' })}
+        visible={videoDialogVisible}
+        style={{ width: '70vw' }}
+        onHide={() => setVideoDialogVisible(false)}
+        dismissableMask
+        draggable={false}
+        resizable={false}
+        className='responsive-dialog'
+      >
+        <iframe
+            width="100%"
+            height="400"
+          src={selectedVideo}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title="Exercise Video"
+        ></iframe>
       </Dialog>
     </div>
   );

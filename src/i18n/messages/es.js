@@ -688,6 +688,7 @@ const messages = {
   'header.settings': 'Configuración',
   'settings.language.es': 'Español',
   'settings.language.en': 'English',
+  'exercise.video.view': 'Ver Video',
   // CoachProfileForm
   'coachProfileForm.title': 'Completa tu Perfil de Entrenador',
   'coachProfileForm.name': 'Nombre',
