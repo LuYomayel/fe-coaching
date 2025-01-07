@@ -81,7 +81,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
     if (birthdate) {
       const age = new Date().getFullYear() - birthdate.getFullYear();
       if (age >= 0 && age <= 10) {
-        showToast('warn', intl.formatMessage({ id: 'warning' }), intl.formatMessage({ id: 'student.warning.youngClient' }));
+        showToast('warn', intl.formatMessage({ id: 'warning' }), intl.formatMessage({ id: 'student.warning.youngClient' }), true);
       }
     }
 
@@ -89,8 +89,8 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
       message: intl.formatMessage({ id: 'student.confirmation.create' }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: "pi pi-exclamation-triangle",
-      //accept: () => handleSaveStudent(body),
-      accept: () => console.log(body),
+      accept: () => handleSaveStudent(body),
+      //accept: () => console.log(body),
       reject: () => console.log('Rejected')
     });
   };
