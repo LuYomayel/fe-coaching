@@ -108,7 +108,7 @@ const StudentDetailDialog = ({ student, onClose }) => {
       </div>
       <div className="p-field">
         <label htmlFor="birthdate">Birthdate</label>
-        <Calendar id="birthdate" value={birthdate} onChange={(e) => setBirthDate(e.value)} />
+        <Calendar id="birthdate" dateFormat="dd/mm/yy" value={birthdate} onChange={(e) => setBirthDate(e.value)} />
       </div>
       <Button label="Save" icon="pi pi-save" loading={loading} onClick={handleSaveStudent} />
     </div>

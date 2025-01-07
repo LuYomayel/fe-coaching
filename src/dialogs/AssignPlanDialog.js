@@ -88,11 +88,11 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
             <div className="p-grid">
               <div className="p-col-6">
                 <label htmlFor={`expectedStartDate-${index}`}>Expected Start Date*</label>
-                <Calendar id={`expectedStartDate-${index}`} value={assignmentData[index].expectedStartDate} onChange={(e) => handleInputChange(index, 'expectedStartDate', e.value)} />
+                <Calendar id={`expectedStartDate-${index}`} dateFormat="dd/mm/yy" value={assignmentData[index].expectedStartDate} onChange={(e) => handleInputChange(index, 'expectedStartDate', e.value)} />
               </div>
               <div className="p-col-6">
                 <label htmlFor={`expectedEndDate-${index}`}>Expected End Date*</label>
-                <Calendar id={`expectedEndDate-${index}`} value={assignmentData[index].expectedEndDate} onChange={(e) => handleInputChange(index, 'expectedEndDate', e.value)} />
+                <Calendar id={`expectedEndDate-${index}`} dateFormat="dd/mm/yy" value={assignmentData[index].expectedEndDate} onChange={(e) => handleInputChange(index, 'expectedEndDate', e.value)} />
               </div>
               <div className="p-col-12">
                 <label htmlFor={`notes-${index}`}>Description</label>

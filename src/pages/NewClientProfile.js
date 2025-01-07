@@ -201,7 +201,7 @@ export default function NewClientProfile() {
       <Calendar
         value={options.value}
         onChange={(e) => options.filterApplyCallback(e.value)}
-        dateFormat="yy-mm-dd"
+        dateFormat="dd/mm/yy"
         placeholder="Select Date"
         showIcon
         style={{ minWidth: '12rem' }}
