@@ -47,6 +47,7 @@ const NewCreatePlan = ({ isEdit }) => {
   const { showConfirmationDialog } = useConfirmationDialog();
   const [deletedGroup, setDeletedGroup] = useState(null);
   const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
+
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
     return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
@@ -85,7 +86,7 @@ const NewCreatePlan = ({ isEdit }) => {
     }
   }, [plan, isEdit]);
 
-
+  const [editingGroupName, setEditingGroupName] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
@@ -294,6 +295,21 @@ const NewCreatePlan = ({ isEdit }) => {
     const newGroups = [...plan.groups];
     newGroups[groupIndex].exercises[exerciseIndex][key] = value;
     setPlan({ ...plan, groups: newGroups });
+  };
+
+  const updateGroupName = (groupIndex, value) => {
+    const newGroups = [...plan.groups];
+    newGroups[groupIndex].name = value;
+    setPlan({ ...plan, groups: newGroups });
+  };
+
+  const editGroupName = (groupIndex) => {
+    // Now i need to enable the input text and the buttons without a dialog
+    setEditingGroupName(prev => ({...prev, [groupIndex]: true}));    
+  };
+
+  const saveGroupName = (groupIndex) => {
+    setEditingGroupName(prev => ({...prev, [groupIndex]: false}));
   };
 
   const onDragEnd = (result) => {
@@ -621,13 +637,30 @@ const NewCreatePlan = ({ isEdit }) => {
                             <span {...provided.dragHandleProps}>
                               <FaGripVertical className="mr-2 cursor-pointer" />
                             </span>
-                            <h3 className="text-xl m-0">
-                              {group.isRestPeriod ? (
+                            {group.isRestPeriod ? (
+                              <h3 className="text-xl m-0">
                                 <FormattedMessage id="plan.group.restPeriod" />
-                              ) : (
-                                <FormattedMessage id="plan.group.title" values={{ number: group.groupNumber }} />
-                              )}
-                            </h3>
+                              </h3>
+                            ) : (
+                              <div className="flex justify-content-between align-items-center">
+                                <div className="w-4/5 pr-2">
+                                  <h3 className="text-xl m-0">
+                                    {editingGroupName?.[groupIndex] ? (
+                                      <InputText value={group.name} onChange={(e) => updateGroupName(groupIndex, e.target.value)} />
+                                    ) : (
+                                      <span>{group.name ? group.name : <FormattedMessage id="plan.group.title" values={{ number: group.groupNumber }} />}</span>
+                                    )}
+                                  </h3>
+                                </div>
+                                <div className="w-1/5">
+                                  {editingGroupName?.[groupIndex] ? (
+                                    <Button icon="pi pi-check" raised className="p-button-text" onClick={() => saveGroupName(groupIndex)} />
+                                  ) : (
+                                    <Button icon="pi pi-pencil" raised className="p-button-text" onClick={() => editGroupName(groupIndex)} />
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                           <Button icon="pi pi-trash" raised className="p-button-danger p-button-text" onClick={() => removeGroup(groupIndex)} />
                         </div>
@@ -637,7 +670,7 @@ const NewCreatePlan = ({ isEdit }) => {
                               {...provided.droppableProps} 
                               ref={provided.innerRef} 
                               className="exercise-container"
-                              style={{
+                              style={!group.isRestPeriod ? {
                                 minHeight: '50px',
                                 border: group.exercises.length === 0 ? '2px dashed #ccc' : 'none',
                                 display: 'flex',
@@ -645,7 +678,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                 alignItems: 'stretch',
                                 justifyContent: 'center',
                                 backgroundColor: group.exercises.length === 0 ? '#f9f9f9' : 'transparent'
-                              }}
+                              } : {}}
                             >
                               {!group.isRestPeriod && (
                                 <>
@@ -663,7 +696,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                             className="mb-3 p-2 border-1 border-gray-200 border-round"
                                             style={{
                                               ...provided.draggableProps.style,
-                                              width: '100%',
+                                              //width: '100%',
                                             }}
                                           >
                                             <div className="flex justify-content-between align-items-center mb-2">
