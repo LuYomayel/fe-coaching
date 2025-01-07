@@ -156,7 +156,7 @@ export default function NewManageStudentsPage() {
               icon="pi pi-envelope"
               className="p-button-rounded p-button-success"
               onClick={() => handleResendVerification(rowData.user.email)}
-              tooltip={intl.formatMessage({ id: 'students.actions.resendVerificationEmail' })}
+              tooltip={intl.formatMessage({ id: 'students.actions.resendVerification' })}
               loading={isSendingVerification  }
             />
           )  

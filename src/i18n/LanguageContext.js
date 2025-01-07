@@ -18,13 +18,17 @@ export const LanguageProvider = ({ children }) => {
     return messages[browserLang] ? browserLang : 'en';
   }
 
+  const getSavedLocale = () => {
+    const savedLocale = localStorage.getItem('locale');
+    return savedLocale ? savedLocale : 'en';
+  };
+
   const switchLanguage = (newLocale) => {
     setLocale(newLocale);
-    localStorage.setItem('preferred-locale', newLocale);
   };
 
   useEffect(() => {
-    const savedLocale = localStorage.getItem('preferred-locale');
+    const savedLocale = getSavedLocale();
     if (savedLocale && messages[savedLocale]) {
       setLocale(savedLocale);
     }

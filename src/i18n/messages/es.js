@@ -562,6 +562,7 @@ const messages = {
   'home.header.contact': 'Contacto',
   'home.header.login': 'Iniciar Sesión',
   
+  
   'home.hero.title': 'Transforma tu Viaje Fitness con EaseTrain',
   'home.hero.subtitle': 'Empodera a los entrenadores, motiva a los clientes y alcanza metas de fitness juntos.',
   'home.hero.getStarted': 'Comenzar',
@@ -684,7 +685,9 @@ const messages = {
   'header.chat': 'Chat',
   'header.notifications': 'Notificaciones',
   'header.noNotifications': 'No hay nuevas notificaciones',
-  
+  'header.settings': 'Configuración',
+  'settings.language.es': 'Español',
+  'settings.language.en': 'English',
   // CoachProfileForm
   'coachProfileForm.title': 'Completa tu Perfil de Entrenador',
   'coachProfileForm.name': 'Nombre',
@@ -834,5 +837,16 @@ const messages = {
   'error.enterDuration': 'Por favor, ingresa una duración en semanas o meses',
   'selectClient': 'Selecciona un cliente',
   'client': 'Cliente',
+
+
+  'settings.title': 'Configuraciones',
+  'settings.darkMode': 'Modo Oscuro',
+  'settings.viewPreference': 'Preferencia de Vista',
+  'settings.view.default': 'Vista Predeterminada',
+  'settings.view.excel': 'Vista Excel',
+  'settings.language': 'Idioma',
+  'settings.allowIncompleteStudent': 'Permitir agregar estudiantes sin datos completos',
+  'settings.developerOptions': 'Opciones para Desarrolladores',
+  'settings.save': 'Guardar Configuraciones',
 }; 
 export default messages;

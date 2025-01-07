@@ -44,6 +44,11 @@ export default function Header() {
       visible: user?.userType === 'coach',  // Sólo visible para coach
     },
     {
+      label: intl.formatMessage({ id: 'header.settings' }),
+      icon: 'pi pi-cog',
+      command: () => navigate('/settings'),
+    },
+    {
       label: intl.formatMessage({ id: 'header.logout' }),
       icon: 'pi pi-power-off',
       command: () => handleLogout(),
@@ -102,6 +107,7 @@ export default function Header() {
         <span className="text-xl font-bold">EaseTrain</span>
       </div>
       <div className="flex align-items-center">
+        {/*
         <Button icon="pi pi-comments" onClick={openChatSidebar} className="p-button-text mr-2" label={intl.formatMessage({ id: 'header.chat' })} badge={unreadMessages > 0 ? unreadMessages : null} />
         <Button
           icon="pi pi-bell"
@@ -129,6 +135,7 @@ export default function Header() {
             ))}
           </div>
         </OverlayPanel>
+        */}
         <Avatar image={user.profilePicture || '/image.webp'} shape="circle" onClick={(e) => op.current.toggle(e)} />
         <OverlayPanel ref={op}>
           <Menu model={menuItems} />

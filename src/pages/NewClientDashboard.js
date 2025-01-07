@@ -30,13 +30,13 @@ import { useIntl, FormattedMessage } from 'react-intl';
 import allLocales from '@fullcalendar/core/locales-all';
 import { Avatar } from 'primereact/avatar';
 import { Panel } from 'primereact/panel';
-
+import { useLanguage } from '../i18n/LanguageContext';
 export default function ClientDashboard() {
   const { clientId } = useParams();
   const [ clientData, setClientData ] = useState(null);
   const showToast = useToast();
   const { setLoading } = useSpinner();
-  
+  const { locale } = useLanguage();
   const intl = useIntl();
 
   // State variables
@@ -415,7 +415,7 @@ export default function ClientDashboard() {
               className="custom-calendar"
               contentHeight="auto"
               locales={allLocales}
-              locale="es"
+              locale={locale}
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
                 if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {

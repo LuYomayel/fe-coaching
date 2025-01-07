@@ -686,6 +686,9 @@ const messages = {
   'header.chat': 'Chat',
   'header.notifications': 'Notifications',
   'header.noNotifications': 'No new notifications',
+  'header.settings': 'Settings',
+  'settings.language.es': 'Español',
+  'settings.language.en': 'English',
   
   // CoachProfileForm
   'coachProfileForm.title': 'Complete Your Coach Profile',
@@ -833,5 +836,14 @@ const messages = {
   'error.enterDuration': 'Please enter a duration in weeks or months',
   'selectClient': 'Select a client',
   'client': 'Client',
+  'settings.title': 'Settings',
+  'settings.darkMode': 'Dark Mode',
+  'settings.viewPreference': 'View Preference',
+  'settings.view.default': 'Default View',
+  'settings.view.excel': 'Excel View',
+  'settings.language': 'Language',
+  'settings.allowIncompleteStudent': 'Allow adding students without complete data',
+  'settings.developerOptions': 'Developer Options',
+  'settings.save': 'Save Settings',
 }; 
 export default messages;
