@@ -788,6 +788,13 @@ const NewCreatePlan = ({ isEdit }) => {
                                 resetFilterOnHide
                                 placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
                                 className="w-full"
+                                
+                                onShow={(e) => {
+                                  const filterInput = document.querySelector('.p-dropdown-filter');
+                                  if(filterInput) {
+                                    filterInput.focus();
+                                  }
+                                }}
                                 itemTemplate={(option) => (
                                   <div className='flex flex-column'>
                                     <span>{option.name}</span>
