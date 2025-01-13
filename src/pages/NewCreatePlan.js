@@ -184,7 +184,10 @@ const NewCreatePlan = ({ isEdit }) => {
     setDeletedGroup(groupToRemove);
     setDeletedGroupIndex(index);
     setPlan({ ...plan, groups: newGroups });
-    showToast('info', intl.formatMessage({ id: 'plan.group.removed' }), intl.formatMessage({ id: 'plan.group.removed.message' }, { number: groupToRemove.groupNumber }));
+    groupToRemove.name ? 
+      showToast('info', intl.formatMessage({ id: 'plan.group.removed' }), intl.formatMessage({ id: 'plan.group.removed.message.name' }, { name: groupToRemove.name }))
+        :
+      showToast('info', intl.formatMessage({ id: 'plan.group.removed' }), intl.formatMessage({ id: 'plan.group.removed.message.number' }, { number: groupToRemove.groupNumber }));
   };
 
   const handleUndoDelete = () => {
