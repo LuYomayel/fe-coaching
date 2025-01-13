@@ -128,12 +128,14 @@ export default function NewManageStudentsPage() {
             onClick={() => deleteCancelSubscription(rowData.user.subscription.clientSubscription.id)}
             tooltip={intl.formatMessage({ id: 'students.actions.deleteSubscription' })}
           />
-          <Button
+          {/*
+            <Button
             icon="pi pi-comments"
             className="p-button-rounded p-button-warning"
             onClick={() => sendMessage(rowData)}
             tooltip={intl.formatMessage({ id: 'students.actions.sendMessage' })}
           />
+          */}
           <Button
             icon="pi pi-trash"
             className="p-button-rounded p-button-danger"
@@ -167,12 +169,14 @@ export default function NewManageStudentsPage() {
             onClick={() => openSubscriptionDialog(rowData)}
             tooltip={intl.formatMessage({ id: 'students.actions.assignSubscription' })}
           />
+          {/*
           <Button
             icon="pi pi-comments"
             className="p-button-rounded p-button-warning"
             onClick={() => sendMessage(rowData)}
             tooltip={intl.formatMessage({ id: 'students.actions.sendMessage' })}
           />
+          */}
           <Button
             icon="pi pi-trash"
             className="p-button-rounded p-button-danger"

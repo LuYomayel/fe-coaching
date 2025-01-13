@@ -56,7 +56,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
       onClose();
       setRefreshKey(old => old + 1);
     } catch (error) {
-      showToast('error', intl.formatMessage({ id: 'error' }), error.message);
+      showToast('error', intl.formatMessage({ id: 'error' }), error.message, true);
     } finally {
       setLoading(false);
     }
@@ -67,8 +67,8 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
     if (fitnessGoal.includes('other') && customFitnessGoal) {
       finalFitnessGoals = fitnessGoal.filter(goal => goal !== 'other').concat(customFitnessGoal);
     }
-    const body = { name, email, fitnessGoal: finalFitnessGoals, activityLevel, gender, weight, height, birthdate, coachId: user.userId };
-
+    const body = { name, email, fitnessGoal: finalFitnessGoals === '' ? [] : finalFitnessGoals, activityLevel, gender, weight, height, birthdate, coachId: user.userId };
+    console.log(body);
     if (!name || !email) {
       showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'student.error.nameEmailRequired' }));
       return;
