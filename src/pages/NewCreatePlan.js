@@ -796,7 +796,7 @@ const NewCreatePlan = ({ isEdit }) => {
                         </Droppable>
                         {!group.isRestPeriod && (
                           <div className="flex align-items-center">
-                            <div className="w-full">
+                            <div className="w-10 mr-2">
                               <Dropdown
                                 id={`exercise-dropdown-${groupIndex}`}
                                 value={selectedExercise?.[groupIndex]}
@@ -812,16 +812,17 @@ const NewCreatePlan = ({ isEdit }) => {
                                 resetFilterOnHide
                                 placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
                                 className="w-full"
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' && selectedExercise) {
-                                    addExercise(groupIndex);
-                                    console.log('Enter key pressed');
-                                  }
-                                }}
                                 onShow={(e) => {
                                   const filterInput = document.querySelector('.p-dropdown-filter');
                                   if(filterInput) {
                                     filterInput.focus();
+                                  }
+                                }}
+                                onHide={(e) => {
+                                  const dropdown = document.querySelector(`#exercise-dropdown-button-${groupIndex}`);
+                                  if(dropdown) {
+                                    dropdown.setAttribute('data-p-focus', 'true');
+                                    dropdown.focus();
                                   }
                                 }}
                                 itemTemplate={(option) => (
@@ -833,8 +834,9 @@ const NewCreatePlan = ({ isEdit }) => {
                               //style={{ height: '40px' }}
                             />
                             </div>
-                            <div className="w-1/5">
+                            <div className="w-1">
                             <Button
+                                id={`exercise-dropdown-button-${groupIndex}`}
                                 icon="pi pi-plus"
                                 raised
                                 text
@@ -907,13 +909,6 @@ const NewCreatePlan = ({ isEdit }) => {
           filterBy="name,exerciseType"
           placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
           className="w-full mb-3"
-          onKeyDown={(e) => {
-            console.log('Enter key pressed');
-            if (e.key === 'Enter' && selectedExercise) {
-              // addExercise();
-              console.log('Enter key pressed');
-            }
-          }}
           itemTemplate={(option) => (
             <div className='flex flex-column'>
               <span>{option.name}</span>
