@@ -250,6 +250,30 @@ const saveStudent = async (body) => {
     return await response.json();
 };
 
+const updateStudent = async (studentId, body) => {
+  try {
+    const response = await fetch(`${apiUrl}/users/client/${studentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      // Handle cases where the error message might be an array or single message
+      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error updating student:', error);
+    throw error;
+  }
+};
+
 const updateCoach = async (userId, body, token) => {
     const response = await fetch(`${apiUrl}/users/coach/${userId}`, {
       method: 'POST',
@@ -326,6 +350,7 @@ export {
     fetchLastMessages,
     fetchClientActivities,
     saveStudent,
+    updateStudent,
     updateCoach,
     updatePersonalInfo,
     deleteClient,

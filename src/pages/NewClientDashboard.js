@@ -31,6 +31,7 @@ import allLocales from '@fullcalendar/core/locales-all';
 import { Avatar } from 'primereact/avatar';
 import { Panel } from 'primereact/panel';
 import { useLanguage } from '../i18n/LanguageContext';
+import NewStudentDialog from '../dialogs/NewStudentDialog';
 export default function ClientDashboard() {
   const { clientId } = useParams();
   const [ clientData, setClientData ] = useState(null);
@@ -38,6 +39,7 @@ export default function ClientDashboard() {
   const { setLoading } = useSpinner();
   const { locale } = useLanguage();
   const intl = useIntl();
+  const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
 
   // State variables
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -105,6 +107,7 @@ export default function ClientDashboard() {
       fetchClientByClientId(clientId)
       .then(data => {
         setClientData(data);
+        console.log('Client data: ', data)
       })
       .catch(error => {
         showToast('error', 'Error fetching client data', error.message);
@@ -289,6 +292,14 @@ export default function ClientDashboard() {
     setSelectedClient(clientId);
     setActionType(action);
     setAssignCycleVisible(true);
+  };
+
+  const handleNewStudentDialogHide = () => {
+    setIsNewStudentDialogVisible(false);
+  };
+
+  const handleResendVerification = (email) => {
+    setIsNewStudentDialogVisible(true);
   };
 
   const renderPlanName = (rowData) => (
@@ -498,6 +509,13 @@ export default function ClientDashboard() {
             <div className="flex align-items-center gap-2">
                 <Avatar image={clientData?.profilePicture || '/image.webp'} shape="circle" />
                 <span className="font-bold">{clientData?.name}</span>
+                <Button
+                  icon="pi pi-pencil"
+                  style={{ width: '1.2rem', height: '1.2rem' }}
+                  text
+                  onClick={() => handleResendVerification(clientData.email)}
+                  tooltip={intl.formatMessage({ id: 'students.actions.editProfile' })}
+                />
             </div>
             <div>
               &nbsp;
@@ -514,6 +532,24 @@ export default function ClientDashboard() {
         {renderTabView()}
       </Panel>
 
+      <Dialog
+        header={intl.formatMessage({ id: 'students.dialog.editProfile' })}
+        visible={isNewStudentDialogVisible}
+        onHide={handleNewStudentDialogHide}
+        draggable={false}
+        resizable={false}
+        dismissableMask
+        className="responsive-dialog"
+        style={{ width: '50vw' }}
+      >
+        <NewStudentDialog
+          onClose={handleNewStudentDialogHide}
+          setRefreshKey={setRefreshKey}
+          studentData={clientData}
+        />
+      </Dialog>
     </div>
+
+
   );
 }

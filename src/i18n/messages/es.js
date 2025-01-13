@@ -262,12 +262,14 @@ const messages = {
   'students.actions.deleteClient': 'Eliminar Cliente',
   'students.actions.resendVerification': 'Reenviar Verificación',
   'students.actions.assignSubscription': 'Asignar Suscripción',
+  'students.actions.editProfile': 'Editar Perfil',
   
   'students.dialog.newStudent': 'Nuevo Estudiante',
   'students.dialog.assignSubscription': 'Asignar Suscripción',
   'students.dialog.registerPayment': 'Registrar Pago',
   'students.dialog.studentDetails': 'Detalles del Estudiante',
-  
+  'students.dialog.editProfile': 'Editar Perfil',
+  'students.dialog.editProfile.success': 'Perfil actualizado exitosamente!',
   'students.confirm.deleteSubscription': '¿Estás seguro que deseas eliminar la suscripción de este cliente?',
   'students.confirm.deleteClient': '¿Estás seguro que deseas eliminar este cliente?',
   'students.success.deleted': 'Cliente eliminado exitosamente!',

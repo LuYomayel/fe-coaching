@@ -262,16 +262,19 @@ const messages = {
   'students.actions.deleteClient': 'Delete Client',
   'students.actions.resendVerification': 'Resend Verification',
   'students.actions.assignSubscription': 'Assign Subscription',
+  'students.actions.editProfile': 'Edit Profile',
   
   'students.dialog.newStudent': 'New Student',
   'students.dialog.assignSubscription': 'Assign Subscription',
   'students.dialog.registerPayment': 'Register Payment',
   'students.dialog.studentDetails': 'Student Details',
+  'students.dialog.editProfile': 'Edit Profile',
   
   'students.confirm.deleteSubscription': 'Are you sure you want to delete this client\'s subscription?',
   'students.confirm.deleteClient': 'Are you sure you want to delete this client?',
   'students.success.deleted': 'Client successfully deleted!',
   'students.success.verificationSent': 'Verification email sent successfully!',
+  'students.success.updated': 'Profile updated successfully!',
   // NewStudentHome
   'studentHome.welcome': 'Welcome, {name}!',
   'studentHome.calendar.title': 'Your Training Calendar',

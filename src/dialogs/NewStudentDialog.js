@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useToast } from '../utils/ToastContext';
@@ -8,11 +8,11 @@ import { MultiSelect } from 'primereact/multiselect';
 import { InputNumber } from 'primereact/inputnumber';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
-import { saveStudent } from '../services/usersService';
+import { saveStudent, updateStudent } from '../services/usersService';
 import { useIntl, FormattedMessage } from 'react-intl';
 
 
-const NewStudentDialog = ({ onClose, setRefreshKey }) => {
+const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
   const intl = useIntl();
   const showToast = useToast();
   const [name, setName] = useState('');
@@ -28,6 +28,21 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
   const { showConfirmationDialog } = useConfirmationDialog();
 
   const [loading, setLoading] = useState(false);
+  const [studentId, setStudentId] = useState(studentData ? studentData.id : null);
+
+  useEffect(() => {
+    if (studentData) {
+      setName(studentData.name);
+      setEmail(studentData.user.email);
+      setFitnessGoal(studentData.fitnessGoal);
+      setActivityLevel(studentData.activityLevel);
+      setBirthDate(studentData.birthdate ? new Date(studentData.birthdate) : null);
+      setGender(studentData.gender);
+      setHeight(studentData.height);
+      setWeight(studentData.weight);
+      setCustomFitnessGoal(studentData.customFitnessGoal || '');
+    }
+  }, [studentData]);
 
   const genders = [
     { label: intl.formatMessage({ id: 'gender.male' }), value: 'Male' },
@@ -51,8 +66,15 @@ const NewStudentDialog = ({ onClose, setRefreshKey }) => {
   const handleSaveStudent = async (body) => {
     try {
       setLoading(true);
-      await saveStudent(body);
-      showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.addedSuccessfully' }));
+      if (studentId) {
+
+        const response = await updateStudent(studentId, body);
+        console.log('Res[ponse' ,response);
+        showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.updatedSuccessfully' }));
+      } else {
+        await saveStudent(body);
+        showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.addedSuccessfully' }));
+      }
       onClose();
       setRefreshKey(old => old + 1);
     } catch (error) {
