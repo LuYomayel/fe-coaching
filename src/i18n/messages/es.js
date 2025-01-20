@@ -438,7 +438,7 @@ const messages = {
   'plan.group.addExercise': 'Agregar Ejercicio',
   'plan.group.removed': 'Grupo Eliminado',
   'plan.group.removed.message.number': 'El grupo número {number} ha sido eliminado',
-  'plan.group.removed.message.name': 'El grupo {name} ha sido eliminado',
+  'plan.group.removed.message.name': 'El grupo "{name}" ha sido eliminado',
   'plan.group.empty': 'Arrastra ejercicios aquí para agregarlos al grupo.',
   'plan.exercise.select': 'Seleccionar un Ejercicio',
   'plan.exercise.add': 'Agregar Ejercicio',

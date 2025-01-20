@@ -31,7 +31,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { NotificationProvider } from './utils/NotificationsContext.js';
 import Settings from './pages/Settings.js';
-const stripePromise = loadStripe('pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq');
+const stripePromise = await loadStripe('pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq');
 const App = () => {
   return (
     <SpinnerProvider>
