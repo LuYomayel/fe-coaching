@@ -531,6 +531,8 @@ const NewCreatePlan = ({ isEdit }) => {
             showToast('success', 'Plan imported!', 'The workout plan has been imported from the image successfully.');
         } catch (error) {
             showToast('error', 'Error importing plan', error.message, true);
+            // Clean up the input
+            event.target.value = null;
         } finally {
             setIsUploading(false);
         }
