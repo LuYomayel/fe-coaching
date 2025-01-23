@@ -502,7 +502,7 @@ const messages = {
   'dashboard.calendar.viewDetails': 'Ver Detalles del Entrenamiento',
   'dashboard.calendar.assignWorkout': 'Asignar Entrenamiento al Día',
   'dashboard.calendar.assignWorkoutTo': 'Asignar Entrenamiento',
-  
+  'clientDashboard.cycle.newCycle': 'Nuevo Ciclo',
   'dashboard.table.set': 'Serie',
   'dashboard.table.type': 'Tipo',
   'dashboard.table.expected': 'Esperado',
@@ -678,6 +678,7 @@ const messages = {
   'workoutTable.newTraining': 'Nuevo Entrenamiento',
   'workoutTable.editTraining': 'Editar Entrenamiento',
   'workoutTable.addProperties': 'Agregar Propiedades',
+  'workoutTable.newCycle' : 'Nuevo Ciclo',
 
   
   // Header
@@ -834,7 +835,8 @@ const messages = {
   'createCycle.cycleName': 'Nombre del Ciclo',
   'createCycle.durationInMonths': 'Duración en Meses',
   'createCycle.durationInWeeks': 'Duración en Semanas',
-  'createCycle.button.create': 'Crear Ciclo',
+  'createCycle.button.create': 'Crear Ciclo Vacío',
+  'createCycle.button.create.confirm': '¿Estás seguro de que deseas crear este ciclo sin ningún entrenamiento asignado? Puedes agregar entrenamientos asignados más tarde.',
   'error.fetchingStudents': 'Error al obtener estudiantes',
   'success.cycleCreated': '¡Ciclo de entrenamiento creado exitosamente!',
   'error.allFieldsRequired': 'Todos los campos son obligatorios',

@@ -32,6 +32,7 @@ import { Avatar } from 'primereact/avatar';
 import { Panel } from 'primereact/panel';
 import { useLanguage } from '../i18n/LanguageContext';
 import NewStudentDialog from '../dialogs/NewStudentDialog';
+
 export default function ClientDashboard() {
   const { clientId } = useParams();
   const [ clientData, setClientData ] = useState(null);
@@ -80,6 +81,7 @@ export default function ClientDashboard() {
         setCycleOptions(cycleOptions);
         setCalendarEvents(events);
         const options = cycleOptions.map((cycle) => ({ label: cycle.name, value: cycle.id }));
+        options.unshift({ label: intl.formatMessage({ id: 'clientDashboard.cycle.newCycle' }), value: -1 });
         setCycleDropdownOptions(options);
       })
       .catch(error => showToast('error', 'Error fetching training cycles', error.message))
@@ -454,7 +456,7 @@ export default function ClientDashboard() {
             clientId={selectedClient}
             setRefreshKey={setRefreshKey}
           />
-          <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} />
+          <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} clientId={clientId} setRefreshKey={setRefreshKey} />
           <Dialog header="Plan Details" dismissableMask draggable={false} resizable={false} visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
             {selectedPlan && <NewPlanDetail planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} />}
           </Dialog>
@@ -495,6 +497,7 @@ export default function ClientDashboard() {
               trainingCycles={cycleOptions} 
               cycleOptions={cycleDropdownOptions} 
               setRefreshKey={setRefreshKey}
+              clientId={clientId}
             />
         </TabPanel>
       </TabView>

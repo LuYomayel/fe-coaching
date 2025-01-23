@@ -344,6 +344,24 @@ const assignWorkoutsToCycle = async (cycleId, clientId, body) => {
     return response.json(); // Puede devolver la respuesta para confirmar la operación o manejarla como desees
 };
 
+const createCycleAndAssignWorkouts = async (body) => {
+  const response = await fetch(`${apiUrl}/workout/create-cycle-and-assign-workouts/${body.clientId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    const errorMessage = errorData.message && Array.isArray(errorData.message.message)
+        ? errorData.message.message.join(', ')
+        : errorData.message || 'Something went wrong';
+      throw new Error(errorMessage);
+  }
+  return response.json();
+}
+
 const assignSession = async (sessionId, body) => {
     const response = await fetch(`${apiUrl}/workout/assign-session/${sessionId}`, {
       method: 'POST',
@@ -575,5 +593,6 @@ export {
     getExercises,
     createNewTrainingFromExcelView,
     verifyExerciseChanges,
-    deleteExercises
+    deleteExercises,
+    createCycleAndAssignWorkouts
 };

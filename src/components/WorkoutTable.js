@@ -18,8 +18,8 @@ import { Checkbox } from 'primereact/checkbox';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import '../styles/WorkoutTable.css';
 import { FaGripVertical } from 'react-icons/fa';
-
-export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey }) {
+import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
+export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey, clientId }) {
     const intl = useIntl();
     const daysOfWeek = [
         { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -62,7 +62,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const [daysUsed, setDaysUsed] = useState([]);
     const defaultProperties = ['sets', 'repetitions', 'weight']; // Propiedades por defecto para nuevo entrenamiento
     const prevDepsRef = useRef({ cycle: null, dayOfWeek: null, trainingCycles: null });
-
+    const [newCycleDialogVisible, setNewCycleDialogVisible] = useState(false);
     
 
     useEffect(() => {
@@ -995,10 +995,22 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                         <Dropdown
                             value={cycle}
                             options={cycleOptions}
-                            onChange={(e) => setCycle(e.value)}
+                            onChange={(e) => {
+                                if (e.value === -1) {
+                                    setNewCycleDialogVisible(true);
+                                    return;
+                                }
+                                setCycle(e.value);
+                            }}
+                            filter
                             placeholder={intl.formatMessage({ id: 'workoutTable.selectCycle' })}
                             showClear
                             disabled={newTraining || isEditing}
+                            itemTemplate={(option) => (
+                                <div className={option.value === -1 ? 'highlighted-option' : ''}>
+                                    {option.label}
+                                </div>
+                            )}
                         />
                     </div>
                 </div>
@@ -1126,6 +1138,16 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                 ))}
             </div>
         </Dialog>
+        <CreateTrainingCycleDialog
+            clientId={clientId}
+            draggable={false}
+            resizable={false}
+            className='responsive-dialog'
+            header={intl.formatMessage({ id: 'workoutTable.newCycle' })}
+            visible={newCycleDialogVisible}
+            onHide={() => setNewCycleDialogVisible(false)}
+            setRefreshKey={setRefreshKey}
+        />
         </div>
     );
 }

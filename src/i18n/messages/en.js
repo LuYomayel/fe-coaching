@@ -505,7 +505,8 @@ const messages = {
   'dashboard.calendar.viewDetails': 'View Workout Details',
   'dashboard.calendar.assignWorkout': 'Assign Workouts to Day',
   'dashboard.calendar.assignWorkoutTo': 'Assign Workout',
-  
+  'clientDashboard.cycle.newCycle': 'New Cycle',
+
   'dashboard.table.set': 'Set',
   'dashboard.table.type': 'Type',
   'dashboard.table.expected': 'Expected',
@@ -679,6 +680,7 @@ const messages = {
   'workoutTable.newTraining': 'New Training',
   'workoutTable.editTraining': 'Edit Training',
   'workoutTable.addProperties': 'Add Properties',
+  'workoutTable.newCycle' : 'New Cycle',
 
 
   'fitnessGoal.custom': 'Custom Fitness Goal',
@@ -833,7 +835,8 @@ const messages = {
   'createCycle.cycleName': 'Cycle Name',
   'createCycle.durationInMonths': 'Duration in Months',
   'createCycle.durationInWeeks': 'Duration in Weeks',
-  'createCycle.button.create': 'Create Cycle',
+  'createCycle.button.create': 'Create Empty Cycle',
+  'createCycle.button.create.confirm': 'Are you sure you want to create this cycle without any workout assignments? You can add workout assignments later.',
   'error.fetchingStudents': 'Error fetching students',
   'success.cycleCreated': 'Training cycle created successfully!',
   'error.allFieldsRequired': 'All fields are required',
