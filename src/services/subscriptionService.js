@@ -1,8 +1,8 @@
 const apiUrl = process.env.REACT_APP_API_URL;
 const token = localStorage.getItem('token')
-const fetchCoachSubscription = async (userId) => {
-  const response = await fetch(`${apiUrl}/subscription/coach/${userId}`);
-
+const fetchCoachSubscription = async (coachId) => {
+  const response = await fetch(`${apiUrl}/subscription/coach/${coachId}`);
+  console.log('response', response);
   if (!response.ok) {
     const errorData = await response.json();
     if (errorData.message && errorData.message === 'Coach not found') {

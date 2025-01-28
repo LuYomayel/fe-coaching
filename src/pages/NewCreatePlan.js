@@ -10,7 +10,7 @@ import { Toast } from 'primereact/toast';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card } from 'primereact/card';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { fetchWorkoutInstance, submitPlan } from '../services/workoutService';
+import { createExercises, fetchWorkoutInstance, submitPlan } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
@@ -44,13 +44,14 @@ const NewCreatePlan = ({ isEdit }) => {
   ];
   const navigate = useNavigate();
   const { planId } = useParams();
-  const { user } = useContext(UserContext);
+  const { user, coach } = useContext(UserContext);
   const showToast = useToast();
   const { setLoading } = useSpinner();
   const { showConfirmationDialog } = useConfirmationDialog();
   const [deletedGroup, setDeletedGroup] = useState(null);
   const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
   const { isDarkMode } = useTheme();
+  const [ newExercises, setNewExercises] = useState([]);
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
     return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
@@ -392,7 +393,6 @@ const NewCreatePlan = ({ isEdit }) => {
       }
     }
     let contador = 0;  
-    console.log("changeToTemplate", changeToTemplate);
     if (changeToTemplate) {
       plan.isTemplate = true;
     }
@@ -441,7 +441,36 @@ const NewCreatePlan = ({ isEdit }) => {
 
   const fetchSubmit = async (cleanPlan) => {
     try {
-      await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+      if (newExercises.length > 0) {
+        const createdExercises = await createExercises(newExercises);
+        console.log("createdExercises", createdExercises);
+        setNewExercises([]);
+        // Actualizar cleanPlan con los ejercicios recién creados
+        cleanPlan.groups = cleanPlan.groups.map(group => ({
+          ...group,
+          exercises: group.exercises.map(exercise => {
+            // Buscar si el ejercicio actual corresponde a uno recién creado
+            const createdExercise = createdExercises.find(
+              created => created.name.toLowerCase() === exercise.exercise.name.toLowerCase()
+            );
+            
+            if (createdExercise) {
+              // Si encontramos coincidencia, actualizamos con el ejercicio creado
+              return {
+                ...exercise,
+                exercise: {
+                  id: createdExercise.id,
+                  name: createdExercise.name
+                }
+              };
+            }
+            return exercise;
+          })
+        }));
+        await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+      } else {
+        await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+      }
       if (isEdit) {
         showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message' }, { name: cleanPlan.workout.planName }));
       } else {
@@ -461,71 +490,69 @@ const NewCreatePlan = ({ isEdit }) => {
         setIsUploading(true);
         try {
             const planFromImage = await getPlanFromImage(file);
-            // console.log('Before: ', planFromImage);
 
-            // Arrays para almacenar ejercicios y grupos eliminados
-            const removedExercises = [];
-            const removedGroups = [];
+            // Array para almacenar nuevos ejercicios
+            setNewExercises([]);
 
             // Filtramos los grupos y sus ejercicios
             const newGroups = planFromImage.groups.reduce((acc, group) => {
-                const exercisesToAdd = group.exercises.filter(exercise => {
-                    const exists = exercises.some(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase());
-                    if (!exists) {
-                        removedExercises.push(exercise.exercise.name);  // Agregamos ejercicios no existentes
-                    }
-                    return exists;
-                });
-
-                // Si el grupo tiene ejercicios válidos, lo agregamos al array
-                if (exercisesToAdd.length > 0) {
-                    const newGroup = {
-                        set: group.set,
-                        rest: group.rest,
-                        groupNumber: group.groupNumber,
-                        exercises: exercisesToAdd.map(exercise => {
-                          // Find the complete exercise object from the array
-                          const completeExercise = exercises.find(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase());
-                          console.log('Complete exercise',completeExercise);
-                          return {
+                const exercisesToAdd = group.exercises.map(exercise => {
+                    const existingExercise = exercises.find(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase());
+                    
+                    if (!existingExercise) {
+                        // Crear nuevo ejercicio temporal
+                        const newExercise = {
+                            id: uuidv4(),
+                            name: exercise.exercise.name,
+                            description: '',
+                            exerciseType: 'OTHER', // Tipo por defecto
+                            videoUrl: '',
+                            isTemporary: true, // Flag para identificar ejercicios temporales
+                            coachId: coach.id
+                        };
+                        setNewExercises(prevExercises => [...prevExercises, newExercise]);
+                        return {
                             id: uuidv4(),
                             notes: exercise.notes,
                             ...exercise,
-                            exercise: {...completeExercise},
-                          };
-                        })
+                            exercise: newExercise
+                        };
+                    }
+                    
+                    return {
+                        id: uuidv4(),
+                        notes: exercise.notes,
+                        ...exercise,
+                        exercise: {...existingExercise}
                     };
-                    console.log('New group', newGroup);
-                    acc.push(newGroup);
-                } else {
-                    // Si el grupo no tiene ejercicios válidos, lo eliminamos y lo registramos
-                    removedGroups.push(group.groupNumber);
-                }
+                });
+
+                const newGroup = {
+                    set: group.set,
+                    rest: group.rest,
+                    groupNumber: group.groupNumber,
+                    exercises: exercisesToAdd
+                };
+                acc.push(newGroup);
                 return acc;
             }, []);
 
             // Actualizamos los grupos en el plan
             planFromImage.groups = newGroups;
 
-            // Log de los resultados
-            // console.log('After: ', planFromImage);
-            setPlan((plan) => ({
+            setPlan(() => ({
                 isTemplate: true,
                 instanceName: '',
                 ...planFromImage
-              }));
+            }));
 
+            // Actualizamos el estado de ejercicios con los nuevos
+            setExercises(prevExercises => [...prevExercises, ...newExercises]);
 
-            // Mostramos un toast con los ejercicios y grupos eliminados
-            if (removedExercises.length > 0 || removedGroups.length > 0) {
-                let message = '';
-                if (removedExercises.length > 0) {
-                    message += `Removed exercises: ${removedExercises.join(', ')}. `;
-                }
-                if (removedGroups.length > 0) {
-                    message += `Removed groups: ${removedGroups.join(', ')}.`;
-                }
-                showToast('info', 'Plan filtered', message, true);
+            // Mostramos un toast con los nuevos ejercicios
+            if (newExercises.length > 0) {
+                const message = `New exercises to be created: ${newExercises.map(e => e.name).join(', ')}`;
+                showToast('info', 'New exercises detected', message, true);
             }
 
             showToast('success', 'Plan imported!', 'The workout plan has been imported from the image successfully.');
@@ -533,7 +560,8 @@ const NewCreatePlan = ({ isEdit }) => {
             showToast('error', 'Error importing plan', error.message, true);
             // Clean up the input
             event.target.value = null;
-        } finally {
+          } finally {
+            event.target.value = null;
             setIsUploading(false);
         }
     }

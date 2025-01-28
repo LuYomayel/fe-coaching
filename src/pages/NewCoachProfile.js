@@ -165,6 +165,7 @@ export default function CoachProfilePage() {
         console.log(response);
         setRpeMethods(response);
       } catch (error) {
+        console.log('error', error);
         showToast('error', 'Error', error.message);
       } finally {
         setIsRpeLoading(false);
@@ -183,9 +184,9 @@ export default function CoachProfilePage() {
               workoutInstance: instance,
             };
           });
-          console.log('Mapped workouts', mappedWorkouts);
           setWorkouts(mappedWorkouts);
         } catch (error) {
+          console.log('error', error);
           showToast('error', 'Error', error.message);
         } finally {
           setIsWorkoutsLoading(false);
@@ -211,9 +212,11 @@ export default function CoachProfilePage() {
       const fetchCoachSubscriptionData = async () => {
         try {
           setIsCoachSubscriptionLoading(true);
-          const subscriptionData = await fetchCoachSubscription(user.userId);
+          const subscriptionData = await fetchCoachSubscription(coach.id);
+          console.log('subscriptionData', subscriptionData);
           setCurrentPlanId(subscriptionData.subscriptionPlan.id);
         } catch (error) {
+          console.log('error', error);
           showToast('error', 'Error', error.message);
         } finally {
           setIsCoachSubscriptionLoading(false);
@@ -226,6 +229,7 @@ export default function CoachProfilePage() {
           const coachPlansData = await fetchCoachPlans(user.userId);
           setCoachPlans(coachPlansData);
         } catch (error) {
+          console.log('error', error);
           showToast('error', 'Error', error.message);
         } finally{
           setIsCoachPlansLoading(false);
@@ -243,6 +247,7 @@ export default function CoachProfilePage() {
           const exercisesData = await exercisesResponse.json();
           setExercises(exercisesData);
         } catch (error) {
+          console.log('error', error);
           showToast('error', 'Error', error.message);
         } finally {
           setIsExercisesLoading(false);
@@ -262,6 +267,7 @@ export default function CoachProfilePage() {
           const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
           setBodyAreas(formattedBodyAreas);
         } catch (error) {
+          console.log('error', error);
           showToast('error', 'Error', error.message);
         } finally {
           setIsBodyAreasLoading(false);
@@ -274,6 +280,7 @@ export default function CoachProfilePage() {
           const subscriptionPlansData = await fetchCoachSubscriptionPlans();
           setSubscriptionPlans(subscriptionPlansData);
         } catch (error) {
+          console.log('error', error);
           showToast('error', 'Error', error.message);
         } finally {
           setIsSubscriptionPlansLoading(false);
@@ -286,6 +293,7 @@ export default function CoachProfilePage() {
           const activeClients = clientsData.filter(client => client.user.subscription.status === 'Active');
           setUsers(activeClients);
         } catch (error) {
+
           console.error('Error fetching clients:', error);
         } finally {
         }
@@ -301,7 +309,6 @@ export default function CoachProfilePage() {
         }
       };
       
-
       fetchWorkouts();
       fetchCoachInfo();
       fetchCoachSubscriptionData();
@@ -336,6 +343,7 @@ export default function CoachProfilePage() {
         showToast('error', 'Error', 'RPE Method not created or edited');
       }
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     } finally {
       setIsRpeLoading(false);
@@ -429,6 +437,7 @@ export default function CoachProfilePage() {
       setRefreshKey((old) => old + 1);
       showToast('success', 'Success', 'Exercise deleted successfully');
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     }
   };
@@ -498,6 +507,7 @@ export default function CoachProfilePage() {
       closeExerciseDialog();
       setRefreshKey((old) => old + 1);
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     }
   };
@@ -797,6 +807,7 @@ export default function CoachProfilePage() {
       closeCreatePlanDialog();
       setRefreshKey((old) => old + 1);
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     }
   };
@@ -857,6 +868,7 @@ export default function CoachProfilePage() {
       setCoachPlans(coachPlans.filter((plan) => plan.id !== planId));
       showToast('success', 'Success', 'Plan deleted successfully');
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     }
   };
@@ -886,6 +898,7 @@ export default function CoachProfilePage() {
       await deleteWorkoutPlan(workoutId, true);
       showToast('success', intl.formatMessage({ id: 'coach.workout.success.deleted' }), intl.formatMessage({ id: 'coach.workout.success.deleted.message' }));
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     }
   };
@@ -936,6 +949,7 @@ export default function CoachProfilePage() {
       console.log(result.duplicateExercises);
       fileUploadRef.current.clear();
     } catch (error) {
+      console.log('error', error);
       onTemplateError(error);
       console.error('Error during upload:', error);
     } finally {
@@ -982,14 +996,15 @@ export default function CoachProfilePage() {
       setCurrentVideoUrl(embedUrl);
       setVideoDialogVisible(true);
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     }
   };
 
   const videoBodyTemplate = (rowData) => {
     return (
-      <a href="#/" onClick={() => handleVideoClick(rowData.multimedia)}>
-        <img src={getYouTubeThumbnail(rowData.multimedia)} alt="Video thumbnail" style={{ width: '100px', cursor: 'pointer' }} />
+      <a href="#/" onClick={() => handleVideoClick(rowData.multimedia ? rowData.multimedia : '')}>
+        <img src={getYouTubeThumbnail(rowData.multimedia ? rowData.multimedia : ''  )} alt="Video thumbnail" style={{ width: '100px', cursor: 'pointer' }} />
       </a>
     );
   };
@@ -1088,6 +1103,7 @@ export default function CoachProfilePage() {
         showToast('error', 'Error', 'RPE Method not deleted');
       }
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     } finally {
       setIsRpeLoading(false);
@@ -1107,6 +1123,7 @@ export default function CoachProfilePage() {
       setSelectedRpe(null);
       setRpeAssignmentDialogVisible(false);
     } catch (error) {
+      console.log('error', error);
       showToast('error', 'Error', error.message);
     }
   };

@@ -1,6 +1,16 @@
 import { getDayMonthYear } from "../utils/UtilFunctions";
 
 const apiUrl = process.env.REACT_APP_API_URL;
+
+const createExercises = async (exercises) => {
+  const response = await fetch(`${apiUrl}/exercise/generate-exercises`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(exercises)
+  });
+  return response.json();
+}
+
 const fetchCoachWorkouts = async (userId) => {
     const response = await fetch(`${apiUrl}/workout/coach-workouts/userId/${userId}`);
     if (!response.ok) {
@@ -594,5 +604,6 @@ export {
     createNewTrainingFromExcelView,
     verifyExerciseChanges,
     deleteExercises,
-    createCycleAndAssignWorkouts
+    createCycleAndAssignWorkouts,
+    createExercises
 };

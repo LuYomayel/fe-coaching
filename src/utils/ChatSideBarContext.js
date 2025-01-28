@@ -53,10 +53,10 @@ export const ChatSidebarProvider = ({ children }) => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const messages = await fetchUnreadMessages(user.userId);
-        const unreadMessageCount = messages.filter(msg => !msg.isRead).length;
-        setUnreadMessages(unreadMessageCount);
-        console.log('Last messages: ', messages)
+        //const messages = await fetchUnreadMessages(user.userId);
+        //const unreadMessageCount = messages.filter(msg => !msg.isRead).length;
+        setUnreadMessages(0);
+        
       } catch (error) {
         console.error('Error fetching messages:', error);
       } finally {
