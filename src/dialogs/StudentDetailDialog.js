@@ -7,6 +7,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { useToast } from '../utils/ToastContext';
 import { validateStudentDetails } from '../utils/UtilFunctions';
 import { useIntl } from 'react-intl';
+import { updateClient } from '../services/usersService';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentDetailDialog = ({ student, onClose }) => {
@@ -53,20 +54,13 @@ const StudentDetailDialog = ({ student, onClose }) => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/students/${student.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, fitnessGoal: fitnessGoal.join(','), activityLevel, birthdate, gender, height, weight }),
-      });
-      if (response.ok) {
+      const body = { name, email, fitnessGoal: fitnessGoal.join(','), activityLevel, birthdate, gender, height, weight };
+      const response = await updateClient(student.id, body);
+      if(response.message === 'success') {
         showToast('success', 'Success', 'Student details updated successfully');
-        
+        onClose();
       } else {
-        const errorData = await response.json();
-        console.log(errorData)
-        throw new Error(errorData.message || 'Something went wrong');
+        showToast('error', 'Error', response.error);
       }
     } catch (error) {
       showToast('error', 'Error', error.message);

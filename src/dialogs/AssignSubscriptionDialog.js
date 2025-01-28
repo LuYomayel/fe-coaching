@@ -24,8 +24,8 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
   useEffect(() => {
     const loadCoachPlans = async () => {
       try {
-        const plans = await fetchCoachPlans(user.userId);
-        setCoachPlans(plans);
+        const {data} = await fetchCoachPlans(user.userId);
+        setCoachPlans(data);
       } catch (error) {
         showToast('error', intl.formatMessage({ id: 'error' }), error.message);
       }
@@ -92,7 +92,7 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
         <label htmlFor="coachPlan"><FormattedMessage id="plan" /></label>
         <Dropdown id="coachPlan" options={coachPlans} optionLabel='name' optionValue='id' value={selectedCoachPlan} onChange={(e) => setSelectedCoachPlan(e.value)} />
       </div>
-      <Button label={intl.formatMessage({ id: 'assignSubscription.button' })} icon="pi pi-check" loading={loading} onClick={assingSubscription} />
+      <Button label={intl.formatMessage({ id: 'common.save' })} icon="pi pi-check" loading={loading} onClick={assingSubscription} />
     </div>
   );
 };

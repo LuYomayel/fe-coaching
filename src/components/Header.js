@@ -1,6 +1,5 @@
-import React, { useState, useRef, useContext, useEffect } from 'react';
+import React, { useRef, useContext } from 'react';
 import { Sidebar } from 'primereact/sidebar';
-import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { Menu } from 'primereact/menu';
@@ -8,22 +7,25 @@ import { UserContext } from '../utils/UserContext';
 import { useNavigate, Link } from 'react-router-dom';
 import ChatSidebar from './ChatSideBar';
 import { useChatSidebar } from '../utils/ChatSideBarContext';
-import { markNotificationAsRead, getUserNotifications } from '../services/notificationsService'
-import { Badge } from 'primereact/badge';
-import { fetchLastMessages } from '../services/usersService'
-import { useIntl, FormattedMessage } from 'react-intl';
+//import { markNotificationAsRead, getUserNotifications } from '../services/notificationsService'
+//import { Badge } from 'primereact/badge';
+//import { fetchLastMessages } from '../services/usersService'
+import { useIntl } from 'react-intl';
 
 export default function Header() {
   const intl = useIntl();
+  // eslint-disable-next-line
   const { isChatSidebarOpen, closeChatSidebar, openChatSidebar } = useChatSidebar();
   const op = useRef(null);
   const { user, coach, client, setUser } = useContext(UserContext);
   const navigate = useNavigate();
+  /*
   const notificationOp = useRef(null);
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
+  */
   // const [unreadMessages, setUnreadMessages] = useState(0)
-  const {unreadMessages, setUnreadMessages} = useChatSidebar()
+  //const {unreadMessages, setUnreadMessages} = useChatSidebar()
   const menuItems = [
     {
       label: intl.formatMessage({ id: 'header.home' }),
@@ -61,6 +63,7 @@ export default function Header() {
       navigate('/');
     };
 
+    /*
     useEffect(() => {
       // Cargar notificaciones
       const fetchNotifications = async () => {
@@ -85,7 +88,7 @@ export default function Header() {
         fetchMessages();
       }
     }, [user, setUnreadMessages]);
-    
+
     const handleNotificationClick = async (notificationId) => {
       await markNotificationAsRead(notificationId); // Marcar como leída en el backend
       setNotifications((prev) =>
@@ -93,6 +96,7 @@ export default function Header() {
       );
       setUnreadCount(unreadCount - 1);
     };
+    */
 
     if (!user || (user && !user.isVerified) || (user && (!coach && !client)) || (user && client && client.user.subscription.status === 'Inactive')) {
       return null;

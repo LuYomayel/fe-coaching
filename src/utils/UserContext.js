@@ -28,9 +28,8 @@ export const UserProvider = ({ children }) => {
           setClient(null);
           return
         }
-          
-        const {valid} = await fetchUserData(decodedUser.userId)
-        if(valid){
+        const data = await fetchUserData(decodedUser.userId)
+        if(decodedUser.isVerified && decodedUser.email === data.email){
           
           if (decodedUser.userType === 'coach') {
             const data = await fetchCoachData(decodedUser.userId);
@@ -67,8 +66,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchUserData = async (userId) => {
     try {
-      const data = await fetchUser(userId)
-      // console.log('User:', data)
+      const {data} = await fetchUser(userId)
       return data
     } catch (error) {
       console.log(error);
@@ -77,7 +75,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchCoachData = async (userId) => {
     try {
-      const data = await fetchCoach(userId)
+      const {data} = await fetchCoach(userId)
       return data
     } catch (error) {
       console.log(error);
@@ -87,7 +85,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchClientData = async (userId) => {
     try {
-      const data = await fetchClient(userId)
+      const {data} = await fetchClient(userId)
       return data
     } catch (error) {
       console.log(error);

@@ -7,7 +7,7 @@ const messages = {
   'app.connection.status.disconnected': 'Desconectado',
 
   // Common
-
+  'common.warning': 'Advertencia',
   'common.selectDate': 'Seleccionar Fecha',
   'common.noResults': 'No se encontraron resultados.',
   'common.status': 'Estado',
@@ -38,7 +38,13 @@ const messages = {
   'common.error': 'Error',
   'common.errorVerifyingChanges': 'Error al verificar los cambios',
   'common.errorNameRequired': 'El nombre del plan es requerido',
-
+  'common.add': 'Agregar',
+  'common.assign': 'Asignar',
+  'common.unassign': 'Desasignar',
+  'common.create': 'Crear',
+  
+  
+  'home.success.checkEmail': '¡Revisa tu correo para continuar!',
   // Mensajes de confirmacion
   'assignPlan.confirmation.message': '¿Estás seguro de que deseas asignar este plan?',
   'assignSubscription.confirmation.message': '¿Estás seguro de que deseas generar una suscripción para este cliente?',
@@ -535,7 +541,7 @@ const messages = {
   'coach.buttons.editPlan': 'Editar Plan',
   'coach.buttons.openChat': 'Abrir Chat',
   'coach.buttons.upgradePlan': 'Mejorar Plan',
-  'coach.buttons.import': 'Importar desde CSV',
+  'coach.buttons.import': 'Importar desde CSV/XLSX',
   
   'coach.subscription.status': 'Estado de Suscripción',
   'coach.subscription.clientsManaged': 'Clientes Gestionados: {current}/{max}',
@@ -609,6 +615,9 @@ const messages = {
   'home.toast.checkEmail': '¡Revisa tu correo para continuar!',
   'home.toast.error': 'Error',
   'home.toast.success': 'Éxito',
+  
+  'home.error.verifyEmail': '¡Verifica tu correo antes de iniciar sesión!',
+  'home.error.checkEmail': '¡Revisa tu correo para continuar!',
   
   // ResetPassword
   'resetPassword.title': 'Restablecer Contraseña',
@@ -740,11 +749,15 @@ const messages = {
   'activityLevel.moderatelyActive': 'Moderadamente activo',
   'activityLevel.veryActive': 'Muy activo',
   'student.success': 'Éxito',
+  'student.updatedSuccessfully': 'Estudiante actualizado exitosamente',
   'student.addedSuccessfully': 'Estudiante agregado exitosamente',
   'student.error.nameEmailRequired': 'El nombre y el correo electrónico no pueden estar vacíos',
   'student.error.birthdateInvalid': 'La fecha de nacimiento no puede ser posterior a hoy',
   'student.warning.youngClient': 'El cliente es muy joven, por favor verifica la fecha de nacimiento',
   'student.confirmation.create': '¿Estás seguro de que deseas crear este estudiante?',
+  'student.error.noSubscription': 'El cliente no tiene una suscripción activa',
+  'student.error.noCoachPlans': 'No hay planes de entrenador disponibles. Por favor, crea un plan de entrenador primero',
+  'student.verificationEmailSent': '¡Correo de verificación enviado exitosamente!',
   'confirmation': 'Confirmación',
   'email': 'Correo Electrónico',
   'name': 'Nombre',

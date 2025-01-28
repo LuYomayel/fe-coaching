@@ -88,7 +88,7 @@ export default function ClientDashboard() {
       .finally(() => setLoading(false));
 
     fetchWorkoutsByClientId(clientId)
-      .then(data => {
+      .then(({data}) => {
         setWorkouts(data);
         const exercises = [...new Map(data.flatMap(workout => 
           workout.groups.flatMap(group => 
@@ -107,9 +107,9 @@ export default function ClientDashboard() {
       .finally(() => setLoading(false));
 
       fetchClientByClientId(clientId)
-      .then(data => {
+      .then(({data}) => {
+
         setClientData(data);
-        console.log('Client data: ', data)
       })
       .catch(error => {
         showToast('error', 'Error fetching client data', error.message);
@@ -282,7 +282,10 @@ export default function ClientDashboard() {
   };
 
   const showCreateCycleDialog = () => {
-    setDialogVisible(true);
+    if(clientData.user.subscription.status === 'active')
+      setDialogVisible(true);
+    else
+      showToast('error', 'Error', intl.formatMessage({ id: 'student.error.noSubscription' }));
   };
 
   const hideCreateCycleDialog = () => {
@@ -300,7 +303,8 @@ export default function ClientDashboard() {
     setIsNewStudentDialogVisible(false);
   };
 
-  const handleResendVerification = (email) => {
+  const handleNewStudentDialogShow = () => {
+    console.log('show', clientData)
     setIsNewStudentDialogVisible(true);
   };
 
@@ -498,6 +502,7 @@ export default function ClientDashboard() {
               cycleOptions={cycleDropdownOptions} 
               setRefreshKey={setRefreshKey}
               clientId={clientId}
+              clientData={clientData}
             />
         </TabPanel>
       </TabView>
@@ -516,7 +521,7 @@ export default function ClientDashboard() {
                   icon="pi pi-pencil"
                   style={{ width: '1.2rem', height: '1.2rem' }}
                   text
-                  onClick={() => handleResendVerification(clientData.email)}
+                  onClick={() => handleNewStudentDialogShow(clientData.email)}
                   tooltip={intl.formatMessage({ id: 'students.actions.editProfile' })}
                 />
             </div>

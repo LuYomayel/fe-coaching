@@ -37,10 +37,9 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
         const fetchPlanDetails = async () => {
             try {
                 setLoading(true);
-                const planDetails = await fetchWorkoutInstance(planId);
-                planDetails.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
-                setWorkoutPlan(planDetails);
-                console.log(planDetails);
+                const {data} = await fetchWorkoutInstance(planId);
+                data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
+                setWorkoutPlan(data);
             } catch (error) {
                 showToast('error', 'Error fetching plan details', error.message);
             } finally {
@@ -62,10 +61,14 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
             icon: 'pi pi-exclamation-triangle',
             accept: async () => {
                 try {
-                    await deleteWorkoutPlan(planId, workoutPlan.isTemplate);
-                    showToast('success', 'Deleted', 'Workout plan deleted');
-                    setPlanDetailsIsVisible(false);
-                    setRefreshKey((old) => old + 1);
+                    const response = await deleteWorkoutPlan(planId, workoutPlan.isTemplate);
+                    if(response.message === 'success') {
+                        showToast('success', 'Deleted', 'Workout plan deleted');
+                        setPlanDetailsIsVisible(false);
+                        setRefreshKey((old) => old + 1);
+                    } else {
+                        showToast('error', 'Error', response.error);
+                    }
                 } catch (error) {
                     showToast('error', 'Error', error.message);
                 }

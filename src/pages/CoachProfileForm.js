@@ -50,16 +50,17 @@ const CoachProfileForm = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await fetchCoachSubscriptionPlans();
-        setPlans(response);
+        const {data} = await fetchCoachSubscriptionPlans();
+        setPlans(data);
       } catch (err) {
-        console.error(err);
+        showToast('error', 'Error', err.message);
       }
     };
 
     fetchPlans();
 
     if (user && coach) navigate('/coach');
+    // eslint-disable-next-line
   }, [user, coach, navigate]);
 
   const steps = [
@@ -103,9 +104,10 @@ const CoachProfileForm = () => {
 
   const handleSubmit = async () => {
     const selectedPlanId = subscriptionType === 'freeTrial'
-      ? plans.find(plan => plan.name === 'Free Trial')?.id
+      ? plans.find(plan => plan.name === 'Free')?.id
       : userPayment?.id;
 
+    console.log(subscriptionType, plans)
     if (!selectedPlanId) {
       showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
       return;
@@ -113,7 +115,7 @@ const CoachProfileForm = () => {
 
     const body = {
       name,
-      estimatedClients: subscriptionType === 'freeTrial' ? 3 : userPayment.max_clients,
+      estimatedClients: plans.find(plan => plan.id === selectedPlanId)?.max_clients,
       trainingType,
       hasGym,
       gymLocation: hasGym ? gymLocation : null,
@@ -122,8 +124,7 @@ const CoachProfileForm = () => {
       email: user.email,
       subscriptionPlanId: selectedPlanId,
     };
-
-    console.log(body);
+    console.log(body)
     if (subscriptionType === 'paid' && !userPayment) {
       showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
       return;
@@ -135,7 +136,8 @@ const CoachProfileForm = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const data = await updateCoach(user.userId, body, token);
+      const {data} = await updateCoach(user.userId, body, token);
+      console.log(data);
       setCoach(data);
 
       navigate('/coach');
@@ -299,7 +301,7 @@ const CoachProfileForm = () => {
         <SubscriptionPaymentPage setUserPayment={setUserPayment} setIsPlanDialogVisible={setIsPlanDialogVisible} />
       </Dialog>
     </div>
-  );
+  )
 };
 
 export default CoachProfileForm;

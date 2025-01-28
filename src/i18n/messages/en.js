@@ -7,6 +7,7 @@ const messages = {
   'app.connection.status.disconnected': 'Disconnected',
 
   // Common
+  'common.warning': 'Warning',
   'common.confirmation': 'Confirmation',
   'common.actions': 'Actions',
   'common.loading': 'Loading...',
@@ -37,7 +38,12 @@ const messages = {
   'common.error': 'Error',
   'common.success': 'Success',
   'common.errorNameRequired': 'The plan name is required',
-
+  'common.assign': 'Assign',
+  'common.unassign': 'Unassign',
+  'common.create': 'Create',
+  'common.add': 'Add',
+  
+  'home.success.checkEmail': 'Check your email to continue!',
   // Mensajes de confirmacion
   'assignPlan.confirmation.message': 'Are you sure you want to assign this plan?',
   'assignSubscription.confirmation.message': 'Are you sure you want to generate a subscription for this client?',
@@ -205,7 +211,7 @@ const messages = {
   
   'coach.buttons.add': 'Add {item}',
   'coach.buttons.assign': 'Assign {item}',
-  'coach.buttons.import': 'Import Exercises',
+  'coach.buttons.import': 'Import Exercises from CSV/XLSX',
   'coach.buttons.import.csv': 'Import from CSV',
   
   'coach.rpe.name': 'RPE Name',
@@ -612,6 +618,8 @@ const messages = {
   'home.toast.error': 'Error',
   'home.toast.success': 'Success',
   
+  'home.error.verifyEmail': 'Verify your email prior to logging in!',
+  'home.error.checkEmail': 'Check your email to continue!',
   // ResetPassword
   'resetPassword.title': 'Reset Password',
   'resetPassword.newPassword': 'New Password',
@@ -747,6 +755,11 @@ const messages = {
   'student.error.birthdateInvalid': 'Birthdate cannot be later than today',
   'student.warning.youngClient': 'Client is very young, please double-check the birthdate',
   'student.confirmation.create': 'Are you sure you want to create this student?',
+  'student.updatedSuccessfully': 'Student updated successfully',
+  'student.error.noSubscription': 'Client does not have an active subscription',
+  'student.error.noCoachPlans': 'No coach plans found. Please create a coach plan first',
+  'student.verificationEmailSent': 'Verification email sent successfully!',
+
   'confirmation': 'Confirmation',
   'email': 'Email',
   'name': 'Name',

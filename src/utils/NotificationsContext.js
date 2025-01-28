@@ -12,13 +12,14 @@ export const NotificationProvider = ({ children }) => {
   const showToast = useToast();
   useEffect(() => {
     // Cargar notificaciones al iniciar la aplicación
+    // eslint-disable-next-line
     const loadNotifications = async () => {
-      console.log('User id:', user)
+      // console.log('User id:', user)
       const data = await getUserNotifications(user.userId);
       setNotifications(data);
       setUnreadCount(data.filter(notification => !notification.isRead).length);
     };
-    if(user) loadNotifications();
+    // if(user) loadNotifications();
   }, [user]);
 
   const markAsRead = async (notificationId) => {

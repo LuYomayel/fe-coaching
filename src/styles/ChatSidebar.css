@@ -125,12 +125,12 @@
 }
 
 /* Ajustes para el FileUpload */
-.p-fileupload-buttonbar {
+.chat-sidebar .p-fileupload-buttonbar {
   display: flex;
   padding: 0;
 }
 
-.p-fileupload-choose {
+.chat-sidebar .p-fileupload-choose {
   width: 40px;
   height: 40px;
   display: flex;
@@ -140,30 +140,30 @@
 }
 
 
-.p-fileupload-choose .p-button-icon {
+.chat-sidebar .p-fileupload-choose .p-button-icon {
   margin: 0;
 }
 
-.p-fileupload-choose .p-button-label {
+.chat-sidebar .p-fileupload-choose .p-button-label {
     flex: 0;
 }   
 /* Ajustes para el botón de enviar */
-.input-group .p-button {
+.chat-sidebar .input-group .p-button {
   width: 40px;
   height: 40px;
   padding: 0;
 }
 
 /* Ajustes para el input de texto */
-.input-group .p-inputtext {
+.chat-sidebar .input-group .p-inputtext {
   height: 40px;
 }
 
-.input-preview-container {
+.chat-sidebar .input-preview-container {
     position: relative;
 }
 
-.loading-bar {
+.chat-sidebar .loading-bar {
     position: absolute;
     bottom: -10px; /* Ajusta este valor según sea necesario para posicionar la barra justo debajo */
     left: 0;

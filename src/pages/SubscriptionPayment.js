@@ -19,12 +19,16 @@ export default function SubscriptionPaymentPage({ setUserPayment, setIsPlanDialo
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const response = await fetchCoachSubscriptionPlans();
-                const data = response.filter(plan => plan.price !== 0);
-                setPlans(data);
+                const {data} = await fetchCoachSubscriptionPlans();
+                const plans = data.filter(plan => parseFloat(plan.price) !== 0).map(plan => ({
+                    ...plan,
+                    price: parseFloat(plan.price),
+                }));
+                console.log(plans);
+                setPlans(plans);
             } catch (err) {
                 console.error('Error fetching plans:', err);
-                showToast('error', 'Error', 'Failed to load subscription plans.');
+                showToast('error', 'Error', err.error);
             }
         };
 
@@ -49,12 +53,12 @@ export default function SubscriptionPaymentPage({ setUserPayment, setIsPlanDialo
         }
 
         try {
-            const paymentResult = await makePayment({
+            const {data} = await makePayment({
                 paymentMethodId: paymentMethod.id,
                 amount: selectedPlan.price * 100,
             });
 
-            if (paymentResult.success) {
+            if (data.message === 'success') {
                 await updateCoachSubscription({
                     userId: user.userId,
                     planId: selectedPlan.id,
@@ -63,7 +67,7 @@ export default function SubscriptionPaymentPage({ setUserPayment, setIsPlanDialo
                 setIsPlanDialogVisible(false);
                 showToast('success', 'Payment Successful', `Your payment for ${selectedPlan.name} plan has been processed.`);
             } else {
-                showToast('error', 'Error', paymentResult.error || 'Payment failed');
+                showToast('error', 'Error', data.error || 'Payment failed');
             }
         } catch (err) {
             console.error('Payment processing error:', err);

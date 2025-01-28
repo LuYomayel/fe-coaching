@@ -31,7 +31,8 @@ import { FilterMatchMode } from 'primereact/api';
 import * as XLSX from 'xlsx';
 import Spinner from '../utils/LittleSpinner';
 import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
-
+import { createExercise, deleteExercise, fetchBodyAreas, fetchCoachExercises, importExercises, updateExercise } from '../services/exercisesService';
+import { ProgressBar } from 'primereact/progressbar';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function CoachProfilePage() {
@@ -85,6 +86,7 @@ export default function CoachProfilePage() {
   // eslint-disable-next-line
   const [selectedFile, setSelectedFile] = useState(null);
   const fileUploadRef = useRef(null);
+  const [totalSize, setTotalSize] = useState(0);
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -161,9 +163,8 @@ export default function CoachProfilePage() {
     const fetchRpeMethods = async () => {
       setIsRpeLoading(true);
       try {
-        const response = await getRpeMethods(user.userId);
-        console.log(response);
-        setRpeMethods(response);
+        const {data} = await getRpeMethods(user.userId);
+        setRpeMethods(data);
       } catch (error) {
         console.log('error', error);
         showToast('error', 'Error', error.message);
@@ -176,8 +177,8 @@ export default function CoachProfilePage() {
       const fetchWorkouts = async () => { 
         try {
           setIsWorkoutsLoading(true);
-          const workoutData = await fetchCoachWorkouts(user.userId);
-          const mappedWorkouts = workoutData.map((workout) => {
+          const {data} = await fetchCoachWorkouts(user.userId);
+          const mappedWorkouts = data.map((workout) => {
             const instance = workout.workoutInstances.find((instance) => instance.isTemplate);
             return {
               ...workout,
@@ -196,7 +197,7 @@ export default function CoachProfilePage() {
       const fetchCoachInfo = async () => {
         try {
           setIsCoachInfoLoading(true);
-          const data = await fetchCoach(user.userId);
+          const {data} = await fetchCoach(user.userId);
           setCoachInfo(data);
         } catch (error) {
           if (error.message === 'Coach not found') {
@@ -212,9 +213,9 @@ export default function CoachProfilePage() {
       const fetchCoachSubscriptionData = async () => {
         try {
           setIsCoachSubscriptionLoading(true);
-          const subscriptionData = await fetchCoachSubscription(coach.id);
-          console.log('subscriptionData', subscriptionData);
-          setCurrentPlanId(subscriptionData.subscriptionPlan.id);
+          const {data} = await fetchCoachSubscription(coach.id);
+          console.log(data);
+          setCurrentPlanId(data.subscriptionPlan.id);
         } catch (error) {
           console.log('error', error);
           showToast('error', 'Error', error.message);
@@ -226,8 +227,9 @@ export default function CoachProfilePage() {
       const fetchCoachPlansData = async () => {
         try {
           setIsCoachPlansLoading(true);
-          const coachPlansData = await fetchCoachPlans(user.userId);
-          setCoachPlans(coachPlansData);
+          const {data} = await fetchCoachPlans(user.userId);
+          
+          setCoachPlans(data);
         } catch (error) {
           console.log('error', error);
           showToast('error', 'Error', error.message);
@@ -239,15 +241,13 @@ export default function CoachProfilePage() {
       const fetchExercises = async () => {
         try {
           setIsExercisesLoading(true);
-          const exercisesResponse = await fetch(`${apiUrl}/exercise/coach/${user.userId}`);
-          if (!exercisesResponse.ok) {
-            const errorData = await exercisesResponse.json();
-            throw new Error(errorData.message || 'Something went wrong');
+          const {data} = await fetchCoachExercises(user.userId);
+          if (data.error) {
+            throw new Error(data.message || 'Something went wrong');
           }
-          const exercisesData = await exercisesResponse.json();
-          setExercises(exercisesData);
+          setExercises(data);
         } catch (error) {
-          console.log('error', error);
+          console.error('error', error);
           showToast('error', 'Error', error.message);
         } finally {
           setIsExercisesLoading(false);
@@ -255,16 +255,14 @@ export default function CoachProfilePage() {
 
       };
 
-      const fetchBodyAreas = async () => {
+      const fetchBodyAreasData = async () => {
         try {
           setIsBodyAreasLoading(true);
-          const bodyAreasResponse = await fetch(`${apiUrl}/exercise/body-area`);
-          if (!bodyAreasResponse.ok) {
-            const errorData = await bodyAreasResponse.json();
-            throw new Error(errorData.message || 'Something went wrong');
+          const {data} = await fetchBodyAreas();
+          if (data.error) {
+            throw new Error(data.message || 'Something went wrong');
           }
-          const bodyAreasData = await bodyAreasResponse.json();
-          const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
+          const formattedBodyAreas = data.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
           setBodyAreas(formattedBodyAreas);
         } catch (error) {
           console.log('error', error);
@@ -277,8 +275,9 @@ export default function CoachProfilePage() {
       const fetchSubscriptionPlans = async () => {
         try {
           setIsSubscriptionPlansLoading(true);
-          const subscriptionPlansData = await fetchCoachSubscriptionPlans();
-          setSubscriptionPlans(subscriptionPlansData);
+          const {data} = await fetchCoachSubscriptionPlans();
+          console.log(data);
+          setSubscriptionPlans(data);
         } catch (error) {
           console.log('error', error);
           showToast('error', 'Error', error.message);
@@ -289,11 +288,10 @@ export default function CoachProfilePage() {
 
       const fetchClients = async () => {
         try {
-          const clientsData = await fetchCoachStudents(user.userId);
-          const activeClients = clientsData.filter(client => client.user.subscription.status === 'Active');
+          const {data} = await fetchCoachStudents(user.userId);
+          const activeClients = data.filter(client => client.user.subscription.status === 'Active');
           setUsers(activeClients);
         } catch (error) {
-
           console.error('Error fetching clients:', error);
         } finally {
         }
@@ -301,9 +299,8 @@ export default function CoachProfilePage() {
   
       const fetchTrainingPlans = async () => {
         try {
-          const trainingPlansData = await fetchTrainingCyclesByCoachId(user.userId);
-          console.log(trainingPlansData);
-          setTrainingCycles(trainingPlansData);
+          const {data} = await fetchTrainingCyclesByCoachId(user.userId);
+          setTrainingCycles(data);
         } catch (error) {
           console.error('Error fetching training plans:', error);
         }
@@ -314,7 +311,7 @@ export default function CoachProfilePage() {
       fetchCoachSubscriptionData();
       fetchCoachPlansData();
       fetchExercises();
-      fetchBodyAreas();
+      fetchBodyAreasData();
       fetchSubscriptionPlans();
       fetchRpeMethods(); 
       fetchClients();
@@ -357,7 +354,7 @@ export default function CoachProfilePage() {
         <h2 className="text-xl font-bold">{text}</h2>
         <Button
           label={intl.formatMessage(
-            { id: 'coach.buttons.add', defaultMessage: 'Add {item}' },
+            { id: 'common.add', defaultMessage: 'Add {item}' },
             { item: text.slice(0, -1) }
           )}
           icon="pi pi-plus"
@@ -425,13 +422,9 @@ export default function CoachProfilePage() {
 
   const handleDeleteExercise = async (exerciseId) => {
     try {
-      const response = await fetch(`${apiUrl}/exercise/${exerciseId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
+      const response = await deleteExercise(exerciseId);
+      if (response.error) {
+        throw new Error(response.message);
       }
 
       setRefreshKey((old) => old + 1);
@@ -476,8 +469,6 @@ export default function CoachProfilePage() {
   };
 
   const handleSaveExercise = async () => {
-    const url = dialogMode === 'create' ? `${apiUrl}/exercise` : `${apiUrl}/exercise/${newExercise.id}`;
-    const method = dialogMode === 'create' ? 'POST' : 'PUT';
     const body = {
       ...newExercise,
       bodyArea: selectedBodyAreas,
@@ -485,17 +476,11 @@ export default function CoachProfilePage() {
     };
 
     try {
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
+      let response;
+      if (dialogMode === 'create') {
+        response = await createExercise(body);
+      } else {
+        response = await updateExercise(newExercise.id, body);
       }
 
       if (dialogMode === 'create') {
@@ -856,16 +841,15 @@ export default function CoachProfilePage() {
 
   const handleDeletePlan = async (planId) => {
     try {
-      const response = await fetch(`${apiUrl}/subscription/coach/coachPlan/${planId}`, {
+      const {data} = await fetch(`${apiUrl}/subscription/coach/coachPlan/${planId}`, {
         method: 'DELETE',
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
+      if (data.error) {
+        throw new Error(data.message || 'Something went wrong');
       }
 
-      setCoachPlans(coachPlans.filter((plan) => plan.id !== planId));
+      setCoachPlans(data.filter((plan) => plan.id !== planId));
       showToast('success', 'Success', 'Plan deleted successfully');
     } catch (error) {
       console.log('error', error);
@@ -904,54 +888,57 @@ export default function CoachProfilePage() {
   };
   // Excel import functions
   const onTemplateUpload = (e) => {
+    console.log(e);
     console.log({ severity: 'info', summary: 'Success', detail: 'File Uploaded' });
   };
 
   const onTemplateSelect = (e) => {
+    let _totalSize = totalSize;
+    let files = e.files;
+
+    Object.keys(files).forEach((key) => {
+        _totalSize = files[key].size || 0;
+    });
+
+    setTotalSize(_totalSize);
     setSelectedFile(e.files[0]);
   };
 
   const onTemplateError = (e) => {
+    setTotalSize(0);
     console.error('Error during upload:', e);
     console.log({ severity: 'error', summary: 'Error', detail: 'File Upload Failed' });
   };
 
   const onTemplateClear = () => {
     setSelectedFile(null);
+    setTotalSize(0);
     console.log('FileUpload cleared');
   };
 
   const handleUpload = async (formData, files) => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiUrl}/exercise/import/${coach.id}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const {data} = await importExercises(coach.id, formData);
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const result = await response.json();
       onTemplateUpload({ files });
       setRefreshKey((old) => old + 1);
-      if (result.duplicateExercises.length > 0) {
+      if (data.duplicateExercises.length > 0) {
         showToast(
           'warn',
-          `Exercises uploaded: ${result.registeredExercisesCount}. Duplicated Exercises: ${result.duplicatesCount}`,
-          `${result.duplicateExercises.map((ex) => `${ex.name} at row ${ex.row}`)}`,
+          `Exercises uploaded: ${data.registeredExercisesCount}. Duplicated Exercises: ${data.duplicatesCount}`,
+          `${data.duplicateExercises.map((ex) => `${ex.name} at row ${ex.row}`)}`,
           true
         );
       } else {
-        showToast('success', 'Success', `${result.registeredExercisesCount.map((ex) => `${ex.name} at row ${ex.row}`)}`);
+        showToast('success', 'Success', `${data.registeredExercisesCount.map((ex) => `${ex.name} at row ${ex.row}. `)}`);
       }
-      console.log(result.duplicateExercises);
       fileUploadRef.current.clear();
+      setSelectedFile(null);
+      setTotalSize(0);
     } catch (error) {
-      console.log('error', error);
       onTemplateError(error);
-      console.error('Error during upload:', error);
+      showToast('error', 'Error', error.message);
     } finally {
       setLoading(false);
     }
@@ -971,6 +958,7 @@ export default function CoachProfilePage() {
   };
 
   const readFile = (file) => {
+    console.log(file);
     return new Promise((resolve, reject) => {
       setLoading(true);
       const reader = new FileReader();
@@ -1189,7 +1177,24 @@ export default function CoachProfilePage() {
     });
   };
 
+  const headerTemplate = (options) => {
+    
+    const { className, chooseButton, uploadButton, cancelButton } = options;
+    const value = totalSize / 10000;
+    const formatedValue = fileUploadRef && fileUploadRef.current ? fileUploadRef.current.formatSize(totalSize) : '0 B';
 
+    return (
+        <div className={className} style={{ backgroundColor: 'transparent', display: 'flex', alignItems: 'center' }}>
+            {chooseButton}
+            {uploadButton}
+            {cancelButton}
+            <div className="flex align-items-center gap-3 ml-auto">
+                <span>{formatedValue} / 1 MB</span>
+                <ProgressBar value={value} showValue={false} style={{ width: '10rem', height: '12px' }}></ProgressBar>
+            </div>
+        </div>
+    );
+};
 
   return (
     <div className="coach-profile p-4">
@@ -1243,7 +1248,7 @@ export default function CoachProfilePage() {
           <div className="grid">
             {coachPlans.map((plan) => (
               <div key={plan.id} className="col-12 md:col-6 lg:col-4">
-                <Card title={plan.name} subTitle={`$${plan.price.toFixed(2)} / month`} className="h-full">
+                <Card title={plan.name} subTitle={`$${plan.price} / month`} className="h-full">
                   
                   <p className="m-0">Workouts per week: {plan.workoutsPerWeek}</p>
                   <div className="flex justify-content-between mt-4">
@@ -1325,7 +1330,7 @@ export default function CoachProfilePage() {
               <div key={plan.id} className="col-12 md:col-6 lg:col-4">
                 <Card
                   title={plan.name}
-                  subTitle={`$${plan.price.toFixed(2)} / month`}
+                  subTitle={`$${plan.price} / month`}
                   className={classNames('h-full relative', { 'border-primary': plan.id === currentPlanId })}
                 >
                   <ul className="list-none p-0 m-0">
@@ -1351,12 +1356,12 @@ export default function CoachProfilePage() {
         <TabPanel header={intl.formatMessage({ id: 'coach.tabs.rpe' })}>
           <div className="flex justify-content-end mb-3">
             <Button 
-              label={intl.formatMessage({ id: 'coach.buttons.add' }, { item: 'RPE Method' })} 
+              label={intl.formatMessage({ id: 'common.add' }, { item: 'RPE Method' })} 
               icon="pi pi-plus" 
               onClick={() => setRpeDialogVisible(true)} 
             />
             <Button 
-              label={intl.formatMessage({ id: 'coach.buttons.assign' }, { item: 'RPE Method' })} 
+              label={intl.formatMessage({ id: 'common.assign' }, { item: 'RPE Method' })} 
               icon="pi pi-plus" 
               onClick={() => setRpeAssignmentDialogVisible(true)} 
             />
@@ -1379,6 +1384,7 @@ export default function CoachProfilePage() {
           name="file"
           ref={fileUploadRef}
           customUpload
+          headerTemplate={headerTemplate}
           uploadHandler={uploadHandler}
           onUpload={onTemplateUpload}
           onSelect={onTemplateSelect}

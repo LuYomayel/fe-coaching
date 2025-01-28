@@ -20,8 +20,8 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   useEffect(() => {
     const loadWorkouts = async () => {
       try {
-        const workoutsData = await fetchCoachWorkouts(user.userId);
-        setWorkouts([...workoutsData])
+        const {data} = await fetchCoachWorkouts(user.userId);
+        setWorkouts(data)
       } catch (error) {
         showToast('error', 'Error', error.message);
       }

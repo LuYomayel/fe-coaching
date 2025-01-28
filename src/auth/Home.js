@@ -43,7 +43,7 @@ export default function HomePage() {
             const decodedToken = jwtDecode(token);
             if (!decodedToken.isVerified) {
                 // showToast('error', 'Verify your email prior to logging in!', 'Check your email to verify it, please');
-                showToast('error', intl.formatMessage({id: 'home.error.verifyEmail' }), intl.formatMessage({id: 'home.error.checkEmail'}) )
+                showToast('error', intl.formatMessage({id: 'common.error' }), intl.formatMessage({id: 'home.error.verifyEmail' }))
             } else {
                 setUser(decodedToken);
                 if (decodedToken.userType === 'client') {
@@ -59,8 +59,9 @@ export default function HomePage() {
     useEffect(() => {
         const fetchSubscriptionPlans = async () => {
             try {
-                const subscriptionPlansData = await fetchCoachSubscriptionPlans();
-                setSubscriptionPlans(subscriptionPlansData);
+                const {data} = await fetchCoachSubscriptionPlans();
+                console.log(data);
+                setSubscriptionPlans(data);
             } catch (error) {
                 showToast('error', 'Error', error.message);
             } finally {
@@ -125,27 +126,27 @@ export default function HomePage() {
                     },
                     body: JSON.stringify({ email: loginForm.email, password: loginForm.password }),
                 });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.log('Error de aca: ', errorData)
-                    throw new Error(errorData.message.message || 'Something went wrong');
+                const loginData = await response.json();
+                if (loginData.error) {
+                    throw new Error(loginData.error || 'Something went wrong');
                 }
-                const data = await response.json();
                 setLoading(false);
-                if (data.access_token) {
-                    localStorage.setItem('token', data.access_token);
-                    const decodedToken = jwtDecode(data.access_token);
+                if (loginData.data.access_token) {
+                    localStorage.setItem('token', loginData.data.access_token);
+                    const decodedToken = jwtDecode(loginData.data.access_token);
                     setUser(decodedToken);
+
                     if (!decodedToken.isVerified) {
                         showToast('error', `${intl.formatMessage({id: 'home.error.verifyEmail' })}`, `${intl.formatMessage({id: 'home.error.checkEmail'})}` )
                     } else {
                         if (decodedToken.userType === 'coach') {
-                            const coachData = await fetchCoach(decodedToken.userId);
-                            if (!coachData) {
+                            const {data} = await fetchCoach(decodedToken.userId);
+
+                            if (!data) {
                                 setCoach(null);
                                 navigate('/complete-coach-profile');
                             } else {
-                                setCoach(coachData);
+                                setCoach(data);
                                 navigate('/coach');
                             }
                         } else if (decodedToken.userType === 'client') {
@@ -180,7 +181,7 @@ export default function HomePage() {
                     throw new Error(errorData.message || 'Something went wrong');
                 } else {
                     setLoading(false);
-                    showToast('success', 'Check your email to continue!');
+                    showToast('success', intl.formatMessage({ id: 'common.success' }), intl.formatMessage({ id: 'home.success.checkEmail' }));
                 }
             } catch (error) {
                 showToast('error', 'Error', error.message);
@@ -310,7 +311,7 @@ export default function HomePage() {
                         <div key={plan.id} className="col-12 md:col-3 lg:col-3">
                             <Card
                                 title={plan.name}
-                                subTitle={`$${plan.price.toFixed(2)} / month`}
+                                subTitle={`$${plan.price} / month`}
                                 className={classNames('h-full h-20rem relative')}
                                 style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}
                             >

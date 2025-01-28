@@ -8,6 +8,7 @@ import { UserContext } from '../utils/UserContext';
 import { assignWorkoutsToCycle, fetchCoachWorkouts, fetchAssignedWorkoutsForCycleDay, unassignWorkoutsFromCycle } from '../services/workoutService';
 import { useIntl } from 'react-intl';
 import '../styles/AssignWorkoutToCycleDialog.css';
+import { fetchClient } from '../services/usersService';
 
 const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, cycleOptions, actionType }) => {
   const intl = useIntl();
@@ -31,8 +32,8 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
   useEffect(() => {
     const loadWorkouts = async () => {
       try {
-        const workoutsData = await fetchCoachWorkouts(user.userId);
-        setWorkouts(workoutsData);
+        const {data} = await fetchCoachWorkouts(user.userId);
+        setWorkouts(data);
       } catch (error) {
         showToast('error', 'Error', error.message);
       }
@@ -40,6 +41,16 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
 
     loadWorkouts();
   }, [showToast, user.userId]);
+
+  useEffect(() => {
+    const loadClient = async () => {
+      const {data} = await fetchClient(clientId);
+      console.log(data)
+    }
+    if (clientId) {
+      loadClient();
+    }
+  }, [clientId]);
 
   useEffect(() => {
     if (cycleOptions) {
@@ -51,8 +62,8 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
   const loadAssignedWorkouts = async () => {
     if (actionType === 'unassign' && cycle !== -1 && selectedDay !== null) {
       try {
-        const assignedData = await fetchAssignedWorkoutsForCycleDay(cycle, selectedDay); // Fetch para los workouts asignados
-        setAssignedWorkouts(assignedData.map(workout => ({
+        const {data} = await fetchAssignedWorkoutsForCycleDay(cycle, selectedDay); // Fetch para los workouts asignados
+        setAssignedWorkouts(data.map(workout => ({
           label: workout.planName,
           value: workout.id
         })));
@@ -90,7 +101,6 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
       setLoading(true);
       if (actionType === 'assign') {
         const response = await assignWorkoutsToCycle(cycle, clientId, body);
-        console.log(response)
         if(response && response.trainingSessions && response.trainingSessions.length > 0) {
           showToast('success', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.assign' }), intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.assign.detail' }));
         } else {
@@ -98,7 +108,6 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
         }
       } else {
         const response = await unassignWorkoutsFromCycle(cycle, body); // Implementa la lógica de desasignar
-        console.log(response)
         if(response.affectedRows > 0) {
           showToast('success', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.unassign' }), intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.unassign.detail' }));
         } else {
@@ -153,7 +162,7 @@ return (
         <label>{intl.formatMessage({ id: 'assignWorkoutToCycleDialog.cycle' })}:</label>
         <Dropdown
           value={cycle}
-          options={cycles.map(cycle => ({ label: cycle.label, value: cycle.value }))}
+          options={cycles.map(cycle => ({ label: cycle.label, value: cycle.value })).filter(cycle => cycle.value !== -1)}
           onChange={(e) => {
             setCycle(e.value);
             if (actionType === 'unassign') {

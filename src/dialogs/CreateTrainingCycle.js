@@ -52,8 +52,8 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
   useEffect(() => {
     const loadCoachStudents = async () => {
       try {
-        const students = await fetchCoachStudents(user.userId);
-        const activeStudents = students
+        const {data} = await fetchCoachStudents(user.userId);
+        const activeStudents = data
           .filter(client => client.user.subscription.status !== 'Inactive')
           .map(client => ({
             label: client.name,
@@ -67,9 +67,8 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
 
     const loadWorkouts = async () => {
       try {
-        const workoutsData = await fetchCoachWorkouts(user.userId);
-        console.log(workoutsData)
-        setWorkouts(workoutsData);
+        const {data} = await fetchCoachWorkouts(user.userId);
+        setWorkouts(data);
       } catch (error) {
         showToast('error', 'Error', error.message);
       }
@@ -190,13 +189,10 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
 
     try {
       setLoading(true);
-     
      // const cycle = await createTrainingCycle(bodyCycle);
-      console.log(body)
-      const response = await createCycleAndAssignWorkouts(body);
-      console.log(response)
+      const { data } = await createCycleAndAssignWorkouts(body);
 
-      if(response && response.trainingSessions && response.trainingSessions.length > 0) {
+      if(data && data.trainingSessions && data.trainingSessions.length > 0) {
         showToast('success', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.assign' }), intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.assign.detail' }));
       } else {
         showToast('error', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.error.assign' }), intl.formatMessage({ id: 'assignWorkoutToCycleDialog.error.assign.detail' }));

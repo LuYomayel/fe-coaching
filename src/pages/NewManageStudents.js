@@ -8,7 +8,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import { deleteClient, fetchCoachStudents } from '../services/usersService';
+import { deleteClient, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
@@ -38,7 +38,7 @@ export default function NewManageStudentsPage() {
   const [isRegisterPaymentDialogVisible, setIsRegisterPaymentDialogVisible] = useState(false);
   const [isStudentDetailVisible, setIsStudentDetailVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-
+  const [coachPlans, setCoachPlans] = useState([]);
   const { showConfirmationDialog } = useConfirmationDialog();
 
   const [globalFilter, setGlobalFilter] = useState('');
@@ -54,7 +54,7 @@ export default function NewManageStudentsPage() {
     setLoading(true);
     const loadAllStudents = async () => {
       try {
-        const data = await fetchCoachStudents(user.userId);
+        const {data} = await fetchCoachStudents(user.userId);
         setStudents(data);
       } catch (error) {
         showToast('error', 'Error fetching students', error.message);
@@ -62,7 +62,16 @@ export default function NewManageStudentsPage() {
         setLoading(false);
       }
     };
+    const loadCoachPlans = async () => {
+      try {
+        const {data} = await fetchCoachPlans(user.userId);
+        setCoachPlans(data);
+      } catch (error) {
+        showToast('error', 'Error fetching coach plans', error.message);
+      }
+    };
     loadAllStudents();
+    loadCoachPlans();
   }, [refreshKey, user.userId, showToast, setLoading]);
 
   const statusBodyTemplate = (rowData) => {
@@ -81,6 +90,7 @@ export default function NewManageStudentsPage() {
   const handleResendVerification = async (email) => {
     try {
       setIsSendingVerification(true);
+
       const response = await fetch(`${apiUrl}/auth/send-verification-email`, {
         method: 'POST',
         headers: {
@@ -88,15 +98,14 @@ export default function NewManageStudentsPage() {
       },
         body: JSON.stringify({ email }),
       });
-     
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log(errorData)
 
-        throw new Error(errorData.message || 'Something went wrong');
+      const data = await response.json();
+     
+      if (data.error) {
+        throw new Error(data.message || 'Something went wrong');
       }
       else {
-        showToast('success', 'Verification email sent successfully!');
+        showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.verificationEmailSent' }));
       }
     } catch (error) {
       showToast('error', 'Error', error.message);
@@ -207,13 +216,10 @@ export default function NewManageStudentsPage() {
   };
 
   const openSubscriptionDialog = (student) => {
-    // if (!student.user.isVerified)
-    //   return showToast(
-    //     'error',
-    //     'Error',
-    //     'Client must verify the email address prior to getting a subscription.'
-    //   );
-    console.log(student)
+    if (coachPlans.length === 0) {
+      showToast('warn', intl.formatMessage({ id: 'common.warning' }), intl.formatMessage({ id: 'student.error.noCoachPlans' }, true));
+      return;
+    }
     setSelectedStudent(student);
     setIsSubscriptionDialogVisible(true);
   };
@@ -398,7 +404,7 @@ export default function NewManageStudentsPage() {
         draggable={false}
         resizable={false}
         dismissableMask
-        header="Assign Subscription"
+        header={intl.formatMessage({ id: 'students.dialog.assignSubscription' })}
         className="responsive-dialog"
         visible={isSubscriptionDialogVisible}
         style={{ width: '50vw' }}

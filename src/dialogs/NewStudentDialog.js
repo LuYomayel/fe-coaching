@@ -28,6 +28,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
   const { showConfirmationDialog } = useConfirmationDialog();
 
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line
   const [studentId, setStudentId] = useState(studentData ? studentData.id : null);
 
   useEffect(() => {
@@ -69,11 +70,18 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       if (studentId) {
 
         const response = await updateStudent(studentId, body);
-        console.log('Res[ponse' ,response);
-        showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.updatedSuccessfully' }));
+        if(response.message === 'success') {
+          showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.updatedSuccessfully' }));
+        } else {
+          showToast('error', intl.formatMessage({ id: 'error' }), response.error);
+        }
       } else {
-        await saveStudent(body);
-        showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.addedSuccessfully' }));
+        const response = await saveStudent(body);
+        if(response.message === 'success') {
+          showToast('success', intl.formatMessage({ id: 'student.success' }), intl.formatMessage({ id: 'student.addedSuccessfully' }));
+        } else {
+          showToast('error', intl.formatMessage({ id: 'error' }), response.error);
+        }
       }
       onClose();
       setRefreshKey(old => old + 1);
@@ -87,10 +95,10 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
   const onClickSaveStudent = async () => {
     let finalFitnessGoals = fitnessGoal;
     if (fitnessGoal.includes('other') && customFitnessGoal) {
-      finalFitnessGoals = fitnessGoal.filter(goal => goal !== 'other').concat(customFitnessGoal);
+      finalFitnessGoals = fitnessGoal.split(',').filter(goal => goal !== 'other').concat(customFitnessGoal).join(',');
     }
     const body = { name, email, fitnessGoal: finalFitnessGoals === '' ? [] : finalFitnessGoals, activityLevel, gender, weight, height, birthdate, coachId: user.userId };
-    console.log(body);
+    
     if (!name || !email) {
       showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'student.error.nameEmailRequired' }));
       return;
@@ -121,7 +129,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
     <div className="new-student-dialog">
       <div className="p-field">
         <label htmlFor="email"><FormattedMessage id="email" /></label>
-        <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={studentId}/>
       </div>
       <div className="p-field">
         <label htmlFor="name"><FormattedMessage id="name" /></label>
@@ -129,7 +137,13 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       </div>
       <div className="p-field">
         <label htmlFor="fitnessGoal"><FormattedMessage id="fitnessGoal" /></label>
-        <MultiSelect id="fitnessGoal" options={fitnessGoals} value={fitnessGoal} onChange={(e) => setFitnessGoal(e.target.value)} />
+        <MultiSelect 
+          id="fitnessGoal" 
+          options={fitnessGoals} 
+          value={fitnessGoal ? fitnessGoal.split(',') : []} 
+          onChange={(e) => setFitnessGoal(e.value.join(','))} 
+          className="w-full"
+        />
       </div>
       {fitnessGoal.includes('other') && (
         <div className="p-field">

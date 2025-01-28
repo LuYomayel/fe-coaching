@@ -35,7 +35,7 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     setSelectedCoachPlan(oldCoachPlan.id);
     const loadCoachPlans = async () => {
       try {
-        const data = await fetchCoachPlans(user.userId);
+        const {data} = await fetchCoachPlans(user.userId);
         setCoachPlans(data)
       } catch (error) {
         showToast('error', 'Error', error.message)
@@ -82,9 +82,13 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
   const handleRegisterPayment = async (body) => {
     try {
       setLoading(true);
-      await registerPayment(body);
-      showToast('success', 'Success', 'Payment registered and subscription updated successfully');
-      onClose();  // Assuming onClose closes a modal or dialog
+      const response = await registerPayment(body);
+      if(response.message === 'success') {
+        showToast('success', 'Success', 'Payment registered and subscription updated successfully');
+        onClose();  // Assuming onClose closes a modal or dialog
+      } else {
+        showToast('error', 'Error', response.error);
+      }
     } catch (error) {
       showToast('error', 'Error', error.message);
     } finally {

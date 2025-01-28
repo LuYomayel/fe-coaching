@@ -1,84 +1,88 @@
 const apiUrl = process.env.REACT_APP_API_URL;
 const token = localStorage.getItem('token')
+
 const fetchCoachSubscription = async (coachId) => {
   const response = await fetch(`${apiUrl}/subscription/coach/${coachId}`);
-  console.log('response', response);
-  if (!response.ok) {
-    const errorData = await response.json();
-    if (errorData.message && errorData.message === 'Coach not found') {
-      throw new Error('Coach not found', { cause: errorData });
-    }
-    throw new Error(errorData.message || 'Something went wrong');
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
   }
 
-  return response.json();  // Return the response to be used by the caller
+  return data;
 };
+
 const fetchCoachSubscriptionPlans = async () => {
   const response = await fetch(`${apiUrl}/subscription/coach-subscription-plans`);
+  const data = await response.json();
   
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Something went wrong');
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
   }
   
-  return response.json();  // Return the data to be used by the caller
+  return data;
 };
+
 const fetchSubscriptionForStudent = async (studentId) => {
   const response = await fetch(`${apiUrl}/subscription/client/${studentId}`);
-  if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong');
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
   }
-  return response.json();
+  
+  return data;
 };
 
 const fetchSubscriptionDetails = async (userId) => {
   const response = await fetch(`${apiUrl}/subscription/client-subscription/details/${userId}`);
-  if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong');
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
   }
-  return response.json();
+  
+  return data;
 };
 
 const assignSubscription = async (body) => {
-    const response = await fetch(`${apiUrl}/subscription/client`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
+  const response = await fetch(`${apiUrl}/subscription/client`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
   
-    if (!response.ok) {
-      const errorData = await response.json();
-      // Handle cases where the error message might be an array or single message
-      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
-        ? errorData.message.message.join(', ')
-        : errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
-    }
-  
-  
-    return response.json(); // Optional, depends if you need to process the response further
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
+  }
+
+  return data;
 };    
 
 const makePayment = async (body) => {
-  
-    const response = await fetch(`${apiUrl}/payment/create-payment-intent`, {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({body}),
+  const response = await fetch(`${apiUrl}/payment/create-payment-intent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({body}),
   });
 
-  return await response.json();
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
+  }
+
+  return data;
 };
 
 const updateCoachSubscription = async (body) => {
-  console.log(body)
   const response = await fetch(`${apiUrl}/subscription/coach-subscription`, {
     method: 'PUT',
     headers: {
@@ -87,42 +91,41 @@ const updateCoachSubscription = async (body) => {
     body: JSON.stringify(body),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Something went wrong');
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
   }
 
-  return response.json();  // Return the response if needed for further processing
-}
+  return data;
+};
+
 const createOrUpdateCoachPlan = async (plan, planId, userId, mode) => {
   const url = mode === 'create' ? `${apiUrl}/subscription/coach/coachPlan` : `${apiUrl}/subscription/coach/coachPlan/${planId}`;
   const method = mode === 'create' ? 'POST' : 'PUT';
+  
   const response = await fetch(url, {
-      method: method,
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({...plan, coachId: userId}),
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({...plan, coachId: userId}),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    // Handle cases where the error message might be an array or single message
-    const errorMessage = errorData.message && Array.isArray(errorData.message.message)
-      ? errorData.message.message.join(', ')
-      : errorData.message || 'Something went wrong';
-    throw new Error(errorMessage);
+
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
   }
 
-  if(mode === 'create'){
-    return await response.json();
-  }else{
-    const data = await response.json();
-    if(data.affected === 1)
-      return true
-    return false
+  if (mode === 'create') {
+    return data;
+  } else {
+    return data.affected === 1;
   }
 };
-const registerPayment = async ( body) => {
+
+const registerPayment = async (body) => {
   const response = await fetch(`${apiUrl}/subscription/update`, {
     method: 'PUT',
     headers: {
@@ -130,40 +133,39 @@ const registerPayment = async ( body) => {
     },
     body: JSON.stringify(body),
   });
-  console.log(body)
-  if (!response.ok) {
-    const errorData = await response.json();
-    // Handle cases where the error message might be an array or single message
-    const errorMessage = errorData.message && Array.isArray(errorData.message.message)
-      ? errorData.message.message.join(', ')
-      : errorData.message || 'Something went wrong';
-    throw new Error(errorMessage);
+
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
   }
 
-  return response.json();  // Return the response if needed for further processing
+  return data;
 };
 
 const cancelSubscription = async (clientSubscriptionId) => {
   const response = await fetch(`${apiUrl}/subscription/clientSubscription/${clientSubscriptionId}`, {
-      method: 'DELETE'
+    method: 'DELETE'
   });
-  if (!response.ok) {
-      const errorData = await response.json();
-      console.log(errorData);
-      throw new Error(errorData.message || 'Something went wrong');
+
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
   }
-  return response;
+
+  return data;
 };
 
 export {
-    fetchCoachSubscription,
-    fetchCoachSubscriptionPlans,
-    fetchSubscriptionForStudent,
-    fetchSubscriptionDetails,
-    makePayment,
-    updateCoachSubscription,
-    assignSubscription,
-    createOrUpdateCoachPlan,
-    registerPayment,
-    cancelSubscription
+  fetchCoachSubscription,
+  fetchCoachSubscriptionPlans,
+  fetchSubscriptionForStudent,
+  fetchSubscriptionDetails,
+  makePayment,
+  updateCoachSubscription,
+  assignSubscription,
+  createOrUpdateCoachPlan,
+  registerPayment,
+  cancelSubscription
 }

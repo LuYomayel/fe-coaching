@@ -7,100 +7,95 @@ const fetchUser = async (userId) => {
       'Content-Type': 'application/json',
     },
   });
-  // console.log('REsponse: ', response)
-  if (response.ok) {
-    const text = await response.text(); // Obtén la respuesta como texto
 
-    // Verifica si el texto está vacío
-    if (!text) {
-      return { valid: false }; // O maneja el caso de respuesta vacía como prefieras
-    }
-
-    // const data = JSON.parse(text); // Parsea el texto a JSON
-    // console.log('Response fetch coach: ', data);
-    return { valid: true };
-  } else {
-    return { valid: false}
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Unable to fetch user data');
   }
+
+  return data;
 };
+
 const fetchCoach = async (userId) => {
   const response = await fetch(`${apiUrl}/users/coach/${userId}`);
-  if (response.ok) {
-    const text = await response.text(); // Obtén la respuesta como texto
-
-    // Verifica si el texto está vacío
-    if (!text) {
-      return null; // O maneja el caso de respuesta vacía como prefieras
-    }
-
-    const data = JSON.parse(text); // Parsea el texto a JSON
-    // console.log('Response fetch coach: ', data);
-    return data;
-  } else {
-    throw new Error('Unable to fetch coach data');
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Unable to fetch coach data');
   }
+
+  return data;
 };
   
 const fetchClient = async (userId) => {
-    const response = await fetch(`${apiUrl}/users/client/${userId}`);
-    if (response.ok) {
-      return await response.json();
-    } else {
-      throw new Error('Unable to fetch client data');
-    }
+  const response = await fetch(`${apiUrl}/users/client/${userId}`);
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Unable to fetch client data');
+  }
+  
+  return data;
 };
 
 const fetchClientByClientId = async (clientId) => {
   const response = await fetch(`${apiUrl}/users/client/clientId/${clientId}`);
-  if (response.ok) {
-    return await response.json();
-  } else {
-    throw new Error('Unable to fetch client data');
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Unable to fetch client data');
   }
+
+  return data;
 };
 
 const fetchCoachPlans = async (userId) => {
-    try {
-      const response = await fetch(`${apiUrl}/users/coach/coachPlan/${userId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch coach plans');
-      }
-      return await response.json(); // Returns the data directly
-    } catch (error) {
-      console.error('Error fetching coach plans:', error);
-      throw error; // Rethrow to handle it in the UI component
+  try {
+    const response = await fetch(`${apiUrl}/users/coach/coachPlan/${userId}`);
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error || 'Failed to fetch coach plans');
     }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching coach plans:', error);
+    throw error;
+  }
 };
 
 const fetchCoachStudents = async (userId) => {
-    try {
-      const response = await fetch(`${apiUrl}/users/coach/allStudents/${userId}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong.');
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching students:', error);
-      throw error;  // Rethrow to handle it in the UI component
+  try {
+    const response = await fetch(`${apiUrl}/users/coach/allStudents/${userId}`);
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error || 'Failed to fetch students');
     }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching students:', error);
+    throw error;
+  }
 };
 
 const fetchMessages = async (coachId, clientId, page=1) => {
-    try {
-      const response = await fetch(`${apiUrl}/messages/${coachId}/${clientId}?page=${page}&limit=100`);
-      console.log('Response: ',response)
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong.');
-      }
-      const data = await response.json();
-      // console.log('Messages:', data); 
-      return data;
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-      throw error;  // Rethrow to handle it in the UI component
+  try {
+    const response = await fetch(`${apiUrl}/messages/${coachId}/${clientId}?page=${page}&limit=100`);
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error || 'Failed to fetch messages');
     }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    throw error;
+  }
 }
 
 const markMessagesAsRead = async (senderId, receiverId) => {
@@ -108,146 +103,147 @@ const markMessagesAsRead = async (senderId, receiverId) => {
     senderId,
     receiverId
   }
-  console.log("Body: ", body)
+  
   try {
-    const response = await fetch(`${apiUrl}/messages/mark-as-read/conversation/${senderId}/${receiverId}` , {
+    const response = await fetch(`${apiUrl}/messages/mark-as-read/conversation/${senderId}/${receiverId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // 'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(body),
     });
-    if (!response.ok) {
-      console.log('ResponseL: ', response)
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong.');
-    }
+    
     const data = await response.json();
-    // console.log('Messages:', data); 
+    
+    if (data.error) {
+      throw new Error(data.error || 'Failed to mark messages as read');
+    }
+
     return data;
   } catch (error) {
-    console.log(error);
-    throw error;  // Rethrow to handle it in the UI component
+    console.error('Error marking messages as read:', error);
+    throw error;
   }
 }
 
 const fetchClientActivities = async (studentId) => {
-  console.log(studentId)
-    const response = await fetch(`${apiUrl}/users/clientId/activities/${studentId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      const errorMessage = errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
+  const response = await fetch(`${apiUrl}/users/clientId/activities/${studentId}`, {
+    headers: {
+      'Content-Type': 'application/json',
     }
-    console.log(response)
-    return response.json(); // Directly returning parsed JSON data
+  });
+
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Failed to fetch client activities');
+  }
+
+  return data;
 };
 
 const fetchRecentActivitiesByCoachId = async (coachId) => {
-    const response = await fetch(`${apiUrl}/users/coachId/${coachId}/recent-activity`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      const errorMessage = errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
+  const response = await fetch(`${apiUrl}/users/coachId/${coachId}/recent-activity`, {
+    headers: {
+      'Content-Type': 'application/json',
     }
+  });
+
+  const data = await response.json();
   
-    return response.json(); // Directly returning parsed JSON data
+  if (data.error) {
+    throw new Error(data.error || 'Failed to fetch recent activities');
+  }
+
+  return data;
 }
+
 const fetchClientActivitiesByUserId = async (userId) => {
-    const response = await fetch(`${apiUrl}/users/userId/activities/${userId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      const errorMessage = errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
+  const response = await fetch(`${apiUrl}/users/userId/activities/${userId}`, {
+    headers: {
+      'Content-Type': 'application/json',
     }
-    return response.json(); // Directly returning parsed JSON data
+  });
+
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Failed to fetch client activities');
+  }
+
+  return data;
 };
 
 const fetchWorkoutProgressByCoachId = async (coachId) => {
-    const response = await fetch(`${apiUrl}/users/coachId/${coachId}/workout-progress`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log('Error data:', errorData)
-      const errorMessage = errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
+  const response = await fetch(`${apiUrl}/users/coachId/${coachId}/workout-progress`, {
+    headers: {
+      'Content-Type': 'application/json',
     }
+  });
 
-    return response.json(); // Directly returning parsed JSON data
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Failed to fetch workout progress');
+  }
+
+  return data;
 };
 
 const fetchUpcomingSessionsByCoachId = async (coachId) => {
-    const response = await fetch(`${apiUrl}/users/coachId/${coachId}/upcoming-sessions`, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      const errorMessage = errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
+  const response = await fetch(`${apiUrl}/users/coachId/${coachId}/upcoming-sessions`, {
+    headers: {
+      'Content-Type': 'application/json',
     }
-    return response.json(); // Directly returning parsed JSON data
+  });
+
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Failed to fetch upcoming sessions');
+  }
+
+  return data;
 };
 
 const fetchLastMessages = async (coachId) => {
-    const response = await fetch(`${apiUrl}/messages/coach/${coachId}/last-messages`);
-    if (!response.ok) {
-      const errorData = await response.json();
-      const errorMessage = errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
-    }
-    return response.json(); // Directly returning parsed JSON data
+  const response = await fetch(`${apiUrl}/messages/coach/${coachId}/last-messages`);
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Failed to fetch last messages');
+  }
+
+  return data;
 };
 
 const fetchUnreadMessages = async (userId) => {
   const response = await fetch(`${apiUrl}/messages/get-unread-messages/${userId}`);
-  if (!response.ok) {
-    const errorData = await response.json();
-    const errorMessage = errorData.message || 'Something went wrong';
-    throw new Error(errorMessage);
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Failed to fetch unread messages');
   }
-  return response.json(); // Directly returning parsed JSON data
+
+  return data;
 };
 
 const saveStudent = async (body) => {
-    const response = await fetch(`${apiUrl}/users/client`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body)
-    });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      // Handle cases where the error message might be an array or single message
-      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
-        ? errorData.message.message.join(', ')
-        : errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
-    }
-  
-    return await response.json();
+  const response = await fetch(`${apiUrl}/users/client`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body)
+  });
+
+  const data = await response.json();
+  console.log(data)
+  if (data.error) {
+    throw new Error(data.error || 'Failed to save student');
+  }
+
+  return data;
 };
 
 const updateStudent = async (studentId, body) => {
@@ -259,15 +255,14 @@ const updateStudent = async (studentId, body) => {
       },
       body: JSON.stringify(body)
     });
-    if (!response.ok) {
-      const errorData = await response.json();
-      // Handle cases where the error message might be an array or single message
-      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
-        ? errorData.message.message.join(', ')
-        : errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error || 'Failed to update student');
     }
-    return response.json();
+
+    return data;
   } catch (error) {
     console.error('Error updating student:', error);
     throw error;
@@ -275,65 +270,75 @@ const updateStudent = async (studentId, body) => {
 };
 
 const updateCoach = async (userId, body, token) => {
-    const response = await fetch(`${apiUrl}/users/coach/${userId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
+  const response = await fetch(`${apiUrl}/users/coach/${userId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
   
-    if (!response.ok) {
-      const errorData = await response.json();
-      // Handle cases where the error message might be an array or single message
-      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
-        ? errorData.message.message.join(', ')
-        : errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
-    }
-  
-    return await response.json();
+  if (data.error) {
+    throw new Error(data.error || 'Failed to update coach');
+  }
+
+  return data;
 };
 
 const updatePersonalInfo = async (personalInfoId, body) => {
-    const response = await fetch(`${apiUrl}/users/client/${personalInfoId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body)
-    });
+  const response = await fetch(`${apiUrl}/users/client/${personalInfoId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body)
+  });
+
+  const data = await response.json();
   
-    if (!response.ok) {
-      const errorData = await response.json();
-      // Handle cases where the error message might be an array or single message
-      const errorMessage = errorData.message && Array.isArray(errorData.message.message)
-        ? errorData.message.message.join(', ')
-        : errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
-    }
+  if (data.error) {
+    throw new Error(data.error || 'Failed to update personal info');
+  }
+
+  return data;
+};
+
+const updateClient = async (clientId, body) => {
+  const response = await fetch(`${apiUrl}/students/${clientId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
   
-    return response.json(); // You might want to return some data or just ensure it's processed correctly.
+  if (data.error) {
+    throw new Error(data.error || 'Failed to update client');
+  }
+
+  return data;
 };
 
 const deleteClient = async (clientId) => {
-    const response = await fetch(`${apiUrl}/users/client/${clientId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      const errorMessage = errorData.message || 'Something went wrong';
-      throw new Error(errorMessage);
+  const response = await fetch(`${apiUrl}/users/client/${clientId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
     }
-  
-    return response.ok;
-};
+  });
 
+  const data = await response.json();
+  
+  if (data.error) {
+    throw new Error(data.error || 'Failed to delete client');
+  }
+
+  return data;
+};
 
 export {
     fetchUser,
@@ -355,5 +360,6 @@ export {
     updatePersonalInfo,
     deleteClient,
     markMessagesAsRead,
-    fetchUnreadMessages
+    fetchUnreadMessages,
+    updateClient
 }

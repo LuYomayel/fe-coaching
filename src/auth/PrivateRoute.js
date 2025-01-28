@@ -6,7 +6,6 @@ import NotSubscribed from '../components/NotSubscribed';
 import Spinner from '../utils/LittleSpinner';
 const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   const { user, coach, client, isLoading } = useContext(UserContext);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center align-items-center h-screen">

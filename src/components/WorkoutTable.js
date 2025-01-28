@@ -10,7 +10,6 @@ import { InputText } from 'primereact/inputtext';
 import { createNewTrainingFromExcelView, deleteExercises, updateExercisesInstace, updatePlanName, verifyExerciseChanges } from '../services/workoutService';
 import { useToast } from '../utils/ToastContext';
 import { useIntl, FormattedMessage } from 'react-intl';
-import { getExercises } from '../services/workoutService';
 import { useContext } from 'react';
 import { UserContext } from '../utils/UserContext';
 import { Dialog } from 'primereact/dialog';
@@ -19,7 +18,9 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import '../styles/WorkoutTable.css';
 import { FaGripVertical } from 'react-icons/fa';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
-export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey, clientId }) {
+import { fetchCoachExercises } from '../services/exercisesService';
+
+export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey, clientId, clientData }) {
     const intl = useIntl();
     const daysOfWeek = [
         { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -63,15 +64,20 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const defaultProperties = ['sets', 'repetitions', 'weight']; // Propiedades por defecto para nuevo entrenamiento
     const prevDepsRef = useRef({ cycle: null, dayOfWeek: null, trainingCycles: null });
     const [newCycleDialogVisible, setNewCycleDialogVisible] = useState(false);
-    
+
 
     useEffect(() => {
         const fetchExercises = async () => {
-            const exercises = await getExercises(user.userId);
-            const exercisesDB = exercises.map(exercise => ({ label: exercise.name, value: exercise.id, exerciseType: exercise.exerciseType, name: exercise.name }));
-            setExercisesDB(exercisesDB);
+            try{
+                const {data} = await fetchCoachExercises(user.userId);
+                const exercisesDB = data.map(exercise => ({ label: exercise.name, value: exercise.id, exerciseType: exercise.exerciseType, name: exercise.name }));
+                setExercisesDB(exercisesDB);
+            } catch (error) {
+                showToast('error', 'Error', error.message);
+            }
         }; 
         fetchExercises();
+        // eslint-disable-next-line
     }, [user.userId]);
 
     const renderExerciseName = (rowData, provided) => {
@@ -279,7 +285,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         const currentDeps = { cycle, dayOfWeek, trainingCycles };
         const changes = detectChanges(prevDepsRef.current);
         prevDepsRef.current = currentDeps; 
-        console.log(changes);
         if(changes.includes('cycle')){
             setDaysUsed([]);
         }
@@ -371,7 +376,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
 
             if (changes.includes('cycle')) {
                 const daysUsed = Array.from(new Set(justExercises.map(day => day.dayNumber)));
-                console.log(justExercises);
                 setDaysUsed(daysUsed);
             }
             setOriginalExercisesSnapshot(exerciseData);
@@ -997,7 +1001,10 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                             options={cycleOptions}
                             onChange={(e) => {
                                 if (e.value === -1) {
-                                    setNewCycleDialogVisible(true);
+                                    if(clientData.user.subscription.status === 'active')
+                                        setNewCycleDialogVisible(true);
+                                    else
+                                        showToast('error', 'Error', intl.formatMessage({ id: 'student.error.noSubscription' }));
                                     return;
                                 }
                                 setCycle(e.value);

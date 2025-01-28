@@ -21,6 +21,7 @@ import '../styles/CreatePlan.css';
 import { FaGripVertical } from 'react-icons/fa'; // Importa el ícono de "handle"
 import { useTheme } from '../utils/ThemeContext';
 import { extractYouTubeVideoId } from '../utils/UtilFunctions';
+import { fetchExercises } from '../services/exercisesService';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -109,7 +110,7 @@ const NewCreatePlan = ({ isEdit }) => {
       if (isEdit && planId) {
         setLoading(true);
         try {
-          const data = await fetchWorkoutInstance(planId);
+          const {data} = await fetchWorkoutInstance(planId);
           data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber);
           
           // Iterate through each group
@@ -141,15 +142,9 @@ const NewCreatePlan = ({ isEdit }) => {
   }, [isEdit, planId, setLoading, setPlan, showToast]);
 
   useEffect(() => {
-    fetch(`${apiUrl}/exercise`)
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log(errorData);
-          throw new Error(errorData.message || 'Something went wrong');
-        }
-        const data = await response.json();
-        setExercises(data.filter(exercise => exercise.exerciseType !== null));
+    fetchExercises()
+      .then(data => {
+        setExercises(data.data.filter(exercise => exercise.exerciseType !== null));
       })
       .catch(error => showToast('error', 'Error fetching exercises', `${error.message}`));
   }, [showToast]);
@@ -442,15 +437,15 @@ const NewCreatePlan = ({ isEdit }) => {
   const fetchSubmit = async (cleanPlan) => {
     try {
       if (newExercises.length > 0) {
-        const createdExercises = await createExercises(newExercises);
-        console.log("createdExercises", createdExercises);
+        const {data} = await createExercises(newExercises);
+        console.log("createdExercises", data);
         setNewExercises([]);
         // Actualizar cleanPlan con los ejercicios recién creados
         cleanPlan.groups = cleanPlan.groups.map(group => ({
           ...group,
           exercises: group.exercises.map(exercise => {
             // Buscar si el ejercicio actual corresponde a uno recién creado
-            const createdExercise = createdExercises.find(
+            const createdExercise = data.find(
               created => created.name.toLowerCase() === exercise.exercise.name.toLowerCase()
             );
             
@@ -467,9 +462,15 @@ const NewCreatePlan = ({ isEdit }) => {
             return exercise;
           })
         }));
-        await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+        const response = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+        if(response.error){
+          showToast('error', 'Error', response.message);
+        }
       } else {
-        await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+        const {data} = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+        if(data.error){
+          showToast('error', 'Error', data.message);
+        }
       }
       if (isEdit) {
         showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message' }, { name: cleanPlan.workout.planName }));
@@ -581,17 +582,13 @@ const NewCreatePlan = ({ isEdit }) => {
     //   },
       body: formData,
     });
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log(errorData);
-      throw new Error(errorData.error.message || 'Error processing image');
-    }
     
     const data = await response.json();
     // Assuming the API returns the plan object in the response
-    console.log(data);  
-    return data;
+    if(data.error){
+      throw new Error(data.message);
+    }
+    return data.data;
   };
 
   const handleVideoClick = (url) => {

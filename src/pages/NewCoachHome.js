@@ -68,7 +68,6 @@ export default function CoachHomePage() {
         let completedCount = 0;
         let pendingCount = 0;
         let expiredCount = 0;
-    
         // Recorrer el progreso de cada cliente
         workoutProgress.forEach(clientProgress => {
             clientProgress.progress.forEach(workout => {
@@ -100,7 +99,7 @@ export default function CoachHomePage() {
         try {
           setIsClientsLoading(true);
           const clientsData = await fetchCoachStudents(user.userId);
-          const activeClients = clientsData.filter(client => client.user.subscription.status === 'Active');
+          const activeClients = clientsData.data.filter(client => client.user.subscription.status === 'Active');
           setClients(activeClients);
         } catch (error) {
           console.error('Error fetching clients:', error);
@@ -113,7 +112,7 @@ export default function CoachHomePage() {
         try {
           setIsTrainingPlansLoading(true);
           const trainingPlansData = await fetchWorkoutProgressByCoachId(coach.id);
-          const plans = trainingPlansData.map(cycle => ({
+          const plans = trainingPlansData.data.map(cycle => ({
               name: cycle.name,
               status: cycle.status, // Puedes mapear el estado real de cada ciclo
           }));
@@ -129,7 +128,7 @@ export default function CoachHomePage() {
         try {
           setIsRecentActivitiesLoading(true);
           const activities = await fetchRecentActivitiesByCoachId(coach.id);
-          setRecentActivities(activities);
+          setRecentActivities(activities.data);
         } catch (error) {
           console.error('Error fetching activities:', error);
         } finally {
@@ -141,7 +140,7 @@ export default function CoachHomePage() {
         try {
           setIsUpcomingSessionsLoading(true);
           const sessions = await fetchUpcomingSessionsByCoachId(coach.id);
-          setUpcomingSessions(sessions);
+          setUpcomingSessions(sessions.data);
         } catch (error) {
           console.error('Error fetching upcoming sessions:', error);
         } finally {
@@ -153,7 +152,7 @@ export default function CoachHomePage() {
         try {
           setIsLastMessagesLoading(true);
           const messages = await fetchLastMessages(user.userId);
-          setLastMessages(messages);
+          setLastMessages(messages.data);
         } catch (error) {
           console.error('Error fetching messages:', error);
         } finally {
@@ -167,9 +166,10 @@ export default function CoachHomePage() {
           const workoutProgress = await fetchWorkoutProgressByCoachId(coach.id);
 
           const clientsData = await fetchCoachStudents(user.userId);
+          const activeClients = clientsData.data.filter(client => client.user.subscription.status === 'Active');
           // Assign workout progress to client via email
-          const clientsWithProgress = clientsData.map(client => {
-              const progress = workoutProgress.find(progress => progress.client === client.user.email);    
+          const clientsWithProgress = activeClients.map(client => {
+              const progress = workoutProgress.data.find(progress => progress.client === client.user.email);    
               return {
                   ...client,
                   progress: progress ? progress.progress : 0,
@@ -177,7 +177,7 @@ export default function CoachHomePage() {
           });
           setClients(clientsWithProgress);
 
-          setWorkoutProgress(workoutProgress);
+          setWorkoutProgress(workoutProgress.data);
         } catch (error) {
           console.error('Error fetching workout progress:', error);
         } finally {
@@ -188,7 +188,7 @@ export default function CoachHomePage() {
       const fetchWorkouts = async () => {
           try {
               const workouts = await fetchCoachWorkouts(user.userId);
-              setWorkouts(workouts);
+              setWorkouts(workouts.data);
           } catch (error) {
               console.error('Error fetching workouts:', error);
           }
@@ -443,6 +443,7 @@ export default function CoachHomePage() {
       <div className="grid">
         <div className="col-12 md:col-6 lg:col-4">
           {/* Recent Activity and Notifications */}
+          {/*
           <Card className={isRecentActivitiesLoading ? 'flex justify-content-center mb-4' : 'mb-4'}>
             {isRecentActivitiesLoading ? <Spinner /> :
                  <>
@@ -461,7 +462,6 @@ export default function CoachHomePage() {
                 }
           </Card>
 
-          {/* Messaging Section */}
           <Card className={isLastMessagesLoading ? 'flex justify-content-center mb-4' : 'mb-4'} >
             {isLastMessagesLoading ? <Spinner /> :
                 <>
@@ -483,10 +483,11 @@ export default function CoachHomePage() {
                 </>
                 }
           </Card>
+          */}
         </div>
 
         <div className="col-12 md:col-6 lg:col-4">
-
+            {/*
             <Card className={isWorkoutProgressLoading ? 'flex justify-content-center mb-4' : 'mb-4'}>
                 {isWorkoutProgressLoading ? <Spinner/> :
                     <>
@@ -510,10 +511,12 @@ export default function CoachHomePage() {
                     <Button label={intl.formatMessage({ id: 'coach.buttons.upgradePlan' })} className="mt-3" />
                 </Panel>
             }
+            */}
         </div>
 
         <div className="col-12 md:col-6 lg:col-4">
           {/* Upcoming Sessions & Appointments */}
+          {/*
           <Card className={isUpcomingSessionsLoading ? 'flex justify-content-center mb-4': 'mb-4'}>
             {isUpcomingSessionsLoading ? <Spinner /> :
                 <>
@@ -539,7 +542,6 @@ export default function CoachHomePage() {
                                 const sessionDate = new Date(session.nextSession);
                                 
                                 const dateNew = new Date(date.year, date.month, date.day);
-                                // console.log(sessionDate.toDateString() === dateNew.toDateString());    
                                 return sessionDate.toDateString() === dateNew.toDateString(); // Compara las fechas
                             });
 
@@ -567,6 +569,7 @@ export default function CoachHomePage() {
             </>
             }
           </Card>
+          */}
         </div>
       </div>
     </div>
