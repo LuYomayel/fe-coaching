@@ -42,6 +42,7 @@ const messages = {
   'common.unassign': 'Unassign',
   'common.create': 'Create',
   'common.add': 'Add',
+  'common.createNew': 'Create New',
   
   'home.success.checkEmail': 'Check your email to continue!',
   // Mensajes de confirmacion

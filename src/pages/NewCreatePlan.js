@@ -29,6 +29,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const NewCreatePlan = ({ isEdit }) => {
   const intl = useIntl();
   const { state} = useLocation();
+  const [filterValue, setFilterValue] = useState('');
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const changeToTemplate = state?.changeToTemplate;
@@ -430,7 +431,6 @@ const NewCreatePlan = ({ isEdit }) => {
       }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => fetchSubmit(cleanPlan),
-      //accept: () => console.log("cleanPlan", cleanPlan),
     });
   };
 
@@ -438,7 +438,6 @@ const NewCreatePlan = ({ isEdit }) => {
     try {
       if (newExercises.length > 0) {
         const {data} = await createExercises(newExercises);
-        console.log("createdExercises", data);
         setNewExercises([]);
         // Actualizar cleanPlan con los ejercicios recién creados
         cleanPlan.groups = cleanPlan.groups.map(group => ({
@@ -485,6 +484,42 @@ const NewCreatePlan = ({ isEdit }) => {
     }
   };
 
+  const handleCreateNewExercise = (groupIndex) => {
+    // Obtener el texto del filtro del Dropdown    
+    const filterInput = document.querySelector('.p-dropdown-filter');
+    const exerciseName = filterInput ? filterInput.value : '';
+
+    if (exerciseName) {
+      // Crear nuevo ejercicio temporal
+      const newExercise = {
+        id: uuidv4(),
+        name: exerciseName,
+        description: '',
+        exerciseType: 'OTHER', // Tipo por defecto
+        videoUrl: '',
+        isTemporary: true, // Flag para identificar ejercicios temporales
+        coachId: coach.id
+      };
+
+      // Actualizar el estado de nuevos ejercicios
+      setNewExercises(prevExercises => [...prevExercises, newExercise]);
+
+      // Actualizar el estado de ejercicios
+      setExercises(prevExercises => [...prevExercises, newExercise]);
+
+      // Seleccionar el nuevo ejercicio
+      const newSelectedExercises = {...selectedExercise};
+      newSelectedExercises[groupIndex] = newExercise;
+      setSelectedExercise(newSelectedExercises);
+
+
+      // Mostrar un toast con el nuevo ejercicio
+      showToast('info', 'Nuevo ejercicio creado', `Se ha creado el ejercicio: ${exerciseName}`);
+    } else {
+      showToast('error', 'Error', 'No se pudo obtener el nombre del ejercicio');
+    }
+  };
+  
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -655,7 +690,7 @@ const NewCreatePlan = ({ isEdit }) => {
         <label htmlFor="personalized-notes" className="block text-sm font-medium mb-1">
           <FormattedMessage id="plan.notes" />
         </label>
-        <InputTextarea rows={1} id="personalized-notes" value={plan.personalizedNotes} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })}  className="w-full" />
+        <InputTextarea rows={1} id="personalized-notes" value={plan.personalizedNotes ? plan.personalizedNotes : ''} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })}  className="w-full" />
       </Card>
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -805,7 +840,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                               </label>
                                               <InputTextarea
                                                 id={`exercise-${exercise.id}-notes`}
-                                                value={exercise.notes}
+                                                value={exercise.notes ? exercise.notes : ''}
                                                 onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, 'notes', e.target.value)}
                                                 rows={1}
                                                 className="w-full"
@@ -827,24 +862,23 @@ const NewCreatePlan = ({ isEdit }) => {
                               <Dropdown
                                 id={`exercise-dropdown-${groupIndex}`}
                                 value={selectedExercise?.[groupIndex]}
-                                options={exercises}
-                                onChange={(e) => {
-                                  const newSelectedExercises = {...selectedExercise};
-                                  newSelectedExercises[groupIndex] = e.value;
-                                  setSelectedExercise(newSelectedExercises);
-                                }}
+                                options={exercises.length > 0 ? exercises : [{ name: `${intl.formatMessage({ id: 'common.noResults' })}`, value: null, exerciseType: null, disabled: true }]}
+                                
                                 optionLabel="name"
                                 filter
                                 filterBy="name,exerciseType"
+                                filterInputAutoFocus
                                 resetFilterOnHide
-                                placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
-                                className="w-full"
-                                onShow={(e) => {
-                                  const filterInput = document.querySelector('.p-dropdown-filter');
-                                  if(filterInput) {
-                                    filterInput.focus();
+                                onChange={(e) => {
+                                  if(e.value){
+                                    const newSelectedExercises = {...selectedExercise};
+                                    newSelectedExercises[groupIndex] = e.value;
+                                    setSelectedExercise(newSelectedExercises);
                                   }
                                 }}
+                                
+                                placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
+                                className="w-full"
                                 onHide={(e) => {
                                   const dropdown = document.querySelector(`#exercise-dropdown-button-${groupIndex}`);
                                   if(dropdown) {
@@ -855,9 +889,38 @@ const NewCreatePlan = ({ isEdit }) => {
                                 itemTemplate={(option) => (
                                   <div className='flex flex-column'>
                                     <span>{option.name}</span>
-                                    <small className='text-xs'>{option.exerciseType}</small>
+                                    {option.exerciseType && <small className='text-xs'>{option.exerciseType}</small>} 
                                   </div>
                                 )}
+                                emptyFilterMessage={
+                                  <Button
+                                    label={intl.formatMessage({ id: 'common.createNew' })}
+                                    icon="pi pi-plus"
+                                    text
+                                    raised
+                                    onClick={() => handleCreateNewExercise(groupIndex)}
+                                  />
+                                }
+                                onShow={(e) => {
+                                  const filterInput = document.querySelector('.p-dropdown-filter');
+                                  if (filterInput) {
+                                    filterInput.focus();
+                                    filterInput.addEventListener('keydown', (event) => {
+                                      if (event.key === 'Enter') {
+                                        const emptyMessage = document.querySelector('.p-dropdown-empty-message');
+                                        if (emptyMessage) {
+                                          handleCreateNewExercise(groupIndex); // Llamar a la función para crear un nuevo ejercicio
+                                        }
+                                      }
+                                    });
+                                  }
+                                }}
+                                onFilter={(e) => {
+                                  if (e.originalEvent instanceof KeyboardEvent && e.originalEvent.key === 'Enter') {
+                                    e.originalEvent.preventDefault(); // Prevenir el comportamiento por defecto
+                                    handleCreateNewExercise(groupIndex);
+                                  }
+                                }}
                               //style={{ height: '40px' }}
                             />
                             </div>

@@ -42,6 +42,7 @@ const messages = {
   'common.assign': 'Asignar',
   'common.unassign': 'Desasignar',
   'common.create': 'Crear',
+  'common.createNew': 'Crear Nuevo',
   
   
   'home.success.checkEmail': '¡Revisa tu correo para continuar!',

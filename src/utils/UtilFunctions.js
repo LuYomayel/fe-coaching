@@ -16,7 +16,7 @@ const isValidYouTubeUrl = (url) => {
 
 const extractYouTubeVideoId = (url) => {
   let videoId = '';
-
+  if(!url) return null;
   if (url.includes('youtube.com/watch?v=')) {
     videoId = url.split('v=')[1]?.split('&')[0];
   } else if (url.includes('youtu.be/')) {
