@@ -51,7 +51,7 @@ const messages = {
   'common.energyLevel': 'Energy level',
   'common.perceivedDifficulty': 'Perceived difficulty',
   'common.extraNotes': 'Extra notes',
-  
+  'common.group': 'Group',
   'home.success.checkEmail': 'Check your email to continue!',
   // Mensajes de confirmacion
   'assignPlan.confirmation.message': 'Are you sure you want to assign this plan?',

@@ -51,6 +51,7 @@ const messages = {
   'common.energyLevel': 'Nivel de energía',
   'common.perceivedDifficulty': 'Dificultad percibida',
   'common.extraNotes': 'Notas adicionales',
+  'common.group': 'Grupo',
   
   'home.success.checkEmail': '¡Revisa tu correo para continuar!',
   // Mensajes de confirmacion
