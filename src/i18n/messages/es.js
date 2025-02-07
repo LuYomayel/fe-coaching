@@ -480,6 +480,8 @@ const messages = {
   'exercise.properties.difficulty': 'Dificultad',
   'exercise.properties.duration': 'Duración',
   'exercise.properties.distance': 'Distancia',
+  'exercise.properties.height': 'Altura',
+  'exercise.properties.restPeriod': 'Intervalo de Descanso',
   
   // Mensajes de confirmación
   'confirm.delete': '¿Estás seguro que deseas eliminar esto?',
@@ -702,7 +704,8 @@ const messages = {
   'header.noNotifications': 'No hay nuevas notificaciones',
   'header.settings': 'Configuración',
   'settings.language.es': 'Español',
-  'settings.language.en': 'English',
+  'settings.language.en': 'Inglés',
+  'settings.unitConfiguration': 'Configuración de Unidades',
   'exercise.video.view': 'Ver Video',
   // CoachProfileForm
   'coachProfileForm.title': 'Completa tu Perfil de Entrenador',
@@ -766,8 +769,8 @@ const messages = {
   'fitnessGoal': 'Objetivo Fitness',
   'activityLevel': 'Nivel de Actividad',
   'gender': 'Género',
-  'height': 'Altura (cm)',
-  'weight': 'Peso (kg)',
+  'height': 'Altura',
+  'weight': 'Peso',
   'birthdate': 'Fecha de Nacimiento',
   'save': 'Guardar',
   'error': 'Error',

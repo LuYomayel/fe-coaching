@@ -30,16 +30,17 @@ const NewCreatePlan = ({ isEdit }) => {
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const changeToTemplate = state?.changeToTemplate;
+  const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
   const propertyList = [
-    { name: intl.formatMessage({ id: 'exercise.properties.sets' }), key: 'sets', default: true },
-    { name: intl.formatMessage({ id: 'exercise.properties.reps' }), key: 'repetitions', default: true },
-    { name: intl.formatMessage({ id: 'exercise.properties.time' }), key: 'time', default: false },
-    { name: intl.formatMessage({ id: 'exercise.properties.weight' }), key: 'weight', default: false },
-    { name: intl.formatMessage({ id: 'exercise.properties.restInterval' }), key: 'restInterval', default: false },
-    { name: intl.formatMessage({ id: 'exercise.properties.tempo' }), key: 'tempo', default: false },
-    { name: intl.formatMessage({ id: 'exercise.properties.difficulty' }), key: 'difficulty', default: false },
-    { name: intl.formatMessage({ id: 'exercise.properties.duration' }), key: 'duration', default: false },
-    { name: intl.formatMessage({ id: 'exercise.properties.distance' }), key: 'distance', default: false },
+    { name: intl.formatMessage({ id: 'exercise.properties.sets' }), key: 'sets', default: true, suffix: propertyUnits?.sets || '' },
+    { name: intl.formatMessage({ id: 'exercise.properties.reps' }), key: 'repetitions', default: true, suffix: propertyUnits?.repetitions || '' },
+    { name: intl.formatMessage({ id: 'exercise.properties.time' }), key: 'time', default: false, suffix: propertyUnits?.time || '' },
+    { name: intl.formatMessage({ id: 'exercise.properties.weight' }), key: 'weight', default: false, suffix: propertyUnits?.weight || '' },
+    { name: intl.formatMessage({ id: 'exercise.properties.restInterval' }), key: 'restInterval', default: false, suffix: propertyUnits?.restInterval || '' },
+    { name: intl.formatMessage({ id: 'exercise.properties.tempo' }), key: 'tempo', default: false, suffix: propertyUnits?.tempo || '' },
+    { name: intl.formatMessage({ id: 'exercise.properties.difficulty' }), key: 'difficulty', default: false, suffix: propertyUnits?.difficulty || '' },
+    { name: intl.formatMessage({ id: 'exercise.properties.duration' }), key: 'duration', default: false, suffix: propertyUnits?.duration || '' },
+    { name: intl.formatMessage({ id: 'exercise.properties.distance' }), key: 'distance', default: false, suffix: propertyUnits?.distance || '' },
   ];
   const navigate = useNavigate();
   const { planId } = useParams();
@@ -51,6 +52,9 @@ const NewCreatePlan = ({ isEdit }) => {
   const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
   const { isDarkMode } = useTheme();
   const [ newExercises, setNewExercises] = useState([]);
+
+  
+
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
     return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
@@ -833,12 +837,13 @@ const NewCreatePlan = ({ isEdit }) => {
                                                   return (
                                                     <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
                                                       <div className="flex flex-column">
-                                                        <label className="">{propertyList.find(p => p.key === key)?.name || key}</label>
+                                                        <label className="">{propertyList.find(p => p.key === key)?.name || key} {propertyList.find(p => p.key === key)?.suffix ? `(${propertyList.find(p => p.key === key)?.suffix})` : ''}</label>
                                                         <div className="flex align-items-center">
-                                                          <InputText
+                                                          <InputNumber
                                                             value={exercise[key]}
-                                                            onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, key, e.target.value)}
+                                                            onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, key, e.value)}
                                                             className="w-full"
+                                                            suffix={propertyList.find(p => p.key === key)?.suffix}
                                                           />
                                                           <Button
                                                             icon="pi pi-times"
@@ -980,7 +985,6 @@ const NewCreatePlan = ({ isEdit }) => {
                                 icon="pi pi-plus"
                                 raised
                                 text
-
                                 onClick={() => addExercise(groupIndex)}
                                 style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                               />
@@ -988,16 +992,16 @@ const NewCreatePlan = ({ isEdit }) => {
                           </div>
                         ) : (
                           <div className="mt-2">
-                                  <InputNumber 
-                                    value={group.restDuration} 
-                                    onChange={(e) => {
-                                      const newGroups = [...plan.groups];
-                                      newGroups[groupIndex].restDuration = e.value;
-                                      setPlan({...plan, groups: newGroups});
-                                    }}
-                                    suffix={intl.formatMessage({ id: 'plan.group.restDurationSuffix' })}
-                                    min={0}
-                                    placeholder={intl.formatMessage({ id: 'plan.group.restDuration' })}
+                            <InputNumber 
+                              value={group.restDuration} 
+                              onChange={(e) => {
+                                const newGroups = [...plan.groups];
+                                newGroups[groupIndex].restDuration = e.value;
+                                setPlan({...plan, groups: newGroups});
+                              }}
+                              suffix={propertyUnits?.restInterval}
+                              min={0}
+                              placeholder={intl.formatMessage({ id: 'plan.group.restDuration' })}
                             />
                           </div>
                         )}

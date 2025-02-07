@@ -464,7 +464,8 @@ const messages = {
   'exercise.properties.difficulty': 'Difficulty',
   'exercise.properties.duration': 'Duration',
   'exercise.properties.distance': 'Distance',
-  
+  'exercise.properties.height': 'Height',
+  'exercise.properties.restPeriod': 'Rest Period',
   // Confirmation messages
   'confirm.delete': 'Are you sure you want to delete this?',
   'confirm.deleteGroup': 'Are you sure you want to delete this group?',
@@ -706,6 +707,7 @@ const messages = {
   'header.settings': 'Settings',
   'settings.language.es': 'Español',
   'settings.language.en': 'English',
+  'settings.unitConfiguration': 'Unit Configuration',
   'exercise.video.view': 'View Video',
   // CoachProfileForm
   'coachProfileForm.title': 'Complete Your Coach Profile',
@@ -769,8 +771,8 @@ const messages = {
   'fitnessGoal': 'Fitness Goal',
   'activityLevel': 'Activity Level',
   'gender': 'Gender',
-  'height': 'Height (cm)',
-  'weight': 'Weight (kg)',
+  'height': 'Height',
+  'weight': 'Weight',
   'birthdate': 'Birthdate',
   'save': 'Save',
   'error': 'Error',

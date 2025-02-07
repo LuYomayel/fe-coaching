@@ -7,6 +7,9 @@ import { useIntl, FormattedMessage } from 'react-intl';
 import { useTheme } from '../utils/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useSpinner } from '../utils/GlobalSpinner';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { Accordion, AccordionTab } from 'primereact/accordion';
 export default function Settings() {
   const intl = useIntl();
   const { isDarkMode, setIsDarkMode } = useTheme();
@@ -15,6 +18,24 @@ export default function Settings() {
   const [allowIncompleteStudent, setAllowIncompleteStudent] = useState(true);
   const [developerOptions, setDeveloperOptions] = useState(false);
   const { setLoading } = useSpinner();
+  const [showPropertyDialog, setShowPropertyDialog] = useState(false);
+  const [plan, setPlan] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [propertyList, setPropertyList] = useState([]);
+  const [propertyUnits, setPropertyUnits] = useState({
+    height: 'cm',
+    sets: '',
+    repetitions: '',
+    time: 's',
+    weight: 'kg',
+    restInterval: 's',
+    tempo: '',
+    difficulty: '',
+    duration: 's',
+    distance: 'km'
+  });
+
   const viewOptions = [
     { label: intl.formatMessage({ id: 'settings.view.default' }), value: 'default' },
     { label: intl.formatMessage({ id: 'settings.view.excel' }), value: 'excel' }
@@ -29,11 +50,19 @@ export default function Settings() {
     switchLanguage(e.value);
   };
 
+  const handleUnitChange = (propertyKey, unit) => {
+    setPropertyUnits(prevUnits => ({
+      ...prevUnits,
+      [propertyKey]: unit
+    }));
+  };
+
   const handleSave = () => {
     setLoading(true);
     setTimeout(() => {
         localStorage.setItem('theme', JSON.stringify(isDarkMode));
         localStorage.setItem('locale', locale);
+        localStorage.setItem('propertyUnits', JSON.stringify(propertyUnits));
         setLoading(false);
     }, 1000);
   };
@@ -63,7 +92,23 @@ export default function Settings() {
           <label htmlFor="language"><FormattedMessage id="settings.language" /></label>
           <Dropdown id="language" value={locale} options={languageOptions} onChange={handleLanguageChange} />
         </div>
-
+        <div className="field">
+          <Accordion>
+            <AccordionTab header={intl.formatMessage({ id: 'settings.unitConfiguration' })}>
+              {Object.keys(propertyUnits).map((propertyKey) => (
+                <div key={propertyKey} className="flex justify-content-between align-items-center mb-2">
+                  <span className="mr-4">{intl.formatMessage({ id: `exercise.properties.${propertyKey === 'repetitions' ? 'reps' : propertyKey}` })}</span>
+                  <InputText
+                    value={propertyUnits[propertyKey]}
+                    onChange={(e) => handleUnitChange(propertyKey, e.target.value)}
+                    placeholder="Enter Unit"
+                    style={{width: '120px'}}
+                  />
+                </div>
+              ))}
+            </AccordionTab>
+          </Accordion>
+        </div>
         {/*
         <div className="field">
           <label htmlFor="viewPreference"><FormattedMessage id="settings.viewPreference" /></label>

@@ -19,10 +19,10 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
   const [email, setEmail] = useState('');
   const [fitnessGoal, setFitnessGoal] = useState('');
   const [activityLevel, setActivityLevel] = useState('');
-  const [birthdate, setBirthDate] = useState(new Date());
+  const [birthdate, setBirthDate] = useState(null);
   const [gender, setGender] = useState('');
-  const [height, setHeight] = useState(0);
-  const [weight, setWeight] = useState(0);
+  const [height, setHeight] = useState(null);
+  const [weight, setWeight] = useState(null);
   const [customFitnessGoal, setCustomFitnessGoal] = useState('');
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
@@ -30,6 +30,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line
   const [studentId, setStudentId] = useState(studentData ? studentData.id : null);
+  const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
 
   useEffect(() => {
     if (studentData) {
@@ -167,12 +168,12 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
         <Dropdown id="gender" options={genders} value={gender} optionLabel='label' optionValue='value' onChange={(e) => setGender(e.target.value)} />
       </div>
       <div className="p-field">
-        <label htmlFor="height"><FormattedMessage id="height" /></label>
-        <InputNumber id="height" value={height} onChange={(e) => setHeight(e.value)} maxLength={3} min={0}/>
+        <label htmlFor="height"><FormattedMessage id="height" /> {propertyUnits?.height ? `(${propertyUnits?.height})` : ''}</label>
+        <InputNumber id="height" value={height} onChange={(e) => setHeight(e.value)} suffix={propertyUnits?.height} maxLength={3} min={0}/>
       </div>
       <div className="p-field">
-        <label htmlFor="weight"><FormattedMessage id="weight" /></label>
-        <InputNumber id="weight" value={weight} onChange={(e) => setWeight(e.value)} maxLength={3} min={0}/>
+        <label htmlFor="weight"><FormattedMessage id="weight" /> {propertyUnits?.weight ? `(${propertyUnits?.weight})` : ''}</label>
+        <InputNumber id="weight" value={weight} onChange={(e) => setWeight(e.value)} suffix={propertyUnits?.weight} maxLength={3} min={0}/>
       </div>
       <div className="p-field">
         <label htmlFor="birthdate"><FormattedMessage id="birthdate" /></label>

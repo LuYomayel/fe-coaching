@@ -22,7 +22,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
     const { user } = useContext(UserContext);
     const { showConfirmationDialog } = useConfirmationDialog();
     const showToast = useToast();
-
+    const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
     const [workoutPlan, setWorkoutPlan] = useState({
         groups: [],
         workout: {
@@ -116,37 +116,38 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
             </div>
             <div className="w-full md:w-8">
                 <div className="grid">
+                    {exercise.sets && (
+                        <div className="col-6 md:col-3">Sets: {exercise.sets}{propertyUnits?.sets ? `${propertyUnits?.sets}` : ''}</div>
+                    )}
                     {exercise.repetitions && (
                         <div className="col-6 md:col-3">Reps: {exercise.repetitions}</div>
                     )}
                     {exercise.weight && (
-                        <div className="col-6 md:col-3">Weight: {exercise.weight}</div>
+                        <div className="col-6 md:col-3">Weight: {exercise.weight}{propertyUnits?.weight ? `${propertyUnits?.weight}` : ''}</div>
                     )}
                     {exercise.time && (
-                        <div className="col-6 md:col-3">Time: {exercise.time}</div>
+                        <div className="col-6 md:col-3">Time: {exercise.time}{propertyUnits?.time ? `${propertyUnits?.time}` : ''}</div>
                     )}
                     {exercise.tempo && (
-                        <div className="col-6 md:col-3">Tempo: {exercise.tempo}</div>
+                        <div className="col-6 md:col-3">Tempo: {exercise.tempo}{propertyUnits?.tempo ? `${propertyUnits?.tempo}` : ''}</div>
                     )}
                     {exercise.restInterval && (
                         <div className="col-6 md:col-3">
-                            Rest Interval: {exercise.restInterval}
+                            Rest Interval: {exercise.restInterval}{propertyUnits?.restInterval ? `${propertyUnits?.restInterval}` : ''}
                         </div>
                     )}
                     {exercise.difficulty && (
-                        <div className="col-6 md:col-3">Difficulty: {exercise.difficulty}</div>
-                    )}
-                    {exercise.notes && (
-                        <div className="col-6 md:col-3">Notes: {exercise.notes}</div>
+                        <div className="col-6 md:col-3">Difficulty: {exercise.difficulty}{propertyUnits?.difficulty ? `${propertyUnits?.difficulty}` : ''}</div>
                     )}
                     {exercise.distance && (
-                        <div className="col-6 md:col-3">Distance: {exercise.distance}</div>
+                        <div className="col-6 md:col-3">Distance: {exercise.distance}{propertyUnits?.distance ? `${propertyUnits?.distance}` : ''}</div>
                     )}
                     {exercise.duration && (
-                        <div className="col-6 md:col-3">Duration: {exercise.duration}</div>
+                        <div className="col-6 md:col-3">Duration: {exercise.duration}{propertyUnits?.duration ? `${propertyUnits?.duration}` : ''}</div>
                     )}
-                    {exercise.sets && (
-                        <div className="col-6 md:col-3">Sets: {exercise.sets}</div>
+                    
+                    {exercise.notes && (
+                        <div className="col-6 md:col-3">Notes: {exercise.notes}</div>
                     )}
                 </div>
             </div>
@@ -317,7 +318,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                         {/* <p>Rest between sets: {group.rest} sec</p> */}
                         {/* {group.name && <p>Group name: {group.name}</p>} */}
                         {group.isRestPeriod && (
-                            <p>{intl.formatMessage({ id: 'plan.group.restPeriod' })}: {group.restDuration} {intl.formatMessage({ id: 'plan.group.seconds' })}</p>
+                            <p>{intl.formatMessage({ id: 'plan.group.restPeriod' })}: {group.restDuration} {propertyUnits?.restInterval ? `${propertyUnits?.restInterval}` : ''}</p>
                         )}
                         {group.exercises.map((exercise) =>
                             workoutPlan.status === 'completed'
