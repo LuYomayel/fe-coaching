@@ -33,6 +33,7 @@ import Spinner from '../utils/LittleSpinner';
 import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
 import { createExercise, deleteExercise, fetchBodyAreas, fetchCoachExercises, importExercises, updateExercise } from '../services/exercisesService';
 import { ProgressBar } from 'primereact/progressbar';
+import { Tooltip } from 'primereact/tooltip';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function CoachProfilePage() {
@@ -68,6 +69,7 @@ export default function CoachProfilePage() {
   const [coachPlans, setCoachPlans] = useState([]); // <- state for coach plans
   const [subscriptionPlans, setSubscriptionPlans] = useState([]); // <- state for subscription plans
   const [exercises, setExercises] = useState([]); // <- state for exercises
+  const [missingExercises, setMissingExercises] = useState([]); // <- state for missing exercises
   const [bodyAreas, setBodyAreas] = useState([]); // <- state for body areas
 
   // Current plan
@@ -214,7 +216,6 @@ export default function CoachProfilePage() {
         try {
           setIsCoachSubscriptionLoading(true);
           const {data} = await fetchCoachSubscription(coach.id);
-          console.log(data);
           setCurrentPlanId(data.subscriptionPlan.id);
         } catch (error) {
           console.log('error', error);
@@ -241,10 +242,13 @@ export default function CoachProfilePage() {
       const fetchExercises = async () => {
         try {
           setIsExercisesLoading(true);
-          const {data} = await fetchCoachExercises(user.userId);
+          const {data} = await fetchCoachExercises(coach.id);
           if (data.error) {
             throw new Error(data.message || 'Something went wrong');
           }
+          
+          const missingExercises = data.filter(exercise => !exercise.multimedia || !exercise.exerciseType || !exercise.description || !exercise.equipmentNeeded);
+          setMissingExercises(missingExercises);
           setExercises(data);
         } catch (error) {
           console.error('error', error);
@@ -276,7 +280,6 @@ export default function CoachProfilePage() {
         try {
           setIsSubscriptionPlansLoading(true);
           const {data} = await fetchCoachSubscriptionPlans();
-          console.log(data);
           setSubscriptionPlans(data);
         } catch (error) {
           console.log('error', error);
@@ -351,19 +354,68 @@ export default function CoachProfilePage() {
   const renderHeader = (text) => {
     return (
       <div className="flex justify-content-between align-items-center">
-        <h2 className="text-xl font-bold">{text}</h2>
-        <Button
-          label={intl.formatMessage(
-            { id: 'common.add', defaultMessage: 'Add {item}' },
-            { item: text.slice(0, -1) }
-          )}
+        <div className="flex align-items-center gap-2">
+          <h2 className="text-xl font-bold">{text}</h2>
+          {text === intl.formatMessage({ id: 'coach.tabs.exercises' }) && missingExercises.length > 0 && (
+          <Button
+            icon="pi pi-exclamation-triangle"
+            className="p-button-danger p-button-text"
+            tooltip={intl.formatMessage({ id: 'common.missingData' })}
+            tooltipOptions={{ position: 'right' }}
+            onClick={() => {
+              if (filters.name.value) {
+                // Si ya hay un filtro activo, lo eliminamos
+                setFilters({
+                  ...filters,
+                  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                  name: { value: null, matchMode: FilterMatchMode.STARTS_WITH }
+                });
+              } else {
+                // Si no hay filtro activo, lo activamos
+                setFilters({
+                  ...filters,
+                  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                  name: { value: missingExercises.map(ex => ex.name), matchMode: FilterMatchMode.IN }
+                });
+              }
+            }}
+            badge={missingExercises.length.toString()}
+            badgeClassName="p-badge-danger"
+          />
+        )}
+        </div>
+        <div className="flex align-items-center gap-2">
+          <Button
+            label={intl.formatMessage(
+              { id: 'common.add', defaultMessage: 'Add {item}' },
+              { item: text.slice(0, -1) }
+            )}
           icon="pi pi-plus"
           onClick={() =>
             text === intl.formatMessage({ id: 'coach.tabs.exercises' }) ? openCreateExerciseDialog() : text === intl.formatMessage({ id: 'coach.tabs.workouts' }) ? navigate('/plans/create') : openCreatePlanDialog()
           }
         />
+        </div>
       </div>
     );
+  };
+
+  const missingDataIconTemplate = (rowData) => {
+    const missingFields = ['multimedia', 'exerciseType', 'description', 'equipmentNeeded'].filter(
+      (field) => !rowData[field]
+    );
+  
+    return missingFields.length > 0 ? (
+      <div>
+        <Tooltip target=".custom-target-icon" />
+        <i className="custom-target-icon pi pi-exclamation-triangle" 
+          data-pr-tooltip={intl.formatMessage({ id: 'common.missingData' })}
+          data-pr-position="right"
+          data-pr-at="right+5 top"
+          data-pr-my="left center-2"
+          style={{ color: 'red', cursor: 'pointer' }} />
+      </div>
+    ) : null;
   };
 
   const actionBodyTemplate = (rowData, type) => {
@@ -1293,6 +1345,14 @@ export default function CoachProfilePage() {
               style={{ width: '20%' }}
               filter
               filterElement={nameFilterTemplate}
+              body={(rowData) => {
+                return (
+                  <div className="flex align-items-center gap-2">
+                    {rowData.name} 
+                    {missingDataIconTemplate(rowData)}
+                  </div>
+                )
+              }}
             />
             <Column 
               field="multimedia" 

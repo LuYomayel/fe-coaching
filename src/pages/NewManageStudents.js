@@ -24,6 +24,7 @@ import { formatDate } from '../utils/UtilFunctions';
 import { InputIcon } from 'primereact/inputicon';
 import { IconField } from 'primereact/iconfield';
 import { useIntl, FormattedMessage } from 'react-intl';
+import { Tooltip } from 'primereact/tooltip';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 export default function NewManageStudentsPage() {
@@ -340,6 +341,16 @@ export default function NewManageStudentsPage() {
             <div className="flex align-items-center">
               <Avatar label={rowData.name.charAt(0)} shape="circle" className="mr-2" />
               <span>{rowData.name}</span>
+              {['fitnessGoal', 'activityLevel', 'gender', 'weight', 'height', 'birthdate'].some(field => !rowData[field]) && (
+                <>
+                  <Tooltip target=".missing-data-icon" position='right'/>
+                  <i className="missing-data-icon pi pi-exclamation-triangle text-red-500 ml-2"
+                    data-pr-tooltip={intl.formatMessage({ id: 'common.missingData' })}
+                    data-pr-position="right"
+                    style={{ cursor: 'help' }}
+                  />
+                </>
+              )}
             </div>
           )}
         />

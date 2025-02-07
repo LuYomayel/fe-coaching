@@ -43,7 +43,7 @@ const messages = {
   'common.unassign': 'Desasignar',
   'common.create': 'Crear',
   'common.createNew': 'Crear Nuevo',
-  
+  'common.missingData': 'Faltan datos',
   
   'home.success.checkEmail': '¡Revisa tu correo para continuar!',
   // Mensajes de confirmacion
@@ -447,6 +447,7 @@ const messages = {
   'plan.group.removed.message.number': 'El grupo número {number} ha sido eliminado',
   'plan.group.removed.message.name': 'El grupo "{name}" ha sido eliminado',
   'plan.group.empty': 'Arrastra ejercicios aquí para agregarlos al grupo.',
+  'plan.group.restDurationSuffix': ' segundos',
   'plan.exercise.select': 'Seleccionar un Ejercicio',
   'plan.exercise.add': 'Agregar Ejercicio',
   'plan.exercise.notes': 'Notas',

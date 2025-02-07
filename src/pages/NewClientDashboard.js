@@ -32,6 +32,7 @@ import { Avatar } from 'primereact/avatar';
 import { Panel } from 'primereact/panel';
 import { useLanguage } from '../i18n/LanguageContext';
 import NewStudentDialog from '../dialogs/NewStudentDialog';
+import { Tooltip } from 'primereact/tooltip';
 
 export default function ClientDashboard() {
   const { clientId } = useParams();
@@ -304,7 +305,6 @@ export default function ClientDashboard() {
   };
 
   const handleNewStudentDialogShow = () => {
-    console.log('show', clientData)
     setIsNewStudentDialogVisible(true);
   };
 
@@ -511,19 +511,30 @@ export default function ClientDashboard() {
 
   const headerTemplate = (options) => {
     const className = `${options.className} justify-content-space-between`;
-
     return (
         <div className={className}>
             <div className="flex align-items-center gap-2">
                 <Avatar image={clientData?.profilePicture || '/image.webp'} shape="circle" />
                 <span className="font-bold">{clientData?.name}</span>
-                <Button
-                  icon="pi pi-pencil"
-                  style={{ width: '1.2rem', height: '1.2rem' }}
-                  text
-                  onClick={() => handleNewStudentDialogShow(clientData.email)}
-                  tooltip={intl.formatMessage({ id: 'students.actions.editProfile' })}
-                />
+                <div className="flex align-items-center">
+                  <Button
+                    icon="pi pi-pencil"
+                    style={{ width: '1.2rem', height: '1.2rem' }}
+                    text
+                    onClick={() => handleNewStudentDialogShow(clientData.email)}
+                    tooltip={intl.formatMessage({ id: 'students.actions.editProfile' })}
+                  />
+                  {clientData && ['fitnessGoal', 'activityLevel', 'gender', 'weight', 'height', 'birthdate'].some(field => !clientData[field]) && (
+                    <>
+                      <Tooltip target=".missing-data-icon"/>
+                      <i className="missing-data-icon pi pi-exclamation-triangle text-red-500 ml-2"
+                        data-pr-tooltip={intl.formatMessage({ id: 'common.missingData' })}
+                        data-pr-position="right"
+                        style={{ cursor: 'help' }}
+                      />
+                    </>
+                  )}
+                </div>
             </div>
             <div>
               &nbsp;

@@ -8,6 +8,7 @@ const messages = {
 
   // Common
   'common.warning': 'Warning',
+  'common.missingData': 'Missing Data',
   'common.confirmation': 'Confirmation',
   'common.actions': 'Actions',
   'common.loading': 'Loading...',
@@ -430,6 +431,7 @@ const messages = {
   'plan.group.removed.message.number': 'The group number {number} has been removed',
   'plan.group.removed.message.name': 'The group "{name}" has been removed',
   'plan.group.empty': 'Drag and drop exercises here to add them to the group.',
+  'plan.group.restDurationSuffix': ' seconds',
 
   'plan.exercise.select': 'Select an Exercise',
   'plan.exercise.add': 'Add Exercise',

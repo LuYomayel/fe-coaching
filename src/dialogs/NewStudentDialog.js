@@ -57,6 +57,12 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
     { label: intl.formatMessage({ id: 'fitnessGoal.maintenance' }), value: 'maintenance' },
     { label: intl.formatMessage({ id: 'fitnessGoal.flexibility' }), value: 'flexibility' },
     { label: intl.formatMessage({ id: 'fitnessGoal.other' }), value: 'other' },
+    ...(fitnessGoal ? fitnessGoal.split(',').filter(goal =>
+      !['weight loss', 'muscle gain', 'gain mobility', 'maintenance', 'flexibility', 'other'].includes(goal)
+    ).map(goal => ({
+      label: goal,
+      value: goal
+    })) : [])
   ];
   const activityLevels = [
     { label: intl.formatMessage({ id: 'activityLevel.sedentary' }), value: 'sedentary' },
@@ -93,9 +99,10 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
   };
 
   const onClickSaveStudent = async () => {
-    let finalFitnessGoals = fitnessGoal;
+    let finalFitnessGoals = fitnessGoal ? fitnessGoal.split(',') : [];
     if (fitnessGoal.includes('other') && customFitnessGoal) {
-      finalFitnessGoals = fitnessGoal.split(',').filter(goal => goal !== 'other').concat(customFitnessGoal).join(',');
+      finalFitnessGoals = finalFitnessGoals.filter(goal => goal !== 'other');
+      finalFitnessGoals.push(customFitnessGoal);
     }
     const body = { name, email, fitnessGoal: finalFitnessGoals === '' ? [] : finalFitnessGoals, activityLevel, gender, weight, height, birthdate, coachId: user.userId };
     

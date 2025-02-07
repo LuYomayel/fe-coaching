@@ -9,8 +9,8 @@ const fetchExercises = async () => {
   return data;
 };
 
-const fetchCoachExercises = async (userId) => {
-  const response = await fetch(`${apiUrl}/exercise/coach/${userId}`);
+const fetchCoachExercises = async (coachId) => {
+  const response = await fetch(`${apiUrl}/exercise/coach/${coachId}`);
   const data = await response.json();
   if (data.error) {
     throw new Error(data.error);

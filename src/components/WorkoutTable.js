@@ -69,7 +69,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     useEffect(() => {
         const fetchExercises = async () => {
             try{
-                const {data} = await fetchCoachExercises(user.userId);
+                const {data} = await fetchCoachExercises(coach.id);
                 const exercisesDB = data.map(exercise => ({ label: exercise.name, value: exercise.id, exerciseType: exercise.exerciseType, name: exercise.name }));
                 setExercisesDB(exercisesDB);
             } catch (error) {

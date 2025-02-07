@@ -21,15 +21,12 @@ import '../styles/CreatePlan.css';
 import { FaGripVertical } from 'react-icons/fa'; // Importa el ícono de "handle"
 import { useTheme } from '../utils/ThemeContext';
 import { extractYouTubeVideoId } from '../utils/UtilFunctions';
-import { fetchExercises } from '../services/exercisesService';
-
-
-const apiUrl = process.env.REACT_APP_API_URL;
+import { fetchCoachExercises } from '../services/exercisesService';
+import { InputNumber } from 'primereact/inputnumber';
 
 const NewCreatePlan = ({ isEdit }) => {
   const intl = useIntl();
   const { state} = useLocation();
-  const [filterValue, setFilterValue] = useState('');
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const changeToTemplate = state?.changeToTemplate;
@@ -143,11 +140,26 @@ const NewCreatePlan = ({ isEdit }) => {
   }, [isEdit, planId, setLoading, setPlan, showToast]);
 
   useEffect(() => {
-    fetchExercises()
-      .then(data => {
-        setExercises(data.data.filter(exercise => exercise.exerciseType !== null));
-      })
-      .catch(error => showToast('error', 'Error fetching exercises', `${error.message}`));
+    const cargarEjercicios = async () => {
+      try {
+        const { data } = await fetchCoachExercises(coach.id);
+        const ejerciciosGuardados = localStorage.getItem('newExercises');
+        const ejerciciosFiltrados = data.filter(ejercicio => ejercicio.exerciseType !== null);
+
+        if (ejerciciosGuardados) {
+          const ejerciciosParsed = JSON.parse(ejerciciosGuardados);
+          setNewExercises(ejerciciosParsed);
+          setExercises([...ejerciciosFiltrados, ...ejerciciosParsed]);
+        } else {
+          setExercises(ejerciciosFiltrados);
+        }
+
+      } catch (error) {
+        showToast('error', 'Error fetching exercises', `${error.message}`);
+      }
+    };
+
+    cargarEjercicios();
   }, [showToast]);
 
   const addExerciseGroup = () => {
@@ -477,6 +489,7 @@ const NewCreatePlan = ({ isEdit }) => {
         showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message' }, { name: cleanPlan.workout.planName }));
       }
       localStorage.removeItem('unsavedPlan');
+      localStorage.removeItem('newExercises');
       navigate(-1);
     } catch (error) {
       console.log(error);
@@ -502,7 +515,11 @@ const NewCreatePlan = ({ isEdit }) => {
       };
 
       // Actualizar el estado de nuevos ejercicios
-      setNewExercises(prevExercises => [...prevExercises, newExercise]);
+      setNewExercises(prevExercises => {
+        const updatedExercises = [...prevExercises, newExercise];
+        localStorage.setItem('newExercises', JSON.stringify(updatedExercises)); // Guardar en local storage
+        return updatedExercises;
+      });
 
       // Actualizar el estado de ejercicios
       setExercises(prevExercises => [...prevExercises, newExercise]);
@@ -511,7 +528,6 @@ const NewCreatePlan = ({ isEdit }) => {
       const newSelectedExercises = {...selectedExercise};
       newSelectedExercises[groupIndex] = newExercise;
       setSelectedExercise(newSelectedExercises);
-
 
       // Mostrar un toast con el nuevo ejercicio
       showToast('info', 'Nuevo ejercicio creado', `Se ha creado el ejercicio: ${exerciseName}`);
@@ -716,9 +732,13 @@ const NewCreatePlan = ({ isEdit }) => {
                               <FaGripVertical className="mr-2 cursor-pointer" />
                             </span>
                             {group.isRestPeriod ? (
-                              <h3 className="text-xl m-0">
-                                <FormattedMessage id="plan.group.restPeriod" />
-                              </h3>
+                              <div className="flex flex-c justify-content-between align-items-center">
+                              <div>
+                                <h3 className="text-xl m-0">
+                                  <FormattedMessage id="plan.group.restPeriod" />
+                                </h3>
+                              </div>
+                              </div>
                             ) : (
                               <div className="flex justify-content-between align-items-center">
                                 <div className="w-4/5 pr-2">
@@ -856,7 +876,7 @@ const NewCreatePlan = ({ isEdit }) => {
                             </div>
                           )}
                         </Droppable>
-                        {!group.isRestPeriod && (
+                        {!group.isRestPeriod ? (
                           <div className="flex align-items-center">
                             <div className="w-10 mr-2">
                               <Dropdown
@@ -886,12 +906,42 @@ const NewCreatePlan = ({ isEdit }) => {
                                     dropdown.focus();
                                   }
                                 }}
-                                itemTemplate={(option) => (
-                                  <div className='flex flex-column'>
-                                    <span>{option.name}</span>
-                                    {option.exerciseType && <small className='text-xs'>{option.exerciseType}</small>} 
-                                  </div>
-                                )}
+                                itemTemplate={(option) => {
+                                  return (
+                                    <div className='flex justify-content-between align-items-center w-full' style={{gap: '1rem'}}>
+                                      <div className='flex flex-column flex-grow-1'>
+                                        <span>{option.name}</span>
+                                        {option.exerciseType && <small className='text-xs'>{option.exerciseType}</small>}
+                                      </div>
+                                      <div className='flex align-items-center flex-shrink-0'>
+                                        {option.isTemporary && (
+                                          <Button
+                                            icon="pi pi-trash"
+                                            text
+                                            severity="danger"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setExercises(prev => prev.filter(ex => ex.id !== option.id));
+                                              setNewExercises(prev => prev.filter(ex => ex.id !== option.id));
+                                              
+                                              // Eliminar el ejercicio de todos los grupos donde esté
+                                              setPlan(prevPlan => ({
+                                                ...prevPlan,
+                                                groups: prevPlan.groups.map(group => ({
+                                                  ...group,
+                                                  exercises: group.exercises.filter(ex => 
+                                                    ex.exercise.id !== option.id && 
+                                                    ex.exercise.name.toLowerCase() !== option.name.toLowerCase()
+                                                  )
+                                                }))
+                                              }));
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                }}
                                 emptyFilterMessage={
                                   <Button
                                     label={intl.formatMessage({ id: 'common.createNew' })}
@@ -935,6 +985,20 @@ const NewCreatePlan = ({ isEdit }) => {
                                 style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                               />
                             </div>
+                          </div>
+                        ) : (
+                          <div className="mt-2">
+                                  <InputNumber 
+                                    value={group.restDuration} 
+                                    onChange={(e) => {
+                                      const newGroups = [...plan.groups];
+                                      newGroups[groupIndex].restDuration = e.value;
+                                      setPlan({...plan, groups: newGroups});
+                                    }}
+                                    suffix={intl.formatMessage({ id: 'plan.group.restDurationSuffix' })}
+                                    min={0}
+                                    placeholder={intl.formatMessage({ id: 'plan.group.restDuration' })}
+                            />
                           </div>
                         )}
                       </Card>

@@ -303,7 +303,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                     return(
                     <AccordionTab key={group.groupNumber}header={
                         <>
-                          Group {group.groupNumber} {group.name ? `: ${group.name}` : ''}
+                          {group.name ? group.name : `Group ${group.groupNumber}`}
                           {!workoutPlan.isTemplate &&
                             <Badge
                                 value={allExercisesCompleted ? '✔' : '✘'}
