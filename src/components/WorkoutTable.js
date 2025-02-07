@@ -19,9 +19,10 @@ import '../styles/WorkoutTable.css';
 import { FaGripVertical } from 'react-icons/fa';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { fetchCoachExercises } from '../services/exercisesService';
-
+import { useTheme } from '../utils/ThemeContext';
 export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey, clientId, clientData }) {
     const intl = useIntl();
+    const { isDarkMode } = useTheme();
     const daysOfWeek = [
         { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
         { label: intl.formatMessage({ id: 'workoutTable.tuesday' }), value: 2 },
@@ -44,7 +45,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     const [planId, setPlanId] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const showToast = useToast();
-    const possibleProperties = ["sets", "repetitions", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance"];
+    const possibleProperties = ["sets", "repetitions", "weight", "time", "restInterval", "tempo", "notes", "difficulty", "duration", "distance", "restDuration"];
     const [isLoading, setIsLoading] = useState(false);
     const [editedExercises, setEditedExercises] = useState([]);
     const [isDialogVisible, setIsDialogVisible] = useState(false);
@@ -99,6 +100,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         }
         // Ordenar los ejercicios por rowIndex
         const sortedExercises = [...exercises].sort((a, b) => a.rowIndex - b.rowIndex);
+
         const exercisesByDayNumber = sortedExercises.reduce((acc, exercise) => {
             if (!acc[exercise.dayNumber]) {
                 acc[exercise.dayNumber] = [];
@@ -181,14 +183,9 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                                 }] 
                                                 : exercisesForDay
                                             }
-                                            
                                             headerColumnGroup={headerGroup}
-                                            
-                                            
-                                            
                                             scrollable
                                             // scrollHeight="700px"
-                                            
                                             editMode="cell"
                                             loading={isLoading}
                                             rowClassName={rowClassName}
@@ -297,6 +294,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             const propertiesSet = new Set();
             const numWeeks = selectedCycle.trainingWeeks?.length || 0;
             selectedCycle.trainingWeeks.forEach((week, weekIndex) => {
+                console.log('week', week);
                 if (!week.trainingSessions) return;
                 week.trainingSessions.forEach(session => {
                     if (!session.workoutInstances) return;
@@ -307,25 +305,72 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                         setPlanId(instance.workout.id);
 
                         instance.groups.forEach(group => {
+                            
+                            // Manejar períodos de descanso
+                            if (group.isRestPeriod) {
+                                const restName = group.name;
+                                const dayNumber = session.dayNumber;
+                                const key = `${restName}-${group.groupNumber}-${dayNumber}`;
+                                if (exercisesMap.has(key)) {
+                                    const existingRest = exercisesMap.get(key);
+                                    existingRest.sessionDates.push(session.sessionDate);
+                                    existingRest.id[weekIndex] = group.id;
+                                    existingRest.groupId[week.weekNumber-1] = group.id;
+                                    existingRest.workoutInstanceId[week.weekNumber-1] = instance.id;
+                                    if (group.restDuration) {
+                                        existingRest.restDuration[week.weekNumber-1] = group.restDuration;
+                                        propertiesSet.add('restDuration');
+                                    }
+                                } else {
+                                    if (dayOfWeek && session.dayNumber !== dayOfWeek) {
+                                        return;
+                                    }
+                                    const restObj = {
+                                        name: restName,
+                                        groupNumber: group.groupNumber,
+                                        groupId: Array(numWeeks).fill(null),
+                                        sessionDates: [session.sessionDate],
+                                        id: Array(numWeeks).fill(null),
+                                        uniqueId: `rest-${group.groupNumber}-${Date.now()}`,
+                                        workoutInstanceId: Array(numWeeks).fill(null),
+                                        dayNumber: session.dayNumber,
+                                        rowIndex: group.rowIndex
+                                    };
+                                    restObj.id[week.weekNumber-1] = group.id;
+                                    restObj.groupId[week.weekNumber-1] = group.id;
+                                    restObj.workoutInstanceId[week.weekNumber-1] = instance.id;
+                                    possibleProperties.forEach(prop => {
+                                        restObj[prop] = Array(numWeeks).fill('');
+                                    });
+                                    if (group.restDuration) {
+                                        restObj.restDuration[week.weekNumber-1] = group.restDuration;
+                                        propertiesSet.add('restDuration');
+                                    }
+                                    exercisesMap.set(key, restObj);
+                                }
+                                return;
+                            }
+
+                            // Manejar ejercicios normales
                             group.exercises.forEach(exerciseData => {
                                 const exerciseName = exerciseData.exercise?.name || 'Unnamed Exercise';
                                 const dayNumber = session.dayNumber
                                 const key = `${exerciseName}-${group.groupNumber}-${dayNumber}`;
                                 if (exercisesMap.has(key)) {
                                     const existingExercise = exercisesMap.get(key);
-                                    existingExercise.sessionDates.push(session.sessionDate);
-                                    existingExercise.id[weekIndex] = exerciseData.id;
-                                    existingExercise.groupId[weekIndex] = group.id;
-                                    existingExercise.workoutInstanceId[weekIndex] = instance.id;
+                                    existingExercise.sessionDates[week.weekNumber-1] = (session.sessionDate);
+                                    existingExercise.id[week.weekNumber-1] = exerciseData.id;
+                                    existingExercise.groupId[week.weekNumber-1] = group.id;
+                                    existingExercise.workoutInstanceId[week.weekNumber-1] = instance.id;
                                     possibleProperties.forEach(prop => {
                                         const value = exerciseData[prop] || group[prop] || '-';
                                         if (value !== '-') {
-                                            existingExercise[prop][weekIndex] = value;
+                                            existingExercise[prop][week.weekNumber-1] = value;
                                             propertiesSet.add(prop);
                                         }
                                     });
+                                    console.log('existingExercise esto:', existingExercise);
                                 } else {
-
                                     if (dayOfWeek && session.dayNumber !== dayOfWeek) {
                                         return;
                                     }
@@ -340,16 +385,17 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                         dayNumber: session.dayNumber,
                                         rowIndex: exerciseData.rowIndex
                                     };
-                                    exerciseObj.id[weekIndex] = exerciseData.id;
-                                    exerciseObj.groupId[weekIndex] = group.id;
-                                    exerciseObj.workoutInstanceId[weekIndex] = instance.id;
+                                    console.log('exerciseObj antes', exerciseObj);
+                                    exerciseObj.id[week.weekNumber-1] = exerciseData.id;
+                                    exerciseObj.groupId[week.weekNumber-1] = group.id;
+                                    exerciseObj.workoutInstanceId[week.weekNumber-1] = instance.id;
                                     possibleProperties.forEach(prop => {
                                         exerciseObj[prop] = Array(numWeeks).fill('');
                                     });
                                     possibleProperties.forEach(prop => {
                                         const value = exerciseData[prop] || group[prop] || '-';
                                         if (value !== '-') {
-                                            exerciseObj[prop][weekIndex] = value;
+                                            exerciseObj[prop][week.weekNumber-1] = value;
                                             propertiesSet.add(prop);
                                         }
                                     });
@@ -362,6 +408,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             });
             // const sortedExercises = Array.from(exercisesMap.values()).sort((a, b) => a.groupNumber - b.groupNumber);
             const justExercises = Array.from(exercisesMap.values());
+            console.log('exercisesMap',exercisesMap);
             const exerciseData = justExercises.flatMap((exercise, index) => {
                 return exercise.id.map((id, weekIndex) => {
                     return {
@@ -373,14 +420,12 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     }
                 })
             });
-
             if (changes.includes('cycle')) {
                 const daysUsed = Array.from(new Set(justExercises.map(day => day.dayNumber)));
                 setDaysUsed(daysUsed);
             }
             setOriginalExercisesSnapshot(exerciseData);
             setExercises(justExercises);
-
             setOriginalExercises(justExercises);
             setNumWeeks(numWeeks);
             setProperties(Array.from(propertiesSet));
@@ -412,6 +457,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         difficulty: intl.formatMessage({ id: 'workoutTable.difficulty' }),
         duration: intl.formatMessage({ id: 'workoutTable.duration' }),
         distance: intl.formatMessage({ id: 'workoutTable.distance' }),
+        restDuration: intl.formatMessage({ id: 'workoutTable.restDuration' }),
     };
 
     const renderProperty = (rowData, property, weekIndex) => {
@@ -420,14 +466,20 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             return rowData[property][weekIndex] || '-';
         }
         // Si no es un array o el índice no es válido, devuelve un guion
-        return '-';
+        return '-'; 
     };
 
     const cellEditor = (options, property, weekIndex) => {
         if (!isEditing) {
             return options.value;
         }
-    
+        if(options.rowData.restDuration && options.rowData.name === 'Descanso' && property !== 'restDuration'){
+            return options.value;
+        }
+        if(options.rowData.restDuration && options.rowData.name !== 'Descanso' && property === 'restDuration'){
+            return options.value;
+        }
+        console.log('weekIndex',weekIndex);
         return (
             <InputText
                 type="text"
@@ -473,7 +525,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     ex.id === exerciseId && 
                     ex.rowIndex === exercise.rowIndex
                 );
-                
+
                 if (existingIndex !== -1) {
                     updatedEditedExercises[existingIndex] = {
                         ...updatedEditedExercises[existingIndex],
@@ -576,7 +628,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         const exerciseIndexByNewExerciseId = updatedEditedExercises.findIndex(ex => ex.newExerciseId === updatedExercises[options.rowIndex].newExerciseId && ex.weekIndex === weekIndex);
         
         if (exerciseIndex !== -1 || exerciseIndexByGroupId !== -1 || exerciseIndexByNewExerciseId !== -1) {
-            if (exerciseIndex !== -1) {     
+            if (exerciseIndex !== -1) {   
                 updatedEditedExercises[exerciseIndex] = {
                     ...updatedEditedExercises[exerciseIndex],
                     [property]: value
@@ -600,19 +652,24 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             });
         }
         else{
-            updatedEditedExercises.push({
-                id: updatedExercises[options.rowIndex].id[weekIndex],
+            if(updatedExercises[options.rowIndex].restDuration){
+                updatedEditedExercises.push({
+                    id: updatedExercises[options.rowIndex].id[weekIndex],
+                    [property]: value
+                });
+            } else {
+                updatedEditedExercises.push({
+                    id: updatedExercises[options.rowIndex].id[weekIndex],
                 [property]: value
             });
         }
-        
+        }
         setEditedExercises(updatedEditedExercises);
         setExercises(updatedExercises);
     };
 
     const handleEditSave = async () => {
         let keepEditing = false;
-        console.log("isEditing", isEditing);
         if (isEditing) {
             try {
                 setIsLoading(true);
@@ -639,7 +696,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                     // Aquí deberías tener una función diferente para crear nuevo entrenamiento
 
                     await createNewTrainingFromExcelView(cleanPlan);
-                    //console.log("response", response);
                 } else {
                     // Preparar los datos para enviar al nuevo endpoint
                     
@@ -677,8 +733,8 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
 
                         // Comparar los snapshots filtrados con los datos actuales
                         const hasChanges = JSON.stringify(exerciseData) !== JSON.stringify(filteredOriginalSnapshot);
+
                         if(hasChanges && !newTraining){
-                            //console.log("exerciseData", exerciseData, originalExercisesSnapshot);
                             const response = await verifyExerciseChanges(exerciseData);
                             if(response.message){
                                 showToast('success', intl.formatMessage({ id: 'common.success' }), 
@@ -690,7 +746,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                         showToast('error', intl.formatMessage({ id: 'common.error' }), 
                                  intl.formatMessage({ id: 'common.errorVerifyingChanges' }));
                     }
-
                     await updateExercisesInstace(editedExercises);
                 }
             } catch (error) {
@@ -762,7 +817,11 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
     }
 
     const rowClassName = (rowData) => {
-        return rowData.groupNumber % 2 === 0 ? 'group-even improved-row' : 'group-odd improved-row';
+        if(isDarkMode){
+            return rowData.groupNumber % 2 === 0 ? 'group-even-dark improved-row' : 'group-odd-dark improved-row';
+        }else{
+            return rowData.groupNumber % 2 === 0 ? 'group-even improved-row' : 'group-odd improved-row';
+        }
     };
 
     const renderCardTitle = () => {
@@ -1001,7 +1060,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                             options={cycleOptions}
                             onChange={(e) => {
                                 if (e.value === -1) {
-                                    if(clientData.user.subscription.status === 'active')
+                                    if(clientData.user.subscription.status === 'Active')
                                         setNewCycleDialogVisible(true);
                                     else
                                         showToast('error', 'Error', intl.formatMessage({ id: 'student.error.noSubscription' }));

@@ -44,6 +44,13 @@ const messages = {
   'common.create': 'Create',
   'common.add': 'Add',
   'common.createNew': 'Create New',
+  'common.completedOn': 'Completed on',
+  'common.sessionTime': 'Session time',
+  'common.feedback': 'Feedback',
+  'common.mood': 'Mood',
+  'common.energyLevel': 'Energy level',
+  'common.perceivedDifficulty': 'Perceived difficulty',
+  'common.extraNotes': 'Extra notes',
   
   'home.success.checkEmail': 'Check your email to continue!',
   // Mensajes de confirmacion
@@ -666,7 +673,7 @@ const messages = {
   'workoutTable.selectWeeks': 'Select Weeks',
   'workoutTable.week': 'Week {week}',
   'workoutTable.modifyAll': 'Modify All',
-  'workoutTable.addNewExercise': 'Add New Exercise',
+  'workoutTable.addNewExercise': 'Exercise',
   'workoutTable.sets': 'Sets',
   'workoutTable.repetitions': 'Repetitions',
   'workoutTable.weight': 'Weight',
@@ -679,7 +686,7 @@ const messages = {
   'workoutTable.distance': 'Distance',
   'workoutTable.newExercise': 'New Exercise',
   'workoutTable.selectGroup': 'Select Group',
-  'workoutTable.addNewGroup': 'Add New Group',
+  'workoutTable.addNewGroup': 'Group',
   'workoutTable.enterTrainingName': 'Enter the name of the training',
   'workoutTable.enterName': 'Enter the name of the training',
   'workoutTable.trainingName': 'Training Name',
@@ -693,6 +700,7 @@ const messages = {
   'workoutTable.editTraining': 'Edit Training',
   'workoutTable.addProperties': 'Add Properties',
   'workoutTable.newCycle' : 'New Cycle',
+  'workoutTable.restDuration': 'Rest Duration',
 
 
   'fitnessGoal.custom': 'Custom Fitness Goal',

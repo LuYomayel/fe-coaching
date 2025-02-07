@@ -130,7 +130,7 @@ const NewCreatePlan = ({ isEdit }) => {
               }
             });
           });
-
+          console.log(data);
           setPlan(data);
         } catch (error) {
           showToast('error', 'Error fetching plan details', `${error.message}`);

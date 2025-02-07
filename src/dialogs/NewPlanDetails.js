@@ -117,37 +117,37 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
             <div className="w-full md:w-8">
                 <div className="grid">
                     {exercise.sets && (
-                        <div className="col-6 md:col-3">Sets: {exercise.sets}{propertyUnits?.sets ? `${propertyUnits?.sets}` : ''}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.sets' })}: {exercise.sets}{propertyUnits?.sets ? `${propertyUnits?.sets}` : ''}</div>
                     )}
                     {exercise.repetitions && (
-                        <div className="col-6 md:col-3">Reps: {exercise.repetitions}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.reps' })}: {exercise.repetitions}</div>
                     )}
                     {exercise.weight && (
-                        <div className="col-6 md:col-3">Weight: {exercise.weight}{propertyUnits?.weight ? `${propertyUnits?.weight}` : ''}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.weight' })}: {exercise.weight}{propertyUnits?.weight ? `${propertyUnits?.weight}` : ''}</div>
                     )}
                     {exercise.time && (
-                        <div className="col-6 md:col-3">Time: {exercise.time}{propertyUnits?.time ? `${propertyUnits?.time}` : ''}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.time' })}: {exercise.time}{propertyUnits?.time ? `${propertyUnits?.time}` : ''}</div>
                     )}
                     {exercise.tempo && (
-                        <div className="col-6 md:col-3">Tempo: {exercise.tempo}{propertyUnits?.tempo ? `${propertyUnits?.tempo}` : ''}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.tempo' })}: {exercise.tempo}{propertyUnits?.tempo ? `${propertyUnits?.tempo}` : ''}</div>
                     )}
                     {exercise.restInterval && (
                         <div className="col-6 md:col-3">
-                            Rest Interval: {exercise.restInterval}{propertyUnits?.restInterval ? `${propertyUnits?.restInterval}` : ''}
+                            {intl.formatMessage({ id: 'exercise.properties.restInterval' })}: {exercise.restInterval}{propertyUnits?.restInterval ? `${propertyUnits?.restInterval}` : ''}
                         </div>
                     )}
                     {exercise.difficulty && (
-                        <div className="col-6 md:col-3">Difficulty: {exercise.difficulty}{propertyUnits?.difficulty ? `${propertyUnits?.difficulty}` : ''}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.difficulty' })}: {exercise.difficulty}{propertyUnits?.difficulty ? `${propertyUnits?.difficulty}` : ''}</div>
                     )}
                     {exercise.distance && (
-                        <div className="col-6 md:col-3">Distance: {exercise.distance}{propertyUnits?.distance ? `${propertyUnits?.distance}` : ''}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.distance' })}: {exercise.distance}{propertyUnits?.distance ? `${propertyUnits?.distance}` : ''}</div>
                     )}
                     {exercise.duration && (
-                        <div className="col-6 md:col-3">Duration: {exercise.duration}{propertyUnits?.duration ? `${propertyUnits?.duration}` : ''}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.duration' })}: {exercise.duration}{propertyUnits?.duration ? `${propertyUnits?.duration}` : ''}</div>
                     )}
                     
                     {exercise.notes && (
-                        <div className="col-6 md:col-3">Notes: {exercise.notes}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.notes' })}: {exercise.notes}</div>
                     )}
                 </div>
             </div>
@@ -179,36 +179,36 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
             <div className="w-full md:w-8">
                 <div className="grid">
                     {exercise.repetitions && (
-                        <div className="col-6 md:col-3">Reps: {exercise.repetitions}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.reps' })}: {exercise.repetitions}</div>
                     )}
                     {exercise.weight && (
-                        <div className="col-6 md:col-3">Peso: {exercise.weight}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.weight' })}: {exercise.weight}</div>
                     )}
                     {exercise.time && (
-                        <div className="col-6 md:col-3">Tiempo: {exercise.time}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.time' })}: {exercise.time}</div>
                     )}
                     {exercise.tempo && (
-                        <div className="col-6 md:col-3">Tempo: {exercise.tempo}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.tempo' })}: {exercise.tempo}</div>
                     )}
                     {exercise.restInterval && (
                         <div className="col-6 md:col-3">
-                            Descanso: {exercise.restInterval}
+                            {intl.formatMessage({ id: 'exercise.properties.restInterval' })}: {exercise.restInterval}
                         </div>
                     )}
                     {exercise.difficulty && (
-                        <div className="col-6 md:col-3">Dificultad: {exercise.difficulty}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.difficulty' })}: {exercise.difficulty}</div>
                     )}
                     {exercise.notes && (
-                        <div className="col-6 md:col-3">Notas: {exercise.notes}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.notes' })}: {exercise.notes}</div>
                     )}
                     {exercise.distance && (
-                        <div className="col-6 md:col-3">Distancia: {exercise.distance}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.distance' })}: {exercise.distance}</div>
                     )}
                     {exercise.duration && (
-                        <div className="col-6 md:col-3">Duración: {exercise.duration}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.duration' })}: {exercise.duration}</div>
                     )}
                     {exercise.sets && (
-                        <div className="col-6 md:col-3">Sets: {exercise.sets}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.sets' })}: {exercise.sets}</div>
                     )}
                 </div>
             </div>
@@ -217,19 +217,19 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                 <div className="grid">
                     {exercise.completed !== undefined && (
                         <div className="col-6 md:col-3">
-                            Completado: {exercise.completed ? 'Sí' : 'No'}
+                            {intl.formatMessage({ id: 'exercise.properties.completed' })}: {exercise.completed ? 'Sí' : 'No'}
                         </div>
                     )}
                     {exercise.completedNotAsPlanned && (
                         <div className="col-6 md:col-3">
-                            No completado como planeado: {exercise.completedNotAsPlanned}
+                            {intl.formatMessage({ id: 'exercise.properties.completedNotAsPlanned' })}: {exercise.completedNotAsPlanned}
                         </div>
                     )}
                     {exercise.rpe && (
                         <div className="col-6 md:col-3">{workoutPlan.assignedRpe}: {exercise.rpe}</div>
                     )}
                     {exercise.comments && (
-                        <div className="col-6 md:col-3">Comentarios: {exercise.comments}</div>
+                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.comments' })}: {exercise.comments}</div>
                     )}
                 </div>
             </div>
@@ -281,16 +281,16 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                 </div>
                 {!workoutPlan.isTemplate && (
                     <p>
-                        <strong>Status:</strong> {workoutPlan.status}
+                        <strong>{intl.formatMessage({ id: 'common.status' })}:</strong> {workoutPlan.status}
                         {workoutPlan.status === 'completed' && (
                             <>
-                                <p className="">Completed on: {formatDate(workoutPlan.realEndDate)}</p>
-                                <p className="">Session time: {workoutPlan.sessionTime}</p>
-                                <p className="">Feedback: {workoutPlan.generalFeedback}</p>
-                                <p className="">Mood: {workoutPlan.mood ? `${workoutPlan.mood}/10` : '-'}</p>
-                                <p className="">Energy level: {workoutPlan.energyLevel ? `${workoutPlan.energyLevel}/10` : '-'}</p>
-                                <p className="">Difficulty: {workoutPlan.perceivedDifficulty ? `${workoutPlan.perceivedDifficulty}/10` : '-'}</p>
-                                <p className="">Extra notes: {workoutPlan.feedback}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.completedOn' })}: {formatDate(workoutPlan.realEndDate)}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.sessionTime' })}: {workoutPlan.sessionTime}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.feedback' })}: {workoutPlan.generalFeedback}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.mood' })}: {workoutPlan.mood ? `${workoutPlan.mood}/10` : '-'}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.energyLevel' })}: {workoutPlan.energyLevel ? `${workoutPlan.energyLevel}/10` : '-'}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.perceivedDifficulty' })}: {workoutPlan.perceivedDifficulty ? `${workoutPlan.perceivedDifficulty}/10` : '-'}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.extraNotes' })}: {workoutPlan.feedback}</p>
                             </>
                         )}
 
@@ -303,9 +303,9 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
                     const allExercisesCompleted = group.exercises.every(exercise => exercise.completed);
                     return(
                     <AccordionTab key={group.groupNumber}header={
-                        <>
-                          {group.name ? group.name : `Group ${group.groupNumber}`}
-                          {!workoutPlan.isTemplate &&
+                    <>
+                          {group.name ? group.name : `${intl.formatMessage({ id: 'common.group' })} ${group.groupNumber}`}
+                          {!workoutPlan.isTemplate && workoutPlan.status === 'completed' &&
                             <Badge
                                 value={allExercisesCompleted ? '✔' : '✘'}
                                 className="ml-2"

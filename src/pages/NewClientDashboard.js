@@ -283,7 +283,8 @@ export default function ClientDashboard() {
   };
 
   const showCreateCycleDialog = () => {
-    if(clientData.user.subscription.status === 'active')
+    console.log('clientData', clientData);
+    if(clientData.user.subscription.status === 'Active')
       setDialogVisible(true);
     else
       showToast('error', 'Error', intl.formatMessage({ id: 'student.error.noSubscription' }));

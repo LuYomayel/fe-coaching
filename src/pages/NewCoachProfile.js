@@ -188,6 +188,7 @@ export default function CoachProfilePage() {
             };
           });
           setWorkouts(mappedWorkouts);
+          console.log(mappedWorkouts);
         } catch (error) {
           console.log('error', error);
           showToast('error', 'Error', error.message);

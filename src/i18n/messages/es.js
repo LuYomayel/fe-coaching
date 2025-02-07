@@ -44,6 +44,13 @@ const messages = {
   'common.create': 'Crear',
   'common.createNew': 'Crear Nuevo',
   'common.missingData': 'Faltan datos',
+  'common.completedOn': 'Completado el',
+  'common.sessionTime': 'Tiempo de sesión',
+  'common.feedback': 'Retroalimentación',
+  'common.mood': 'Estado de ánimo',
+  'common.energyLevel': 'Nivel de energía',
+  'common.perceivedDifficulty': 'Dificultad percibida',
+  'common.extraNotes': 'Notas adicionales',
   
   'home.success.checkEmail': '¡Revisa tu correo para continuar!',
   // Mensajes de confirmacion
@@ -665,7 +672,7 @@ const messages = {
   'workoutTable.selectWeeks': 'Seleccionar Semanas',
   'workoutTable.week': 'Semana {week}',
   'workoutTable.modifyAll': 'Modificar Todas',
-  'workoutTable.addNewExercise': 'Agregar Nuevo Ejercicio',
+  'workoutTable.addNewExercise': 'Ejercicio',
   'workoutTable.sets': 'Series',
   'workoutTable.repetitions': 'Repeticiones',
   'workoutTable.weight': 'Peso',
@@ -678,7 +685,7 @@ const messages = {
   'workoutTable.distance': 'Distancia', 
   'workoutTable.newExercise': 'Nuevo Ejercicio',
   'workoutTable.selectGroup': 'Seleccionar Grupo',
-  'workoutTable.addNewGroup': 'Agregar Nuevo Grupo',
+  'workoutTable.addNewGroup': 'Grupo',
   'workoutTable.enterTrainingName': 'Ingresa el nombre del entrenamiento',
   'workoutTable.enterName': 'Ingresa el nombre del entrenamiento',
   'workoutTable.trainingName': 'Nombre del Entrenamiento',
@@ -692,6 +699,7 @@ const messages = {
   'workoutTable.editTraining': 'Editar Entrenamiento',
   'workoutTable.addProperties': 'Agregar Propiedades',
   'workoutTable.newCycle' : 'Nuevo Ciclo',
+  'workoutTable.restDuration': 'Duración de Descanso',
 
   
   // Header
