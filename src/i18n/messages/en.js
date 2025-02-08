@@ -472,7 +472,8 @@ const messages = {
   'exercise.properties.duration': 'Duration',
   'exercise.properties.distance': 'Distance',
   'exercise.properties.height': 'Height',
-  'exercise.properties.restPeriod': 'Rest Period',
+  'exercise.properties.restPeriod': 'Rest Period',  
+  'exercise.properties.notes': 'Notes',
   // Confirmation messages
   'confirm.delete': 'Are you sure you want to delete this?',
   'confirm.deleteGroup': 'Are you sure you want to delete this group?',
@@ -815,6 +816,8 @@ const messages = {
   'coach.plan.success.created.message': 'The plan {name} has been created successfully',
   'coach.plan.success.updated': 'Plan updated successfully',
   'coach.plan.success.updated.message': 'The plan {name} has been updated successfully',
+  'coach.plan.success.deleted': 'Plan deleted successfully',
+  'coach.plan.success.deleted.message': 'The plan {name} has been deleted successfully',
   'coach.plan.error.name.empty': 'The plan name cannot be empty',
   'coach.plan.error.price.zero': 'The plan price cannot be 0',
   'coach.plan.error.workouts.zero': 'The number of workouts per week cannot be 0',

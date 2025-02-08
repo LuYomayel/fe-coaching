@@ -112,16 +112,15 @@ const createOrUpdateCoachPlan = async (plan, planId, userId, mode) => {
     body: JSON.stringify({...plan, coachId: userId}),
   });
 
-  const data = await response.json();
-  
-  if (data.error) {
-    throw new Error(data.error || 'Something went wrong');
+  const {data, error} = await response.json();
+  if (error) {
+    throw new Error(error || 'Something went wrong');
   }
 
-  if (mode === 'create') {
-    return data;
+  if(data.affected && data.affected > 0) {
+    return 'updated';
   } else {
-    return data.affected === 1;
+    return data;
   }
 };
 

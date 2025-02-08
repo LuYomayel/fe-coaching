@@ -13,7 +13,7 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl } from 'react-intl';
 
-export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsIsVisible, setRefreshKey, setLoading }) {
+export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsVisible, setRefreshKey, setLoading }) {
     const intl = useIntl();
     const [videoDialogVisible, setVideoDialogVisible] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState('');
@@ -55,6 +55,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
     };
 
     const handleDelete = () => {
+        console.log('workoutPlan', workoutPlan, planId);
         showConfirmationDialog({
             message: intl.formatMessage({ id: 'deletePlan.confirmation.message' }),
             header: intl.formatMessage({ id: 'common.confirmation' }),
@@ -62,9 +63,9 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsI
             accept: async () => {
                 try {
                     const response = await deleteWorkoutPlan(planId, workoutPlan.isTemplate);
-                    if(response.message === 'success') {
-                        showToast('success', 'Deleted', 'Workout plan deleted');
-                        setPlanDetailsIsVisible(false);
+                    if (response.message === 'success') {
+                        showToast('success', intl.formatMessage({ id: 'coach.plan.success.deleted' }), intl.formatMessage({ id: 'coach.plan.success.deleted.message' }, { name: workoutPlan.workout.planName }));
+                        setPlanDetailsVisible(false);
                         setRefreshKey((old) => old + 1);
                     } else {
                         showToast('error', 'Error', response.error);

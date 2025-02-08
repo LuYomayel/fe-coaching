@@ -196,6 +196,7 @@ const submitPlan = async (plan, planId, isEdit) => {
     ? `${apiUrl}/workout/${plan.isTemplate ? 'template' : 'instance'}/${planId}` 
     : `${apiUrl}/workout`;
 
+  console.log('OK: ', endpoint);
   const response = await fetch(endpoint, {
     method: requestMethod,
     headers: {
@@ -337,7 +338,7 @@ const deleteWorkoutPlan = async (planId, isTemplate) => {
   if (data.error) {
     throw new Error(data.error);
   }
-  return true;
+  return data;
 };
 
 const deletePlan = async (workoutInstanceId) => {

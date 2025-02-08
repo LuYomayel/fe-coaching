@@ -294,7 +294,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             const propertiesSet = new Set();
             const numWeeks = selectedCycle.trainingWeeks?.length || 0;
             selectedCycle.trainingWeeks.forEach((week, weekIndex) => {
-                console.log('week', week);
                 if (!week.trainingSessions) return;
                 week.trainingSessions.forEach(session => {
                     if (!session.workoutInstances) return;
@@ -369,7 +368,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                             propertiesSet.add(prop);
                                         }
                                     });
-                                    console.log('existingExercise esto:', existingExercise);
                                 } else {
                                     if (dayOfWeek && session.dayNumber !== dayOfWeek) {
                                         return;
@@ -385,7 +383,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
                                         dayNumber: session.dayNumber,
                                         rowIndex: exerciseData.rowIndex
                                     };
-                                    console.log('exerciseObj antes', exerciseObj);
                                     exerciseObj.id[week.weekNumber-1] = exerciseData.id;
                                     exerciseObj.groupId[week.weekNumber-1] = group.id;
                                     exerciseObj.workoutInstanceId[week.weekNumber-1] = instance.id;
@@ -408,7 +405,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
             });
             // const sortedExercises = Array.from(exercisesMap.values()).sort((a, b) => a.groupNumber - b.groupNumber);
             const justExercises = Array.from(exercisesMap.values());
-            console.log('exercisesMap',exercisesMap);
             const exerciseData = justExercises.flatMap((exercise, index) => {
                 return exercise.id.map((id, weekIndex) => {
                     return {
@@ -479,7 +475,6 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         if(options.rowData.restDuration && options.rowData.name !== 'Descanso' && property === 'restDuration'){
             return options.value;
         }
-        console.log('weekIndex',weekIndex);
         return (
             <InputText
                 type="text"

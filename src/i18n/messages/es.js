@@ -490,6 +490,7 @@ const messages = {
   'exercise.properties.distance': 'Distancia',
   'exercise.properties.height': 'Altura',
   'exercise.properties.restPeriod': 'Intervalo de Descanso',
+  'exercise.properties.notes': 'Notas',
   
   // Mensajes de confirmación
   'confirm.delete': '¿Estás seguro que deseas eliminar esto?',
@@ -815,6 +816,8 @@ const messages = {
   'coach.plan.success.created.message': 'El plan {name} ha sido creado exitosamente',
   'coach.plan.success.updated': 'Plan actualizado exitosamente',
   'coach.plan.success.updated.message': 'El plan {name} ha sido actualizado exitosamente',
+  'coach.plan.success.deleted': 'Plan eliminado exitosamente',
+  'coach.plan.success.deleted.message': 'El plan {name} ha sido eliminado exitosamente',
   'coach.plan.error.name.empty': 'El nombre del plan no puede estar vacío',
   'coach.plan.error.price.zero': 'El precio del plan no puede ser 0',
   'coach.plan.error.workouts.zero': 'El número de entrenamientos por semana no puede ser 0',

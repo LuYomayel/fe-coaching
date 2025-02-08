@@ -464,7 +464,7 @@ export default function CoachProfilePage() {
             } else if (type === 'plan') {
               confirmDeletePlan(rowData.id);
             } else if (type === 'workout') {
-              confirmDeleteWorkout(rowData.workoutInstance.id);
+              confirmDeleteWorkout(rowData.id);
             }
 
           }}
@@ -834,13 +834,11 @@ export default function CoachProfilePage() {
   const handleCreatePlan = async () => {
     try {
       const data = await createOrUpdateCoachPlan(newPlan, newPlan.id, user.userId, dialogMode);
-      if (dialogMode === 'create') {
-        if (data) showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message' }));
+      console.log('data', data, newPlan.name);
+      if(data === 'updated') {
+        showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message'}, { name: newPlan.name } ));
       } else {
-        if (data) showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message' }));
-        else {
-          showToast('error', 'Error', intl.formatMessage({ id: 'coach.plan.error.not.updated' }));
-        }
+        showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message'}, { name: newPlan.name }));
       }
       closeCreatePlanDialog();
       setRefreshKey((old) => old + 1);
@@ -894,15 +892,17 @@ export default function CoachProfilePage() {
 
   const handleDeletePlan = async (planId) => {
     try {
-      const {data} = await fetch(`${apiUrl}/subscription/coach/coachPlan/${planId}`, {
+      const response = await fetch(`${apiUrl}/subscription/coach/coachPlan/${planId}`, {
         method: 'DELETE',
       });
-
+      const data = await response.json();
+      console.log('data', data);
       if (data.error) {
-        throw new Error(data.message || 'Something went wrong');
+        throw new Error(data.error || 'Something went wrong');
       }
 
-      setCoachPlans(data.filter((plan) => plan.id !== planId));
+      
+      setRefreshKey((old) => old + 1);
       showToast('success', 'Success', 'Plan deleted successfully');
     } catch (error) {
       console.log('error', error);
@@ -932,7 +932,11 @@ export default function CoachProfilePage() {
 
   const handleDeleteWorkout = async (workoutId) => {
     try {
-      await deleteWorkoutPlan(workoutId, true);
+      const response = await deleteWorkoutPlan(workoutId, true);
+      if (response.error) {
+        throw new Error(response.error || 'Something went wrong');
+      }
+      setRefreshKey((old) => old + 1);
       showToast('success', intl.formatMessage({ id: 'coach.workout.success.deleted' }), intl.formatMessage({ id: 'coach.workout.success.deleted.message' }));
     } catch (error) {
       console.log('error', error);
