@@ -583,7 +583,7 @@ const messages = {
   'home.header.about': 'Acerca de',
   'home.header.contact': 'Contacto',
   'home.header.login': 'Iniciar Sesión',
-  
+  'home.header.plans': 'Planes',
   
   'home.hero.title': 'Transforma tu Viaje Fitness con EaseTrain',
   'home.hero.subtitle': 'Empodera a los entrenadores, motiva a los clientes y alcanza metas de fitness juntos.',
@@ -713,6 +713,7 @@ const messages = {
   'header.notifications': 'Notificaciones',
   'header.noNotifications': 'No hay nuevas notificaciones',
   'header.settings': 'Configuración',
+  'header.plans': 'Planes',
   'settings.language.es': 'Español',
   'settings.language.en': 'Inglés',
   'settings.unitConfiguration': 'Configuración de Unidades',

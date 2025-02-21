@@ -16,6 +16,7 @@ import ResetPassword from './auth/ResetPassword.js';
 import NotSubscribed from './components/NotSubscribed.js';
 import Home from './auth/Home.js';
 import NewCoachHome from './pages/NewCoachHome.js';
+import PlansPage from './pages/PlansPage.js';
 import NewCoachProfile from './pages/NewCoachProfile.js';
 import NewManageStudentsPage from './pages/NewManageStudents.js';
 import NewClientDashboard from './pages/NewClientDashboard.js';
@@ -53,6 +54,7 @@ const App = () => {
 
                             <Route path="/coach" element={<PrivateRoute element={NewCoachHome} requiredType="coach"  />} />
                             <Route path="/coach/profile" element={<PrivateRoute element={NewCoachProfile} requiredType="coach" />} />
+                            <Route path="/coach/plans" element={<PrivateRoute element={PlansPage} requiredType="coach" />} />
                             <Route path="/plans/create" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={false} />} />
                             <Route path="/plans/edit/:planId" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />} />
                             <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={NewPlanDetail} requiredType="coach" />} />

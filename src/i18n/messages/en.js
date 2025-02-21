@@ -714,6 +714,7 @@ const messages = {
   'header.notifications': 'Notifications',
   'header.noNotifications': 'No new notifications',
   'header.settings': 'Settings',
+  'header.plans': 'Plans',
   'settings.language.es': 'Español',
   'settings.language.en': 'English',
   'settings.unitConfiguration': 'Unit Configuration',

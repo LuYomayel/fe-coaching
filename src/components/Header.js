@@ -46,6 +46,12 @@ export default function Header() {
       visible: user?.userType === 'coach',  // Sólo visible para coach
     },
     {
+      label: intl.formatMessage({ id: 'header.plans' }),
+      icon: 'pi pi-calendar',
+      command: () => navigate('/coach/plans'),
+      visible: user?.userType === 'coach',
+    },
+    {
       label: intl.formatMessage({ id: 'header.settings' }),
       icon: 'pi pi-cog',
       command: () => navigate('/settings'),

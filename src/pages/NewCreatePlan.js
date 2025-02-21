@@ -52,7 +52,7 @@ const NewCreatePlan = ({ isEdit }) => {
   const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
   const { isDarkMode } = useTheme();
   const [ newExercises, setNewExercises] = useState([]);
-
+  const [editingExercise, setEditingExercise] = useState({});
   
 
   const [plan, setPlan] = useState(() => {
@@ -282,6 +282,7 @@ const NewCreatePlan = ({ isEdit }) => {
     }
   };
 
+
   const removeExercise = (groupIndex, exerciseIndex) => {
     const newGroups = [...plan.groups];
     newGroups[groupIndex].exercises.splice(exerciseIndex, 1);
@@ -312,7 +313,7 @@ const NewCreatePlan = ({ isEdit }) => {
 
   const updatePropertyValue = (groupIndex, exerciseIndex, key, value) => {
     const newGroups = [...plan.groups];
-    newGroups[groupIndex].exercises[exerciseIndex][key] = value;
+    newGroups[groupIndex].exercises[exerciseIndex][key] = value || 0;
     setPlan({ ...plan, groups: newGroups });
   };
 
@@ -803,32 +804,105 @@ const NewCreatePlan = ({ isEdit }) => {
                                             }}
                                           >
                                             <div className="flex justify-content-between align-items-center mb-2">
-                                              <div className="flex align-items-center">
+                                              <div className="flex align-items-center w-full">
                                                 <span {...provided.dragHandleProps}>
                                                   <FaGripVertical className="mr-2 cursor-pointer" />
                                                 </span>
-                                                <h6 className="text-lg m-0">{exercise.exercise?.name}</h6>
+                                                {editingExercise?.[groupIndex]?.[exerciseIndex] ? (
+                                                  <Dropdown
+                                                    value={exercise.exercise}
+                                                    options={exercises}
+                                                    onChange={(e) => {
+                                                      const newGroups = [...plan.groups];
+                                                      newGroups[groupIndex].exercises[exerciseIndex].exercise = e.value;
+                                                      setPlan({...plan, groups: newGroups});
+                                                      setEditingExercise(prev => ({
+                                                        ...prev,
+                                                        [groupIndex]: {
+                                                          ...prev?.[groupIndex],
+                                                          [exerciseIndex]: false
+                                                        }
+                                                      }));
+                                                    }}
+                                                    optionLabel="name"
+                                                    filter
+                                                    
+                                                    itemTemplate={(option) => {
+                                                      return (
+                                                        <div className='flex justify-content-between align-items-center w-full' style={{gap: '1rem'}}>
+                                                          <div className='flex flex-column flex-grow-1'>
+                                                            <span>{option.name}</span>
+                                                            {option.exerciseType && <small className='text-xs'>{option.exerciseType}</small>}
+                                                          </div>
+                                                          <div className='flex align-items-center flex-shrink-0'>
+                                                            {option.isTemporary && (
+                                                              <Button
+                                                                icon="pi pi-trash"
+                                                                text
+                                                                severity="danger"
+                                                                onClick={(e) => {
+                                                                  e.stopPropagation();
+                                                                  setExercises(prev => prev.filter(ex => ex.id !== option.id));
+                                                                  setNewExercises(prev => prev.filter(ex => ex.id !== option.id));
+                                                                  
+                                                                  // Eliminar el ejercicio de todos los grupos donde esté
+                                                                  setPlan(prevPlan => ({
+                                                                    ...prevPlan,
+                                                                    groups: prevPlan.groups.map(group => ({
+                                                                      ...group,
+                                                                      exercises: group.exercises.filter(ex => 
+                                                                        ex.exercise.id !== option.id && 
+                                                                        ex.exercise.name.toLowerCase() !== option.name.toLowerCase()
+                                                                      )
+                                                                    }))
+                                                                  }));
+                                                                }}
+                                                              />
+                                                            )}
+                                                          </div>
+                                                        </div>
+                                                      );
+                                                    }}
+                                                  />
+                                                ) : (
+                                                  <h6 
+                                                    className="text-lg m-0 cursor-pointer" 
+                                                    onClick={() => setEditingExercise(prev => ({
+                                                      ...prev,
+                                                      [groupIndex]: {
+                                                        ...prev?.[groupIndex],
+                                                        [exerciseIndex]: true
+                                                      }
+                                                    }))}
+                                                  >
+                                                    {exercise.exercise?.name}
+                                                  </h6>
+                                                )}
                                               </div>
                                               <div className="flex align-items-center">
-                                              <Button
-                                                  icon="pi pi-video" 
-                                                  className="p-button-text p-button-sm"
-                                                  raised
-                                                  tooltip={intl.formatMessage({ id: 'exercise.video.view' })}
-                                                  onClick={() => {handleVideoClick(exercise.exercise?.multimedia)}}
-                                                />
-                                                <Button
-                                                  icon="pi pi-plus"
-                                                  className="p-button-text p-button-sm"
-                                                  raised
-                                                  onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
-                                                />
-                                                <Button
-                                                  icon="pi pi-trash"
-                                                  className="p-button-danger p-button-text p-button-sm"
-                                                  raised
-                                                  onClick={() => removeExercise(groupIndex, exerciseIndex)}
-                                                />
+                                                {!editingExercise?.[groupIndex]?.[exerciseIndex] && (
+                                                  <>
+                                                    <Button
+                                                      icon="pi pi-video" 
+                                                      className="p-button-text p-button-sm"
+                                                      raised
+                                                      tooltip={intl.formatMessage({ id: 'exercise.video.view' })}
+                                                      onClick={() => {handleVideoClick(exercise.exercise?.multimedia)}}
+                                                    />
+                                                    <Button
+                                                      icon="pi pi-plus"
+                                                      className="p-button-text p-button-sm"
+                                                      raised
+                                                      onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
+                                                    />
+                                                    <Button
+                                                      icon="pi pi-trash"
+                                                      className="p-button-danger p-button-text p-button-sm"
+                                                      raised
+                                                      onClick={() => removeExercise(groupIndex, exerciseIndex)}
+                                                    />
+                                                  </>
+                                                )}
                                               </div>
                                             </div>
                                             <div className="grid">
