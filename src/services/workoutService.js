@@ -244,6 +244,37 @@ const submitFeedback = async (planId, body) => {
   return data;
 };
 
+const assignWorkoutToClient = async (workoutIds, clientId) => {
+  const response = await fetch(`${apiUrl}/workout/assign-workout-to-client/${clientId}`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(workoutIds),
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
+
+const unassignWorkoutFromClient = async (workoutsIds, clientId) => {
+  const response = await fetch(`${apiUrl}/workout/unassign-workout-from-client/${clientId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(workoutsIds),
+  });
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
+
 const assignWorkout = async (data) => {
   const response = await fetch(`${apiUrl}/workout/assignWorkout`, {
     method: 'POST',
@@ -462,5 +493,7 @@ export {
     verifyExerciseChanges,
     deleteExercises,
     createCycleAndAssignWorkouts,
-    createExercises
+    createExercises,
+    assignWorkoutToClient,
+    unassignWorkoutFromClient
 };

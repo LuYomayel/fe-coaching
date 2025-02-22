@@ -555,7 +555,8 @@ const messages = {
   'coach.buttons.openChat': 'Abrir Chat',
   'coach.buttons.upgradePlan': 'Mejorar Plan',
   'coach.buttons.import': 'Importar desde CSV/XLSX',
-  
+  'coach.buttons.assignPlans': 'Asignar Sesiones',
+  'coach.buttons.unassignPlans': 'Desasignar Sesiones',
   'coach.subscription.status': 'Estado de Suscripción',
   'coach.subscription.clientsManaged': 'Clientes Gestionados: {current}/{max}',
   
@@ -829,6 +830,15 @@ const messages = {
   'coach.plan.price': 'Precio',
   'coach.plan.workoutsPerWeek': 'Entrenamientos por Semana',
   'coach.plan.includeMealPlan': 'Incluir Plan de Alimentación',
+  'coach.plan.description': 'Aquí puedes crear y gestionar tanto planes de entrenamiento generales como planes personalizados asignados a tus clientes/alumnos.',
+  'coach.assign.success': 'Entrenamiento asignado exitosamente',
+  'coach.assign.error': 'Error al asignar el entrenamiento',
+  'coach.assign.selectClient': 'Selecciona un cliente',
+  'coach.assign.selectWorkouts': 'Selecciona un entrenamiento',
+  'coach.assign.confirm': 'Confirmar',
+  'coach.assign.dialog.header': 'Asignar Entrenamientos a Cliente',
+  'coach.assign.dialog.selectedWorkouts': 'Planes seleccionados:',
+  'coach.assign.dialog.selectClient': 'Selecciona un cliente',
 
   // RPE Method
   

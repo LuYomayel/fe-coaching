@@ -222,7 +222,8 @@ const messages = {
   'coach.buttons.assign': 'Assign {item}',
   'coach.buttons.import': 'Import Exercises from CSV/XLSX',
   'coach.buttons.import.csv': 'Import from CSV',
-  
+  'coach.buttons.assignPlans': 'Assign Workouts',
+  'coach.buttons.unassignPlans': 'Unassign Workouts',
   'coach.rpe.name': 'RPE Name',
   'coach.rpe.minValue': 'Min Value',
   'coach.rpe.maxValue': 'Max Value',
@@ -829,7 +830,13 @@ const messages = {
   'coach.plan.price': 'Price',
   'coach.plan.workoutsPerWeek': 'Workouts per Week',
   'coach.plan.includeMealPlan': 'Include Meal Plan',
-
+  'coach.plan.description': 'Here you can create and manage both general training plans and personalized plans assigned to your clients/students.',
+  'coach.assign.success': 'Workout assigned successfully',
+  'coach.assign.error': 'Error assigning the workout',
+  'coach.assign.selectClient': 'Select a client',
+  'coach.assign.dialog.header': 'Assign Workouts to Client',
+  'coach.assign.dialog.selectedWorkouts': 'Selected Workouts:',
+  'coach.assign.dialog.selectClient': 'Select a client',
   // RPE Method
 
   'coach.rpe.edit': 'Edit RPE Method',
