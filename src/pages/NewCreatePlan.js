@@ -23,7 +23,7 @@ import { useTheme } from '../utils/ThemeContext';
 import { extractYouTubeVideoId } from '../utils/UtilFunctions';
 import { fetchCoachExercises } from '../services/exercisesService';
 import { InputNumber } from 'primereact/inputnumber';
-
+import { ButtonGroup } from 'primereact/buttongroup';
 const NewCreatePlan = ({ isEdit }) => {
   const intl = useIntl();
   const { state} = useLocation();
@@ -53,7 +53,6 @@ const NewCreatePlan = ({ isEdit }) => {
   const { isDarkMode } = useTheme();
   const [ newExercises, setNewExercises] = useState([]);
   const [editingExercise, setEditingExercise] = useState({});
-  
 
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
@@ -87,7 +86,7 @@ const NewCreatePlan = ({ isEdit }) => {
   });
 
   useEffect(() => {
-    // Si alguien llega a ver esto alguna vez, no se por que tengo este if
+    // Este if es porque si se esta editando un plan, no se quiere que se guarde en el localStorage
     if (!isEdit) {
       localStorage.setItem('unsavedPlan', JSON.stringify(plan));
     }
@@ -103,6 +102,27 @@ const NewCreatePlan = ({ isEdit }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [exerciseCounter, setExerciseCounter] = useState(0);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // Si hay algún ejercicio en modo edición
+            if (Object.keys(editingExercise).length > 0) {
+                // Buscar si el click fue dentro de un dropdown
+                const dropdownClicked = event.target.closest('.p-dropdown, .p-dropdown-panel, .p-dropdown-items-wrapper');
+
+                // Si el click no fue en un dropdown, resetear el estado
+                if (!dropdownClicked) {
+                    setEditingExercise({});
+                }
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [editingExercise]);
+    
     useEffect(() => {
         setLoading(isUploading)
     }, [isUploading, setLoading]);
@@ -130,7 +150,6 @@ const NewCreatePlan = ({ isEdit }) => {
               }
             });
           });
-          console.log(data);
           setPlan(data);
         } catch (error) {
           showToast('error', 'Error fetching plan details', `${error.message}`);
@@ -502,7 +521,7 @@ const NewCreatePlan = ({ isEdit }) => {
     }
   };
 
-  const handleCreateNewExercise = (groupIndex) => {
+  const handleCreateNewExercise = (groupIndex, exerciseIndex) => {
     // Obtener el texto del filtro del Dropdown    
     const filterInput = document.querySelector('.p-dropdown-filter');
     const exerciseName = filterInput ? filterInput.value : '';
@@ -530,9 +549,23 @@ const NewCreatePlan = ({ isEdit }) => {
       setExercises(prevExercises => [...prevExercises, newExercise]);
 
       // Seleccionar el nuevo ejercicio
-      const newSelectedExercises = {...selectedExercise};
-      newSelectedExercises[groupIndex] = newExercise;
-      setSelectedExercise(newSelectedExercises);
+      if(exerciseIndex !== null){
+        console.log('groupIndex', groupIndex, exerciseIndex);
+        const newGroups = [...plan.groups];
+        newGroups[groupIndex].exercises[exerciseIndex].exercise = newExercise;
+        setPlan({...plan, groups: newGroups});
+        setEditingExercise(prev => ({
+          ...prev,
+          [groupIndex]: {
+            ...prev?.[groupIndex],
+            [exerciseIndex]: false
+          }
+        }));
+      } else {
+        const newSelectedExercises = {...selectedExercise};
+        newSelectedExercises[groupIndex] = newExercise;
+        setSelectedExercise(newSelectedExercises);
+      }
 
       // Mostrar un toast con el nuevo ejercicio
       showToast('info', 'Nuevo ejercicio creado', `Se ha creado el ejercicio: ${exerciseName}`);
@@ -810,23 +843,62 @@ const NewCreatePlan = ({ isEdit }) => {
                                                 </span>
                                                 {editingExercise?.[groupIndex]?.[exerciseIndex] ? (
                                                   <Dropdown
+                                                    id={`exercise-dropdown-${groupIndex}-${exerciseIndex}`}
                                                     value={exercise.exercise}
                                                     options={exercises}
                                                     onChange={(e) => {
-                                                      const newGroups = [...plan.groups];
-                                                      newGroups[groupIndex].exercises[exerciseIndex].exercise = e.value;
-                                                      setPlan({...plan, groups: newGroups});
-                                                      setEditingExercise(prev => ({
-                                                        ...prev,
-                                                        [groupIndex]: {
-                                                          ...prev?.[groupIndex],
-                                                          [exerciseIndex]: false
-                                                        }
-                                                      }));
+                                                      // Solo actualizar si hay un valor seleccionado
+                                                      console.log('onChange', e.value);
+                                                      // if (e.value) {
+                                                        const newGroups = [...plan.groups];
+                                                        newGroups[groupIndex].exercises[exerciseIndex].exercise = e.value;
+                                                        setPlan({...plan, groups: newGroups});
+                                                        setEditingExercise(prev => ({
+                                                          ...prev,
+                                                          [groupIndex]: {
+                                                            ...prev?.[groupIndex],
+                                                            [exerciseIndex]: false
+                                                          }
+                                                        }));
+                                                      //}
                                                     }}
+                                                    
                                                     optionLabel="name"
                                                     filter
-                                                    
+                                                    filterBy="name,exerciseType"
+                                                    filterInputAutoFocus
+                                                    resetFilterOnHide
+                                                    emptyFilterMessage={
+                                                      <Button
+                                                        label={intl.formatMessage({ id: 'common.createNew' })}
+                                                        icon="pi pi-plus"
+                                                        text
+                                                        raised
+                                                        onClick={() => handleCreateNewExercise(groupIndex, exerciseIndex)}
+                                                      />
+                                                    }
+                                                    onShow={(e) => {
+                                                      const filterInput = document.querySelector(`.p-dropdown-filter`);
+                                                      console.log(filterInput);
+                                                      if (filterInput) {
+                                                        filterInput.focus();
+                                                        filterInput.addEventListener('keydown', (event) => {
+                                                          if (event.key === 'Enter') {
+                                                            const emptyMessage = document.querySelector(`.p-dropdown-empty-message`);
+                                                            if (emptyMessage) {
+                                                              handleCreateNewExercise(groupIndex, exerciseIndex);
+                                                            }
+                                                          }
+                                                        });
+                                                      }
+                                                    }}
+                                                    onFilter={(e) => {
+                                                      if (e.originalEvent instanceof KeyboardEvent && e.originalEvent.key === 'Enter') {
+                                                        e.originalEvent.preventDefault();
+                                                        console.log('onFilter', e);
+                                                        handleCreateNewExercise(groupIndex, exerciseIndex);
+                                                      }
+                                                    }}
                                                     itemTemplate={(option) => {
                                                       return (
                                                         <div className='flex justify-content-between align-items-center w-full' style={{gap: '1rem'}}>
@@ -882,25 +954,28 @@ const NewCreatePlan = ({ isEdit }) => {
                                               <div className="flex align-items-center">
                                                 {!editingExercise?.[groupIndex]?.[exerciseIndex] && (
                                                   <>
-                                                    <Button
-                                                      icon="pi pi-video" 
-                                                      className="p-button-text p-button-sm"
-                                                      raised
-                                                      tooltip={intl.formatMessage({ id: 'exercise.video.view' })}
-                                                      onClick={() => {handleVideoClick(exercise.exercise?.multimedia)}}
-                                                    />
-                                                    <Button
-                                                      icon="pi pi-plus"
-                                                      className="p-button-text p-button-sm"
-                                                      raised
-                                                      onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
-                                                    />
-                                                    <Button
-                                                      icon="pi pi-trash"
-                                                      className="p-button-danger p-button-text p-button-sm"
-                                                      raised
-                                                      onClick={() => removeExercise(groupIndex, exerciseIndex)}
-                                                    />
+                                                    <ButtonGroup className="flex align-items-center">
+                                                      <Button
+                                                        icon="pi pi-video" 
+                                                        text
+                                                        raised
+                                                        tooltip={intl.formatMessage({ id: 'exercise.video.view' })}
+                                                        onClick={() => {handleVideoClick(exercise.exercise?.multimedia)}}
+                                                      />
+                                                      <Button
+                                                        icon="pi pi-plus"
+                                                        text
+                                                        raised
+                                                        onClick={() => openPropertyDialog(groupIndex, exerciseIndex)}
+                                                      />
+                                                      <Button
+                                                        icon="pi pi-trash"
+                                                        className="p-button-danger"
+                                                        text
+                                                        raised
+                                                        onClick={() => removeExercise(groupIndex, exerciseIndex)}
+                                                      />
+                                                    </ButtonGroup>
                                                   </>
                                                 )}
                                               </div>
@@ -1027,7 +1102,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                     icon="pi pi-plus"
                                     text
                                     raised
-                                    onClick={() => handleCreateNewExercise(groupIndex)}
+                                    onClick={() => handleCreateNewExercise(groupIndex, null)}
                                   />
                                 }
                                 onShow={(e) => {
@@ -1038,7 +1113,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                       if (event.key === 'Enter') {
                                         const emptyMessage = document.querySelector('.p-dropdown-empty-message');
                                         if (emptyMessage) {
-                                          handleCreateNewExercise(groupIndex); // Llamar a la función para crear un nuevo ejercicio
+                                          handleCreateNewExercise(groupIndex, null); // Llamar a la función para crear un nuevo ejercicio
                                         }
                                       }
                                     });
@@ -1047,7 +1122,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                 onFilter={(e) => {
                                   if (e.originalEvent instanceof KeyboardEvent && e.originalEvent.key === 'Enter') {
                                     e.originalEvent.preventDefault(); // Prevenir el comportamiento por defecto
-                                    handleCreateNewExercise(groupIndex);
+                                    handleCreateNewExercise(groupIndex, null);
                                   }
                                 }}
                               //style={{ height: '40px' }}
@@ -1123,38 +1198,7 @@ const NewCreatePlan = ({ isEdit }) => {
         />
       </div>
 
-      <Dialog
-        header={intl.formatMessage({ id: 'plan.exercise.add' })}
-        visible={showExerciseDialog}
-        onHide={() => setShowExerciseDialog(false)}
-        className="w-30rem"
-        dismissableMask
-        draggable={false}
-        resizable={false}
-      >
-        <Dropdown
-          value={selectedExercise}
-          options={exercises}
-          onChange={(e) => setSelectedExercise(e.value)}
-          optionLabel="name"
-          filter
-          filterBy="name,exerciseType"
-          placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
-          className="w-full mb-3"
-          itemTemplate={(option) => (
-            <div className='flex flex-column'>
-              <span>{option.name}</span>
-              <small className='text-xs'>{option.exerciseType}</small>
-            </div>
-          )}
-        />
-        <Button
-          label={intl.formatMessage({ id: 'plan.exercise.add' })}
-          icon="pi pi-plus"
-          onClick={addExercise}
-          disabled={!selectedExercise}
-        />
-      </Dialog>
+      
 
       <Dialog
         header={intl.formatMessage({ id: 'plan.exercise.property.add' })}
