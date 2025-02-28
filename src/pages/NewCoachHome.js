@@ -18,7 +18,7 @@ import { UserContext } from '../utils/UserContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useNavigate } from 'react-router-dom';
 import { fetchCoachStudents, fetchRecentActivitiesByCoachId, fetchWorkoutProgressByCoachId, fetchUpcomingSessionsByCoachId, fetchLastMessages } from '../services/usersService';
-import { fetchCoachWorkouts, deleteWorkoutPlan } from '../services/workoutService';
+import { findAllWorkoutTemplatesByCoachId, deleteWorkoutPlan } from '../services/workoutService';
 import Spinner from '../utils/LittleSpinner';
 import { useIntl, FormattedMessage } from 'react-intl';
 import '../styles/Timeline.css';
@@ -187,7 +187,7 @@ export default function CoachHomePage() {
   
       const fetchWorkouts = async () => {
           try {
-              const workouts = await fetchCoachWorkouts(user.userId);
+              const workouts = await findAllWorkoutTemplatesByCoachId(coach.id);
               setWorkouts(workouts.data);
           } catch (error) {
               console.error('Error fetching workouts:', error);
@@ -323,10 +323,10 @@ export default function CoachHomePage() {
     };
 
     const statusTemplate = (rowData) => {
-        const workoutInstanceTemplate = rowData.workoutInstances.find(w => w.isTemplate === true);
+        const workoutInstanceTemplate = rowData.workoutInstanceTemplates[0]
         return (
             <div>
-                <Button label={intl.formatMessage({ id: 'common.edit' })} icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit/${workoutInstanceTemplate.id}`)} />
+                <Button label={intl.formatMessage({ id: 'common.edit' })} icon="pi pi-pencil" className="p-button-secondary" onClick={() => navigate(`/plans/edit-template/${workoutInstanceTemplate.id}`)} />
                 <Button label={intl.formatMessage({ id: 'common.delete' })} icon="pi pi-trash" className="p-button-danger" onClick={() => handleDelete(workoutInstanceTemplate.id)} />
             </div>
         )

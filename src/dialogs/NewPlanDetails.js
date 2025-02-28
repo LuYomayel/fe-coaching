@@ -5,7 +5,7 @@ import { Dialog } from 'primereact/dialog';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Badge } from 'primereact/badge';
 import { Toast } from 'primereact/toast';
-import { fetchWorkoutInstance, deleteWorkoutPlan } from '../services/workoutService';
+import { fetchWorkoutInstance, deleteWorkoutPlan, fetchWorkoutInstanceTemplate } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
 import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
 import { useToast } from '../utils/ToastContext';
@@ -13,13 +13,13 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl } from 'react-intl';
 
-export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsVisible, setRefreshKey, setLoading }) {
+export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefreshKey, setLoading, isTemplate }) {
     const intl = useIntl();
     const [videoDialogVisible, setVideoDialogVisible] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState('');
     const toast = useRef(null);
     const navigate = useNavigate();
-    const { user } = useContext(UserContext);
+    const { user, coach } = useContext(UserContext);
     const { showConfirmationDialog } = useConfirmationDialog();
     const showToast = useToast();
     const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
@@ -29,7 +29,10 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsV
             id: '',
             planName: '',
         },
-        isTemplate: false,
+        workoutTemplate: {
+            id: '',
+            planName: '',
+        },
         status: '',
     });
 
@@ -37,9 +40,14 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsV
         const fetchPlanDetails = async () => {
             try {
                 setLoading(true);
-                const {data} = await fetchWorkoutInstance(planId);
-                data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
-                setWorkoutPlan(data);
+                if (isTemplate) {
+                    const {data} = await fetchWorkoutInstanceTemplate(planId);
+                    setWorkoutPlan(data);
+                } else {
+                    const {data} = await fetchWorkoutInstance(planId);
+                    data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
+                    setWorkoutPlan(data);
+                }
             } catch (error) {
                 showToast('error', 'Error fetching plan details', error.message);
             } finally {
@@ -48,7 +56,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsV
         };
 
         if (planId) fetchPlanDetails();
-    }, [planId, setLoading, showToast]);
+    }, [planId, setLoading, showToast, isTemplate]);
 
     const handleEdit = () => {
         navigate(`/plans/edit/${planId}`);
@@ -240,7 +248,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsV
     return (
         <div className="workout-plan-detail p-4">
             <Toast ref={toast} />
-            <Card title={workoutPlan.workout.planName} className="mb-4">
+            <Card title={isTemplate ? workoutPlan.workoutTemplate.planName : workoutPlan.instanceName ? workoutPlan.instanceName : workoutPlan.workout.planName} className="mb-4">
                 <div className="flex justify-content-between">
                     {user.userType === 'coach' && (
                         <div className="flex gap-2">
@@ -280,7 +288,7 @@ export default function NewPlanDetail({ isCoach = false, planId, setPlanDetailsV
                         />
                     )}
                 </div>
-                {!workoutPlan.isTemplate && (
+                {!isTemplate && (
                     <p>
                         <strong>{intl.formatMessage({ id: 'common.status' })}:</strong> {workoutPlan.status}
                         {workoutPlan.status === 'completed' && (

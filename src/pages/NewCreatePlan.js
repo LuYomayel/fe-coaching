@@ -10,7 +10,7 @@ import { Toast } from 'primereact/toast';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card } from 'primereact/card';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { createExercises, fetchWorkoutInstance, submitPlan } from '../services/workoutService';
+import { createExercises, fetchWorkoutInstance, fetchWorkoutInstanceTemplate, submitPlan } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
@@ -26,7 +26,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { ButtonGroup } from 'primereact/buttongroup';
 const NewCreatePlan = ({ isEdit }) => {
   const intl = useIntl();
-  const { state} = useLocation();
+  const { state, pathname } = useLocation();
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const changeToTemplate = state?.changeToTemplate;
@@ -53,7 +53,7 @@ const NewCreatePlan = ({ isEdit }) => {
   const { isDarkMode } = useTheme();
   const [ newExercises, setNewExercises] = useState([]);
   const [editingExercise, setEditingExercise] = useState({});
-
+  const [isTemplate, setIsTemplate] = useState(pathname.includes('edit-template'));
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
     return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
@@ -84,6 +84,12 @@ const NewCreatePlan = ({ isEdit }) => {
       groups: []
     };
   });
+
+  useEffect(() => {
+    // Verificar si la ruta actual incluye 'edit-template'
+    setIsTemplate(pathname.includes('edit-template'));
+  }, []);
+
 
   useEffect(() => {
     // Este if es porque si se esta editando un plan, no se quiere que se guarde en el localStorage
@@ -132,7 +138,10 @@ const NewCreatePlan = ({ isEdit }) => {
       if (isEdit && planId) {
         setLoading(true);
         try {
-          const {data} = await fetchWorkoutInstance(planId);
+          const {data} = isTemplate ? await fetchWorkoutInstanceTemplate(planId) : await fetchWorkoutInstance(planId);
+          console.log(data);
+          //const {data} = await fetchWorkoutInstanceTemplate(planId);
+          // const {data} = await fetchWorkoutInstance(planId);
           data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber);
           
           // Iterate through each group
@@ -160,7 +169,7 @@ const NewCreatePlan = ({ isEdit }) => {
     };
 
     fetchPlanDetails();
-  }, [isEdit, planId, setLoading, setPlan, showToast]);
+  }, [isTemplate]);
 
   useEffect(() => {
     const cargarEjercicios = async () => {
@@ -391,7 +400,7 @@ const NewCreatePlan = ({ isEdit }) => {
 
 
   const submitPlanClick = () => {
-    if (!plan.workout.planName.trim()) {
+    if (isTemplate && !plan.workoutTemplate.planName.trim()) {
       showToast('error', 'Error', intl.formatMessage({ id: 'plan.error.nameRequired' }));
       return;
     }
@@ -433,6 +442,7 @@ const NewCreatePlan = ({ isEdit }) => {
       ...plan,
       workout: {
         ...plan.workout,
+        planName: plan.workoutTemplate ? plan.workoutTemplate.planName : plan.workout.planName,
         coach: {
           id: '',
           user: {
@@ -458,6 +468,8 @@ const NewCreatePlan = ({ isEdit }) => {
       })
     }));
 
+    console.log(cleanPlan);
+    
     showConfirmationDialog({
       message: intl.formatMessage({ 
         id: isEdit ? 'plan.dialog.confirmEdit' : 'plan.dialog.confirmCreate' 
@@ -497,20 +509,21 @@ const NewCreatePlan = ({ isEdit }) => {
             return exercise;
           })
         }));
-        const response = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+        const response = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit, isTemplate);
         if(response.error){
           showToast('error', 'Error', response.message);
         }
       } else {
-        const {data} = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit);
+        console.log(cleanPlan, planId, changeToTemplate, isEdit);
+        const {data} = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit, isTemplate);
         if(data.error){
           showToast('error', 'Error', data.message);
         }
       }
       if (isEdit) {
-        showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message' }, { name: cleanPlan.workout.planName }));
+        showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message' }, { name: cleanPlan.instanceName ? cleanPlan.instanceName : cleanPlan.workout.planName }));
       } else {
-        showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message' }, { name: cleanPlan.workout.planName }));
+        showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message' }, { name: cleanPlan.instanceName ? cleanPlan.instanceName : cleanPlan.workout.planName }));
       }
       localStorage.removeItem('unsavedPlan');
       localStorage.removeItem('newExercises');
@@ -702,8 +715,15 @@ const NewCreatePlan = ({ isEdit }) => {
             </label>
             <InputText
               id="plan-name"
-              value={plan.workout.planName}
-              onChange={(e) => setPlan({ ...plan, workout: { ...plan.workout, planName: e.target.value } })}
+              value={isTemplate ? plan.workoutTemplate?.planName : plan.instanceName ? plan.instanceName : plan.workout?.planName}
+              //value={plan.workoutTemplate.planName}
+              onChange={(e) => {
+                if (isTemplate) {
+                  setPlan({ ...plan, workoutTemplate: { ...plan.workoutTemplate, planName: e.target.value } });
+                } else {
+                  setPlan({ ...plan, instanceName: e.target.value });
+                }
+              }}
               className="w-full"
             />
           </div>

@@ -5,7 +5,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
-import { assignWorkoutsToCycle, fetchCoachWorkouts, fetchAssignedWorkoutsForCycleDay, unassignWorkoutsFromCycle } from '../services/workoutService';
+import { assignWorkoutsToCycle, fetchCoachWorkouts, fetchAssignedWorkoutsForCycleDay, unassignWorkoutsFromCycle, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
 import { useIntl } from 'react-intl';
 import '../styles/AssignWorkoutToCycleDialog.css';
 import { fetchClient } from '../services/usersService';
@@ -17,7 +17,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
   const [assignments, setAssignments] = useState([{ workoutId: null, dayOfWeek: null }]);
   const [cycle, setCycle] = useState(-1);
   const [cycles, setCycles] = useState([]);
-  const { user } = useContext(UserContext);
+  const { user, coach } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null); // Nuevo estado para el día seleccionado
   const [assignedWorkouts, setAssignedWorkouts] = useState([]); // Estado para manejar los entrenamientos asignados
@@ -32,31 +32,32 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
   useEffect(() => {
     const loadWorkouts = async () => {
       try {
-        const {data} = await fetchCoachWorkouts(user.userId);
+        const {data} = await findAllWorkoutTemplatesByCoachId(coach.id);
+        console.log(data);
         setWorkouts(data);
       } catch (error) {
         showToast('error', 'Error', error.message);
       }
     };
 
-    loadWorkouts();
-  }, [showToast, user.userId]);
+    if (visible) loadWorkouts();
+  }, [showToast, coach.id, visible]);
 
   useEffect(() => {
     const loadClient = async () => {
       const {data} = await fetchClient(clientId);
       console.log(data)
     }
-    if (clientId) {
+    if (clientId && visible) {
       loadClient();
     }
-  }, [clientId]);
+  }, [clientId, visible]);
 
   useEffect(() => {
-    if (cycleOptions) {
+    if (cycleOptions && visible) {
       setCycles(cycleOptions);
     }
-  }, [cycleOptions]);
+  }, [cycleOptions, visible]);
 
   useEffect(() => {
   const loadAssignedWorkouts = async () => {

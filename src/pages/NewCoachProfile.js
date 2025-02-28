@@ -16,7 +16,7 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchCoachWorkouts, fetchTrainingCyclesByCoachId, getRpeMethods, deleteWorkoutPlan } from '../services/workoutService';
+import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchCoachWorkouts, fetchTrainingCyclesByCoachId, getRpeMethods, deleteWorkoutPlan, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
 import { fetchCoach, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
 import {
   createOrUpdateCoachPlan,
@@ -179,16 +179,9 @@ export default function CoachProfilePage() {
       const fetchWorkouts = async () => { 
         try {
           setIsWorkoutsLoading(true);
-          const {data} = await fetchCoachWorkouts(user.userId);
-          const mappedWorkouts = data.map((workout) => {
-            const instance = workout.workoutInstances.find((instance) => instance.isTemplate);
-            return {
-              ...workout,
-              workoutInstance: instance,
-            };
-          });
-          setWorkouts(mappedWorkouts);
-          console.log(mappedWorkouts);
+          //const {data} = await fetchCoachWorkouts(user.userId);
+          const {data} = await findAllWorkoutTemplatesByCoachId(coach.id);
+          setWorkouts(data);
         } catch (error) {
           console.log('error', error);
           showToast('error', 'Error', error.message);
@@ -420,6 +413,7 @@ export default function CoachProfilePage() {
   };
 
   const actionBodyTemplate = (rowData, type) => {
+    console.log(rowData);
     return (
       <React.Fragment>
         <Button
@@ -430,7 +424,7 @@ export default function CoachProfilePage() {
             if (type === 'exercise') {
               handleVideoClick(rowData.multimedia);
             } else {
-              handleViewPlanDetails(rowData.workoutInstance.id);
+              handleViewPlanDetails(rowData.workoutInstanceTemplates[0].id);
             }
           }}
         />
@@ -442,7 +436,7 @@ export default function CoachProfilePage() {
             if (type === 'exercise') {
               openEditExerciseDialog(rowData);
             } else if (type === 'workout') {
-              navigate(`/plans/edit/${rowData.workoutInstance.id}`);
+              navigate(`/plans/edit-template/${rowData.workoutInstanceTemplates[0].id}`);
             } else if (type === 'plan') {
               openEditPlanDialog(rowData);
             }

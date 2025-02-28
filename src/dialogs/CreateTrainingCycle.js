@@ -9,14 +9,14 @@ import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { InputNumber } from 'primereact/inputnumber';
-import { createTrainingCycle, assignWorkoutsToCycle, fetchCoachWorkouts, createCycleAndAssignWorkouts } from '../services/workoutService';
+import { createTrainingCycle, createCycleAndAssignWorkouts, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
 import { fetchCoachStudents } from '../services/usersService';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { TabPanel, TabView } from 'primereact/tabview';
 import '../styles/CreateTrainingCycle.css';
 
 const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey }) => {
-  const { user } = useContext(UserContext);
+  const { user, coach } = useContext(UserContext);
   const intl = useIntl();
   const showToast = useToast();
   const [cycleName, setCycleName] = useState('');
@@ -67,7 +67,8 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
 
     const loadWorkouts = async () => {
       try {
-        const {data} = await fetchCoachWorkouts(user.userId);
+        const {data} = await findAllWorkoutTemplatesByCoachId(coach.id);
+        console.log(data);
         setWorkouts(data);
       } catch (error) {
         showToast('error', 'Error', error.message);
@@ -75,12 +76,12 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
     };
 
 
-    if (user && user.userId) {
+    if (user && user.userId && visible) {
       loadCoachStudents();
     }
-    loadWorkouts();
+    if (visible) loadWorkouts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showToast, user.userId, intl]);
+  }, [showToast, user.userId, visible, coach]);
 
   const handleCreateCycle = async (body) => {
     try {

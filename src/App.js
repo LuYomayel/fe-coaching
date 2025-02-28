@@ -56,6 +56,7 @@ const App = () => {
                             <Route path="/coach/profile" element={<PrivateRoute element={NewCoachProfile} requiredType="coach" />} />
                             <Route path="/coach/plans" element={<PrivateRoute element={PlansPage} requiredType="coach" />} />
                             <Route path="/plans/create" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={false} />} />
+                            <Route path="/plans/edit-template/:planId" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />} />
                             <Route path="/plans/edit/:planId" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />} />
                             <Route path="/plans/:planId/:studentId" element={<PrivateRoute element={NewPlanDetail} requiredType="coach" />} />
                             <Route path="/students/:studentId/details" element={<PrivateRoute element={NewStudentDetails} requiredType="coach" />} />

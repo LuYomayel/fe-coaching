@@ -4,14 +4,14 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
-import { assignSession, fetchCoachWorkouts } from '../services/workoutService';
+import { assignSession, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
 
 const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey }) => {
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const[loading, setLoading] = useState(false)
-  const {user} = useContext(UserContext);
+  const {coach} = useContext(UserContext);
 
   useEffect(() => {
     setSelectedWorkout([null]);
@@ -20,15 +20,16 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   useEffect(() => {
     const loadWorkouts = async () => {
       try {
-        const {data} = await fetchCoachWorkouts(user.userId);
+        const {data} = await findAllWorkoutTemplatesByCoachId(coach.id);
+        console.log(data);
         setWorkouts(data)
       } catch (error) {
         showToast('error', 'Error', error.message);
       }
     };
 
-    loadWorkouts();
-  }, [showToast, user.userId]);
+    if (visible) loadWorkouts();
+  }, [showToast, coach.id, visible]);
 
   const handleAssign = async () => {
     if (!selectedWorkout) {

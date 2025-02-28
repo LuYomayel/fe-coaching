@@ -15,6 +15,24 @@ const createExercises = async (exercises) => {
   return data;
 }
 
+const findAllWorkoutTemplatesByCoachId = async (coachId) => {
+  const response = await fetch(`${apiUrl}/workout/workout-template/coachId/${coachId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
+
+const findOneWorkoutTemplateByCoachId = async (coachId, templateId) => {
+  const response = await fetch(`${apiUrl}/workout/workout-template/coachId/${coachId}/templateId/${templateId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
+
 const fetchCoachWorkouts = async (userId) => {
   const response = await fetch(`${apiUrl}/workout/coach-workouts/userId/${userId}`);
   const data = await response.json();
@@ -23,6 +41,24 @@ const fetchCoachWorkouts = async (userId) => {
   }
   return data;
 };
+
+const fetchTrainingCyclesTemplates = async (coachId) => {
+  const response = await fetch(`${apiUrl}/workout/training-cycle-templates/coachId/${coachId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
+
+const fetchWorkoutInstanceTemplate = async (templateId) => {
+  const response = await fetch(`${apiUrl}/workout/workout-instance-template/${templateId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
 
 const fetchWorkoutInstance = async (planId) => {
   const response = await fetch(`${apiUrl}/workout/workout-instance/${planId}`);
@@ -50,7 +86,7 @@ const fetchTrainingCyclesByClient = async (clientId) => {
             ? session.workoutInstances.map(workoutInstance => {
               workoutInstance.status = updateStatusLocal(workoutInstance, session);
               return {
-                title: workoutInstance.workout.planName,
+                title: workoutInstance.instanceName ? workoutInstance.instanceName : workoutInstance.workout.planName,
                 start: getDayMonthYear(session).toISOString().split('T')[0],
                 extendedProps: {
                   status: workoutInstance.status,
@@ -98,6 +134,14 @@ const fetchTrainingCyclesByCoachId = async (coachId) => {
   return data;
 };
 
+const fetchTrainingCycleTemplateById = async (cycleId) => {
+  const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
 const fetchWorkoutsByClientId = async (clientId) => {
   const response = await fetch(`${apiUrl}/workout/clientId/${clientId}`);
   const data = await response.json();
@@ -190,10 +234,10 @@ const updatePlanName = async (planId, planName) => {
   return data;
 }
 
-const submitPlan = async (plan, planId, isEdit) => {
+const submitPlan = async (plan, planId, isEdit, isTemplate) => {
   const requestMethod = isEdit ? 'PUT' : 'POST';
   const endpoint = isEdit 
-    ? `${apiUrl}/workout/${plan.isTemplate ? 'template' : 'instance'}/${planId}` 
+    ? `${apiUrl}/workout/${isTemplate ? 'template' : 'instance'}/${planId}` 
     : `${apiUrl}/workout`;
 
   console.log('OK: ', endpoint);
@@ -211,6 +255,34 @@ const submitPlan = async (plan, planId, isEdit) => {
   }
   return data;
 };
+
+const updateTrainingCycle = async (cycleId, body) => {
+  const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json', 
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+
+};
+
+const deleteTrainingCycle = async (cycleId) => {
+  const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`, {
+    method: 'DELETE',
+  });
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
+
 
 const createNewTrainingFromExcelView = async (plan) => {
   const response = await fetch(`${apiUrl}/workout/from-excel-view`, {
@@ -307,6 +379,23 @@ const assignWorkoutsToCycle = async (cycleId, clientId, body) => {
   }
   return data;
 };
+
+const createTrainingCycleTemplate = async (body) => {
+  const response = await fetch(`${apiUrl}/workout/training-cycle-template`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
+    if (data.error) {
+      console.log(data)
+      throw new Error(data.error);
+    }
+    return data;
+};
+
+
 
 const createCycleAndAssignWorkouts = async (body) => {
   const response = await fetch(`${apiUrl}/workout/create-cycle-and-assign-workouts/${body.clientId}`, {
@@ -468,6 +557,9 @@ const deleteExercises = async (exercises) => {
 export { 
     fetchTrainingCyclesByCoachId,
     fetchCoachWorkouts, 
+    findAllWorkoutTemplatesByCoachId,
+    findOneWorkoutTemplateByCoachId,
+    fetchWorkoutInstanceTemplate,
     fetchWorkoutInstance, 
     fetchTrainingCyclesByClient,
     fetchTrainingCyclesForClientByUserId,
@@ -495,5 +587,10 @@ export {
     createCycleAndAssignWorkouts,
     createExercises,
     assignWorkoutToClient,
-    unassignWorkoutFromClient
+    unassignWorkoutFromClient,
+    createTrainingCycleTemplate,
+    fetchTrainingCyclesTemplates,
+    updateTrainingCycle,
+    deleteTrainingCycle,
+    fetchTrainingCycleTemplateById
 };
