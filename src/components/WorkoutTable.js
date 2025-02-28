@@ -1110,6 +1110,7 @@ export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshK
         <Dialog
         draggable={false}
         resizable={false}
+        dismissableMask={true}
         header={intl.formatMessage({ id: 'workoutTable.selectWeeks' })}
         visible={isDialogVisible}
         onHide={() => setIsDialogVisible(false)}

@@ -73,6 +73,7 @@ const fetchTrainingCyclesByClient = async (clientId) => {
   try {
     const response = await fetch(`${apiUrl}/workout/training-cycles/client/clientId/${clientId}`);
     const data = await response.json();
+    console.log(data)
     if (data.error) {
       throw new Error(data.error);
     }
@@ -108,7 +109,7 @@ const fetchTrainingCyclesByClient = async (clientId) => {
         })
       )
     );
-
+    console.log(events, cycles)
     return { events, cycleOptions: cycles };
   } catch (error) {
     throw error;
@@ -381,7 +382,7 @@ const assignWorkoutsToCycle = async (cycleId, clientId, body) => {
 };
 
 const createTrainingCycleTemplate = async (body) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycle-template`, {
+  const response = await fetch(`${apiUrl}/workout/training-cycle-templates`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -554,6 +555,19 @@ const deleteExercises = async (exercises) => {
   return data;
 }
 
+const assignCycleTemplateToClient = async (payload) => {
+  const response = await fetch(`${apiUrl}/workout/assign-cycle-template-to-client`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.message);
+  }
+  return data;
+}
+
 export { 
     fetchTrainingCyclesByCoachId,
     fetchCoachWorkouts, 
@@ -592,5 +606,6 @@ export {
     fetchTrainingCyclesTemplates,
     updateTrainingCycle,
     deleteTrainingCycle,
-    fetchTrainingCycleTemplateById
+    fetchTrainingCycleTemplateById,
+    assignCycleTemplateToClient
 };

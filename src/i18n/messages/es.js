@@ -841,8 +841,17 @@ const messages = {
   'coach.assign.selectWorkouts': 'Selecciona un entrenamiento',
   'coach.assign.confirm': 'Confirmar',
   'coach.assign.dialog.header': 'Asignar Entrenamientos a Cliente',
+  'coach.assign.cycle.dialog.header': 'Asignar Ciclo a Cliente',
   'coach.assign.dialog.selectedWorkouts': 'Planes seleccionados:',
   'coach.assign.dialog.selectClient': 'Selecciona un cliente',
+  'coach.assign.dialog.selectedCycle': 'Ciclo seleccionado:',
+  'coach.assign.dialog.selectedCycle.name': 'Nombre del Ciclo',
+  'coach.assign.dialog.selectedCycle.duration': 'Duración',
+  'coach.assign.dialog.selectedCycle.weeks': 'Semanas',
+  'coach.assign.dialog.selectedCycle.days': 'Días',
+  'coach.assign.dialog.selectedCycle.workouts': 'Entrenamientos',
+  
+  
   
 
   // RPE Method
@@ -944,8 +953,11 @@ const messages = {
   'plansPage.numberOfWeeks': 'Número de Semanas',
   'plansPage.createCycle': 'Crear Ciclo',
   'plansPage.editCycleDialog.header': 'Editar Ciclo de Entrenamiento',
+  'plansPage.viewCycleDialog.header': 'Ver Ciclo de Entrenamiento',
   'plansPage.success.cycleUpdated': '¡Ciclo actualizado exitosamente!',
   'plansPage.error.deletingCycle': 'Error al eliminar el ciclo',
+  'plansPage.enableEdit': 'Habilitar Edición',
+  'plansPage.disableEdit': 'Deshabilitar Edición',
   'editCycle.dialog.header': 'Editar Ciclo de Entrenamiento',
   'editCycle.namePlaceholder': 'Nombre del Ciclo',
   'editCycle.durationPlaceholder': 'Duración',

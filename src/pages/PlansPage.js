@@ -6,7 +6,7 @@ import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
 import { TabView, TabPanel } from 'primereact/tabview';
-import { deleteWorkoutPlan, createTrainingCycleTemplate, fetchTrainingCyclesTemplates, findAllWorkoutTemplatesByCoachId, fetchTrainingCycleTemplateById, updateTrainingCycle, deleteTrainingCycle } from '../services/workoutService';
+import { deleteWorkoutPlan, createTrainingCycleTemplate, fetchTrainingCyclesTemplates, findAllWorkoutTemplatesByCoachId, fetchTrainingCycleTemplateById, updateTrainingCycle, deleteTrainingCycle, assignCycleTemplateToClient } from '../services/workoutService';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
@@ -20,8 +20,8 @@ import { ButtonGroup } from 'primereact/buttongroup';
 import { Checkbox } from 'primereact/checkbox';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
-
-
+import { Calendar } from 'primereact/calendar';
+import { Divider } from 'primereact/divider';
 export default function PlansPage() {
     const [workouts, setWorkouts] = useState([]);
     const [trainingCycleTemplates, setTrainingCycleTemplates] = useState([]);
@@ -36,6 +36,7 @@ export default function PlansPage() {
     const [selectedWorkouts, setSelectedWorkouts] = useState([]);
     const [selectedClient, setSelectedClient] = useState(null);
     const [isDialogVisible, setDialogVisible] = useState(false);
+    const [isAssignCycleDialogVisible, setAssignCycleDialogVisible] = useState(false);
     const [students, setStudents] = useState([]);
     const [filterOption, setFilterOption] = useState('all');
     const [filteredWorkouts, setFilteredWorkouts] = useState(workouts);
@@ -44,15 +45,20 @@ export default function PlansPage() {
     const [templateName, setTemplateName] = useState('');
     const [templateDuration, setTemplateDuration] = useState(null);
     const [templateWeeks, setTemplateWeeks] = useState([]);
+
     const [selectedDay, setSelectedDay] = useState(null);
     const [selectedWorkout, setSelectedWorkout] = useState(null);
-    const [isDayDialogVisible, setDayDialogVisible] = useState(false);
-    const [editingWeekIndex, setEditingWeekIndex] = useState(null);
+    const [selectedCycle, setSelectedCycle] = useState(null);
+
     const [isDurationInWeeks, setIsDurationInWeeks] = useState(true);
     const [applyToAllWeeks, setApplyToAllWeeks] = useState(false);
 
-    const [isEditDialogVisible, setEditDialogVisible] = useState(false);
+    // At the top of your PlansPage component (along with other useState declarations)
+    const [isReadOnly, setIsReadOnly] = useState(true);
     const [selectedCycleId, setSelectedCycleId] = useState(null);
+
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
 
     useEffect(() => {
         fetchWorkoutPlans();
@@ -71,7 +77,6 @@ export default function PlansPage() {
 
     useEffect(() => {
         const filterWorkouts = () => {
-            console.log(workouts);
             if (filterOption === 'all') {
                 setFilteredWorkouts(workouts);
             } else if (filterOption === 'general') {
@@ -102,7 +107,7 @@ export default function PlansPage() {
             trainingSessions: week.trainingSessions.map((session) => ({
               dayNumber: session.dayNumber,
               // Si la sesión tiene workoutInstances, podrías agregar datos adicionales según convenga
-              workout: null 
+              workout: session.workoutInstances[0]?.workout.workoutTemplate.id
             })),
           }));
           setTemplateWeeks(weeks);
@@ -117,7 +122,6 @@ export default function PlansPage() {
         setLoading(true);
         try {
             const response = await fetchTrainingCyclesTemplates(user.userId);
-            console.log(response.data);
             if(response.message === 'success') {
                 setTrainingCycleTemplates(response.data);
             } else {
@@ -149,6 +153,14 @@ export default function PlansPage() {
     }
 
     const handleEditCycle = (cycleId) => {
+        setIsReadOnly(false);
+        setSelectedCycleId(cycleId);
+        loadCycleTemplate(cycleId);
+        setTemplateDialogVisible(true);
+    };
+
+    const handleViewCycle = (cycleId) => {
+        setIsReadOnly(true);
         setSelectedCycleId(cycleId);
         loadCycleTemplate(cycleId);
         setTemplateDialogVisible(true);
@@ -177,7 +189,6 @@ export default function PlansPage() {
     const handleUnassignFromClient = async (workoutInstanceTemplateId) => {
         setLoading(true);
         try {
-            console.log(workoutInstanceTemplateId, filterOption);
             if(filterOption !== 'all' && filterOption !== 'general') {
                 await unassignWorkoutFromClient([workoutInstanceTemplateId], filterOption);
                 setRefreshKey(prev => prev + 1);
@@ -198,7 +209,6 @@ export default function PlansPage() {
     const handleUnassignAllFromClient = async () => {
         setLoading(true);
         try {
-            console.log(selectedWorkouts.map(workout => workout.id), filterOption);
             if(filterOption !== 'all' && filterOption !== 'general') {
                 await unassignWorkoutFromClient(selectedWorkouts.map(workout => workout.id), filterOption);
                 setRefreshKey(prev => prev + 1);
@@ -338,12 +348,14 @@ export default function PlansPage() {
             await createTrainingCycleTemplate(payload);
             showToast('success', intl.formatMessage({ id: 'plansPage.success.templateCreated' }));
           }
+          
           setTemplateDialogVisible(false);
           setTemplateName('');
           setTemplateDuration(null);
           setTemplateWeeks([]);
           setSelectedCycleId(null);
           setRefreshKey(prev => prev + 1);
+          
         } catch (error) {
           console.error('Error creating/updating template:', error);
           showToast('error', intl.formatMessage({ id: 'plansPage.error.creatingTemplate' }), error.message);
@@ -351,31 +363,36 @@ export default function PlansPage() {
     };
 
     const handleDurationChange = (newDuration) => {
+        // Calculate total weeks based on the unit
         const totalWeeks = isDurationInWeeks ? newDuration : newDuration * 4;
-
+      
         if (templateWeeks.length > totalWeeks) {
-            showConfirmationDialog({
-                message: intl.formatMessage({ id: 'plansPage.confirmation.reduceWeeks' }),
-                header: intl.formatMessage({ id: 'common.confirmation' }),
-                icon: 'pi pi-exclamation-triangle',
-                accept: () => {
-                    setTemplateDuration(newDuration);
-                    setTemplateWeeks(templateWeeks.slice(0, totalWeeks));
-                },
-                reject: () => {
-                    // Si el usuario rechaza, no hacemos nada
-                }
-            });
+          // Confirm before trimming weeks if reducing duration
+          showConfirmationDialog({
+            message: intl.formatMessage({ id: 'plansPage.confirmation.reduceWeeks' }),
+            header: intl.formatMessage({ id: 'common.confirmation' }),
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+              setTemplateDuration(newDuration);
+              setTemplateWeeks(templateWeeks.slice(0, totalWeeks));
+            },
+            reject: () => {
+              // Do nothing if the user rejects
+            }
+          });
         } else {
-            setTemplateDuration(newDuration);
-            // Generar automáticamente las semanas
-            const newWeeks = Array.from({ length: totalWeeks }, (_, i) => ({
-                weekNumber: i + 1,
-                trainingSessions: []
+          // If new total weeks is greater than the current number, append additional weeks
+          setTemplateDuration(newDuration);
+          if (templateWeeks.length < totalWeeks) {
+            const additionalWeeks = Array.from({ length: totalWeeks - templateWeeks.length }, (_, i) => ({
+              weekNumber: templateWeeks.length + i + 1,
+              trainingSessions: []
             }));
-            setTemplateWeeks(newWeeks);
+            setTemplateWeeks([...templateWeeks, ...additionalWeeks]);
+          }
+          // If equal, do nothing
         }
-    };
+      };
 
     const handleDeleteCycleTemplate = async (cycleTemplateId) => {
         showConfirmationDialog({
@@ -461,35 +478,6 @@ export default function PlansPage() {
                                 disabled={selectedWorkouts.length === 0}
                             />}
                         </div>
-                        <Dialog header={intl.formatMessage({ id: 'coach.assign.dialog.header' })} visible={isDialogVisible} style={{ width: '50vw' }} onHide={() => setDialogVisible(false)}>
-                            <div className="flex flex-column gap-3">
-                                <div>
-                                    <label className="block mb-2">Planes seleccionados:</label>
-                                    <ul className="list-none p-0 m-0">
-                                        {selectedWorkouts.map(workout => (
-                                            <li key={workout.id} className="mb-2">{workout.planName}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div>
-                                    <label className="block mb-2">{intl.formatMessage({ id: 'coach.assign.selectClient' })}</label>
-                                    <Dropdown 
-                                        value={selectedClient} 
-                                        options={students} 
-                                        onChange={(e) => setSelectedClient(e.value)} 
-                                        optionLabel="name" 
-                                        placeholder={intl.formatMessage({ id: 'coach.assign.selectClient' })}
-                                        className="w-full"
-                                    />
-                                </div>
-                                <Button 
-                                    label={intl.formatMessage({ id: 'coach.assign.confirm' })} 
-                                    icon="pi pi-check" 
-                                    onClick={handleAssignToClient}
-                                    className="w-full"
-                                />
-                            </div>
-                        </Dialog>
                     </>
                 }
             </Card>
@@ -511,8 +499,12 @@ export default function PlansPage() {
                             <Card title={template.name} subTitle={`${template.duration} ${template.isDurationInMonths ? intl.formatMessage({ id: 'plansPage.months' }) : intl.formatMessage({ id: 'plansPage.weeks' })}`}>
                                 <p>{intl.formatMessage({ id: 'plansPage.coachId' })}: {template.coachId}</p>
                                 <p>{intl.formatMessage({ id: 'plansPage.numberOfWeeks' })}: {template.trainingWeeks.length}</p>
-                                <Button icon="pi pi-pencil" className="p-button-secondary" onClick={() => handleEditCycle(template.id)} />
-                                <Button icon="pi pi-trash" className="p-button-danger" onClick={() => handleDeleteCycleTemplate(template.id)} />
+                                <ButtonGroup>
+                                    <Button icon="pi pi-user-plus" className="p-button-success" onClick={() => handleOpenAssignCycleDialog(template.id)} />
+                                    <Button icon="pi pi-eye" className="p-button-primary" onClick={() => handleViewCycle(template.id)} />
+                                    <Button icon="pi pi-pencil" className="p-button-secondary" onClick={() => handleEditCycle(template.id)} />
+                                    <Button icon="pi pi-trash" className="p-button-danger" onClick={() => handleDeleteCycleTemplate(template.id)} />
+                                </ButtonGroup>
                             </Card>
                         </div>
                     ))}
@@ -521,11 +513,55 @@ export default function PlansPage() {
                     label={intl.formatMessage({ id: 'plansPage.createCycle' })}
                     icon="pi pi-plus"
                     className="p-button-primary mt-3"
-                    onClick={() => setTemplateDialogVisible(true)}
+                    onClick={() => {
+                        setTemplateDialogVisible(true);
+                        setSelectedCycleId(null);
+                        setTemplateName('');
+                        setTemplateDuration(null);
+                        setTemplateWeeks([]);
+                        setIsReadOnly(false);
+                    }}
                 />
             </Card>
         );
     };
+
+    const handleOpenAssignCycleDialog = (cycleId) => {
+        setSelectedCycle(trainingCycleTemplates.find(cycle => cycle.id === cycleId));
+        setStartDate(null);
+        setEndDate(null);
+        setSelectedClient(null);
+        setAssignCycleDialogVisible(true);
+    }
+
+    const handleAssignCycleToClient = async () => {
+        if (!selectedCycle || !selectedClient || !startDate || !endDate) {
+          showToast('error', 'Error', 'Please select a cycle, client, and start/end dates.');
+          return;
+        }
+        setLoading(true);
+        try {
+          const payload = {
+            cycleTemplateId: selectedCycle.id,
+            clientId: selectedClient.id,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+          };
+          // Make sure you have created the assignCycleTemplateToClient service call
+          await assignCycleTemplateToClient(payload);
+          showToast('success', 'Success', 'Cycle template assigned to client successfully.');
+          setAssignCycleDialogVisible(false);
+          setRefreshKey(prev => prev + 1);
+        } catch (error) {
+          showToast('error', 'Error', error.error);
+        } finally {
+          setLoading(false);
+          setSelectedClient(null);
+          setStartDate(null);
+          setEndDate(null);
+          setSelectedCycle(null);
+        }
+      };
 
     return (
         <>
@@ -541,7 +577,38 @@ export default function PlansPage() {
         </div>
 
         <Dialog
-            header={selectedCycleId ? intl.formatMessage({ id: 'plansPage.editCycleDialog.header' }) : intl.formatMessage({ id: 'plansPage.createCycleDialog.header' })}
+            dismissableMask={true}
+            className='responsive-dialog'
+            modal
+            draggable={false}
+            resizable={false}
+            header={
+                <div className="flex gap-2 align-items-center">
+                <span>
+                    {!selectedCycleId
+                    ? intl.formatMessage({ id: 'plansPage.createCycleDialog.header' })
+                    : isReadOnly
+                    ? intl.formatMessage({ id: 'plansPage.viewCycleDialog.header' })
+                    : intl.formatMessage({ id: 'plansPage.editCycleDialog.header' })
+                    }
+                </span>
+                {isReadOnly ? (
+                    <Button
+                    icon="pi pi-pencil"
+                    className="p-button-text"
+                    tooltip={intl.formatMessage({ id: 'plansPage.enableEdit' })}
+                    onClick={() => setIsReadOnly(false)}
+                    />
+                ) : (
+                    <Button
+                    icon="pi pi-lock"
+                    className="p-button-text"
+                    tooltip={intl.formatMessage({ id: 'plansPage.disableEdit' })}
+                    onClick={() => setIsReadOnly(true)}
+                    />
+                )}
+                </div>
+            }
             visible={isTemplateDialogVisible}
             style={{ width: '50vw' }}
             onHide={() => {
@@ -550,107 +617,235 @@ export default function PlansPage() {
                 setTemplateName('');
                 setTemplateDuration(null);
                 setTemplateWeeks([]);
+                setIsReadOnly(true); // Reset view mode when closing
             }}
             >
-            <div className="flex flex-column gap-4 p-3">
-                <InputText
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                placeholder={intl.formatMessage({ id: 'plansPage.templateNamePlaceholder' })}
-                className="w-full"
-                />
-
-                <div className="flex gap-2 align-items-center">
-                <Checkbox
-                    inputId="durationType"
-                    checked={isDurationInWeeks}
-                    onChange={handleDurationTypeChange}
-                />
-                <label htmlFor="durationType">
-                    {isDurationInWeeks ? intl.formatMessage({ id: 'plansPage.durationInWeeks' }) : intl.formatMessage({ id: 'plansPage.durationInMonths' })}
-                </label>
-                <InputNumber
-                    value={templateDuration}
-                    onValueChange={(e) => handleDurationChange(e.value)}
-                    placeholder={intl.formatMessage({ id: 'plansPage.durationPlaceholder' }, { unit: isDurationInWeeks ? intl.formatMessage({ id: 'plansPage.weeks' }) : intl.formatMessage({ id: 'plansPage.months' }) })}
+                <div className="flex flex-column gap-4 p-3">
+                    <InputText
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    placeholder={intl.formatMessage({ id: 'plansPage.templateNamePlaceholder' })}
                     className="w-full"
-                />
-                </div>
+                    disabled={isReadOnly}
+                    />
 
-                <Fieldset legend={intl.formatMessage({ id: 'plansPage.trainingWeeks' })}>
-                    <Accordion>
-                        {templateWeeks.map((week, index) => (
-                            <AccordionTab key={index} header={intl.formatMessage({ id: 'plansPage.week' }, { weekNumber: week.weekNumber })}>
-                                <div className="flex flex-column md:flex-row gap-2 align-items-center">
-                                    <div className="w-full md:w-6">
+                    <div className="flex gap-2 align-items-center">
+                    <Checkbox
+                        inputId="durationType"
+                        checked={isDurationInWeeks}
+                        onChange={handleDurationTypeChange}
+                        disabled={isReadOnly}
+                    />
+                    <label htmlFor="durationType">
+                        {isDurationInWeeks ? intl.formatMessage({ id: 'plansPage.durationInWeeks' }) : intl.formatMessage({ id: 'plansPage.durationInMonths' })}
+                    </label>
+                    <InputNumber
+                        value={templateDuration}
+                        onValueChange={(e) => handleDurationChange(e.value)}
+                        placeholder={intl.formatMessage({ id: 'plansPage.durationPlaceholder' }, { unit: isDurationInWeeks ? intl.formatMessage({ id: 'plansPage.weeks' }) : intl.formatMessage({ id: 'plansPage.months' }) })}
+                        className="w-full"
+                        disabled={isReadOnly}
+                    />
+                    </div>
+
+                    <Fieldset legend={intl.formatMessage({ id: 'plansPage.trainingWeeks' })}>
+                        <Accordion>
+                            {templateWeeks.map((week, index) => (
+                                <AccordionTab key={index} header={intl.formatMessage({ id: 'plansPage.week' }, { weekNumber: week.weekNumber })}>
+                                    <div className="flex flex-column md:flex-row gap-2 align-items-center">
+                                        <div className="w-full md:w-6">
+                                            <Dropdown
+                                                value={selectedWorkout}
+                                                options={workouts}
+                                                onChange={(e) => setSelectedWorkout(e.value)}
+                                                optionLabel="planName"
+                                                placeholder={intl.formatMessage({ id: 'plansPage.selectWorkout' })}
+                                                disabled={isReadOnly}
+                                                //className="w-full md:w-6"
+                                            />
+                                        </div>
+                                        <div className="w-full md:w-6">
                                         <Dropdown
-                                            value={selectedWorkout}
-                                            options={workouts}
-                                            onChange={(e) => setSelectedWorkout(e.value)}
-                                            optionLabel="planName"
-                                            placeholder={intl.formatMessage({ id: 'plansPage.selectWorkout' })}
-                                            //className="w-full md:w-6"
-                                        />
+                                            value={selectedDay}
+                                            options={[
+                                                { label: intl.formatMessage({ id: 'plansPage.monday' }), value: 1 },
+                                                { label: intl.formatMessage({ id: 'plansPage.tuesday' }), value: 2 },
+                                                { label: intl.formatMessage({ id: 'plansPage.wednesday' }), value: 3 },
+                                                { label: intl.formatMessage({ id: 'plansPage.thursday' }), value: 4 },
+                                                { label: intl.formatMessage({ id: 'plansPage.friday' }), value: 5 },
+                                                { label: intl.formatMessage({ id: 'plansPage.saturday' }), value: 6 },
+                                                { label: intl.formatMessage({ id: 'plansPage.sunday' }), value: 7 },
+                                                ]}
+                                                onChange={(e) => setSelectedDay(e.value)}
+                                                placeholder={intl.formatMessage({ id: 'plansPage.selectDay' })}
+                                                disabled={isReadOnly}
+                                                //className="w-full md:w-6"
+                                            />
+                                        </div>  
+                                        <div className="flex gap-2 align-items-center">
+                                            <Checkbox
+                                                inputId="addToAllWeeks"
+                                                checked={applyToAllWeeks}
+                                                onChange={(e) => setApplyToAllWeeks(e.checked)}
+                                                disabled={isReadOnly}
+                                            />
+                                            <label htmlFor="addToAllWeeks">{intl.formatMessage({ id: 'plansPage.applyToAllWeeks' })}</label>
+                                        </div>
+                                        <div className="">
+                                            <Button
+                                                tooltip={intl.formatMessage({ id: 'plansPage.addWorkout' })}
+                                                icon="pi pi-plus"
+                                                className="p-button-sm p-button-success"
+                                                onClick={() => handleAddWorkout(selectedWorkout, selectedDay, applyToAllWeeks, index)}
+                                                disabled={isReadOnly}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="w-full md:w-6">
-                                    <Dropdown
-                                        value={selectedDay}
-                                        options={[
-                                        { label: intl.formatMessage({ id: 'plansPage.monday' }), value: 1 },
-                                        { label: intl.formatMessage({ id: 'plansPage.tuesday' }), value: 2 },
-                                        { label: intl.formatMessage({ id: 'plansPage.wednesday' }), value: 3 },
-                                        { label: intl.formatMessage({ id: 'plansPage.thursday' }), value: 4 },
-                                        { label: intl.formatMessage({ id: 'plansPage.friday' }), value: 5 },
-                                        { label: intl.formatMessage({ id: 'plansPage.saturday' }), value: 6 },
-                                        { label: intl.formatMessage({ id: 'plansPage.sunday' }), value: 7 },
-                                        ]}
-                                        onChange={(e) => setSelectedDay(e.value)}
-                                        placeholder={intl.formatMessage({ id: 'plansPage.selectDay' })}
-                                        //className="w-full md:w-6"
-                                        />
-                                    </div>  
-                                    <div className="flex gap-2 align-items-center">
-                                        <Checkbox
-                                            inputId="addToAllWeeks"
-                                            checked={applyToAllWeeks}
-                                            onChange={(e) => setApplyToAllWeeks(e.checked)}
-                                        />
-                                        <label htmlFor="addToAllWeeks">{intl.formatMessage({ id: 'plansPage.applyToAllWeeks' })}</label>
-                                    </div>
-                                    <div className="">
-                                        <Button
-                                            tooltip={intl.formatMessage({ id: 'plansPage.addWorkout' })}
-                                            icon="pi pi-plus"
-                                            className="p-button-sm p-button-success"
-                                            onClick={() => handleAddWorkout(selectedWorkout, selectedDay, applyToAllWeeks, index)}
-                                        />
-                                    </div>
-                                </div>
 
-                                <ul className="mt-2">
-                                {week.trainingSessions.map((session, i) => {
-                                    const workout = workouts.find((w) => w.id === session.workout?.id);
-                                    return (
-                                    <li key={i} className="flex align-items-center">
-                                        <span>
-                                        🏋️ {workout?.planName || intl.formatMessage({ id: 'plansPage.workout' })} - {intl.formatMessage({ id: 'plansPage.day' })} {session.dayNumber}
-                                        </span>
-                                        <Button
-                                        icon="pi pi-trash"
-                                        className="p-button-text p-button-danger"
-                                        onClick={() => handleRemoveWorkoutFromWeek(index, i)}
-                                        />
-                                    </li>
-                                    );
-                                })}
-                                </ul>
-                            </AccordionTab>
-                        ))}
-                    </Accordion>
-                </Fieldset>
+                                    <ul className="mt-2">
+                                    {week.trainingSessions.map((session, i) => {
+                                        //const workout = workouts.find((w) => w.id === session.workout?.id || w.id === session.workoutInstances[0]?.id);
+                                        const workout = workouts.find((w) => w.id === session.workout?.id || w.id === session.workout);
+                                        return (
+                                        <li key={i} className="flex align-items-center">
+                                            <span>
+                                            🏋️ {workout?.planName || intl.formatMessage({ id: 'plansPage.workout' })} - {intl.formatMessage({ id: 'plansPage.day' })} {session.dayNumber}
+                                            </span>
+                                            <Button
+                                                icon="pi pi-trash"
+                                                className="p-button-text p-button-danger"
+                                                onClick={() => handleRemoveWorkoutFromWeek(index, i)}
+                                                disabled={isReadOnly}
+                                                />
+                                        </li>
+                                        );
+                                    })}
+                                    </ul>
+                                </AccordionTab>
+                            ))}
+                        </Accordion>
+                    </Fieldset>
 
-                <Button label={intl.formatMessage({ id: 'plansPage.saveTemplate' })} className="p-button-success" onClick={handleCreateTemplate} />
-            </div>
+                    <Button label={intl.formatMessage({ id: 'plansPage.saveTemplate' })} className="p-button-success" onClick={handleCreateTemplate} />
+                </div>
+            </Dialog>
+            <Dialog 
+                dismissableMask={true} 
+                modal
+                draggable={false}
+                resizable={false}
+                className='responsive-dialog' 
+                header={intl.formatMessage({ id: 'coach.assign.dialog.header' })} 
+                visible={isDialogVisible} 
+                style={{ width: '50vw' }} 
+                onHide={() => setDialogVisible(false)}
+                >
+                <div className="flex flex-column gap-3">
+                    <div>
+                        <label className="block mb-2">Planes seleccionados:</label>
+                        <ul className="list-none p-0 m-0">
+                            {selectedWorkouts.map(workout => (
+                                <li key={workout.id} className="mb-2">{workout.planName}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div>
+                        <label className="block mb-2">{intl.formatMessage({ id: 'coach.assign.selectClient' })}</label>
+                        <Dropdown 
+                            value={selectedClient} 
+                            options={students} 
+                            onChange={(e) => setSelectedClient(e.value)} 
+                            optionLabel="name" 
+                            placeholder={intl.formatMessage({ id: 'coach.assign.selectClient' })}
+                            className="w-full"
+                        />
+                    </div>
+                    <Button 
+                        label={intl.formatMessage({ id: 'coach.assign.confirm' })} 
+                        icon="pi pi-check" 
+                        onClick={handleAssignToClient}
+                        className="w-full"
+                    />
+                </div>
+            </Dialog>
+            <Dialog 
+                dismissableMask={true} 
+                modal
+                draggable={false}
+                resizable={false}
+                className='responsive-dialog' 
+                header={intl.formatMessage({ id: 'coach.assign.cycle.dialog.header' })} 
+                visible={isAssignCycleDialogVisible} 
+                style={{ width: '50vw' }} 
+                onHide={() => setAssignCycleDialogVisible(false)}
+                >
+                <div className="flex flex-column gap-3">
+                    <div className="flex gap-2">
+                        <div className="w-full">
+                            <label className="block mb-2">{intl.formatMessage({ id: 'coach.assign.dialog.selectedCycle' })}</label>
+                            <p>{selectedCycle?.name}</p>
+                            <p>
+                                {selectedCycle?.duration} {selectedCycle?.isDurationInMonths 
+                                    ? intl.formatMessage({ id: 'plansPage.months' }) 
+                                    : intl.formatMessage({ id: 'plansPage.weeks' })}
+                                {' '}({selectedCycle?.isDurationInMonths 
+                                    ? selectedCycle?.duration * 4 
+                                    : selectedCycle?.duration} {intl.formatMessage({ id: 'plansPage.weeks' })})
+                            </p>
+                        </div>
+                        <div className="w-full">
+                            <label className="block mb-2">{intl.formatMessage({ id: 'coach.assign.selectClient' })}</label>
+                            <Dropdown 
+                                value={selectedClient} 
+                                options={students} 
+                                onChange={(e) => setSelectedClient(e.value)} 
+                                optionLabel="name" 
+                                placeholder={intl.formatMessage({ id: 'coach.assign.selectClient' })}
+                                className="w-full"
+                            />
+                        </div>
+                    </div>
+                    <Divider />
+                    <div className="flex gap-2">
+                        <div className="w-full">
+                            <label className="block mb-2">{intl.formatMessage({ id: 'startDate' })}</label>
+                            <Calendar
+                                value={startDate}
+                                onChange={(e) => {
+                                    setStartDate(e.value);
+                                    // Calculate end date based on duration
+                                    const endDate = new Date(e.value);
+                                    if (selectedCycle?.isDurationInMonths) {
+                                        endDate.setMonth(endDate.getMonth() + selectedCycle.duration);
+                                    } else {
+                                        endDate.setDate(endDate.getDate() + (selectedCycle.duration * 7));
+                                    }
+                                    setEndDate(endDate);
+                                }}
+                                showIcon
+                                className="w-full"
+                                minDate={new Date()}
+                                dateFormat="dd/mm/yy"
+                            />
+                        </div>
+                        <div className="w-full">
+                            <label className="block mb-2">{intl.formatMessage({ id: 'endDate' })}</label>
+                            <Calendar
+                                value={endDate}
+                                disabled
+                                showIcon
+                                className="w-full"
+                                dateFormat="dd/mm/yy"
+                            />
+                        </div>
+                    </div>
+                    <Button 
+                        label={intl.formatMessage({ id: 'coach.assign.confirm' })} 
+                        icon="pi pi-check" 
+                        onClick={handleAssignCycleToClient}
+                        className="w-full"
+                    />
+                </div>
             </Dialog>
         </>
     )
