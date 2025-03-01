@@ -153,6 +153,15 @@ const fetchTrainingCycleTemplateById = async (cycleId) => {
   }
   return data;
 }
+
+const fetchDeletedWorkoutTemplatesByCoachId = async (coachId) => {
+  const response = await fetch(`${apiUrl}/workout/workout-template/coachId/${coachId}/deleted`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
 const fetchWorkoutsByClientId = async (clientId) => {
   const response = await fetch(`${apiUrl}/workout/clientId/${clientId}`);
   const data = await response.json();
@@ -635,5 +644,6 @@ export {
     fetchTrainingCycleTemplateById,
     assignCycleTemplateToClient,
     assignTrainingSessionToClient,
-    fetchTrainingSessionWithoutWeeks
+    fetchTrainingSessionWithoutWeeks,
+    fetchDeletedWorkoutTemplatesByCoachId
 };

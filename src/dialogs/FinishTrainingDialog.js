@@ -6,9 +6,10 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Slider } from 'primereact/slider';
 import { Calendar } from 'primereact/calendar';
 import { Checkbox } from 'primereact/checkbox';
-
+import { useIntl } from 'react-intl';
 
 const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
+  const intl = useIntl();
   const [sessionTime, setSessionTime] = useState(new Date(0, 0, 0, 0, 0));
   const [generalFeedback, setGeneralFeedback] = useState('');
   const [energyLevel, setEnergyLevel] = useState(0); // Default to null
@@ -52,7 +53,7 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
           value={sessionTime}
           onChange={handleTimeChange}
           timeOnly
-          
+          locale={intl.locale}
           hourFormat="24"
           showIcon
           placeholder="Enter the duration of your session"

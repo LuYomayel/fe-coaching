@@ -80,7 +80,7 @@ export default function ClientDashboard() {
   // Fetch data when the component mounts or refreshKey changes
   useEffect(() => {
     setLoading(true);
-
+    setCalendarEvents([])
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleOptions }) => {
         setCycleOptions(cycleOptions);

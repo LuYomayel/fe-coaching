@@ -13,11 +13,12 @@ const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
   const [locale, setLocale] = useState(getBrowserLanguage());
-
+  useEffect(() => {
+    addLocale('es', esLocale)
+  }, []);
 
   function getBrowserLanguage() {
     const browserLang = navigator.language.split(/[-_]/)[0];
-    addLocale('es', esLocale)
     return messages[browserLang] ? browserLang : 'en';
   }
 
@@ -27,9 +28,6 @@ export const LanguageProvider = ({ children }) => {
   };
 
   const switchLanguage = (newLocale) => {
-    if (newLocale === 'es') {
-      addLocale('es', esLocale)
-    }
     setLocale(newLocale);
   };
 

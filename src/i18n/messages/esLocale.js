@@ -1,5 +1,6 @@
 export const esLocale = {
     firstDayOfWeek: 1,
+    dateFormat: 'dd/mm/yy',
     dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
     dayNamesShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
     dayNamesMin: ["D", "L", "M", "X", "J", "V", "S"],

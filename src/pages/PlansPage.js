@@ -6,7 +6,7 @@ import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
 import { TabView, TabPanel } from 'primereact/tabview';
-import { deleteWorkoutPlan, createTrainingCycleTemplate, fetchTrainingCyclesTemplates, findAllWorkoutTemplatesByCoachId, fetchTrainingCycleTemplateById, updateTrainingCycle, deleteTrainingCycle, assignCycleTemplateToClient } from '../services/workoutService';
+import { deleteWorkoutPlan, createTrainingCycleTemplate, fetchTrainingCyclesTemplates, findAllWorkoutTemplatesByCoachId, fetchTrainingCycleTemplateById, updateTrainingCycle, deleteTrainingCycle, assignCycleTemplateToClient, fetchDeletedWorkoutTemplatesByCoachId } from '../services/workoutService';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
@@ -35,6 +35,7 @@ export default function PlansPage() {
     const { setLoading, isLoading } = useSpinner();
     const { showConfirmationDialog } = useConfirmationDialog();
     const showToast = useToast();
+    const [deletedWorkoutTemplates, setDeletedWorkoutTemplates] = useState([]);
 
     const [selectedWorkouts, setSelectedWorkouts] = useState([]);
     const [selectedClient, setSelectedClient] = useState(null);
@@ -62,6 +63,20 @@ export default function PlansPage() {
 
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
+
+
+    useEffect(() => {
+        const fetchDeletedWorkoutTemplates = async () => {
+            try {
+                const {data} = await fetchDeletedWorkoutTemplatesByCoachId(coach.id);
+                setDeletedWorkoutTemplates(data);
+            } catch (error) {
+                console.error('Error fetching deleted workout templates:', error);
+            }
+        }
+        fetchDeletedWorkoutTemplates();
+        //eslint-disable-next-line
+    }, []);
 
     useEffect(() => {
         fetchWorkoutPlans();
@@ -155,6 +170,8 @@ export default function PlansPage() {
             setLoading(false);
         }
     }
+
+
 
     const handleEditCycle = (cycleId) => {
         setIsReadOnly(false);
@@ -457,7 +474,7 @@ export default function PlansPage() {
                         <small className="block text-gray-600 mb-4">
                             <FormattedMessage id="coach.plan.description" />
                         </small>
-                        <Dropdown value={filterOption} options={filterOptions} onChange={(e) => setFilterOption(e.value)} placeholder={intl.formatMessage({ id: 'plansPage.filter.placeholder' })} />
+                        <Dropdown value={filterOption} options={filterOptions} onChange={(e) => setFilterOption(e.value)} placeholder={intl.formatMessage({ id: 'plansPage.filter.placeholder' })} className="mb-3" />
                         <div className="grid">
                             {filteredWorkouts.map((plan, index) => (
                                 <div key={index} className="col-12 md:col-4">
@@ -467,17 +484,17 @@ export default function PlansPage() {
                             ))}
                         </div>
                         <div className="flex justify-content-end gap-2 ">
-                            <Button label={intl.formatMessage({ id: 'coach.buttons.newPlan' })} icon="pi pi-plus" className="p-button-rounded p-button-lg p-button-primary" onClick={() => navigate('/plans/create')} />
+                            <Button label={intl.formatMessage({ id: 'coach.buttons.newPlan' })} icon="pi pi-plus" className="p-button-rounded p-button-primary" onClick={() => navigate('/plans/create')} />
                             {(filterOption === 'all' || filterOption === 'general') ? <Button 
                                 label={intl.formatMessage({ id: 'coach.buttons.assignPlans' })} 
                                 icon="pi pi-user-plus" 
-                                className="p-button-rounded p-button-lg p-button-primary" 
+                                className="p-button-rounded p-button-primary" 
                                 onClick={() => setDialogVisible(true)}
                                 disabled={selectedWorkouts.length === 0}
                             /> : <Button 
                                 label={intl.formatMessage({ id: 'coach.buttons.unassignPlans' })} 
                                 icon="pi pi-user-minus" 
-                                className="p-button-rounded p-button-lg p-button-primary" 
+                                className="p-button-rounded p-button-primary" 
                                 onClick={() => handleUnassignAllFromClient()}
                                 disabled={selectedWorkouts.length === 0}
                             />}
@@ -602,21 +619,22 @@ export default function PlansPage() {
                     : intl.formatMessage({ id: 'plansPage.editCycleDialog.header' })
                     }
                 </span>
-                {isReadOnly ? (
+                {isReadOnly && selectedCycleId ? (
                     <Button
                     icon="pi pi-pencil"
                     className="p-button-text"
                     tooltip={intl.formatMessage({ id: 'plansPage.enableEdit' })}
                     onClick={() => setIsReadOnly(false)}
                     />
-                ) : (
+                ) : 
+                !isReadOnly && selectedCycleId ? (
                     <Button
                     icon="pi pi-lock"
                     className="p-button-text"
                     tooltip={intl.formatMessage({ id: 'plansPage.disableEdit' })}
                     onClick={() => setIsReadOnly(true)}
                     />
-                )}
+                ) : null}
                 </div>
             }
             visible={isTemplateDialogVisible}
@@ -715,7 +733,7 @@ export default function PlansPage() {
                                     <ul className="mt-2">
                                     {week.trainingSessions.map((session, i) => {
                                         //const workout = workouts.find((w) => w.id === session.workout?.id || w.id === session.workoutInstances[0]?.id);
-                                        const workout = workouts.find((w) => w.id === session.workout?.id || w.id === session.workout);
+                                        const workout = workouts.find((w) => w.id === session.workout?.id || w.id === session.workout) || deletedWorkoutTemplates.find((w) => w.id === session.workout?.id || w.id === session.workout);
                                         return (
                                         <li key={i} className="flex align-items-center">
                                             <span>
@@ -834,10 +852,7 @@ export default function PlansPage() {
                                 }}
                                 showIcon
                                 className="w-full"
-                                //minDate={new Date()}
-                                // dateFormat="dd/mm/yy"
-                                //locale={intl.defaultLocale === 'es' ? 'es' : 'en'}
-                                locale={intl.defaultLocale}
+                                locale={intl.locale}
                             />
                         </div>
                         <div className="w-full">
@@ -847,8 +862,7 @@ export default function PlansPage() {
                                 disabled
                                 showIcon
                                 className="w-full"
-                                dateFormat="dd/mm/yy"
-                                firstDayOfWeek={1}
+                                locale={intl.locale}
                             />
                         </div>
                     </div>

@@ -35,7 +35,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       showToast('error', 'Error', 'Please select a workout');
       return;
     }
-    const sessionDate = formatDateToApi(selectedDate);
+    const sessionDate = formatDateToApi(selectedDate ? selectedDate : new Date());
     const body = {
       sessionId,
       workoutId: selectedWorkout,

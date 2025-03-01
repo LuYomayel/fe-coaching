@@ -177,7 +177,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       </div>
       <div className="p-field">
         <label htmlFor="birthdate"><FormattedMessage id="birthdate" /></label>
-        <Calendar id="birthdate" dateFormat='dd/mm/yy' value={birthdate} onChange={(e) => setBirthDate(e.target.value)}/>
+        <Calendar id="birthdate" locale={intl.locale} dateFormat='dd/mm/yy' value={birthdate} onChange={(e) => setBirthDate(e.target.value)}/>
       </div>
       <Button label={intl.formatMessage({ id: 'save' })} icon="pi pi-save" loading={loading} onClick={onClickSaveStudent} />
     </div>

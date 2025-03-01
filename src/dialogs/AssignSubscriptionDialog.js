@@ -82,11 +82,11 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
     <div className="assign-subscription-dialog">
       <div className="p-field">
         <label htmlFor="startDate"><FormattedMessage id="startDate" /></label>
-        <Calendar id="startDate" dateFormat='dd/mm/yy' value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
+        <Calendar id="startDate" locale={intl.locale} dateFormat='dd/mm/yy' value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
       </div>
       <div className="p-field">
         <label htmlFor="endDate"><FormattedMessage id="endDate" /></label>
-        <Calendar id="endDate" dateFormat='dd/mm/yy' value={endDate} onChange={(e) => setEndDate(e.value)} showIcon />
+        <Calendar id="endDate" locale={intl.locale} dateFormat='dd/mm/yy' value={endDate} onChange={(e) => setEndDate(e.value)} showIcon />
       </div>
       <div className="p-field">
         <label htmlFor="coachPlan"><FormattedMessage id="plan" /></label>

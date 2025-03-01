@@ -208,6 +208,7 @@ export default function NewStudentHome() {
             initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
             events={calendarEvents}
             eventContent={renderEventContent}
+            locale={intl.locale}
             headerToolbar={{
               left: 'prev,next today',
               center: 'title',

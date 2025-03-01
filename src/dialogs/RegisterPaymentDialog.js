@@ -100,15 +100,15 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     <div className="register-payment-dialog">
       <div className="p-field">
         <label htmlFor="startDate">New Start Date</label>
-        <Calendar id="startDate" dateFormat="dd/mm/yy" value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
+        <Calendar id="startDate" locale={intl.locale} dateFormat="dd/mm/yy" value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
       </div>
       <div className="p-field">
         <label htmlFor="endDate">New End Date</label>
-        <Calendar id="endDate" dateFormat="dd/mm/yy" value={endDate} onChange={(e) => setEndDate(e.value)} showIcon />
+        <Calendar id="endDate" locale={intl.locale} dateFormat="dd/mm/yy" value={endDate} onChange={(e) => setEndDate(e.value)} showIcon />
       </div>
       <div className="p-field">
         <label htmlFor="paymentDate">Payment Date</label>
-        <Calendar id="paymentDate" dateFormat="dd/mm/yy" value={paymentDate} onChange={(e) => setPaymentDate(e.value)} showIcon />
+        <Calendar id="paymentDate" locale={intl.locale} dateFormat="dd/mm/yy" value={paymentDate} onChange={(e) => setPaymentDate(e.value)} showIcon />
       </div>
       <div className="p-field">
         <label htmlFor="coachPlan">Select Plan</label>

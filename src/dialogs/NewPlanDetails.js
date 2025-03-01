@@ -42,11 +42,11 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                 setLoading(true);
                 if (isTemplate) {
                     const {data} = await fetchWorkoutInstanceTemplate(planId);
-
+                    data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
+                    console.log('Data', data);
                     setWorkoutPlan(data);
                 } else {
                     const {data} = await fetchWorkoutInstance(planId);
-                    console.log('Data', data)
                     data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
                     setWorkoutPlan(data);
                 }
@@ -254,7 +254,7 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                 <div className="flex justify-content-between">
                     {user.userType === 'coach' && (
                         <div className="flex gap-2">
-                           {workoutPlan.status === 'pending' && (
+                           {(isTemplate || workoutPlan.status === 'pending') && (
                                 <Button
                                     label={intl.formatMessage({ id: 'common.edit' })}
                                     icon="pi pi-pencil"
@@ -262,7 +262,7 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                                     onClick={handleEdit}
                                 />
                             )}
-                            {workoutPlan.status === 'pending' && (
+                            {(isTemplate || workoutPlan.status === 'pending') && (
                                 <Button
                                     label={intl.formatMessage({ id: 'common.delete' })}
                                     icon="pi pi-trash"
@@ -270,7 +270,7 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                                     onClick={handleDelete}
                                 />
                             )}
-                            <Button
+                            {!isTemplate && <Button
                                 label={intl.formatMessage({ id: 'common.template' })}
                                 tooltip={intl.formatMessage({ id: 'common.useAsTemplate' })}
                                 icon="pi pi-copy" 
@@ -278,7 +278,7 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                                 onClick={() => navigate(`/plans/edit/${workoutPlan.id}`, {
                                     state: { isEdit: true, changeToTemplate: true }
                                 })}
-                            />
+                            />}
                         </div>
                     )}
                     {user.userType === 'client' && workoutPlan.status === 'pending' && (

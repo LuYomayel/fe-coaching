@@ -205,6 +205,7 @@ export default function NewClientProfile() {
         placeholder="Select Date"
         showIcon
         style={{ minWidth: '12rem' }}
+        locale={intl.locale}
       />
     );
   };

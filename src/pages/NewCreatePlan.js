@@ -615,17 +615,17 @@ const NewCreatePlan = ({ isEdit }) => {
                         };
                         setNewExercises(prevExercises => [...prevExercises, newExercise]);
                         return {
+                            ...exercise,
                             id: uuidv4(),
                             notes: exercise.notes,
-                            ...exercise,
                             exercise: newExercise
                         };
                     }
                     
                     return {
+                      ...exercise,
                         id: uuidv4(),
                         notes: exercise.notes,
-                        ...exercise,
                         exercise: {...existingExercise}
                     };
                 });
@@ -648,7 +648,7 @@ const NewCreatePlan = ({ isEdit }) => {
                 instanceName: '',
                 ...planFromImage
             }));
-
+            console.log(planFromImage);
             // Actualizamos el estado de ejercicios con los nuevos
             setExercises(prevExercises => [...prevExercises, ...newExercises]);
 
@@ -770,9 +770,17 @@ const NewCreatePlan = ({ isEdit }) => {
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="groups" direction="horizontal" type="group">
           {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} className="grid">
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                style={{ display: 'flex', overflowX: 'auto' }}
+              >
               {plan.groups.map((group, groupIndex) => (
-                <Draggable key={`group-${group.groupNumber}`} draggableId={`group-${group.groupNumber}`} index={groupIndex}>
+                  <Draggable
+                    key={group.id ? `group-${group.id}` : `group-${group.groupNumber}`}
+                    draggableId={group.id ? `group-${group.id}` : `group-${group.groupNumber}`}
+                    index={groupIndex}
+                  >
                   {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}
@@ -823,10 +831,10 @@ const NewCreatePlan = ({ isEdit }) => {
                         <Droppable droppableId={`group-${groupIndex}`} type="exercise">
                           {(provided) => (
                             <div 
-                              {...provided.droppableProps} 
-                              ref={provided.innerRef} 
-                              className="exercise-container"
-                              style={!group.isRestPeriod ? {
+                                {...provided.droppableProps} 
+                                ref={provided.innerRef} 
+                                className="exercise-container"
+                                style={!group.isRestPeriod ? {
                                 minHeight: '50px',
                                 padding: '5px',
                                 border: group.exercises.length === 0 ? '2px dashed #ccc' : 'none',
@@ -845,7 +853,12 @@ const NewCreatePlan = ({ isEdit }) => {
                                   {group.exercises
                                     .sort((a, b) => a.rowIndex - b.rowIndex)
                                     .map((exercise, exerciseIndex) => (
-                                      <Draggable key={`exercise-${exercise.id}`} draggableId={`exercise-${exercise.id}`} index={exerciseIndex}>
+                                      <Draggable 
+                                        key={`exercise-${exercise.id}`} 
+                                        draggableId={`exercise-${exercise.id}`} 
+                                        index={exerciseIndex}
+                                        isDragDisabled={exercise.exercise.isTemporary}
+                                      >
                                         {(provided) => (
                                           <div
                                             ref={provided.innerRef}

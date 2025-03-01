@@ -14,7 +14,7 @@ import { fetchCoachStudents } from '../services/usersService';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { TabPanel, TabView } from 'primereact/tabview';
 import '../styles/CreateTrainingCycle.css';
-
+import { formatDateToApi } from '../utils/UtilFunctions';
 const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey }) => {
   const { user, coach } = useContext(UserContext);
   const intl = useIntl();
@@ -141,7 +141,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
     const body = {
       name: cycleName,
       coachId: user.userId,
-      startDate,
+      startDate: formatDateToApi(startDate),
       clientId: parseInt(clientId),
       durationInMonths,
       durationInWeeks
@@ -191,6 +191,8 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
     try {
       setLoading(true);
      // const cycle = await createTrainingCycle(bodyCycle);
+     console.log('Body', body);
+     //return
       const { data } = await createCycleAndAssignWorkouts(body);
 
       if(data && data.trainingSessions && data.trainingSessions.length > 0) {
@@ -219,7 +221,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
         <div className="flex flex-row gap-2 w-full justify-content-between">
           <div className="p-field">
             <label htmlFor="startDate"><FormattedMessage id="startDate" /></label>
-            <Calendar id="startDate" value={startDate} dateFormat="dd/mm/yy" onChange={(e) => setStartDate(e.value)} showIcon />
+            <Calendar id="startDate" value={startDate} locale={intl.locale} dateFormat="dd/mm/yy" onChange={(e) => setStartDate(e.value)} showIcon />
           </div>
           <div className="p-field">
             <label htmlFor="durationInMonths"><FormattedMessage id="createCycle.durationInMonths" /></label>

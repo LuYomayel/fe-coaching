@@ -74,6 +74,11 @@ const messages = {
   'coach.rpe.confirm.assign': '¿Estás seguro de que deseas asignar {rpe} al {type} seleccionado?',
   'coach.plan.confirm.clear': '¿Estás seguro de que deseas limpiar el plan de entrenamiento?',
   'coach.subscription.confirm.delete': '¿Estás seguro de que deseas eliminar la suscripción de este cliente?',
+  'coach.workoutsPerWeek': 'Entrenamientos por semana',
+  'coach.exercise.upload.success': 'Ejercicios subidos',
+  'coach.exercise.upload.duplicated': 'Ejercicios duplicados',
+  'coach.rpe.assign.type': 'Seleccionar Tipo de Asignación',
+  'coach.rpe.assign.rpe': 'Seleccionar RPE',
 
   // Mensajes para NewCoachHome
   'welcome.back': '¡Bienvenido de nuevo, {name}!',
@@ -223,10 +228,10 @@ const messages = {
   'coach.delete.error.referenced.detail': 'Este plan de entrenamiento está siendo utilizado por un cliente',
   'coach.delete.error.generic': 'Error',
   
-  'coach.rpe.name': 'Nombre del RPE',
+  'coach.rpe.name': 'Nombre',
   'coach.rpe.minValue': 'Valor Mínimo',
   'coach.rpe.maxValue': 'Valor Máximo',
-  'coach.rpe.step': 'Incremento',
+  'coach.rpe.step': 'Paso',
   'coach.rpe.values': 'Valores Meta',
   'coach.rpe.addValue': 'Agregar Valor',
   'coach.rpe.selectType': 'Seleccionar Tipo de Asignación',

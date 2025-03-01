@@ -413,7 +413,7 @@ export default function CoachProfilePage() {
   };
 
   const actionBodyTemplate = (rowData, type) => {
-    console.log(rowData);
+    console.log('rowData', rowData);
     return (
       <React.Fragment>
         <Button
@@ -438,6 +438,7 @@ export default function CoachProfilePage() {
             } else if (type === 'workout') {
               navigate(`/plans/edit-template/${rowData.workoutInstanceTemplates[0].id}`);
             } else if (type === 'plan') {
+              console.log('rowData', rowData);
               openEditPlanDialog(rowData);
             }
           }}
@@ -456,9 +457,11 @@ export default function CoachProfilePage() {
                 reject: () => console.log('Rejected'),
               });
             } else if (type === 'plan') {
+              console.log('rowData', rowData);
               confirmDeletePlan(rowData.id);
             } else if (type === 'workout') {
-              confirmDeleteWorkout(rowData.id);
+              console.log('rowData', rowData);
+              confirmDeleteWorkout(rowData.workoutInstanceTemplates[0].id);
             }
 
           }}
@@ -740,7 +743,7 @@ export default function CoachProfilePage() {
             />
           </div>
     
-          {/* Field to add valuesMeta */}
+          {/* Campo para agregar valoresMeta */}
           <div className="p-field">
             <label>{intl.formatMessage({ id: 'coach.rpe.valuesMeta' })}</label>
             {newRpe.valuesMeta && Array.isArray(newRpe.valuesMeta) && newRpe.valuesMeta.map((valueMeta, index) => (
@@ -801,7 +804,7 @@ export default function CoachProfilePage() {
                 </div>
               </div>
             ))}
-            {/* Button to add new value */}
+            {/* Botón para agregar nuevo valor */}
             <Button
               label={intl.formatMessage({ id: 'coach.rpe.addValue' })}
               icon="pi pi-plus"
@@ -879,6 +882,8 @@ export default function CoachProfilePage() {
   };
 
   const openEditPlanDialog = (plan) => {
+    plan.price = Number(plan.price);
+    console.log('plan', plan);
     setDialogMode('edit');
     setNewPlan(plan);
     setCreatePlanDialogVisible(true);
@@ -924,14 +929,14 @@ export default function CoachProfilePage() {
     });
   };
 
-  const handleDeleteWorkout = async (workoutId) => {
+  const handleDeleteWorkout = async (workoutInstanceTemplateId) => {
     try {
-      const response = await deleteWorkoutPlan(workoutId, true);
+      const response = await deleteWorkoutPlan(workoutInstanceTemplateId, true);
       if (response.error) {
         throw new Error(response.error || 'Something went wrong');
       }
       setRefreshKey((old) => old + 1);
-      showToast('success', intl.formatMessage({ id: 'coach.workout.success.deleted' }), intl.formatMessage({ id: 'coach.workout.success.deleted.message' }));
+      showToast('success', intl.formatMessage({ id: 'common.success' }), intl.formatMessage({ id: 'coach.workout.success.deleted.message' }));
     } catch (error) {
       console.log('error', error);
       showToast('error', 'Error', error.message);
@@ -940,7 +945,6 @@ export default function CoachProfilePage() {
   // Excel import functions
   const onTemplateUpload = (e) => {
     console.log(e);
-    console.log({ severity: 'info', summary: 'Success', detail: 'File Uploaded' });
   };
 
   const onTemplateSelect = (e) => {
@@ -971,18 +975,18 @@ export default function CoachProfilePage() {
     try {
       setLoading(true);
       const {data} = await importExercises(coach.id, formData);
-
+      console.log('data', data);
       onTemplateUpload({ files });
       setRefreshKey((old) => old + 1);
       if (data.duplicateExercises.length > 0) {
         showToast(
           'warn',
-          `Exercises uploaded: ${data.registeredExercisesCount}. Duplicated Exercises: ${data.duplicatesCount}`,
+          `${intl.formatMessage({ id: 'coach.exercise.upload.success' })}: ${data.registeredExercisesCount}. ${intl.formatMessage({ id: 'coach.exercise.upload.duplicated' })}: ${data.duplicatesCount}`,
           `${data.duplicateExercises.map((ex) => `${ex.name} at row ${ex.row}`)}`,
           true
         );
       } else {
-        showToast('success', 'Success', `${data.registeredExercisesCount.map((ex) => `${ex.name} at row ${ex.row}. `)}`);
+        showToast('success', 'Success', `${data.registeredExercises.map((ex) => `${ex.name} at row ${ex.row}. `)}`);
       }
       fileUploadRef.current.clear();
       setSelectedFile(null);
@@ -1186,7 +1190,7 @@ export default function CoachProfilePage() {
               value={selectedType}
               options={typeOptions}
               onChange={(e) => setSelectedType(e.value)}
-              placeholder="Select Assignment Type"
+              placeholder={intl.formatMessage({ id: 'coach.rpe.assign.type' })}
               className="w-full"
             />
           </div>
@@ -1199,7 +1203,7 @@ export default function CoachProfilePage() {
                 value: rpe.id,
               }))}
               onChange={(e) => setSelectedRpe(e.value)}
-              placeholder="Select RPE Method"
+              placeholder={intl.formatMessage({ id: 'coach.rpe.assign.rpe' })}
               className="w-full"
             />
           </div>
@@ -1301,7 +1305,7 @@ export default function CoachProfilePage() {
               <div key={plan.id} className="col-12 md:col-6 lg:col-4">
                 <Card title={plan.name} subTitle={`$${plan.price} / month`} className="h-full">
                   
-                  <p className="m-0">Workouts per week: {plan.workoutsPerWeek}</p>
+                  <p className="m-0">{intl.formatMessage({ id: 'coach.workoutsPerWeek' })}: {plan.workoutsPerWeek}</p>
                   <div className="flex justify-content-between mt-4">
                     <Button
                       label="Edit"
@@ -1474,6 +1478,7 @@ export default function CoachProfilePage() {
           planId={selectedPlan}
           setPlanDetailsIsVisible={setPlanDetailsVisible}
           setRefreshKey={setRefreshKey}
+          isTemplate={true}
           setLoading={setLoading}
         />
       </Dialog>
