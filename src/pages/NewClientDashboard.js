@@ -20,10 +20,10 @@ import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialo
 
 import NewPlanDetail from '../dialogs/NewPlanDetails';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
-import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId } from '../services/workoutService';
+import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId, fetchTrainingSessionWithoutWeeks } from '../services/workoutService';
 import { fetchClientByClientId } from '../services/usersService';
 import '../styles/ClientDashboard.css';
-import { formatDate } from '../utils/UtilFunctions';
+import { formatDate, formatDateToApi } from '../utils/UtilFunctions';
 import WorkoutTable from '../components/WorkoutTable';
 import { Badge } from 'primereact/badge';
 import { useIntl, FormattedMessage } from 'react-intl';
@@ -64,6 +64,8 @@ export default function ClientDashboard() {
   // eslint-disable-next-line
   const [selectedCycleId, setSelectedCycleId] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  //const [assignTrainingSessionVisible, setAssignTrainingSessionVisible] = useState(false);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const calendarRef = useRef(null);
@@ -73,19 +75,45 @@ export default function ClientDashboard() {
   const [refreshKey, setRefreshKey] = useState(1);
   const [cycleOptions, setCycleOptions] = useState([]);
   const [cycleDropdownOptions, setCycleDropdownOptions] = useState([]);
+  const [trainingSessionWithoutWeeks, setTrainingSessionWithoutWeeks] = useState([]);
 
   // Fetch data when the component mounts or refreshKey changes
   useEffect(() => {
     setLoading(true);
+
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleOptions }) => {
         setCycleOptions(cycleOptions);
-        setCalendarEvents(events);
+        console.log('Events', events[0])
+        setCalendarEvents(e => [...events, ...e]);
         const options = cycleOptions.map((cycle) => ({ label: cycle.name, value: cycle.id }));
         options.unshift({ label: intl.formatMessage({ id: 'clientDashboard.cycle.newCycle' }), value: -1 });
         setCycleDropdownOptions(options);
       })
       .catch(error => showToast('error', 'Error fetching training cycles', error.message))
+      .finally(() => setLoading(false));
+
+    fetchTrainingSessionWithoutWeeks()
+      .then(({data}) => {
+        const events = data.map(session => {
+          const start = formatDateToApi(new Date(session.sessionDate));
+
+          return {
+            title: session.workoutInstances[0]?.instanceName ? session.workoutInstances[0].instanceName : session.workoutInstances[0].workout.planName,
+            start: start,
+            extendedProps: {
+              sessionId: session.id,
+              status: session.workoutInstances[0]?.status,
+              workoutInstanceId: session.workoutInstances[0]?.id,
+              cycle: null
+            }
+          }
+        });
+        console.log('Events', events)
+        setCalendarEvents(e => [...events, ...e]);
+        
+      })
+      .catch(error => showToast('error', 'Error fetching training sessions without weeks', error.message))
       .finally(() => setLoading(false));
 
     fetchWorkoutsByClientId(clientId)
@@ -116,7 +144,7 @@ export default function ClientDashboard() {
         showToast('error', 'Error fetching client data', error.message);
       });
       // eslint-disable-next-line
-  }, [clientId, showToast, setLoading, refreshKey]);
+  }, [clientId, refreshKey]);
 
   // Update chart data when selectedExercise changes
   useEffect(() => {
@@ -221,6 +249,17 @@ export default function ClientDashboard() {
     setLoading(true);
     setSelectedPlan(workoutInstanceId);
     setPlanDetailsVisible(true);
+  };
+
+  const handleDateClick = (info) => {
+    // info.date contains the clicked Date
+    // Reset time to only use the date portion
+    const clickedDate = new Date(info.date);
+    clickedDate.setHours(0, 0, 0, 0);
+    setSelectedDate(clickedDate);
+    setSelectedClient(clientId);
+    setSelectedSessionId(null);
+    setAssignSessionVisible(true);
   };
 
   const hidePlanDetails = () => {
@@ -433,6 +472,7 @@ export default function ClientDashboard() {
               locales={allLocales}
               locale={locale}
               firstDay={1}
+              dateClick={handleDateClick} 
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
                 if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
@@ -459,6 +499,7 @@ export default function ClientDashboard() {
             sessionId={selectedSessionId}
             clientId={selectedClient}
             setRefreshKey={setRefreshKey}
+            selectedDate={selectedDate}
           />
           <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} clientId={clientId} setRefreshKey={setRefreshKey} />
           <Dialog header="Plan Details" dismissableMask draggable={false} resizable={false} visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>

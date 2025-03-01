@@ -73,6 +73,7 @@ const fetchTrainingCyclesByClient = async (clientId) => {
   try {
     const response = await fetch(`${apiUrl}/workout/training-cycles/client/clientId/${clientId}`);
     const data = await response.json();
+
     if (data.error) {
       throw new Error(data.error);
     }
@@ -85,7 +86,7 @@ const fetchTrainingCyclesByClient = async (clientId) => {
           const sessionEvents = session.workoutInstances.length > 0
             ? session.workoutInstances.map(workoutInstance => {
               workoutInstance.status = updateStatusLocal(workoutInstance, session);
-              if(session.id === 731) console.log(session)
+              if(session.id === 776) console.log(session)
               return {
                 title: workoutInstance.instanceName ? workoutInstance.instanceName : workoutInstance.workout.planName,
                 //start: getDayMonthYear(session).toISOString().split('T')[0],
@@ -117,6 +118,14 @@ const fetchTrainingCyclesByClient = async (clientId) => {
   }
 };
 
+const fetchTrainingSessionWithoutWeeks = async () => {
+  const response = await fetch(`${apiUrl}/workout/training-session-with-no-weeks`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
 const fetchTrainingCyclesForClientByUserId = async (userId) => {
   const url = `${apiUrl}/workout/training-cycles/client/userId/${userId}`;
   const response = await fetch(url);
@@ -430,6 +439,22 @@ const assignSession = async (sessionId, body) => {
   return data;
 };
 
+const assignTrainingSessionToClient = async (body) => {
+  const response = await fetch(`${apiUrl}/workout/assign-training-session-to-client`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
+
 const unassignWorkoutsFromCycle = async (cycleId, body) => {
   const response = await fetch(`${apiUrl}/workout/delete-instances-cycle/${cycleId}`, {
     method: 'DELETE',
@@ -608,5 +633,7 @@ export {
     updateTrainingCycle,
     deleteTrainingCycle,
     fetchTrainingCycleTemplateById,
-    assignCycleTemplateToClient
+    assignCycleTemplateToClient,
+    assignTrainingSessionToClient,
+    fetchTrainingSessionWithoutWeeks
 };

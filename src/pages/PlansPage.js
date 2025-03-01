@@ -22,7 +22,7 @@ import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { Divider } from 'primereact/divider';
-
+import { formatDateToApi } from '../utils/UtilFunctions';
 
 
 export default function PlansPage() {
@@ -538,12 +538,7 @@ export default function PlansPage() {
         setAssignCycleDialogVisible(true);
     }
 
-    const formatDate = (date) => {
-        const day = date.getDate();
-        const month = date.getMonth() + 1;
-        const year = date.getFullYear();
-        return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-    }
+    
     const handleAssignCycleToClient = async () => {
         if (!selectedCycle || !selectedClient || !startDate || !endDate) {
           showToast('error', 'Error', 'Please select a cycle, client, and start/end dates.');
@@ -552,14 +547,13 @@ export default function PlansPage() {
         setLoading(true);
         const startDateNewDate = new Date(startDate);
         const endDateNewDate = new Date(endDate);
-        console.log(formatDate(startDateNewDate), formatDate(endDateNewDate))
         //return
         try {
             const payload = {
                 cycleTemplateId: selectedCycle.id,
                 clientId: selectedClient.id,
-                startDate: formatDate(startDateNewDate),
-                endDate: formatDate(endDateNewDate),
+                startDate: formatDateToApi(startDateNewDate),
+                endDate: formatDateToApi(endDateNewDate),
             };
             console.log(payload)
             //return

@@ -4,9 +4,9 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
-import { assignSession, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
-
-const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey }) => {
+import { assignSession, assignTrainingSessionToClient, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
+import { formatDateToApi } from '../utils/UtilFunctions';
+const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey, selectedDate }) => {
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
@@ -21,7 +21,6 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
     const loadWorkouts = async () => {
       try {
         const {data} = await findAllWorkoutTemplatesByCoachId(coach.id);
-        console.log(data);
         setWorkouts(data)
       } catch (error) {
         showToast('error', 'Error', error.message);
@@ -36,16 +35,22 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       showToast('error', 'Error', 'Please select a workout');
       return;
     }
-
+    const sessionDate = formatDateToApi(selectedDate);
     const body = {
       sessionId,
       workoutId: selectedWorkout,
-      clientId
+      clientId,
+      sessionDate: sessionDate
     };
-    // return;
+    console.log('Body', body);
+     
     try {
       setLoading(true)
-      await assignSession(sessionId, body);
+      if (sessionId) {
+        await assignSession(sessionId, body);
+      } else {
+        await assignTrainingSessionToClient(body);
+      }
       showToast('success', 'Session assigned successfully');
       onHide();
       setRefreshKey(old=>old+1);

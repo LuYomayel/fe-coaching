@@ -9,6 +9,12 @@ const formatDate = (value) => {
   return `${day}/${month}/${year}`;
 };
 
+const formatDateToApi = (date) => {
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+}
 const isValidYouTubeUrl = (url) => {
   const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/(watch\?v=|embed\/|shorts\/|v\/|.+)?$/;
   return regex.test(url);
@@ -135,4 +141,4 @@ const getDayMonthYear = (session) => {
   return new Date(year, month, day); // Esto crea una fecha sin hora
 };
 
-export { getDayMonthYear, formatDate, isValidYouTubeUrl, extractYouTubeVideoId, sortBySessionDate, updateStatus, getSeverity, validateDates, validateStudentDetails, getYouTubeThumbnail }
+export { getDayMonthYear, formatDate, formatDateToApi, isValidYouTubeUrl, extractYouTubeVideoId, sortBySessionDate, updateStatus, getSeverity, validateDates, validateStudentDetails, getYouTubeThumbnail }

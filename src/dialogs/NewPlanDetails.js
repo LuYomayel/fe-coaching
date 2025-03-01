@@ -42,9 +42,11 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                 setLoading(true);
                 if (isTemplate) {
                     const {data} = await fetchWorkoutInstanceTemplate(planId);
+
                     setWorkoutPlan(data);
                 } else {
                     const {data} = await fetchWorkoutInstance(planId);
+                    console.log('Data', data)
                     data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
                     setWorkoutPlan(data);
                 }
