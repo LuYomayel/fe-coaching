@@ -33,7 +33,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
     const loadWorkouts = async () => {
       try {
         const {data} = await findAllWorkoutTemplatesByCoachId(coach.id);
-        console.log(data);
+        
         setWorkouts(data);
       } catch (error) {
         showToast('error', 'Error', error.message);
@@ -42,16 +42,6 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
 
     if (visible) loadWorkouts();
   }, [showToast, coach.id, visible]);
-
-  useEffect(() => {
-    const loadClient = async () => {
-      const {data} = await fetchClient(clientId);
-      console.log(data)
-    }
-    if (clientId && visible) {
-      loadClient();
-    }
-  }, [clientId, visible]);
 
   useEffect(() => {
     if (cycleOptions && visible) {
@@ -64,6 +54,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
     if (actionType === 'unassign' && cycle !== -1 && selectedDay !== null) {
       try {
         const {data} = await fetchAssignedWorkoutsForCycleDay(cycle, selectedDay); // Fetch para los workouts asignados
+        console.log(data)
         setAssignedWorkouts(data.map(workout => ({
           label: workout.planName,
           value: workout.id
@@ -101,15 +92,15 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
     try {
       setLoading(true);
       if (actionType === 'assign') {
-        const response = await assignWorkoutsToCycle(cycle, clientId, body);
-        if(response && response.trainingSessions && response.trainingSessions.length > 0) {
+        const {data} = await assignWorkoutsToCycle(cycle, clientId, body);
+        if(data && data.trainingSessions && data.trainingSessions.length > 0) {
           showToast('success', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.assign' }), intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.assign.detail' }));
         } else {
           showToast('error', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.error.assign' }), intl.formatMessage({ id: 'assignWorkoutToCycleDialog.error.assign.detail' }));
         }
       } else {
-        const response = await unassignWorkoutsFromCycle(cycle, body); // Implementa la lógica de desasignar
-        if(response.affectedRows > 0) {
+        const {message} = await unassignWorkoutsFromCycle(cycle, body); // Implementa la lógica de desasignar
+        if(message === 'success') {
           showToast('success', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.unassign' }), intl.formatMessage({ id: 'assignWorkoutToCycleDialog.success.unassign.detail' }));
         } else {
           showToast('error', intl.formatMessage({ id: 'assignWorkoutToCycleDialog.error.unassign' }), intl.formatMessage({ id: 'assignWorkoutToCycleDialog.error.unassign.detail' }));

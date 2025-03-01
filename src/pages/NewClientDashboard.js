@@ -115,6 +115,7 @@ export default function ClientDashboard() {
       .catch(error => {
         showToast('error', 'Error fetching client data', error.message);
       });
+      // eslint-disable-next-line
   }, [clientId, showToast, setLoading, refreshKey]);
 
   // Update chart data when selectedExercise changes
@@ -283,7 +284,6 @@ export default function ClientDashboard() {
   };
 
   const showCreateCycleDialog = () => {
-    console.log('clientData', clientData);
     if(clientData.user.subscription.status === 'Active')
       setDialogVisible(true);
     else
@@ -369,8 +369,6 @@ export default function ClientDashboard() {
               ];
             }
             );
-            if(!exercise.completed && !exercise.completedNotAsPlanned)
-              console.log('Expanded data:' , exercise)
             return (
               <AccordionTab key={exercise.id}  header={
                 <>
@@ -434,6 +432,7 @@ export default function ClientDashboard() {
               contentHeight="auto"
               locales={allLocales}
               locale={locale}
+              firstDay={1}
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
                 if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {

@@ -73,7 +73,6 @@ const fetchTrainingCyclesByClient = async (clientId) => {
   try {
     const response = await fetch(`${apiUrl}/workout/training-cycles/client/clientId/${clientId}`);
     const data = await response.json();
-    console.log(data)
     if (data.error) {
       throw new Error(data.error);
     }
@@ -86,9 +85,11 @@ const fetchTrainingCyclesByClient = async (clientId) => {
           const sessionEvents = session.workoutInstances.length > 0
             ? session.workoutInstances.map(workoutInstance => {
               workoutInstance.status = updateStatusLocal(workoutInstance, session);
+              if(session.id === 731) console.log(session)
               return {
                 title: workoutInstance.instanceName ? workoutInstance.instanceName : workoutInstance.workout.planName,
-                start: getDayMonthYear(session).toISOString().split('T')[0],
+                //start: getDayMonthYear(session).toISOString().split('T')[0],
+                start: session.sessionDate,
                 extendedProps: {
                   status: workoutInstance.status,
                   workoutInstanceId: workoutInstance.id,
@@ -98,7 +99,8 @@ const fetchTrainingCyclesByClient = async (clientId) => {
               )
             : [{
                 title: 'no title',
-                start: getDayMonthYear(session).toISOString().split('T')[0],
+                //start: getDayMonthYear(session).toISOString().split('T')[0],
+                start: session.sessionDate,
                 extendedProps: {
                   sessionId: session.id,
                   cycle: cycle.name
@@ -109,7 +111,6 @@ const fetchTrainingCyclesByClient = async (clientId) => {
         })
       )
     );
-    console.log(events, cycles)
     return { events, cycleOptions: cycles };
   } catch (error) {
     throw error;

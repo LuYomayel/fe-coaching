@@ -111,8 +111,6 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
               <Button label="Cancel" icon="pi pi-times" className="p-button-danger" onClick={onClose} />
               <Button label="Assign" icon="pi pi-check" className="p-button-success" onClick={() => handleAssign(index)} loading={loading}/>
             </div>
-            {/* <ConfirmDialog visible={showConfirm === index} onHide={() => setShowConfirm(false)} message="Are you sure you want to assign this plan?"
-              header="Confirmation" icon="pi pi-exclamation-triangle" accept={() => confirmAssign(index)} reject={() => setShowConfirm(false)} /> */}
           </TabPanel>
         ))}
       </TabView>

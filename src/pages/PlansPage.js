@@ -22,6 +22,9 @@ import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { Divider } from 'primereact/divider';
+
+
+
 export default function PlansPage() {
     const [workouts, setWorkouts] = useState([]);
     const [trainingCycleTemplates, setTrainingCycleTemplates] = useState([]);
@@ -73,6 +76,7 @@ export default function PlansPage() {
             }
         };
         loadStudents();
+        // eslint-disable-next-line
     }, [refreshKey]);
 
     useEffect(() => {
@@ -534,19 +538,31 @@ export default function PlansPage() {
         setAssignCycleDialogVisible(true);
     }
 
+    const formatDate = (date) => {
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    }
     const handleAssignCycleToClient = async () => {
         if (!selectedCycle || !selectedClient || !startDate || !endDate) {
           showToast('error', 'Error', 'Please select a cycle, client, and start/end dates.');
           return;
         }
         setLoading(true);
+        const startDateNewDate = new Date(startDate);
+        const endDateNewDate = new Date(endDate);
+        console.log(formatDate(startDateNewDate), formatDate(endDateNewDate))
+        //return
         try {
-          const payload = {
-            cycleTemplateId: selectedCycle.id,
-            clientId: selectedClient.id,
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-          };
+            const payload = {
+                cycleTemplateId: selectedCycle.id,
+                clientId: selectedClient.id,
+                startDate: formatDate(startDateNewDate),
+                endDate: formatDate(endDateNewDate),
+            };
+            console.log(payload)
+            //return
           // Make sure you have created the assignCycleTemplateToClient service call
           await assignCycleTemplateToClient(payload);
           showToast('success', 'Success', 'Cycle template assigned to client successfully.');
@@ -824,8 +840,10 @@ export default function PlansPage() {
                                 }}
                                 showIcon
                                 className="w-full"
-                                minDate={new Date()}
-                                dateFormat="dd/mm/yy"
+                                //minDate={new Date()}
+                                // dateFormat="dd/mm/yy"
+                                //locale={intl.defaultLocale === 'es' ? 'es' : 'en'}
+                                locale={intl.defaultLocale}
                             />
                         </div>
                         <div className="w-full">
@@ -836,6 +854,7 @@ export default function PlansPage() {
                                 showIcon
                                 className="w-full"
                                 dateFormat="dd/mm/yy"
+                                firstDayOfWeek={1}
                             />
                         </div>
                     </div>

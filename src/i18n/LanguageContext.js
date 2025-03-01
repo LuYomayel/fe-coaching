@@ -2,7 +2,8 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { IntlProvider } from 'react-intl';
 import esMessages from './messages/es';
 import enMessages from './messages/en';
-
+import { addLocale} from 'primereact/api'
+import {esLocale} from './messages/esLocale'
 const messages = {
   'es': esMessages,
   'en': enMessages,
@@ -13,8 +14,10 @@ const LanguageContext = createContext();
 export const LanguageProvider = ({ children }) => {
   const [locale, setLocale] = useState(getBrowserLanguage());
 
+
   function getBrowserLanguage() {
     const browserLang = navigator.language.split(/[-_]/)[0];
+    addLocale('es', esLocale)
     return messages[browserLang] ? browserLang : 'en';
   }
 
@@ -24,6 +27,9 @@ export const LanguageProvider = ({ children }) => {
   };
 
   const switchLanguage = (newLocale) => {
+    if (newLocale === 'es') {
+      addLocale('es', esLocale)
+    }
     setLocale(newLocale);
   };
 
