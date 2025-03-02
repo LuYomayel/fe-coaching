@@ -52,6 +52,7 @@ const messages = {
   'common.perceivedDifficulty': 'Perceived difficulty',
   'common.extraNotes': 'Extra notes',
   'common.group': 'Group',
+  'common.days': 'Days',
   'home.success.checkEmail': 'Check your email to continue!',
   // Mensajes de confirmacion
   'assignPlan.confirmation.message': 'Are you sure you want to assign this plan?',
@@ -219,7 +220,7 @@ const messages = {
 
   'coach.tabs.workouts': 'Workouts',
   'coach.tabs.plans': 'Plans',
-  'coach.tabs.exercises': 'Exercise Library',
+  'coach.tabs.exercises': 'Exercises',
   'coach.tabs.subscription': 'Subscription Plans',
   'coach.tabs.rpe': 'RPE Methods',
   
@@ -568,6 +569,29 @@ const messages = {
   'dashboard.calendar.list': 'List',
   
   // NewCoachHome - Additional
+  'coach.home.trainingFrequencyChart': 'Training Frequency Chart',
+  'coach.home.noFrequencyData': 'No frequency data yet',
+  'coach.home.clientsSummary': 'Clients Summary',
+  'coach.home.table.clientName': 'Client',
+  'coach.home.table.lastWorkout': 'Last Workout',
+  'coach.home.table.daysLeft': 'Days Left',
+  'coach.home.table.paymentStatus': 'Payment Status',
+  'coach.home.table.totalSessions': 'Total Sessions',
+  'coach.home.table.totalRevenue': 'Total Revenue',
+  'coach.home.table.header': 'Other Section',
+  'coach.home.table.last30days': 'Last 30 Days',
+  'coach.home.table.didPay': 'Did Pay?',
+  'coach.home.table.nextPayment': 'Next Payment',
+  'coach.home.table.subscriptionStatus': 'Subscription Status',
+  'coach.home.extraSectionInfo': 'Additional content or brief summary.',
+  'coach.home.totalStudents': 'Total Students',
+  'coach.home.paidUp': 'Paid Up',
+  'coach.home.averageDaysLeft': 'Avg. Days Left',
+  'coach.home.studentsStatus': 'Students Status',
+  'coach.home.unpaidClients': 'Unpaid Clients',
+  'coach.home.daysLeft': 'Days Left',
+  'coach.home.last7daysFrequency': 'Last 7 Days Frequency',
+
   'coach.sections.trainingPlans': 'Training Plans',
   'coach.sections.trainingSessions': 'Training Sessions',
   'coach.sections.trainingCycles': 'Training Cycles',
@@ -976,5 +1000,13 @@ const messages = {
   'success.cycleUpdated': 'Cycle updated successfully!',
   'success.cycleDeleted': 'Cycle deleted successfully!',
   'confirm.deleteCycle': 'Are you sure you want to delete this cycle?',
+  'coach.tabs.exercises': 'Exercises',
+  'coach.tabs.workouts': 'Workouts',
+  'coach.rpe.edit': 'Edit RPE Method',
+  'coach.rpe.name': 'Name',
+  'coach.rpe.minValue': 'Minimum Value',
+  'coach.rpe.maxValue': 'Maximum Value',
+  'coach.rpe.step': 'Step',
+  'coach.rpe.confirm.assign': 'Are you sure you want to assign {rpe} to the selected {type}?',
 }; 
 export default messages;

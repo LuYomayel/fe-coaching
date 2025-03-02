@@ -156,6 +156,16 @@ const cancelSubscription = async (clientSubscriptionId) => {
   return data;
 };
 
+// Coach Home Page
+const fetchClientsPaymentStatus = async (coachId) => {
+  const response = await fetch(`${apiUrl}/subscription/clients-payment-status/${coachId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error || 'Something went wrong');
+  }
+  return data;
+}
+
 export {
   fetchCoachSubscription,
   fetchCoachSubscriptionPlans,
@@ -166,5 +176,6 @@ export {
   assignSubscription,
   createOrUpdateCoachPlan,
   registerPayment,
-  cancelSubscription
+  cancelSubscription,
+  fetchClientsPaymentStatus
 }

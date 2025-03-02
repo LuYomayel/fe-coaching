@@ -613,6 +613,34 @@ const assignCycleTemplateToClient = async (payload) => {
   return data;
 }
 
+// Coach Home Page
+const fetchLastTimeTrained = async (coachId) => {
+  const response = await fetch(`${apiUrl}/workout/last-time-trained/${coachId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
+
+const fetchHowLongToFinishCycle = async (coachId) => {
+  const response = await fetch(`${apiUrl}/workout/how-long-to-finish-cycle/${coachId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
+
+const fetchTrainingFrequency = async (coachId) => {
+  const response = await fetch(`${apiUrl}/workout/training-frequency/${coachId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
+
 export { 
     fetchTrainingCyclesByCoachId,
     fetchCoachWorkouts, 
@@ -656,5 +684,8 @@ export {
     assignTrainingSessionToClient,
     fetchTrainingSessionWithoutWeeks,
     fetchDeletedWorkoutTemplatesByCoachId,
-    fetchTrainingSessionWithNoWeekByClientId
+    fetchTrainingSessionWithNoWeekByClientId,
+    fetchLastTimeTrained,
+    fetchHowLongToFinishCycle,
+    fetchTrainingFrequency
 };

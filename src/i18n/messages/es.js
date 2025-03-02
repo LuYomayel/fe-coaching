@@ -52,6 +52,7 @@ const messages = {
   'common.perceivedDifficulty': 'Dificultad percibida',
   'common.extraNotes': 'Notas adicionales',
   'common.group': 'Grupo',
+  'common.days': 'Días',
   
   'home.success.checkEmail': '¡Revisa tu correo para continuar!',
   // Mensajes de confirmacion
@@ -194,7 +195,7 @@ const messages = {
   
   'coach.tabs.workouts': 'Entrenamientos',
   'coach.tabs.plans': 'Planes',
-  'coach.tabs.exercises': 'Biblioteca de Ejercicios',
+  'coach.tabs.exercises': 'Ejercicios',
   'coach.tabs.subscription': 'Planes de Suscripción',
   'coach.tabs.rpe': 'Métodos RPE',
   
@@ -561,6 +562,29 @@ const messages = {
   'dashboard.calendar.list': 'Lista',
   
   // NewCoachHome - Adicionales
+  'coach.home.trainingFrequencyChart': 'Gráfico de Frecuencia de Entrenamiento',
+  'coach.home.noFrequencyData': 'Sin datos de frecuencia aún',
+  'coach.home.clientsSummary': 'Resumen de Clientes',
+  'coach.home.table.clientName': 'Cliente',
+  'coach.home.table.lastWorkout': 'Último Entreno',
+  'coach.home.table.daysLeft': 'Días Restantes',
+  'coach.home.table.paymentStatus': 'Estado de Pago',
+  'coach.home.table.totalSessions': 'Total de Sesiones',
+  'coach.home.table.totalRevenue': 'Total de Ingresos',
+  'coach.home.table.header': 'Otra Sección',
+  'coach.home.table.last30days': 'Últimos 30 Días',
+  'coach.home.table.didPay': '¿Pagó?',
+  'coach.home.table.nextPayment': 'Próx. Pago',
+  'coach.home.table.subscriptionStatus': 'Estado de Suscripción',
+  'coach.home.extraSectionInfo': 'Contenido adicional o breve resumen.',
+  'coach.home.totalStudents': 'Alumnos Totales',
+  'coach.home.paidUp': 'Al Día en Pagos',
+  'coach.home.averageDaysLeft': 'Prom. Días Restantes',
+  'coach.home.studentsStatus': 'Estado de Alumnos',
+  'coach.home.unpaidClients': 'Clientes Impagados',
+  'coach.home.daysLeft': 'Días Restantes',
+  'coach.home.last7daysFrequency': 'Frecuencia de Entrenamiento (Últimos 7 Días)',
+  
   'coach.sections.trainingPlans': 'Sesiones de Entrenamiento',
   'coach.sections.recentActivity': 'Actividad Reciente',
   'coach.sections.recentMessages': 'Mensajes Recientes',
@@ -981,5 +1005,13 @@ const messages = {
   'success.cycleUpdated': '¡Ciclo actualizado exitosamente!',
   'success.cycleDeleted': '¡Ciclo eliminado exitosamente!',
   'confirm.deleteCycle': '¿Estás seguro de que deseas eliminar este ciclo?',
+  'coach.tabs.exercises': 'Ejercicios',
+  'coach.tabs.workouts': 'Entrenamientos',
+  'coach.rpe.edit': 'Editar Método RPE',
+  'coach.rpe.name': 'Nombre',
+  'coach.rpe.minValue': 'Valor Mínimo',
+  'coach.rpe.maxValue': 'Valor Máximo',
+  'coach.rpe.step': 'Paso',
+  'coach.rpe.confirm.assign': '¿Estás seguro de que deseas asignar {rpe} al {type} seleccionado?',
 }; 
 export default messages;
