@@ -8,7 +8,6 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Fieldset } from 'primereact/fieldset';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
-import { Toast } from 'primereact/toast';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useIntl, FormattedMessage } from 'react-intl';
 

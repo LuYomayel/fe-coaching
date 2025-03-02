@@ -6,7 +6,6 @@ import { formatDate } from '../utils/UtilFunctions';
 import { UserContext } from '../utils/UserContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useToast } from '../utils/ToastContext';
-import { useNavigate } from 'react-router-dom';
 import {
   fetchLastTimeTrained,
   fetchHowLongToFinishCycle,
@@ -18,8 +17,8 @@ import { useIntl } from 'react-intl';
 export default function CoachHomePage() {
   const { setLoading } = useSpinner();
   const showToast = useToast();
-  const { user, coach } = useContext(UserContext);
-  const navigate = useNavigate();
+  const { coach } = useContext(UserContext);
+
   const intl = useIntl();
 
   // === Estados de datos de servicios ===

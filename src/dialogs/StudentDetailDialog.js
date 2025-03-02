@@ -8,7 +8,6 @@ import { useToast } from '../utils/ToastContext';
 import { validateStudentDetails } from '../utils/UtilFunctions';
 import { useIntl } from 'react-intl';
 import { updateClient } from '../services/usersService';
-const apiUrl = process.env.REACT_APP_API_URL;
 
 const StudentDetailDialog = ({ student, onClose }) => {
   const intl = useIntl();

@@ -3,7 +3,6 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Accordion, AccordionTab } from 'primereact/accordion';
-import { Badge } from 'primereact/badge';
 import { Toast } from 'primereact/toast';
 import { fetchWorkoutInstance, deleteWorkoutPlan, fetchWorkoutInstanceTemplate, getRpeMethods } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +18,7 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
     const [selectedVideo, setSelectedVideo] = useState('');
     const toast = useRef(null);
     const navigate = useNavigate();
-    const { user, coach, client } = useContext(UserContext);
+    const { user, client } = useContext(UserContext);
     const { showConfirmationDialog } = useConfirmationDialog();
     const showToast = useToast();
     const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));

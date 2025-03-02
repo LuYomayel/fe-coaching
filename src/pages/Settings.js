@@ -7,22 +7,18 @@ import { useIntl, FormattedMessage } from 'react-intl';
 import { useTheme } from '../utils/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { Dialog } from 'primereact/dialog';
+
 import { InputText } from 'primereact/inputtext';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 export default function Settings() {
   const intl = useIntl();
   const { isDarkMode, setIsDarkMode } = useTheme();
   const { locale, switchLanguage } = useLanguage();
-  const [viewPreference, setViewPreference] = useState('default');
-  const [allowIncompleteStudent, setAllowIncompleteStudent] = useState(true);
-  const [developerOptions, setDeveloperOptions] = useState(false);
+
+
+
   const { setLoading } = useSpinner();
-  const [showPropertyDialog, setShowPropertyDialog] = useState(false);
-  const [plan, setPlan] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null);
-  const [selectedExercise, setSelectedExercise] = useState(null);
-  const [propertyList, setPropertyList] = useState([]);
+
   const [propertyUnits, setPropertyUnits] = useState({
     height: 'cm',
     sets: '',
@@ -36,10 +32,6 @@ export default function Settings() {
     distance: 'km'
   });
 
-  const viewOptions = [
-    { label: intl.formatMessage({ id: 'settings.view.default' }), value: 'default' },
-    { label: intl.formatMessage({ id: 'settings.view.excel' }), value: 'excel' }
-  ];
 
   const languageOptions = [
     { label: intl.formatMessage({ id: 'settings.language.es' }), value: 'es' },

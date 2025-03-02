@@ -13,7 +13,6 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import { fetchTrainingCyclesForClientByUserId, fetchTrainingSessionWithNoWeekByClientId } from '../services/workoutService';
-import NewPlanDetail from '../dialogs/NewPlanDetails';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { getDayMonthYear } from '../utils/UtilFunctions';
 import { useIntl, FormattedMessage } from 'react-intl';
@@ -106,6 +105,7 @@ export default function NewStudentHome() {
     };
     
     fetchTrainingData();
+    // eslint-disable-next-line
   }, [user.userId, refreshKey]);
 
   

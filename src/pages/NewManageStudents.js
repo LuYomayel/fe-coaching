@@ -19,7 +19,6 @@ import AssignSubscriptionDialog from '../dialogs/AssignSubscriptionDialog';
 import RegisterPaymentDialog from '../dialogs/RegisterPaymentDialog';
 import StudentDetailDialog from '../dialogs/StudentDetailDialog';
 import { cancelSubscription } from '../services/subscriptionService';
-import { useChatSidebar } from '../utils/ChatSideBarContext';
 import { formatDate } from '../utils/UtilFunctions';
 import { InputIcon } from 'primereact/inputicon';
 import { IconField } from 'primereact/iconfield';
@@ -29,7 +28,6 @@ import { Tooltip } from 'primereact/tooltip';
 const apiUrl = process.env.REACT_APP_API_URL;
 export default function NewManageStudentsPage() {
   const { user } = useContext(UserContext);
-  const { openChatSidebar, setSelectedChat } = useChatSidebar();
   const [students, setStudents] = useState([]);
   const showToast = useToast();
 
@@ -202,10 +200,7 @@ export default function NewManageStudentsPage() {
     navigate(`/client-dashboard/${clientId}`);
   };
 
-  const sendMessage = (student) => {
-    setSelectedChat(student);
-    openChatSidebar();
-  };
+  
 
   const openNewStudentDialog = () => {
     setIsNewStudentDialogVisible(true);

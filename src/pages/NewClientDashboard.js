@@ -17,8 +17,6 @@ import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import AssignWorkoutToCycleDialog from '../dialogs/AssignWorkoutToCycleDialog';
 import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialog';
-
-import NewPlanDetail from '../dialogs/NewPlanDetails';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId, fetchTrainingSessionWithNoWeekByClientId } from '../services/workoutService';
 import { fetchClientByClientId } from '../services/usersService';
@@ -75,7 +73,6 @@ export default function ClientDashboard() {
   const [refreshKey, setRefreshKey] = useState(1);
   const [cycleOptions, setCycleOptions] = useState([]);
   const [cycleDropdownOptions, setCycleDropdownOptions] = useState([]);
-  const [trainingSessionWithoutWeeks, setTrainingSessionWithoutWeeks] = useState([]);
 
   // Fetch data when the component mounts or refreshKey changes
   useEffect(() => {

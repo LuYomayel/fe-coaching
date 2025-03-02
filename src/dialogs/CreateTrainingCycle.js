@@ -23,14 +23,17 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
   const [startDate, setStartDate] = useState(null);
   const [durationInMonths, setDurationInMonths] = useState(null);
   const [durationInWeeks, setDurationInWeeks] = useState(null);
+  // eslint-disable-next-line
   const [clients, setClients] = useState([]);
-  const [selectedClientId, setSelectedClientId] = useState(null);
+
   const { showConfirmationDialog } = useConfirmationDialog();
   const [loading, setLoading] = useState(false);
   const [assignments, setAssignments] = useState([]);
   const [workouts, setWorkouts] = useState([]);
   const [bodyCycle, setBodyCycle] = useState(null);
+  // eslint-disable-next-line
   const [selectedDay, setSelectedDay] = useState(null);
+  // eslint-disable-next-line
   const [assignedWorkouts, setAssignedWorkouts] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const daysOfWeek = [

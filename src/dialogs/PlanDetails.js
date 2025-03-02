@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
 import { Toast } from 'primereact/toast';
 import { fetchWorkoutInstance, fetchWorkoutInstanceTemplate, deleteWorkoutPlan, getRpeMethods } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
@@ -12,8 +10,6 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl';
-import { useTheme } from '../utils/ThemeContext';
-import { FaGripVertical } from 'react-icons/fa';
 
 export default function NewPlanDetailHorizontal({
   planId,
@@ -32,7 +28,6 @@ export default function NewPlanDetailHorizontal({
   const [rpeMethods, setRpeMethods] = useState([]);
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState('');
-  const { isDarkMode } = useTheme();
 
   const [workoutPlan, setWorkoutPlan] = useState({
     groups: [],

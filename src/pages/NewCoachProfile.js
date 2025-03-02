@@ -16,7 +16,7 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchCoachWorkouts, fetchTrainingCyclesByCoachId, getRpeMethods, deleteWorkoutPlan, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
+import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchTrainingCyclesByCoachId, getRpeMethods, deleteWorkoutPlan, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
 import { fetchCoach, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
 import {
   createOrUpdateCoachPlan,
@@ -24,7 +24,6 @@ import {
   fetchCoachSubscriptionPlans,
 } from '../services/subscriptionService';
 import { useSpinner } from '../utils/GlobalSpinner'; // <- spinner context
-import NewPlanDetail from '../dialogs/NewPlanDetails';
 import { extractYouTubeVideoId, getYouTubeThumbnail, isValidYouTubeUrl } from '../utils/UtilFunctions';
 import { MultiSelect } from 'primereact/multiselect';
 import { FilterMatchMode } from 'primereact/api';
@@ -527,18 +526,24 @@ export default function CoachProfilePage() {
     };
 
     try {
-      let response;
+      
       if (dialogMode === 'create') {
-        response = await createExercise(body);
+        const {message} = await createExercise(body);
+        if (message !== 'success') {
+          throw new Error(message);
+        } else {
+          showToast('success', 'Success', intl.formatMessage({ id: 'coach.exercise.success.created' }));
+        }
       } else {
-        response = await updateExercise(newExercise.id, body);
+        const {message} = await updateExercise(newExercise.id, body);
+        if (message !== 'success') {
+          throw new Error(message);
+        } else {
+          showToast('success', 'Success', intl.formatMessage({ id: 'coach.exercise.success.updated' }));
+        }
       }
 
-      if (dialogMode === 'create') {
-        showToast('success', 'Success', 'New exercise created successfully');
-      } else {
-        showToast('success', 'Success', 'Exercise updated successfully');
-      }
+      
 
       closeExerciseDialog();
       setRefreshKey((old) => old + 1);

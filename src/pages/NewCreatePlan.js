@@ -88,6 +88,7 @@ const NewCreatePlan = ({ isEdit }) => {
   useEffect(() => {
     // Verificar si la ruta actual incluye 'edit-template'
     setIsTemplate(pathname.includes('edit-template'));
+    // eslint-disable-next-line
   }, []);
 
 
@@ -101,6 +102,7 @@ const NewCreatePlan = ({ isEdit }) => {
   const [editingGroupName, setEditingGroupName] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedExercise, setSelectedExercise] = useState(null);
+  // eslint-disable-next-line
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [showPropertyDialog, setShowPropertyDialog] = useState(false);
   const [exercises, setExercises] = useState([]);
@@ -169,6 +171,7 @@ const NewCreatePlan = ({ isEdit }) => {
     };
 
     fetchPlanDetails();
+    // eslint-disable-next-line
   }, [isTemplate]);
 
   useEffect(() => {
@@ -192,6 +195,7 @@ const NewCreatePlan = ({ isEdit }) => {
     };
 
     cargarEjercicios();
+    // eslint-disable-next-line
   }, [showToast]);
 
   const addExerciseGroup = () => {

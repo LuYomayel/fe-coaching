@@ -70,6 +70,10 @@ const messages = {
   'coach.workout.confirm.delete': 'Are you sure you want to delete this workout?',
   
   'coach.exercise.confirm.upload': 'Are you sure you want to upload {rowsCount} exercises?',
+  
+  'coach.exercise.success.created': 'Exercise created successfully',
+  'coach.exercise.success.updated': 'Exercise updated successfully',
+  
   'coach.rpe.confirm.delete': 'Are you sure you want to delete this RPE Method?',
   'coach.rpe.confirm.assign': 'Are you sure you want to assign {rpe} to the selected {type}?',
   'coach.plan.confirm.clear': 'Are you sure you want to clear the entire workout plan?',
@@ -902,11 +906,6 @@ const messages = {
 
   'coach.rpe.edit': 'Edit RPE Method',
 
-  'coach.rpe.valuesMeta': 'Values Meta',
-  'coach.rpe.value': 'Value',
-  'coach.rpe.color': 'Color (e.g., #FF0000)',
-  'coach.rpe.emoji': 'Emoji (e.g., 🔥)',
-
   // AssignWorkoutToCycleDialog
   'assignWorkoutToCycleDialog.cycle': 'Cycle',
   'assignWorkoutToCycleDialog.assignWorkouts': 'Assign Workouts',
@@ -1005,13 +1004,5 @@ const messages = {
   'success.cycleUpdated': 'Cycle updated successfully!',
   'success.cycleDeleted': 'Cycle deleted successfully!',
   'confirm.deleteCycle': 'Are you sure you want to delete this cycle?',
-  'coach.tabs.exercises': 'Exercises',
-  'coach.tabs.workouts': 'Workouts',
-  'coach.rpe.edit': 'Edit RPE Method',
-  'coach.rpe.name': 'Name',
-  'coach.rpe.minValue': 'Minimum Value',
-  'coach.rpe.maxValue': 'Maximum Value',
-  'coach.rpe.step': 'Step',
-  'coach.rpe.confirm.assign': 'Are you sure you want to assign {rpe} to the selected {type}?',
 }; 
 export default messages;

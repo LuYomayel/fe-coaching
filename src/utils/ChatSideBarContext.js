@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { fetchUnreadMessages } from '../services/usersService';
 import { UserContext } from './UserContext';
 import io from 'socket.io-client';
 import { useToast } from './ToastContext';

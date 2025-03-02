@@ -1011,13 +1011,8 @@ const messages = {
   'success.cycleUpdated': '¡Ciclo actualizado exitosamente!',
   'success.cycleDeleted': '¡Ciclo eliminado exitosamente!',
   'confirm.deleteCycle': '¿Estás seguro de que deseas eliminar este ciclo?',
-  'coach.tabs.exercises': 'Ejercicios',
-  'coach.tabs.workouts': 'Entrenamientos',
-  'coach.rpe.edit': 'Editar Método RPE',
-  'coach.rpe.name': 'Nombre',
-  'coach.rpe.minValue': 'Valor Mínimo',
-  'coach.rpe.maxValue': 'Valor Máximo',
-  'coach.rpe.step': 'Paso',
-  'coach.rpe.confirm.assign': '¿Estás seguro de que deseas asignar {rpe} al {type} seleccionado?',
+
+  'coach.exercise.success.created': 'Ejercicio creado exitosamente',
+  'coach.exercise.success.updated': 'Ejercicio actualizado exitosamente',
 }; 
 export default messages;

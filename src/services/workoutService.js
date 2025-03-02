@@ -1,5 +1,3 @@
-import { getDayMonthYear } from "../utils/UtilFunctions";
-
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const createExercises = async (exercises) => {

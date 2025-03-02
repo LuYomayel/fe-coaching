@@ -63,8 +63,7 @@ export const UserProvider = ({ children }) => {
       
     }
     checkEverything();
-
-    
+  // eslint-disable-next-line
   }, []);
 
   const fetchUserData = async (userId) => {

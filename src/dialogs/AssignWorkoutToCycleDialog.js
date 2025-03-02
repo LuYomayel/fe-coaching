@@ -5,10 +5,9 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
-import { assignWorkoutsToCycle, fetchCoachWorkouts, fetchAssignedWorkoutsForCycleDay, unassignWorkoutsFromCycle, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
+import { assignWorkoutsToCycle, fetchAssignedWorkoutsForCycleDay, unassignWorkoutsFromCycle, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
 import { useIntl } from 'react-intl';
 import '../styles/AssignWorkoutToCycleDialog.css';
-import { fetchClient } from '../services/usersService';
 
 const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, cycleOptions, actionType }) => {
   const intl = useIntl();
@@ -17,7 +16,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
   const [assignments, setAssignments] = useState([{ workoutId: null, dayOfWeek: null }]);
   const [cycle, setCycle] = useState(-1);
   const [cycles, setCycles] = useState([]);
-  const { user, coach } = useContext(UserContext);
+  const { coach } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null); // Nuevo estado para el día seleccionado
   const [assignedWorkouts, setAssignedWorkouts] = useState([]); // Estado para manejar los entrenamientos asignados
