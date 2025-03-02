@@ -11,13 +11,13 @@ import { useChatSidebar } from '../utils/ChatSideBarContext';
 //import { Badge } from 'primereact/badge';
 //import { fetchLastMessages } from '../services/usersService'
 import { useIntl } from 'react-intl';
-
+import Spinner from '../utils/LittleSpinner';
 export default function Header() {
   const intl = useIntl();
   // eslint-disable-next-line
   const { isChatSidebarOpen, closeChatSidebar, openChatSidebar } = useChatSidebar();
   const op = useRef(null);
-  const { user, coach, client, setUser } = useContext(UserContext);
+  const { user, client, setUser, isLoading } = useContext(UserContext);
   const navigate = useNavigate();
   /*
   const notificationOp = useRef(null);
@@ -104,8 +104,19 @@ export default function Header() {
     };
     */
 
-    if (!user || (user && !user.isVerified) || (user && (!coach && !client)) || (user && client && client.user.subscription.status === 'Inactive')) {
+    if (isLoading) {
+      return <Spinner />;
+    }
+  
+    if (!user || !user.isVerified) {
       return null;
+    }
+  
+    if (user.userType === 'client') {
+      // Check that client and client.user exist, then check subscription status safely.
+      if (!client || !client.user || client.user.subscription?.status === 'Inactive') {
+        return null;
+      }
     }
 
   return (

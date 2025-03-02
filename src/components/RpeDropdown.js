@@ -40,7 +40,9 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
     try {
       setLoading(true);
       setError(null);
-      const methods = await getRpeMethods(client.coach.user.id);
+      const {data} = await getRpeMethods(client.coach.user.id);
+      // console.log(data)
+      const methods = data;
       setRpeMethods(methods);
     } catch (error) {
       setError('Error al cargar los métodos RPE');
@@ -56,21 +58,22 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchWorkoutInstance(planId);
+      const {data} = await fetchWorkoutInstance(planId);
       setWorkout(data);
       
-      const assignedRpeMethod = rpeMethods.find(
+      let assignedRpeMethod = rpeMethods.find(
         (method) => method.name === data.assignedRpe
       );
-      
+
+      // Si no hay método RPE asignado, usar el primero disponible
       if (!assignedRpeMethod) {
-        throw new Error('Método RPE no encontrado');
+        assignedRpeMethod = rpeMethods[0];
       }
       
       setSelectedRpeMethod(assignedRpeMethod);
     } catch (error) {
       setError('Error al cargar el entrenamiento');
-      showToast('error', 'Error', 'No se pudo cargar el entrenamiento');
+      showToast('error', 'Error', error.message);
     } finally {
       setLoading(false);
     }
@@ -131,12 +134,16 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
 
   return (
     <div className="rpe-dropdown">
-      {shouldUseInputNumber ? (
-        <InputNumber
-          value={selectedRpe}
-          min={selectedRpeMethod.minValue}
-          max={selectedRpeMethod.maxValue}
-          step={selectedRpeMethod.step}
+      <div className="rpe-dropdown-name">
+        <label className="block mb-1"> {selectedRpeMethod.name}: </label>
+      </div>
+      <div>
+        {shouldUseInputNumber ? (
+          <InputNumber
+            value={selectedRpe}
+            min={selectedRpeMethod.minValue}
+            max={selectedRpeMethod.maxValue}
+            step={selectedRpeMethod.step}
           onValueChange={handleChange}
           placeholder="Ingrese valor RPE"
           className="p-inputnumber-sm"
@@ -157,6 +164,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
           className="w-full"
         />
       )}
+      </div>
     </div>
   );
 }

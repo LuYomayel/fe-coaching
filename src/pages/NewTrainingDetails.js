@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
@@ -27,7 +27,6 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
   const { user } = useContext(UserContext);
   const showToast = useToast();
   const { loading, setLoading } = useSpinner();
-  const toast = useRef(null);
   const intl = useIntl();
 
   const [plan, setPlan] = useState(null);
@@ -35,19 +34,21 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [currentVideoUrl, setCurrentVideoUrl] = useState('');
   const [finishDialogVisible, setFinishDialogVisible] = useState(false);
+  const [completedGroups, setCompletedGroups] = useState([]);
   const [isClientTraining, setIsClientTraining] = useState(isTraining);
 
   useEffect(() => {
     const fetchPlan = async () => {
       try {
         setLoading(true);
-        const data = await fetchWorkoutInstance(planId);
+        const {data} = await fetchWorkoutInstance(planId);
         if (data.status === 'completed') setIsClientTraining(false);
-        console.log('Plan data: ', data);
+         console.log('Plan data: ', data);
         data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
         setPlan(data);
       } catch (error) {
-        showToast('error', 'Error fetching plan details', error.message);
+        console.log(error)
+        //showToast('error', 'Error fetching plan details', error.message);
       } finally {
         setLoading(false);
       }
@@ -130,7 +131,18 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
       );
 
       // Actualiza el estado del grupo (agrega un campo `groupCompleted` en el objeto `newProgress` o usa otro estado)
-      newProgress[group.id] = { ...newProgress[group.id], groupCompleted: allExercisesCompleted };
+      setCompletedGroups(prevCompletedGroups => {
+        const newCompletedGroups = [...prevCompletedGroups];
+        const groupIndex = newCompletedGroups.findIndex(g => g.id === group.id);
+        
+        if (groupIndex >= 0) {
+          newCompletedGroups[groupIndex] = { ...newCompletedGroups[groupIndex], completed: allExercisesCompleted };
+        } else {
+          newCompletedGroups.push({ id: group.id, completed: allExercisesCompleted });
+        }
+        
+        return newCompletedGroups;
+      });
 
 
       return newProgress;
@@ -157,12 +169,12 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
     const exerciseFeedbackArray = Object.entries(exerciseProgress)
       .map(([exerciseId, progress]) => {
         const sets = Object.values(progress.sets || {});
-        const group = plan.groups.find((group) => group.exercises.some((ex) => ex.id === exerciseId));
+        const group = plan.groups.find((group) => group.exercises.some((ex) => ex.id === parseInt(exerciseId)));
         if (!group) {
           showToast('error', 'Error', intl.formatMessage({ id: 'training.error.exerciseNotFound' }));
           return null;
         }
-        const originalExercise = group.exercises.find((ex) => ex.id === exerciseId);
+        const originalExercise = group.exercises.find((ex) => ex.id === parseInt(exerciseId));
         const allFieldsFilled = sets.every((set) =>
           Object.keys(originalExercise).every((key) => originalExercise[key] === '' || set[key] !== '')
         );
@@ -199,6 +211,8 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
       additionalNotes,
     };
 
+    console.log(body)
+    setLoading(true);
     submitFeedback(planId, body)
       .then(() => {
         setExerciseProgress({});
@@ -212,6 +226,9 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
       .catch((error) => {
         showToast('error', 'Error', error.message);
         setFinishDialogVisible(false);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -228,12 +245,11 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
 
   return (
     <div className="training-plan-details">
-      <Toast ref={toast} />
       <Card className="mb-3">
         <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">
           <FormattedMessage id="training.title" />
         </h1>
-        <h2 className="text-xl md:text-2xl mb-1 md:mb-2">{plan.workout.planName}</h2>
+        <h2 className="text-xl md:text-2xl mb-1 md:mb-2">{plan.instanceName ? plan.instanceName : plan.workout.planName}</h2>
         {!plan.isTemplate && (
           <p className="text-lg md:text-xl">
             <FormattedMessage id="training.status" />: {plan.status}
@@ -243,14 +259,21 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
 
       <div className="mobile-view md:hidden">
         <Accordion>
-          {plan.groups.map((group, groupIndex) => (
+          {plan.groups.map((group, groupIndex) => {
+            const groupStatus = completedGroups.find(g => g.id === group.id);
+            const statusIcon = groupStatus?.completed 
+              ? <i className="pi pi-check-circle" style={{ color: 'green', fontSize: '1.2rem' }} /> 
+              : <i className="pi pi-clock" style={{ color: 'orange', fontSize: '1.2rem' }} />;
+            return (
             <AccordionTab 
               key={groupIndex} 
               header={
-                <FormattedMessage 
-                  id="training.group" 
-                  values={{ number: group.groupNumber }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>
+                    <FormattedMessage id="training.group" values={{ number: group.groupNumber }} />
+                  </span>
+                  <span>{statusIcon}</span>
+                </div>
               }
             >
               <p>
@@ -282,6 +305,8 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                               exercise[property] !== null &&
                               property !== 'completed' &&
                               property !== 'rpe' &&
+                              property !== 'rowIndex' &&
+                              property !== 'setLogs' &&
                               property !== 'comments' &&
                               property !== 'completedNotAsPlanned' && (
                                 <div key={propertyIndex} className="p-field exercise-field">
@@ -318,7 +343,9 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                                         property !== 'completed' &&
                                         property !== 'completedNotAsPlanned' &&
                                         property !== 'rpe' &&
+                                        property !== 'rowIndex' &&
                                         property !== 'sets' &&
+                                        property !== 'setLogs' &&
                                         property !== 'comments' && (
                                           <div key={property} className="p-field exercise-field mb-2">
                                             <label htmlFor={`${property}-${exercise.id}-${setIndex}`} className="block mb-1">
@@ -346,7 +373,6 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                                 <label htmlFor={`completed-${exercise.id}`} className="ml-2">Completed</label>
                               </div>
                               <div className="p-field">
-                                <label htmlFor={`rating-${exercise.id}`} className="block mb-1">RPE: </label>
                                 <RpeDropdownComponent
                                   selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
                                   onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
@@ -409,7 +435,8 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                 </Card>
               ))}
             </AccordionTab>
-          ))}
+            )
+          })}
         </Accordion>
       </div>
 
@@ -441,6 +468,8 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                             exercise[property] !== null &&
                             property !== 'completed' &&
                             property !== 'rpe' &&
+                            property !== 'rowIndex' &&
+                            property !== 'setLogs' &&
                             property !== 'comments' &&
                             property !== 'completedNotAsPlanned' && (
                               <div key={propertyIndex} className="p-field exercise-field">
@@ -475,6 +504,8 @@ export default function NewTrainingPlanDetails({ setPlanDetailsVisible, setRefre
                                       property !== 'completed' &&
                                       property !== 'completedNotAsPlanned' &&
                                       property !== 'rpe' &&
+                                      property !== 'rowIndex' &&
+                                      property !== 'setLogs' &&
                                       property !== 'sets' &&
                                       property !== 'comments' && (
                                         <div key={property} className="p-field exercise-field mb-2">

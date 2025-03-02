@@ -69,7 +69,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
           <label htmlFor="workout">Workout</label>
             <Dropdown id="workouts" 
             options={workouts} 
-            optionLabel="planName" 
+            optionLabel={(option) => option.instanceName ? option.instanceName : option.planName}
             optionValue="id" 
             value={selectedWorkout} 
             onChange={(e) => setSelectedWorkout(e.value)} 

@@ -34,6 +34,7 @@ import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
 import { createExercise, deleteExercise, fetchBodyAreas, fetchCoachExercises, importExercises, updateExercise } from '../services/exercisesService';
 import { ProgressBar } from 'primereact/progressbar';
 import { Tooltip } from 'primereact/tooltip';
+import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function CoachProfilePage() {
@@ -1470,16 +1471,23 @@ export default function CoachProfilePage() {
         header={intl.formatMessage({ id: 'coach.workout.details' })}
         visible={planDetailsVisible}
         className="responsive-dialog"
-        style={{ width: '50vw' }}
+        style={{ width: '80vw' }}
         onHide={() => setPlanDetailsVisible(false)}
       >
-        <NewPlanDetail
+        {/*<NewPlanDetail
           isCoach={true}
           planId={selectedPlan}
           setPlanDetailsIsVisible={setPlanDetailsVisible}
           setRefreshKey={setRefreshKey}
           isTemplate={true}
           setLoading={setLoading}
+        />*/}
+        <NewPlanDetailHorizontal
+          planId={selectedPlan}
+          setPlanDetailsVisible={setPlanDetailsVisible}
+          setRefreshKey={setRefreshKey}
+          setLoading={setLoading}
+          isTemplate={true}
         />
       </Dialog>
       {renderRpeMethodDialog()}

@@ -5,7 +5,7 @@ import { Dialog } from 'primereact/dialog';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Badge } from 'primereact/badge';
 import { Toast } from 'primereact/toast';
-import { fetchWorkoutInstance, deleteWorkoutPlan, fetchWorkoutInstanceTemplate } from '../services/workoutService';
+import { fetchWorkoutInstance, deleteWorkoutPlan, fetchWorkoutInstanceTemplate, getRpeMethods } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
 import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
 import { useToast } from '../utils/ToastContext';
@@ -19,10 +19,11 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
     const [selectedVideo, setSelectedVideo] = useState('');
     const toast = useRef(null);
     const navigate = useNavigate();
-    const { user, coach } = useContext(UserContext);
+    const { user, coach, client } = useContext(UserContext);
     const { showConfirmationDialog } = useConfirmationDialog();
     const showToast = useToast();
     const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
+    const [rpeMethods, setRpeMethods] = useState([]);
     const [workoutPlan, setWorkoutPlan] = useState({
         groups: [],
         workout: {
@@ -43,10 +44,10 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                 if (isTemplate) {
                     const {data} = await fetchWorkoutInstanceTemplate(planId);
                     data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
-                    console.log('Data', data);
                     setWorkoutPlan(data);
                 } else {
                     const {data} = await fetchWorkoutInstance(planId);
+                    console.log('data', data);
                     data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber)
                     setWorkoutPlan(data);
                 }
@@ -59,6 +60,23 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
 
         if (planId) fetchPlanDetails();
     }, [planId, setLoading, showToast, isTemplate]);
+
+    useEffect(() => {
+        const fetchRpeMethods = async () => {
+            try {
+                setLoading(true);
+                
+                const {data} = await getRpeMethods(client.coach.user.id || user.userId);
+                setRpeMethods(data);
+          } catch (error) {
+            showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
+          } finally {
+                setLoading(false);
+            }
+        }
+        if (!isTemplate) fetchRpeMethods();
+        // eslint-disable-next-line
+    }, [isTemplate, client.coach.user.id, user.userId]);
 
     const handleEdit = () => {
         navigate(`/plans/edit/${planId}`);
@@ -103,6 +121,71 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
             showToast('error', 'Error', error.message);
         }
     };
+
+    const renderSetLogs = (setLogs) => {
+        if (!setLogs || setLogs.length === 0) {
+          return <p style={{ fontStyle: 'italic', color: '#666' }}>No set logs available</p>;
+        }
+      
+        // Define the possible columns (excluding "setNumber" which we always want)
+        const possibleKeys = [
+          'repetitions',
+          'weight',
+          'time',
+          'distance',
+          'tempo',
+          'notes',
+          'difficulty',
+          'duration',
+          'restInterval',
+        ];
+      
+        // Determine which columns have at least one non-empty value
+        const columns = possibleKeys.filter((key) =>
+          setLogs.some((log) => log[key] !== null && log[key] !== '')
+        );
+      
+        return (
+            <Accordion className="p-mt-2">
+              <AccordionTab header={intl.formatMessage({ id: 'exercise.properties.setLogs' })}>
+                <div className="p-datatable p-component" style={{ width: '100%', overflowX: 'auto' }}>
+                  <table className="p-datatable-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--surface-border)' }}>
+                        <th style={{ padding: '0.5rem', textAlign: 'left' }}>Set</th>
+                        {columns.map((col) => (
+                          <th
+                            key={col}
+                            style={{
+                              padding: '0.5rem',
+                              textAlign: 'left',
+                              textTransform: 'capitalize',
+                              borderBottom: '1px solid var(--surface-border)',
+                            }}
+                          >
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {setLogs.map((log) => (
+                        <tr key={log.id} style={{ borderBottom: '1px solid var(--surface-border)' }}>
+                          <td style={{ padding: '0.5rem' }}>{log.setNumber}</td>
+                          {columns.map((col) => (
+                            <td key={col} style={{ padding: '0.5rem' }}>
+                              {log[col] !== null && log[col] !== '' ? log[col] : '-'}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </AccordionTab>
+            </Accordion>
+          );
+      };
 
     const renderExerciseDetails = (exercise, group) => (
         <div className="flex flex-column md:flex-row align-items-center mb-3" key={exercise.id}>
@@ -224,24 +307,28 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                 </div>
             </div>
             {/* Datos de feedback */}
-            <div className="w-full md:w-12">
+            <div className="w-full md:w-12 ">
                 <div className="grid">
-                    {exercise.completed !== undefined && (
-                        <div className="col-6 md:col-3">
-                            {intl.formatMessage({ id: 'exercise.properties.completed' })}: {exercise.completed ? 'Sí' : 'No'}
+                    {exercise.completed ? (
+                        <div className="col-3 md:col-3 w-2">
+                            {intl.formatMessage({ id: 'exercise.properties.completed' })}
                         </div>
-                    )}
-                    {exercise.completedNotAsPlanned && (
-                        <div className="col-6 md:col-3">
-                            {intl.formatMessage({ id: 'exercise.properties.completedNotAsPlanned' })}: {exercise.completedNotAsPlanned}
+                    ) : exercise.completedNotAsPlanned ? (
+                        <div className="col-3 md:col-3 w-2">
+                            {intl.formatMessage({ id: 'exercise.properties.completedNotAsPlanned' })}
                         </div>
-                    )}
-                    {exercise.rpe && (
-                        <div className="col-6 md:col-3">{workoutPlan.assignedRpe}: {exercise.rpe}</div>
+                    ) : 
+                    <div className="col-3 md:col-3 w-2">
+                        {intl.formatMessage({ id: 'exercise.properties.notCompleted' })}
+                    </div>
+                    }
+                    {exercise.rpe && rpeMethods.length > 0 && (
+                        <div className="col-3 md:col-3 w-2">{(rpeMethods.find(method => method.id === exercise.rpe) || {name: rpeMethods[0].name}).name}: {exercise.rpe}</div>
                     )}
                     {exercise.comments && (
-                        <div className="col-6 md:col-3">{intl.formatMessage({ id: 'exercise.properties.comments' })}: {exercise.comments}</div>
+                        <div className="col-6 md:col-3 w-8">{intl.formatMessage({ id: 'exercise.properties.comments' })}: {exercise.comments}</div>
                     )}
+                    <div>{renderSetLogs(exercise.setLogs)}</div>
                 </div>
             </div>
         </div>
@@ -295,13 +382,13 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
                         <strong>{intl.formatMessage({ id: 'common.status' })}:</strong> {workoutPlan.status}
                         {workoutPlan.status === 'completed' && (
                             <>
-                                <p className="">{intl.formatMessage({ id: 'common.completedOn' })}: {formatDate(workoutPlan.realEndDate)}</p>
-                                <p className="">{intl.formatMessage({ id: 'common.sessionTime' })}: {workoutPlan.sessionTime}</p>
-                                <p className="">{intl.formatMessage({ id: 'common.feedback' })}: {workoutPlan.generalFeedback}</p>
-                                <p className="">{intl.formatMessage({ id: 'common.mood' })}: {workoutPlan.mood ? `${workoutPlan.mood}/10` : '-'}</p>
-                                <p className="">{intl.formatMessage({ id: 'common.energyLevel' })}: {workoutPlan.energyLevel ? `${workoutPlan.energyLevel}/10` : '-'}</p>
-                                <p className="">{intl.formatMessage({ id: 'common.perceivedDifficulty' })}: {workoutPlan.perceivedDifficulty ? `${workoutPlan.perceivedDifficulty}/10` : '-'}</p>
-                                <p className="">{intl.formatMessage({ id: 'common.extraNotes' })}: {workoutPlan.feedback}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.completedOn' })}: {formatDate(workoutPlan.feedback.realEndDate)}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.sessionTime' })}: {workoutPlan.feedback.sessionTime}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.feedback' })}: {workoutPlan.feedback.generalFeedback}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.mood' })}: {workoutPlan.feedback.mood ? `${workoutPlan.feedback.mood}/10` : '-'}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.energyLevel' })}: {workoutPlan.feedback.energyLevel ? `${workoutPlan.feedback.energyLevel}/10` : '-'}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.perceivedDifficulty' })}: {workoutPlan.feedback.perceivedDifficulty ? `${workoutPlan.feedback.perceivedDifficulty}/10` : '-'}</p>
+                                <p className="">{intl.formatMessage({ id: 'common.extraNotes' })}: {workoutPlan.feedback.extraNotes}</p>
                             </>
                         )}
 
@@ -311,18 +398,21 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
 
             <Accordion>
                 {workoutPlan.groups.map((group) => {
-                    const allExercisesCompleted = group.exercises.every(exercise => exercise.completed);
+                    const allExercisesCompleted = group.exercises.every(exercise => exercise.completed || exercise.completedNotAsPlanned);
                     return(
                     <AccordionTab key={group.groupNumber}header={
                     <>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           {group.name ? group.name : `${intl.formatMessage({ id: 'common.group' })} ${group.groupNumber}`}
                           {!workoutPlan.isTemplate && workoutPlan.status === 'completed' &&
-                            <Badge
-                                value={allExercisesCompleted ? '✔' : '✘'}
+                            <span
                                 className="ml-2"
-                                severity={allExercisesCompleted ? 'success' : 'danger'}
-                            />
+                                style={{ color: allExercisesCompleted ? 'green' : 'orange', fontSize: '1.2rem' }}
+                            >
+                                {allExercisesCompleted ? <i className="pi pi-check-circle" style={{ color: 'green', fontSize: '1.2rem' }} /> : <i className="pi pi-times-circle" style={{ color: 'red', fontSize: '1.2rem' }} />}
+                            </span>
                           }
+                        </div>
                         </>
                       }>
                         {/* <p>Sets: {group.set}</p> */}

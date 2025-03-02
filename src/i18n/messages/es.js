@@ -496,6 +496,18 @@ const messages = {
   'exercise.properties.height': 'Altura',
   'exercise.properties.restPeriod': 'Intervalo de Descanso',
   'exercise.properties.notes': 'Notas',
+  'exercise.properties.perceivedDifficulty': 'Dificultad Percibida',
+  'exercise.properties.mood': 'Estado de Ánimo',
+  'exercise.properties.energyLevel': 'Nivel de Energía',
+  'exercise.properties.extraNotes': 'Notas Adicionales',
+  'exercise.properties.generalFeedback': 'Retroalimentación General',
+  'exercise.properties.realEndDate': 'Fecha de Finalización Real',
+  'exercise.properties.sessionTime': 'Tiempo de Sesión',
+  'exercise.properties.completed': 'Completado',
+  'exercise.properties.notCompleted': 'No Completado',
+  'exercise.properties.completedNotAsPlanned': 'No Completado Según lo Planeado',
+  'exercise.properties.comments': 'Comentarios',
+  'exercise.properties.setLogs': 'Registro de Series',
   
   // Mensajes de confirmación
   'confirm.delete': '¿Estás seguro que deseas eliminar esto?',

@@ -12,8 +12,9 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-import { fetchTrainingCyclesForClientByUserId } from '../services/workoutService';
+import { fetchTrainingCyclesForClientByUserId, fetchTrainingSessionWithNoWeekByClientId } from '../services/workoutService';
 import NewPlanDetail from '../dialogs/NewPlanDetails';
+import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { getDayMonthYear } from '../utils/UtilFunctions';
 import { useIntl, FormattedMessage } from 'react-intl';
 
@@ -51,7 +52,8 @@ export default function NewStudentHome() {
     const fetchTrainingData = async () => {
       try {
         setLoading(true);
-        const cycles = await fetchTrainingCyclesForClientByUserId(user.userId);
+        const {data} = await fetchTrainingCyclesForClientByUserId(user.userId);
+        const cycles = data;
         const events = cycles.flatMap(cycle =>
           cycle.trainingWeeks.flatMap(week =>
             week.trainingSessions.flatMap(session => {
@@ -82,9 +84,21 @@ export default function NewStudentHome() {
             })
           )
         );
-        setCalendarEvents(events);
+
+        const trainingSessionWithNoWeek = await fetchTrainingSessionWithNoWeekByClientId(client.id);
+        const trainingSessionWithNoWeekEvents = trainingSessionWithNoWeek.data.map(session => ({
+          title: session.workoutInstances[0].instanceName ? session.workoutInstances[0].instanceName : session.workoutInstances[0].workout.planName,
+          start: getDayMonthYear(session).toISOString().split('T')[0],
+          extendedProps: {
+            workoutInstanceId: session.workoutInstances[0].id,
+            status: session.workoutInstances[0].status,
+            sessionId: session.id,
+          },
+        }));
+        setCalendarEvents([...events, ...trainingSessionWithNoWeekEvents]);
         setLoading(false);
       } catch (error) {
+        console.log(error)
         setError('Failed to fetch training data');
         setLoading(false);
         toast.current.show({ severity: 'error', summary: 'Error', detail: error.message, life: 3000 });
@@ -240,11 +254,17 @@ export default function NewStudentHome() {
         resizable={false}
         dismissableMask
         visible={planDetailsVisible}
-        style={{ width: '50vw' }}
+        style={{ width: '80vw' }}
         onHide={() => setPlanDetailsVisible(false)}
       >
+        {/*<NewPlanDetail
+          planId={selectedPlan}
+          setLoading={setLoading}
+          setPlanDetailsVisible={setPlanDetailsVisible}
+          setRefreshKey={setRefreshKey}
+        />*/}
         {selectedPlan && (
-          <NewPlanDetail
+          <NewPlanDetailHorizontal
             planId={selectedPlan}
             setLoading={setLoading}
             setPlanDetailsVisible={setPlanDetailsVisible}

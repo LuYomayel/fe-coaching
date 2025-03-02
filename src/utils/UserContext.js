@@ -16,7 +16,10 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const checkEverything = async () => {
       try {
+        setLoading(true);
+        setIsLoading(true);
         const token = localStorage.getItem('token');
+        
         if (token) {
         const decodedUser = jwtDecode(token);
         setUser(decodedUser);
@@ -29,8 +32,8 @@ export const UserProvider = ({ children }) => {
           return
         }
         const data = await fetchUserData(decodedUser.userId)
+
         if(decodedUser.isVerified && decodedUser.email === data.email){
-          
           if (decodedUser.userType === 'coach') {
             const data = await fetchCoachData(decodedUser.userId);
             setCoach(data)
@@ -62,7 +65,7 @@ export const UserProvider = ({ children }) => {
     checkEverything();
 
     
-  }, [setLoading]);
+  }, []);
 
   const fetchUserData = async (userId) => {
     try {

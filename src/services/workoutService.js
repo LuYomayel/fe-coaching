@@ -126,6 +126,16 @@ const fetchTrainingSessionWithoutWeeks = async () => {
   }
   return data;
 }
+
+const fetchTrainingSessionWithNoWeekByClientId = async (clientId) => {
+  const response = await fetch(`${apiUrl}/workout/training-session-with-no-weeks/clientId/${clientId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+}
+
 const fetchTrainingCyclesForClientByUserId = async (userId) => {
   const url = `${apiUrl}/workout/training-cycles/client/userId/${userId}`;
   const response = await fetch(url);
@@ -645,5 +655,6 @@ export {
     assignCycleTemplateToClient,
     assignTrainingSessionToClient,
     fetchTrainingSessionWithoutWeeks,
-    fetchDeletedWorkoutTemplatesByCoachId
+    fetchDeletedWorkoutTemplatesByCoachId,
+    fetchTrainingSessionWithNoWeekByClientId
 };

@@ -20,7 +20,7 @@ import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialo
 
 import NewPlanDetail from '../dialogs/NewPlanDetails';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
-import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId, fetchTrainingSessionWithoutWeeks } from '../services/workoutService';
+import { fetchTrainingCyclesByClient, fetchWorkoutsByClientId, fetchTrainingSessionWithNoWeekByClientId } from '../services/workoutService';
 import { fetchClientByClientId } from '../services/usersService';
 import '../styles/ClientDashboard.css';
 import { formatDate, formatDateToApi } from '../utils/UtilFunctions';
@@ -33,7 +33,7 @@ import { Panel } from 'primereact/panel';
 import { useLanguage } from '../i18n/LanguageContext';
 import NewStudentDialog from '../dialogs/NewStudentDialog';
 import { Tooltip } from 'primereact/tooltip';
-
+import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 export default function ClientDashboard() {
   const { clientId } = useParams();
   const [ clientData, setClientData ] = useState(null);
@@ -93,8 +93,9 @@ export default function ClientDashboard() {
       .catch(error => showToast('error', 'Error fetching training cycles', error.message))
       .finally(() => setLoading(false));
 
-    fetchTrainingSessionWithoutWeeks()
+      fetchTrainingSessionWithNoWeekByClientId(clientId)
       .then(({data}) => {
+        console.log('Data', data)
         const events = data.map(session => {
           const start = formatDateToApi(new Date(session.sessionDate));
 
@@ -503,7 +504,8 @@ export default function ClientDashboard() {
           />
           <CreateTrainingCycleDialog visible={dialogVisible} onHide={hideCreateCycleDialog} clientId={clientId} setRefreshKey={setRefreshKey} />
           <Dialog header="Plan Details" dismissableMask draggable={false} resizable={false} visible={planDetailsVisible} style={{ width: '80vw' }} onHide={hidePlanDetails}>
-            {selectedPlan && <NewPlanDetail planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} isTemplate={false} />}
+            {/*selectedPlan && <NewPlanDetail planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} isTemplate={false} />*/}
+            {selectedPlan && <NewPlanDetailHorizontal planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} isTemplate={false} />}
           </Dialog>
         </TabPanel>
 

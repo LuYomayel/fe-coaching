@@ -41,6 +41,7 @@ export default function HomePage() {
         const token = localStorage.getItem('token');
         if (token) {
             const decodedToken = jwtDecode(token);
+
             if (!decodedToken.isVerified) {
                 // showToast('error', 'Verify your email prior to logging in!', 'Check your email to verify it, please');
                 showToast('error', intl.formatMessage({id: 'common.error' }), intl.formatMessage({id: 'home.error.verifyEmail' }))
@@ -60,7 +61,6 @@ export default function HomePage() {
         const fetchSubscriptionPlans = async () => {
             try {
                 const {data} = await fetchCoachSubscriptionPlans();
-                console.log(data);
                 setSubscriptionPlans(data);
             } catch (error) {
                 showToast('error', 'Error', error.message);
@@ -127,15 +127,14 @@ export default function HomePage() {
                     body: JSON.stringify({ email: loginForm.email, password: loginForm.password }),
                 });
                 const loginData = await response.json();
-                if (loginData.error) {
-                    throw new Error(loginData.error || 'Something went wrong');
+                if (loginData.message !== 'success') {
+                    throw new Error(loginData.message || 'Something went wrong');
                 }
                 setLoading(false);
                 if (loginData.data.access_token) {
                     localStorage.setItem('token', loginData.data.access_token);
                     const decodedToken = jwtDecode(loginData.data.access_token);
                     setUser(decodedToken);
-
                     if (!decodedToken.isVerified) {
                         showToast('error', `${intl.formatMessage({id: 'home.error.verifyEmail' })}`, `${intl.formatMessage({id: 'home.error.checkEmail'})}` )
                     } else {
@@ -150,8 +149,8 @@ export default function HomePage() {
                                 navigate('/coach');
                             }
                         } else if (decodedToken.userType === 'client') {
-                            const clientData = await fetchClient(decodedToken.userId);
-                            setClient(clientData);
+                            const {data} = await fetchClient(decodedToken.userId);
+                            setClient(data);
                             navigate('/student');
                         }
                     }
