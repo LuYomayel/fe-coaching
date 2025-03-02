@@ -584,6 +584,12 @@ const messages = {
   'coach.home.unpaidClients': 'Clientes Impagados',
   'coach.home.daysLeft': 'Días Restantes',
   'coach.home.last7daysFrequency': 'Frecuencia de Entrenamiento (Últimos 7 Días)',
+  'coach.home.noDaysLeftData': 'Sin datos de días restantes aún',
+  'coach.home.noFrequencyData7days': 'Sin datos de frecuencia para los últimos 7 días aún',
+  'coach.home.noPaidData': 'Sin datos de pagos aún',
+  'coach.home.noUnpaidData': 'Sin datos de impagos aún',
+  'coach.home.allPaid': 'Todos los clientes han pagado sus suscripciones',
+
   
   'coach.sections.trainingPlans': 'Sesiones de Entrenamiento',
   'coach.sections.recentActivity': 'Actividad Reciente',

@@ -591,6 +591,11 @@ const messages = {
   'coach.home.unpaidClients': 'Unpaid Clients',
   'coach.home.daysLeft': 'Days Left',
   'coach.home.last7daysFrequency': 'Last 7 Days Frequency',
+  'coach.home.noDaysLeftData': 'No days left data yet',
+  'coach.home.noFrequencyData7days': 'No frequency data for the last 7 days yet',
+  'coach.home.noPaidData': 'No paid data yet',
+  'coach.home.noUnpaidData': 'No unpaid data yet',
+  'coach.home.allPaid': 'All clients have paid their subscriptions',
 
   'coach.sections.trainingPlans': 'Training Plans',
   'coach.sections.trainingSessions': 'Training Sessions',
