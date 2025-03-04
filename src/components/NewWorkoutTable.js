@@ -10,7 +10,7 @@ import { Row } from 'primereact/row';
 import { fetchExcelViewByCycleAndDay } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
-
+import { useTheme } from '../utils/ThemeContext';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 /**
@@ -30,13 +30,7 @@ const properties = [
   'distance',
   'restDuration'
 ]; // which props to show
-const propertyLabels = {
-  sets: 'Sets',
-  repetitions: 'Reps',
-  weight: 'Weight',
-  time: 'Time',
-  tempo: 'Tempo'
-};
+
 const isEditing = false; // or from your parent state
 const exercises = []; // from your old snippet if you're combining data
 const daysOfWeek = [
@@ -48,17 +42,13 @@ const daysOfWeek = [
   { value: 6, label: 'Saturday' },
   { value: 7, label: 'Sunday' }
 ];
-function rowClassName() {
-  // e.g. your logic for row styling
-  return '';
-}
+
 function renderProperty(rowData, prop, weekIndex) {
   // e.g. fetch from rowData or do something else
   const data = rowData.weeksData[weekIndex];
   if (!data) return '-';
-
   // convert the object to a string or some JSX
-  return `${data[prop]}`;
+  return `${data[prop] || '-'}`;
 }
 function cellEditor(options, prop, weekIndex) {
   // e.g. return some input or editor
@@ -77,7 +67,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   const [dayNumber, setDayNumber] = useState(null);
   const [excelData, setExcelData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
+  const { isDarkMode } = useTheme();
   // Day selection
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -88,6 +78,28 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     { label: intl.formatMessage({ id: 'workoutTable.saturday' }), value: 6 },
     { label: intl.formatMessage({ id: 'workoutTable.sunday' }), value: 7 }
   ];
+
+  const propertyLabels = {
+    sets: intl.formatMessage({ id: 'exercise.properties.sets' }),
+    repetitions: intl.formatMessage({ id: 'exercise.properties.reps' }),
+    weight: intl.formatMessage({ id: 'exercise.properties.weight' }),
+    time: intl.formatMessage({ id: 'exercise.properties.time' }),
+    tempo: intl.formatMessage({ id: 'exercise.properties.tempo' }),
+    restInterval: intl.formatMessage({ id: 'exercise.properties.restInterval' }),
+    notes: intl.formatMessage({ id: 'exercise.properties.notes' }),
+    difficulty: intl.formatMessage({ id: 'exercise.properties.difficulty' }),
+    duration: intl.formatMessage({ id: 'exercise.properties.duration' }),
+    distance: intl.formatMessage({ id: 'exercise.properties.distance' }),
+    restDuration: intl.formatMessage({ id: 'exercise.properties.restDuration' })
+  };
+
+  const rowClassName = (rowData) => {
+    if (isDarkMode) {
+      return rowData.groupNumber % 2 === 0 ? 'group-even-dark improved-row' : 'group-odd-dark improved-row';
+    } else {
+      return rowData.groupNumber % 2 === 0 ? 'group-even improved-row' : 'group-odd improved-row';
+    }
+  };
 
   // Fetch the excelView from backend
   useEffect(() => {
@@ -121,6 +133,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
               if (!allExercises.has(exKey)) {
                 allExercises.set(exKey, {
                   name: exKey,
+                  groupNumber: group.groupNumber, // Añadimos el número de grupo
                   weeksData: {}
                 });
               }
@@ -159,49 +172,73 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     // Return null if we don't have the needed data
     if (!numWeeks || !properties) return null;
 
-    // 1) Subheader columns (second row)
+    // Get used properties per week from exercises array
+    const usedPropertiesByWeek = [];
+    const exercises = buildExercisesArray();
+    for (let weekNum = 1; weekNum <= numWeeks; weekNum++) {
+      const usedProps = new Set();
+      exercises.forEach((exercise) => {
+        const weekData = exercise.weeksData[weekNum];
+        if (weekData) {
+          Object.keys(weekData).forEach((prop) => {
+            if (properties.includes(prop)) {
+              usedProps.add(prop);
+            }
+          });
+        }
+      });
+      usedPropertiesByWeek.push(Array.from(usedProps));
+    }
+    // 1) Subheader columns (second row) - only for used properties
     const subHeaderColumns = [];
     for (let i = 0; i < numWeeks; i++) {
-      properties.forEach((prop) => {
+      usedPropertiesByWeek[i].forEach((prop) => {
         const headerLabel = propertyLabels[prop] || prop;
         subHeaderColumns.push(<Column header={headerLabel} key={`${prop}-header-${i}`} />);
       });
     }
-
-    // 2) The first row has “(Delete?), Exercise” plus N columns for “Week 1..n”
+    // 2) The first row with correct colSpan based on used properties
     const topRowWeekColumns = Array.from({ length: numWeeks }, (_, i) => (
       <Column
         header={`${intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}`}
-        colSpan={properties.length}
+        colSpan={usedPropertiesByWeek[i].length}
         key={`week-colspan-${i}`}
       />
     ));
 
-    return (
-      <ColumnGroup>
-        <Row>
-          {isEditing && <Column header="" rowSpan={2} style={{ width: '1rem' }} />}
-          <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} rowSpan={2} style={{ width: '20rem' }} />
-          {topRowWeekColumns}
-        </Row>
-        <Row>{subHeaderColumns}</Row>
-      </ColumnGroup>
-    );
+    return {
+      usedPropertiesByWeek,
+      headerGroup: (
+        <ColumnGroup>
+          <Row>
+            {isEditing && <Column header="" rowSpan={2} style={{ width: '1rem' }} />}
+            <Column
+              header={intl.formatMessage({ id: 'workoutTable.exercise' })}
+              rowSpan={2}
+              style={{ width: '20rem' }}
+            />
+            {topRowWeekColumns}
+          </Row>
+          <Row>{subHeaderColumns}</Row>
+        </ColumnGroup>
+      )
+    };
   };
 
   /**
    * Build the property columns for each week, e.g. sets/weight/time/etc.
    */
-  const buildDataColumns = () => {
+  const buildDataColumns = (usedPropertiesByWeek) => {
     const cols = [];
-    for (let i = 0; i < numWeeks; i++) {
-      properties.forEach((prop) => {
+    for (let i = 1; i <= numWeeks; i++) {
+      usedPropertiesByWeek[i - 1].forEach((prop) => {
         const colKey = `${prop}-col-${i}`;
         const headerLabel = propertyLabels[prop] || prop;
         cols.push(
           <Column
             key={colKey}
             header={headerLabel}
+            rowClassName={rowClassName}
             body={(rowData) => renderProperty(rowData, prop, i)}
             editor={(options) => cellEditor(options, prop, i)}
             editorOptions={{ disabled: !isEditing }}
@@ -234,8 +271,8 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     }
 
     // We'll build the global header once
-    const headerGroup = buildHeaderGroup();
-    const dataColumns = buildDataColumns();
+    const { headerGroup, usedPropertiesByWeek } = buildHeaderGroup();
+    const dataColumns = buildDataColumns(usedPropertiesByWeek);
 
     // If you only need one table for the dayNumber, skip grouping by dayNumber
     // For demonstration, let's assume dayNumber is enough to just show one table:
