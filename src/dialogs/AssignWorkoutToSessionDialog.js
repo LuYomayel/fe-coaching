@@ -10,14 +10,7 @@ import {
   findAllWorkoutTemplatesByCoachId
 } from '../services/workoutService';
 import { formatDateToApi } from '../utils/UtilFunctions';
-const AssignWorkoutToSessionDialog = ({
-  visible,
-  onHide,
-  sessionId,
-  clientId,
-  setRefreshKey,
-  selectedDate
-}) => {
+const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey, selectedDate }) => {
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
@@ -46,9 +39,7 @@ const AssignWorkoutToSessionDialog = ({
       showToast('error', 'Error', 'Please select a workout');
       return;
     }
-    const sessionDate = formatDateToApi(
-      selectedDate ? selectedDate : new Date()
-    );
+    const sessionDate = formatDateToApi(selectedDate ? selectedDate : new Date());
     const body = {
       sessionId,
       workoutId: selectedWorkout,
@@ -91,9 +82,7 @@ const AssignWorkoutToSessionDialog = ({
           <Dropdown
             id="workouts"
             options={workouts}
-            optionLabel={(option) =>
-              option.instanceName ? option.instanceName : option.planName
-            }
+            optionLabel={(option) => (option.instanceName ? option.instanceName : option.planName)}
             optionValue="id"
             value={selectedWorkout}
             onChange={(e) => setSelectedWorkout(e.value)}
@@ -101,12 +90,7 @@ const AssignWorkoutToSessionDialog = ({
           />
         </div>
       </div>
-      <Button
-        label="Assign"
-        icon="pi pi-check"
-        onClick={handleAssign}
-        loading={loading}
-      />
+      <Button label="Assign" icon="pi pi-check" onClick={handleAssign} loading={loading} />
     </Dialog>
   );
 };

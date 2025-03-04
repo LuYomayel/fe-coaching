@@ -13,9 +13,7 @@ const fetchCoachSubscription = async (coachId) => {
 };
 
 const fetchCoachSubscriptionPlans = async () => {
-  const response = await fetch(
-    `${apiUrl}/subscription/coach-subscription-plans`
-  );
+  const response = await fetch(`${apiUrl}/subscription/coach-subscription-plans`);
   const data = await response.json();
 
   if (data.error) {
@@ -37,9 +35,7 @@ const fetchSubscriptionForStudent = async (studentId) => {
 };
 
 const fetchSubscriptionDetails = async (userId) => {
-  const response = await fetch(
-    `${apiUrl}/subscription/client-subscription/details/${userId}`
-  );
+  const response = await fetch(`${apiUrl}/subscription/client-subscription/details/${userId}`);
   const data = await response.json();
 
   if (data.error) {
@@ -106,9 +102,7 @@ const updateCoachSubscription = async (body) => {
 
 const createOrUpdateCoachPlan = async (plan, planId, userId, mode) => {
   const url =
-    mode === 'create'
-      ? `${apiUrl}/subscription/coach/coachPlan`
-      : `${apiUrl}/subscription/coach/coachPlan/${planId}`;
+    mode === 'create' ? `${apiUrl}/subscription/coach/coachPlan` : `${apiUrl}/subscription/coach/coachPlan/${planId}`;
   const method = mode === 'create' ? 'POST' : 'PUT';
 
   const response = await fetch(url, {
@@ -150,12 +144,9 @@ const registerPayment = async (body) => {
 };
 
 const cancelSubscription = async (clientSubscriptionId) => {
-  const response = await fetch(
-    `${apiUrl}/subscription/clientSubscription/${clientSubscriptionId}`,
-    {
-      method: 'DELETE'
-    }
-  );
+  const response = await fetch(`${apiUrl}/subscription/clientSubscription/${clientSubscriptionId}`, {
+    method: 'DELETE'
+  });
 
   const data = await response.json();
 
@@ -168,9 +159,7 @@ const cancelSubscription = async (clientSubscriptionId) => {
 
 // Coach Home Page
 const fetchClientsPaymentStatus = async (coachId) => {
-  const response = await fetch(
-    `${apiUrl}/subscription/clients-payment-status/${coachId}`
-  );
+  const response = await fetch(`${apiUrl}/subscription/clients-payment-status/${coachId}`);
   const data = await response.json();
   if (data.error) {
     throw new Error(data.error || 'Something went wrong');

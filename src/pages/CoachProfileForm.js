@@ -76,11 +76,7 @@ const CoachProfileForm = () => {
 
   const validateStep = () => {
     if (activeStep === 0 && !name) {
-      showToast(
-        'error',
-        intl.formatMessage({ id: 'coachProfileForm.error' }),
-        'Name is required.'
-      );
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'Name is required.');
       return false;
     }
     if (activeStep === 1 && trainingType.length === 0) {
@@ -92,11 +88,7 @@ const CoachProfileForm = () => {
       return false;
     }
     if (activeStep === 2 && !subscriptionType) {
-      showToast(
-        'error',
-        intl.formatMessage({ id: 'coachProfileForm.error' }),
-        'Subscription type is required.'
-      );
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'Subscription type is required.');
       return false;
     }
     return true;
@@ -120,23 +112,17 @@ const CoachProfileForm = () => {
 
   const handleSubmit = async () => {
     const selectedPlanId =
-      subscriptionType === 'freeTrial'
-        ? plans.find((plan) => plan.name === 'Free')?.id
-        : userPayment?.id;
+      subscriptionType === 'freeTrial' ? plans.find((plan) => plan.name === 'Free')?.id : userPayment?.id;
 
     console.log(subscriptionType, plans);
     if (!selectedPlanId) {
-      showToast(
-        'error',
-        intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' })
-      );
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
       return;
     }
 
     const body = {
       name,
-      estimatedClients: plans.find((plan) => plan.id === selectedPlanId)
-        ?.max_clients,
+      estimatedClients: plans.find((plan) => plan.id === selectedPlanId)?.max_clients,
       trainingType,
       hasGym,
       gymLocation: hasGym ? gymLocation : null,
@@ -147,10 +133,7 @@ const CoachProfileForm = () => {
     };
     console.log(body);
     if (subscriptionType === 'paid' && !userPayment) {
-      showToast(
-        'error',
-        intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' })
-      );
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
       return;
     }
 
@@ -171,23 +154,14 @@ const CoachProfileForm = () => {
         `Thanks for subscribing ${data.name}`
       );
     } catch (error) {
-      showToast(
-        'error',
-        intl.formatMessage({ id: 'coachProfileForm.error' }),
-        error.message
-      );
+      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), error.message);
     }
     setLoading(false);
   };
 
   return (
     <div className="coach-profile-form-container">
-      <Steps
-        model={steps}
-        activeIndex={activeStep}
-        onSelect={(e) => setActiveStep(e.index)}
-        readOnly={false}
-      />
+      <Steps model={steps} activeIndex={activeStep} onSelect={(e) => setActiveStep(e.index)} readOnly={false} />
       <Card className="coach-profile-form">
         {activeStep === 0 && (
           <div>
@@ -198,31 +172,19 @@ const CoachProfileForm = () => {
               <label htmlFor="name">
                 <FormattedMessage id="coachProfileForm.name" />
               </label>
-              <InputText
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="p-field">
               <label htmlFor="bio">
                 <FormattedMessage id="coachProfileForm.bio" />
               </label>
-              <InputTextarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-              />
+              <InputTextarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} />
             </div>
             <div className="p-field">
               <label htmlFor="experience">
                 <FormattedMessage id="coachProfileForm.experience" />
               </label>
-              <InputTextarea
-                id="experience"
-                value={experience}
-                onChange={(e) => setExperience(e.target.value)}
-              />
+              <InputTextarea id="experience" value={experience} onChange={(e) => setExperience(e.target.value)} />
             </div>
           </div>
         )}
@@ -248,11 +210,7 @@ const CoachProfileForm = () => {
               />
             </div>
             <div className="flex align-items-center gap-2">
-              <Checkbox
-                inputId="hasGym"
-                checked={hasGym}
-                onChange={(e) => setHasGym(e.checked)}
-              />
+              <Checkbox inputId="hasGym" checked={hasGym} onChange={(e) => setHasGym(e.checked)} />
               <label htmlFor="hasGym" className="p-checkbox-label">
                 <FormattedMessage id="coachProfileForm.hasGym" />
               </label>
@@ -262,11 +220,7 @@ const CoachProfileForm = () => {
                 <label htmlFor="gymLocation">
                   <FormattedMessage id="coachProfileForm.gymLocation" />
                 </label>
-                <InputText
-                  id="gymLocation"
-                  value={gymLocation}
-                  onChange={(e) => setGymLocation(e.target.value)}
-                />
+                <InputText id="gymLocation" value={gymLocation} onChange={(e) => setGymLocation(e.target.value)} />
               </div>
             )}
           </div>
@@ -373,9 +327,7 @@ const CoachProfileForm = () => {
                 <strong>
                   <FormattedMessage id="coachProfileForm.hasGym" />:
                 </strong>{' '}
-                {hasGym
-                  ? intl.formatMessage({ id: 'common.yes' })
-                  : intl.formatMessage({ id: 'common.no' })}
+                {hasGym ? intl.formatMessage({ id: 'common.yes' }) : intl.formatMessage({ id: 'common.no' })}
               </p>
               {hasGym && (
                 <p>
@@ -439,16 +391,9 @@ const CoachProfileForm = () => {
           />
           <Button
             label={intl.formatMessage({
-              id:
-                activeStep === steps.length - 1
-                  ? 'coachProfileForm.submit'
-                  : 'common.next'
+              id: activeStep === steps.length - 1 ? 'coachProfileForm.submit' : 'common.next'
             })}
-            icon={
-              activeStep === steps.length - 1
-                ? 'pi pi-check'
-                : 'pi pi-arrow-right'
-            }
+            icon={activeStep === steps.length - 1 ? 'pi pi-check' : 'pi pi-arrow-right'}
             onClick={handleNext}
             loading={loading}
           />
@@ -463,10 +408,7 @@ const CoachProfileForm = () => {
         style={{ width: '50vw' }}
         onHide={() => setIsPlanDialogVisible(false)}
       >
-        <SubscriptionPaymentPage
-          setUserPayment={setUserPayment}
-          setIsPlanDialogVisible={setIsPlanDialogVisible}
-        />
+        <SubscriptionPaymentPage setUserPayment={setUserPayment} setIsPlanDialogVisible={setIsPlanDialogVisible} />
       </Dialog>
     </div>
   );

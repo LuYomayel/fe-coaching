@@ -1,14 +1,11 @@
 const apiUrl = process.env.REACT_APP_API_URL;
 const markNotificationAsRead = async (notificationId) => {
-  const response = await fetch(
-    `${apiUrl}/notifications/mark-as-read/${notificationId}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+  const response = await fetch(`${apiUrl}/notifications/mark-as-read/${notificationId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
     }
-  );
+  });
   if (!response.ok) {
     const errorData = await response.json();
     // Handle cases where the error message might be an array or single message

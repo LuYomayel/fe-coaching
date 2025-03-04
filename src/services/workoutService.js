@@ -147,6 +147,15 @@ const fetchAssignedWorkoutsForCycleDay = async (cycleId, dayNumber) => {
   return data;
 };
 
+const fetchExcelViewByCycleAndDay = async (cycleId, dayNumber) => {
+  const response = await fetch(`${apiUrl}/workout/excel-view/${cycleId}/day/${dayNumber}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
+
 const createTrainingCycle = async (body) => {
   const response = await fetch(`${apiUrl}/workout/training-cycles`, {
     method: 'POST',
@@ -624,5 +633,6 @@ export {
   fetchTrainingSessionWithNoWeekByClientId,
   fetchLastTimeTrained,
   fetchHowLongToFinishCycle,
-  fetchTrainingFrequency
+  fetchTrainingFrequency,
+  fetchExcelViewByCycleAndDay
 };

@@ -19,12 +19,7 @@ import { useIntl, FormattedMessage } from 'react-intl';
 import { TabPanel, TabView } from 'primereact/tabview';
 import '../styles/CreateTrainingCycle.css';
 import { formatDateToApi } from '../utils/UtilFunctions';
-const CreateTrainingCycleDialog = ({
-  visible,
-  onHide,
-  clientId,
-  setRefreshKey
-}) => {
+const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey }) => {
   const { user, coach } = useContext(UserContext);
   const intl = useIntl();
   const showToast = useToast();
@@ -73,11 +68,7 @@ const CreateTrainingCycleDialog = ({
           }));
         setClients(activeStudents);
       } catch (error) {
-        showToast(
-          'error',
-          intl.formatMessage({ id: 'error.fetchingStudents' }),
-          error.message
-        );
+        showToast('error', intl.formatMessage({ id: 'error.fetchingStudents' }), error.message);
       }
     };
 
@@ -123,20 +114,12 @@ const CreateTrainingCycleDialog = ({
 
   const clickCreateCycle = () => {
     if (!cycleName || !startDate) {
-      showToast(
-        'error',
-        intl.formatMessage({ id: 'error' }),
-        intl.formatMessage({ id: 'error.allFieldsRequired' })
-      );
+      showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'error.allFieldsRequired' }));
       return;
     }
 
     if (!durationInMonths && !durationInWeeks) {
-      showToast(
-        'error',
-        intl.formatMessage({ id: 'error' }),
-        intl.formatMessage({ id: 'error.enterDuration' })
-      );
+      showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'error.enterDuration' }));
       return;
     }
 
@@ -173,10 +156,7 @@ const CreateTrainingCycleDialog = ({
   };
 
   const handleAddAssignment = () => {
-    if (
-      !assignments[assignments.length - 1].workoutId ||
-      assignments[assignments.length - 1].dayOfWeek === null
-    )
+    if (!assignments[assignments.length - 1].workoutId || assignments[assignments.length - 1].dayOfWeek === null)
       return showToast(
         'error',
         'Error',
@@ -194,9 +174,7 @@ const CreateTrainingCycleDialog = ({
   };
 
   const removeAssignment = (index) => {
-    const updatedAssignments = assignments.filter(
-      (assignments, i) => index !== i
-    );
+    const updatedAssignments = assignments.filter((assignments, i) => index !== i);
     if (updatedAssignments.length > 0) setAssignments(updatedAssignments);
     else {
       showToast(
@@ -214,10 +192,7 @@ const CreateTrainingCycleDialog = ({
       clientId: parseInt(clientId),
       createCycleDto: bodyCycle,
       assignWorkoutsToCycleDTO: {
-        assignments: assignments.filter(
-          (assignment) =>
-            assignment.dayOfWeek !== null && assignment.workoutId !== null
-        )
+        assignments: assignments.filter((assignment) => assignment.dayOfWeek !== null && assignment.workoutId !== null)
       }
     };
     if (body.assignWorkoutsToCycleDTO.assignments.length === 0)
@@ -262,18 +237,12 @@ const CreateTrainingCycleDialog = ({
 
   const renderTabPanelCycle = () => {
     return (
-      <TabPanel
-        header={intl.formatMessage({ id: 'createCycle.dialog.header' })}
-      >
+      <TabPanel header={intl.formatMessage({ id: 'createCycle.dialog.header' })}>
         <div className="p-field">
           <label htmlFor="cycleName">
             <FormattedMessage id="createCycle.cycleName" />
           </label>
-          <InputText
-            id="cycleName"
-            value={cycleName}
-            onChange={(e) => setCycleName(e.target.value)}
-          />
+          <InputText id="cycleName" value={cycleName} onChange={(e) => setCycleName(e.target.value)} />
         </div>
         <div className="flex flex-row gap-2 w-full justify-content-between">
           <div className="p-field">
@@ -330,11 +299,7 @@ const CreateTrainingCycleDialog = ({
             icon="pi pi-arrow-right"
             onClick={clickGoNextTab}
             loading={loading}
-            disabled={
-              !cycleName ||
-              !startDate ||
-              (!durationInMonths && !durationInWeeks)
-            }
+            disabled={!cycleName || !startDate || (!durationInMonths && !durationInWeeks)}
           />
         </div>
       </TabPanel>
@@ -363,9 +328,7 @@ const CreateTrainingCycleDialog = ({
                     label: workout.planName,
                     value: workout.id
                   }))}
-                  onChange={(e) =>
-                    handleAssignmentChange(index, 'workoutId', e.value)
-                  }
+                  onChange={(e) => handleAssignmentChange(index, 'workoutId', e.value)}
                   placeholder={intl.formatMessage({
                     id: 'assignWorkoutToCycleDialog.selectWorkout'
                   })}
@@ -376,19 +339,14 @@ const CreateTrainingCycleDialog = ({
                   value={assignment.dayOfWeek}
                   options={daysOfWeek}
                   optionValue="value"
-                  onChange={(e) =>
-                    handleAssignmentChange(index, 'dayOfWeek', e.value)
-                  }
+                  onChange={(e) => handleAssignmentChange(index, 'dayOfWeek', e.value)}
                   placeholder={intl.formatMessage({
                     id: 'assignWorkoutToCycleDialog.selectDayOfWeek'
                   })}
                 />
               </div>
               <div className="col-1">
-                <Button
-                  icon="pi pi-times"
-                  onClick={() => removeAssignment(index)}
-                />
+                <Button icon="pi pi-times" onClick={() => removeAssignment(index)} />
               </div>
             </div>
           </Card>
@@ -428,10 +386,7 @@ const CreateTrainingCycleDialog = ({
       style={{ width: '50vw' }}
       onHide={onHide}
     >
-      <TabView
-        activeIndex={activeIndex}
-        onTabChange={(e) => setActiveIndex(e.index)}
-      >
+      <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         {renderTabPanelCycle()}
         {renderTabPanelWorkouts()}
       </TabView>

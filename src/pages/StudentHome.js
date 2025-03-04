@@ -1,26 +1,26 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { Card } from "primereact/card";
-import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
-import { ProgressSpinner } from "primereact/progressspinner";
-import { Dropdown } from "primereact/dropdown";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../utils/UserContext";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import listPlugin from "@fullcalendar/list";
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { Toast } from 'primereact/toast';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { Dropdown } from 'primereact/dropdown';
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../utils/UserContext';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
 import {
   fetchTrainingCyclesForClientByUserId,
-  fetchTrainingSessionWithNoWeekByClientId,
-} from "../services/workoutService";
-import NewPlanDetailHorizontal from "../dialogs/PlanDetails";
-import { getDayMonthYear } from "../utils/UtilFunctions";
-import { useIntl, FormattedMessage } from "react-intl";
+  fetchTrainingSessionWithNoWeekByClientId
+} from '../services/workoutService';
+import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
+import { getDayMonthYear } from '../utils/UtilFunctions';
+import { useIntl, FormattedMessage } from 'react-intl';
 
-export default function NewStudentHome() {
+export default function StudentHome() {
   const intl = useIntl();
   const { user, client } = useContext(UserContext);
   const navigate = useNavigate();
@@ -38,16 +38,12 @@ export default function NewStudentHome() {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const sessionDate = new Date(session.sessionDate);
-    const sessionDay = new Date(
-      sessionDate.getFullYear(),
-      sessionDate.getMonth(),
-      sessionDate.getDate()
-    );
-    if (workout.status === "pending") {
+    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+    if (workout.status === 'pending') {
       if (sessionDay < today) {
-        return "expired";
+        return 'expired';
       } else if (sessionDay.getTime() === today.getTime()) {
-        return "current";
+        return 'current';
       }
     } else {
       return workout.status;
@@ -58,9 +54,7 @@ export default function NewStudentHome() {
     const fetchTrainingData = async () => {
       try {
         setLoading(true);
-        const { data } = await fetchTrainingCyclesForClientByUserId(
-          user.userId
-        );
+        const { data } = await fetchTrainingCyclesForClientByUserId(user.userId);
         const cycles = data;
         const events = cycles.flatMap((cycle) =>
           cycle.trainingWeeks.flatMap((week) =>
@@ -68,32 +62,25 @@ export default function NewStudentHome() {
               const sessionEvents =
                 session.workoutInstances.length > 0
                   ? session.workoutInstances.map((workoutInstance) => {
-                      workoutInstance.status = updateStatus(
-                        workoutInstance,
-                        session
-                      );
+                      workoutInstance.status = updateStatus(workoutInstance, session);
                       return {
                         title: workoutInstance.workout.planName,
-                        start: getDayMonthYear(session)
-                          .toISOString()
-                          .split("T")[0],
+                        start: getDayMonthYear(session).toISOString().split('T')[0],
                         extendedProps: {
                           status: workoutInstance.status,
                           workoutInstanceId: workoutInstance.id,
-                          sessionId: session.id,
-                        },
+                          sessionId: session.id
+                        }
                       };
                     })
                   : [
                       {
-                        title: "no title",
-                        start: getDayMonthYear(session)
-                          .toISOString()
-                          .split("T")[0],
+                        title: 'no title',
+                        start: getDayMonthYear(session).toISOString().split('T')[0],
                         extendedProps: {
-                          sessionId: session.id,
-                        },
-                      },
+                          sessionId: session.id
+                        }
+                      }
                     ];
 
               return sessionEvents;
@@ -101,31 +88,29 @@ export default function NewStudentHome() {
           )
         );
 
-        const trainingSessionWithNoWeek =
-          await fetchTrainingSessionWithNoWeekByClientId(client.id);
-        const trainingSessionWithNoWeekEvents =
-          trainingSessionWithNoWeek.data.map((session) => ({
-            title: session.workoutInstances[0].instanceName
-              ? session.workoutInstances[0].instanceName
-              : session.workoutInstances[0].workout.planName,
-            start: getDayMonthYear(session).toISOString().split("T")[0],
-            extendedProps: {
-              workoutInstanceId: session.workoutInstances[0].id,
-              status: session.workoutInstances[0].status,
-              sessionId: session.id,
-            },
-          }));
+        const trainingSessionWithNoWeek = await fetchTrainingSessionWithNoWeekByClientId(client.id);
+        const trainingSessionWithNoWeekEvents = trainingSessionWithNoWeek.data.map((session) => ({
+          title: session.workoutInstances[0].instanceName
+            ? session.workoutInstances[0].instanceName
+            : session.workoutInstances[0].workout.planName,
+          start: getDayMonthYear(session).toISOString().split('T')[0],
+          extendedProps: {
+            workoutInstanceId: session.workoutInstances[0].id,
+            status: session.workoutInstances[0].status,
+            sessionId: session.id
+          }
+        }));
         setCalendarEvents([...events, ...trainingSessionWithNoWeekEvents]);
         setLoading(false);
       } catch (error) {
         console.log(error);
-        setError("Failed to fetch training data");
+        setError('Failed to fetch training data');
         setLoading(false);
         toast.current.show({
-          severity: "error",
-          summary: "Error",
+          severity: 'error',
+          summary: 'Error',
           detail: error.message,
-          life: 3000,
+          life: 3000
         });
       }
     };
@@ -141,7 +126,7 @@ export default function NewStudentHome() {
 
   const handleStartTrainingSession = (workoutInstanceId) => {
     navigate(`/plans/start-session/${workoutInstanceId}`, {
-      state: { isTraining: true, planId: workoutInstanceId },
+      state: { isTraining: true, planId: workoutInstanceId }
     });
   };
 
@@ -151,7 +136,7 @@ export default function NewStudentHome() {
 
     return (
       <div className="custom-event-content p-2">
-        {title !== "no title" && (
+        {title !== 'no title' && (
           <>
             <div className="event-title mb-2">{title}</div>
             <div className="event-actions">
@@ -163,11 +148,11 @@ export default function NewStudentHome() {
                   handleViewWorkoutDetails(workoutInstanceId);
                 }}
                 tooltip={intl.formatMessage({
-                  id: "studentHome.calendar.viewDetails",
+                  id: 'studentHome.calendar.viewDetails'
                 })}
-                tooltipOptions={{ position: "top" }}
+                tooltipOptions={{ position: 'top' }}
               />
-              {status !== "completed" && (
+              {status !== 'completed' && (
                 <Button
                   icon="pi pi-play"
                   className="p-button-rounded p-button-sm p-button-success"
@@ -176,9 +161,9 @@ export default function NewStudentHome() {
                     handleStartTrainingSession(workoutInstanceId);
                   }}
                   tooltip={intl.formatMessage({
-                    id: "studentHome.calendar.startTraining",
+                    id: 'studentHome.calendar.startTraining'
                   })}
-                  tooltipOptions={{ position: "top" }}
+                  tooltipOptions={{ position: 'top' }}
                 />
               )}
             </div>
@@ -189,18 +174,18 @@ export default function NewStudentHome() {
   };
 
   const monthOptions = [
-    { label: intl.formatMessage({ id: "months.january" }), value: 0 },
-    { label: intl.formatMessage({ id: "months.february" }), value: 1 },
-    { label: intl.formatMessage({ id: "months.march" }), value: 2 },
-    { label: intl.formatMessage({ id: "months.april" }), value: 3 },
-    { label: intl.formatMessage({ id: "months.may" }), value: 4 },
-    { label: intl.formatMessage({ id: "months.june" }), value: 5 },
-    { label: intl.formatMessage({ id: "months.july" }), value: 6 },
-    { label: intl.formatMessage({ id: "months.august" }), value: 7 },
-    { label: intl.formatMessage({ id: "months.september" }), value: 8 },
-    { label: intl.formatMessage({ id: "months.october" }), value: 9 },
-    { label: intl.formatMessage({ id: "months.november" }), value: 10 },
-    { label: intl.formatMessage({ id: "months.december" }), value: 11 },
+    { label: intl.formatMessage({ id: 'months.january' }), value: 0 },
+    { label: intl.formatMessage({ id: 'months.february' }), value: 1 },
+    { label: intl.formatMessage({ id: 'months.march' }), value: 2 },
+    { label: intl.formatMessage({ id: 'months.april' }), value: 3 },
+    { label: intl.formatMessage({ id: 'months.may' }), value: 4 },
+    { label: intl.formatMessage({ id: 'months.june' }), value: 5 },
+    { label: intl.formatMessage({ id: 'months.july' }), value: 6 },
+    { label: intl.formatMessage({ id: 'months.august' }), value: 7 },
+    { label: intl.formatMessage({ id: 'months.september' }), value: 8 },
+    { label: intl.formatMessage({ id: 'months.october' }), value: 9 },
+    { label: intl.formatMessage({ id: 'months.november' }), value: 10 },
+    { label: intl.formatMessage({ id: 'months.december' }), value: 11 }
   ];
 
   const handleMonthChange = (e) => {
@@ -215,10 +200,7 @@ export default function NewStudentHome() {
 
       <Card className="mb-4">
         <h1 className="text-4xl font-bold mb-4">
-          <FormattedMessage
-            id="studentHome.welcome"
-            values={{ name: client?.name || "" }}
-          />
+          <FormattedMessage id="studentHome.welcome" values={{ name: client?.name || '' }} />
         </h1>
       </Card>
 
@@ -232,7 +214,7 @@ export default function NewStudentHome() {
             options={monthOptions}
             onChange={handleMonthChange}
             placeholder={intl.formatMessage({
-              id: "studentHome.calendar.filterMonth",
+              id: 'studentHome.calendar.filterMonth'
             })}
           />
         </div>
@@ -250,38 +232,30 @@ export default function NewStudentHome() {
         ) : (
           <FullCalendar
             ref={calendarRef}
-            plugins={[
-              dayGridPlugin,
-              timeGridPlugin,
-              interactionPlugin,
-              listPlugin,
-            ]}
-            initialView={window.innerWidth > 768 ? "dayGridMonth" : "listMonth"}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+            initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
             events={calendarEvents}
             eventContent={renderEventContent}
             locale={intl.locale}
             headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
             }}
             buttonText={{
-              today: intl.formatMessage({ id: "calendar.today" }),
-              month: intl.formatMessage({ id: "calendar.month" }),
-              week: intl.formatMessage({ id: "calendar.week" }),
-              day: intl.formatMessage({ id: "calendar.day" }),
-              list: intl.formatMessage({ id: "calendar.list" }),
+              today: intl.formatMessage({ id: 'calendar.today' }),
+              month: intl.formatMessage({ id: 'calendar.month' }),
+              week: intl.formatMessage({ id: 'calendar.week' }),
+              day: intl.formatMessage({ id: 'calendar.day' }),
+              list: intl.formatMessage({ id: 'calendar.list' })
             }}
             height="auto"
             windowResize={(arg) => {
               const calendarApi = calendarRef.current.getApi();
-              if (window.innerWidth <= 768 && arg.view.type !== "listMonth") {
-                calendarApi.changeView("listMonth");
-              } else if (
-                window.innerWidth > 768 &&
-                arg.view.type !== "dayGridMonth"
-              ) {
-                calendarApi.changeView("dayGridMonth");
+              if (window.innerWidth <= 768 && arg.view.type !== 'listMonth') {
+                calendarApi.changeView('listMonth');
+              } else if (window.innerWidth > 768 && arg.view.type !== 'dayGridMonth') {
+                calendarApi.changeView('dayGridMonth');
               }
             }}
           />
@@ -289,12 +263,12 @@ export default function NewStudentHome() {
       </Card>
 
       <Dialog
-        header={intl.formatMessage({ id: "studentHome.dialog.planDetails" })}
+        header={intl.formatMessage({ id: 'studentHome.dialog.planDetails' })}
         draggable={false}
         resizable={false}
         dismissableMask
         visible={planDetailsVisible}
-        style={{ width: "80vw" }}
+        style={{ width: '80vw' }}
         onHide={() => setPlanDetailsVisible(false)}
       >
         {/*<NewPlanDetail

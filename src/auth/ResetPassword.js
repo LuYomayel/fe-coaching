@@ -19,11 +19,7 @@ const ResetPassword = () => {
 
   const handleResetPassword = async () => {
     if (newPassword !== confirmPassword) {
-      showToast(
-        'error',
-        'Error',
-        intl.formatMessage({ id: 'resetPassword.error.match' })
-      );
+      showToast('error', 'Error', intl.formatMessage({ id: 'resetPassword.error.match' }));
       return;
     }
 
@@ -43,16 +39,9 @@ const ResetPassword = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.log(errorData);
-        throw new Error(
-          errorData.message ||
-            intl.formatMessage({ id: 'resetPassword.error.generic' })
-        );
+        throw new Error(errorData.message || intl.formatMessage({ id: 'resetPassword.error.generic' }));
       } else {
-        showToast(
-          'success',
-          'Success',
-          intl.formatMessage({ id: 'resetPassword.success' })
-        );
+        showToast('success', 'Success', intl.formatMessage({ id: 'resetPassword.success' }));
         navigate('/login');
       }
     } catch (error) {

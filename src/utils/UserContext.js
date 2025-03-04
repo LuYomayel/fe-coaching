@@ -40,6 +40,10 @@ export const UserProvider = ({ children }) => {
               const data = await fetchClientData(decodedUser.userId);
               setClient(data);
             } else {
+              localStorage.removeItem('token');
+              setUser(null);
+              setCoach(null);
+              setClient(null);
             }
           } else {
             localStorage.removeItem('token');
@@ -93,9 +97,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider
-      value={{ user, coach, client, setUser, setCoach, setClient, isLoading }}
-    >
+    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient, isLoading }}>
       {children}
     </UserContext.Provider>
   );

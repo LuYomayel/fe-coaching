@@ -16,12 +16,9 @@ const VerifyEmail = () => {
   useEffect(() => {
     const verifyEmail = async (token) => {
       try {
-        const response = await fetch(
-          `${apiUrl}/auth/verify-email?token=${token}`,
-          {
-            method: 'GET'
-          }
-        );
+        const response = await fetch(`${apiUrl}/auth/verify-email?token=${token}`, {
+          method: 'GET'
+        });
 
         const data = await response.json();
 
@@ -55,11 +52,7 @@ const VerifyEmail = () => {
       <Card title="Email Verification">
         <p>{status}</p>
         {status === 'Email verified successfully!' && (
-          <Button
-            label="Go to Login"
-            icon="pi pi-sign-in"
-            onClick={() => navigate('/')}
-          />
+          <Button label="Go to Login" icon="pi pi-sign-in" onClick={() => navigate('/')} />
         )}
       </Card>
     </div>

@@ -14,8 +14,7 @@ const formatDateToApi = (date) => {
   return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 };
 const isValidYouTubeUrl = (url) => {
-  const regex =
-    /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/(watch\?v=|embed\/|shorts\/|v\/|.+)?$/;
+  const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/(watch\?v=|embed\/|shorts\/|v\/|.+)?$/;
   return regex.test(url);
 };
 
@@ -60,11 +59,7 @@ function updateStatus(workouts) {
 
   workouts.forEach((workout) => {
     const sessionDate = new Date(workout.trainingSession.sessionDate);
-    const sessionDay = new Date(
-      sessionDate.getFullYear(),
-      sessionDate.getMonth(),
-      sessionDate.getDate()
-    );
+    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
 
     if (workout.status === 'pending') {
       if (sessionDay < today) {
@@ -123,16 +118,7 @@ const validateDates = (startDate, endDate, intl) => {
 
 // utils.js
 const validateStudentDetails = (
-  {
-    name,
-    email,
-    fitnessGoal,
-    activityLevel,
-    birthdate,
-    gender,
-    height,
-    weight
-  },
+  { name, email, fitnessGoal, activityLevel, birthdate, gender, height, weight },
   intl
 ) => {
   if (!name)

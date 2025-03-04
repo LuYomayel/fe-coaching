@@ -26,13 +26,7 @@ import { FaGripVertical } from 'react-icons/fa';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { fetchCoachExercises } from '../services/exercisesService';
 import { useTheme } from '../utils/ThemeContext';
-export default function WorkoutTable({
-  trainingCycles,
-  cycleOptions,
-  setRefreshKey,
-  clientId,
-  clientData
-}) {
+export default function WorkoutTable({ trainingCycles, cycleOptions, setRefreshKey, clientId, clientData }) {
   const intl = useIntl();
   const { isDarkMode } = useTheme();
   const daysOfWeek = [
@@ -81,14 +75,8 @@ export default function WorkoutTable({
   const [showTrainingNameDialog, setShowTrainingNameDialog] = useState(false);
   const [newTrainingSessions, setNewTrainingSessions] = useState([]);
   const [deletedExercises, setDeletedExercises] = useState([]);
-  const [originalExercisesSnapshot, setOriginalExercisesSnapshot] = useState(
-    []
-  );
-  const [selectedProperties, setSelectedProperties] = useState([
-    'sets',
-    'repetitions',
-    'weight'
-  ]);
+  const [originalExercisesSnapshot, setOriginalExercisesSnapshot] = useState([]);
+  const [selectedProperties, setSelectedProperties] = useState(['sets', 'repetitions', 'weight']);
   const [dialogContext, setDialogContext] = useState(null); // 'edit', 'newTraining', o 'addProperties'
   const [originalProperties, setOriginalProperties] = useState([]); // Para almacenar las propiedades originales
   const [daysUsed, setDaysUsed] = useState([]);
@@ -141,20 +129,13 @@ export default function WorkoutTable({
       );
     }
     // Ordenar los ejercicios por rowIndex
-    const sortedExercises = [...exercises].sort(
-      (a, b) => a.rowIndex - b.rowIndex
-    );
+    const sortedExercises = [...exercises].sort((a, b) => a.rowIndex - b.rowIndex);
 
     const exercisesByDayNumber = sortedExercises.reduce((acc, exercise) => {
       if (!acc[exercise.dayNumber]) {
         acc[exercise.dayNumber] = [];
       }
-      if (
-        !acc[exercise.dayNumber].some(
-          (e) =>
-            e.name === exercise.name && e.groupNumber === exercise.groupNumber
-        )
-      ) {
+      if (!acc[exercise.dayNumber].some((e) => e.name === exercise.name && e.groupNumber === exercise.groupNumber)) {
         acc[exercise.dayNumber].push({
           ...exercise,
           uniqueId: `${exercise.id || 'new'}-${exercise.dayNumber}-${acc[exercise.dayNumber].length}`
@@ -178,18 +159,14 @@ export default function WorkoutTable({
 
         updatedExercises.splice(destination.index, 0, {
           ...exerciseSource,
-          groupNumber:
-            exerciseDestination?.groupNumber || exerciseSource.groupNumber
+          groupNumber: exerciseDestination?.groupNumber || exerciseSource.groupNumber
         });
 
         setExercises(updatedExercises);
       } else {
         const destinationGroupNumber =
-          exerciseDestination?.groupNumber ||
-          exercises[destination.index - 1]?.groupNumber + 1;
-        const destinationGroupId =
-          exerciseDestination?.groupId ||
-          exercises[destination.index - 1]?.groupId;
+          exerciseDestination?.groupNumber || exercises[destination.index - 1]?.groupNumber + 1;
+        const destinationGroupId = exerciseDestination?.groupId || exercises[destination.index - 1]?.groupId;
 
         // No es necesario ajustar los índices manualmente
         const updatedExercise = {
@@ -217,155 +194,140 @@ export default function WorkoutTable({
 
     return (
       <DragDropContext onDragEnd={handleDragEnd}>
-        {Object.entries(exercisesByDayNumber).map(
-          ([dayNumber, exercisesForDay]) => {
-            // eslint-disable-next-line
-            const formattedDayLabel =
-              daysOfWeek.find((day) => day.value === parseInt(dayNumber))
-                ?.label || `Day ${dayNumber}`;
-            return (
-              <div key={`day-${dayNumber}`}>
-                {/* <h3>{intl.formatMessage({ id: 'workoutTable.trainingDay' }, { day: formattedDayLabel })}</h3> */}
-                <Droppable droppableId={dayNumber.toString()}>
-                  {(provided) => (
-                    <div ref={provided.innerRef} {...provided.droppableProps}>
-                      <DataTable
-                        value={
-                          isEditing
-                            ? [
-                                ...exercisesForDay,
-                                {
-                                  name: intl.formatMessage({
-                                    id: 'workoutTable.addNewExercise'
-                                  }),
-                                  isNew: true,
-                                  uniqueId: `new-button-${dayNumber}`
-                                }
-                              ]
-                            : exercisesForDay
-                        }
-                        headerColumnGroup={headerGroup}
-                        scrollable
-                        // scrollHeight="700px"
-                        editMode="cell"
-                        loading={isLoading}
-                        rowClassName={rowClassName}
-                      >
-                        {isEditing && (
-                          <Column
-                            header={intl.formatMessage({
-                              id: 'workoutTable.deleteExercise'
-                            })}
-                            body={(rowData, options) => {
-                              if (
-                                rowData.name !==
-                                  intl.formatMessage({
-                                    id: 'workoutTable.addNewExercise'
-                                  }) &&
-                                exercises.length > 1
-                              ) {
-                                return (
-                                  <div className="flex justify-content-center align-items-center">
-                                    <Button
-                                      icon="pi pi-trash"
-                                      className="p-button-danger p-button-sm"
-                                      style={{
-                                        width: '1.5rem',
-                                        height: '1.5rem',
-                                        padding: '0.15rem',
-                                        fontSize: '0.8rem'
-                                      }}
-                                      onClick={() =>
-                                        handleDeleteExercise(options.rowIndex)
-                                      }
-                                    />
-                                  </div>
-                                );
+        {Object.entries(exercisesByDayNumber).map(([dayNumber, exercisesForDay]) => {
+          // eslint-disable-next-line
+          const formattedDayLabel =
+            daysOfWeek.find((day) => day.value === parseInt(dayNumber))?.label || `Day ${dayNumber}`;
+          return (
+            <div key={`day-${dayNumber}`}>
+              {/* <h3>{intl.formatMessage({ id: 'workoutTable.trainingDay' }, { day: formattedDayLabel })}</h3> */}
+              <Droppable droppableId={dayNumber.toString()}>
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                    <DataTable
+                      value={
+                        isEditing
+                          ? [
+                              ...exercisesForDay,
+                              {
+                                name: intl.formatMessage({
+                                  id: 'workoutTable.addNewExercise'
+                                }),
+                                isNew: true,
+                                uniqueId: `new-button-${dayNumber}`
                               }
-                              return null;
-                            }}
-                            style={{ padding: '0.15rem' }}
-                          />
-                        )}
+                            ]
+                          : exercisesForDay
+                      }
+                      headerColumnGroup={headerGroup}
+                      scrollable
+                      // scrollHeight="700px"
+                      editMode="cell"
+                      loading={isLoading}
+                      rowClassName={rowClassName}
+                    >
+                      {isEditing && (
                         <Column
                           header={intl.formatMessage({
-                            id: 'workoutTable.exercise'
+                            id: 'workoutTable.deleteExercise'
                           })}
-                          style={{ padding: '0.15rem', minWidth: '15rem' }}
                           body={(rowData, options) => {
                             if (
-                              rowData.name ===
+                              rowData.name !==
                                 intl.formatMessage({
                                   id: 'workoutTable.addNewExercise'
                                 }) &&
-                              isEditing
+                              exercises.length > 1
                             ) {
                               return (
-                                <div className="flex">
+                                <div className="flex justify-content-center align-items-center">
                                   <Button
-                                    label={intl.formatMessage({
-                                      id: 'workoutTable.addNewExercise'
-                                    })}
-                                    icon="pi pi-plus"
-                                    onClick={() =>
-                                      handleAddNewExercise(
-                                        rowData,
-                                        options.rowIndex
-                                      )
-                                    }
-                                  />
-                                  <Button
-                                    label={intl.formatMessage({
-                                      id: 'workoutTable.addNewGroup'
-                                    })}
-                                    icon="pi pi-plus"
-                                    onClick={() =>
-                                      handleAddNewGroup(
-                                        rowData,
-                                        options.rowIndex
-                                      )
-                                    }
-                                    className="ml-2"
+                                    icon="pi pi-trash"
+                                    className="p-button-danger p-button-sm"
+                                    style={{
+                                      width: '1.5rem',
+                                      height: '1.5rem',
+                                      padding: '0.15rem',
+                                      fontSize: '0.8rem'
+                                    }}
+                                    onClick={() => handleDeleteExercise(options.rowIndex)}
                                   />
                                 </div>
                               );
                             }
-                            return (
-                              <Draggable
-                                key={rowData.uniqueId}
-                                draggableId={rowData.uniqueId}
-                                index={exercisesForDay.indexOf(rowData)}
-                                isDragDisabled={!(isEditing || newTraining)}
-                              >
-                                {(provided) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    style={{
-                                      ...provided.draggableProps.style,
-                                      display: 'flex',
-                                      alignItems: 'center'
-                                    }}
-                                  >
-                                    {renderExerciseName(rowData, provided)}
-                                  </div>
-                                )}
-                              </Draggable>
-                            );
+                            return null;
                           }}
-                          editor={(options) => exerciseEditor(options)}
-                          editorOptions={{ disabled: !isEditing }}
+                          style={{ padding: '0.15rem' }}
                         />
-                        {dataColumns}
-                      </DataTable>
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            );
-          }
-        )}
+                      )}
+                      <Column
+                        header={intl.formatMessage({
+                          id: 'workoutTable.exercise'
+                        })}
+                        style={{ padding: '0.15rem', minWidth: '15rem' }}
+                        body={(rowData, options) => {
+                          if (
+                            rowData.name ===
+                              intl.formatMessage({
+                                id: 'workoutTable.addNewExercise'
+                              }) &&
+                            isEditing
+                          ) {
+                            return (
+                              <div className="flex">
+                                <Button
+                                  label={intl.formatMessage({
+                                    id: 'workoutTable.addNewExercise'
+                                  })}
+                                  icon="pi pi-plus"
+                                  onClick={() => handleAddNewExercise(rowData, options.rowIndex)}
+                                />
+                                <Button
+                                  label={intl.formatMessage({
+                                    id: 'workoutTable.addNewGroup'
+                                  })}
+                                  icon="pi pi-plus"
+                                  onClick={() => handleAddNewGroup(rowData, options.rowIndex)}
+                                  className="ml-2"
+                                />
+                              </div>
+                            );
+                          }
+                          return (
+                            <Draggable
+                              key={rowData.uniqueId}
+                              draggableId={rowData.uniqueId}
+                              index={exercisesForDay.indexOf(rowData)}
+                              isDragDisabled={!(isEditing || newTraining)}
+                            >
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  style={{
+                                    ...provided.draggableProps.style,
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  }}
+                                >
+                                  {renderExerciseName(rowData, provided)}
+                                </div>
+                              )}
+                            </Draggable>
+                          );
+                        }}
+                        editor={(options) => exerciseEditor(options)}
+                        editorOptions={{ disabled: !isEditing }}
+                      />
+                      {dataColumns}
+                    </DataTable>
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          );
+        })}
       </DragDropContext>
     );
   };
@@ -376,8 +338,7 @@ export default function WorkoutTable({
       const changes = [];
       if (prevDeps.cycle !== cycle) changes.push('cycle');
       if (prevDeps.dayOfWeek !== dayOfWeek) changes.push('dayOfWeek');
-      if (prevDeps.trainingCycles !== trainingCycles)
-        changes.push('trainingCycles');
+      if (prevDeps.trainingCycles !== trainingCycles) changes.push('trainingCycles');
       return changes;
     };
 
@@ -399,8 +360,7 @@ export default function WorkoutTable({
         if (!week.trainingSessions) return;
         week.trainingSessions.forEach((session) => {
           if (!session.workoutInstances) return;
-          if (session.dayNumber === dayOfWeek)
-            setNewTrainingSessions((prev) => [...prev, session]);
+          if (session.dayNumber === dayOfWeek) setNewTrainingSessions((prev) => [...prev, session]);
           session.workoutInstances.forEach((instance) => {
             const nombre = instance.workout.planName;
             setPlanName(nombre);
@@ -417,11 +377,9 @@ export default function WorkoutTable({
                   existingRest.sessionDates.push(session.sessionDate);
                   existingRest.id[weekIndex] = group.id;
                   existingRest.groupId[week.weekNumber - 1] = group.id;
-                  existingRest.workoutInstanceId[week.weekNumber - 1] =
-                    instance.id;
+                  existingRest.workoutInstanceId[week.weekNumber - 1] = instance.id;
                   if (group.restDuration) {
-                    existingRest.restDuration[week.weekNumber - 1] =
-                      group.restDuration;
+                    existingRest.restDuration[week.weekNumber - 1] = group.restDuration;
                     propertiesSet.add('restDuration');
                   }
                 } else {
@@ -446,8 +404,7 @@ export default function WorkoutTable({
                     restObj[prop] = Array(numWeeks).fill('');
                   });
                   if (group.restDuration) {
-                    restObj.restDuration[week.weekNumber - 1] =
-                      group.restDuration;
+                    restObj.restDuration[week.weekNumber - 1] = group.restDuration;
                     propertiesSet.add('restDuration');
                   }
                   exercisesMap.set(key, restObj);
@@ -457,18 +414,15 @@ export default function WorkoutTable({
 
               // Manejar ejercicios normales
               group.exercises.forEach((exerciseData) => {
-                const exerciseName =
-                  exerciseData.exercise?.name || 'Unnamed Exercise';
+                const exerciseName = exerciseData.exercise?.name || 'Unnamed Exercise';
                 const dayNumber = session.dayNumber;
                 const key = `${exerciseName}-${group.groupNumber}-${dayNumber}`;
                 if (exercisesMap.has(key)) {
                   const existingExercise = exercisesMap.get(key);
-                  existingExercise.sessionDates[week.weekNumber - 1] =
-                    session.sessionDate;
+                  existingExercise.sessionDates[week.weekNumber - 1] = session.sessionDate;
                   existingExercise.id[week.weekNumber - 1] = exerciseData.id;
                   existingExercise.groupId[week.weekNumber - 1] = group.id;
-                  existingExercise.workoutInstanceId[week.weekNumber - 1] =
-                    instance.id;
+                  existingExercise.workoutInstanceId[week.weekNumber - 1] = instance.id;
                   possibleProperties.forEach((prop) => {
                     const value = exerciseData[prop] || group[prop] || '-';
                     if (value !== '-') {
@@ -493,8 +447,7 @@ export default function WorkoutTable({
                   };
                   exerciseObj.id[week.weekNumber - 1] = exerciseData.id;
                   exerciseObj.groupId[week.weekNumber - 1] = group.id;
-                  exerciseObj.workoutInstanceId[week.weekNumber - 1] =
-                    instance.id;
+                  exerciseObj.workoutInstanceId[week.weekNumber - 1] = instance.id;
                   possibleProperties.forEach((prop) => {
                     exerciseObj[prop] = Array(numWeeks).fill('');
                   });
@@ -526,9 +479,7 @@ export default function WorkoutTable({
         });
       });
       if (changes.includes('cycle')) {
-        const daysUsed = Array.from(
-          new Set(justExercises.map((day) => day.dayNumber))
-        );
+        const daysUsed = Array.from(new Set(justExercises.map((day) => day.dayNumber)));
         setDaysUsed(daysUsed);
       }
       setOriginalExercisesSnapshot(exerciseData);
@@ -546,9 +497,8 @@ export default function WorkoutTable({
       const selectedCycle = trainingCycles.find((c) => c.id === cycle);
       if (!selectedCycle) return;
       const planName =
-        selectedCycle.trainingWeeks[0].trainingSessions.find(
-          (s) => s.dayNumber === dayOfWeek
-        ).workoutInstances[0]?.workout.planName || '';
+        selectedCycle.trainingWeeks[0].trainingSessions.find((s) => s.dayNumber === dayOfWeek).workoutInstances[0]
+          ?.workout.planName || '';
       setPlanName(planName);
     } else {
       setExercises([]);
@@ -572,10 +522,7 @@ export default function WorkoutTable({
 
   const renderProperty = (rowData, property, weekIndex) => {
     // Verifica si rowData[property] es un array y si weekIndex es un índice válido
-    if (
-      Array.isArray(rowData[property]) &&
-      weekIndex < rowData[property].length
-    ) {
+    if (Array.isArray(rowData[property]) && weekIndex < rowData[property].length) {
       return rowData[property][weekIndex] || '-';
     }
     // Si no es un array o el índice no es válido, devuelve un guion
@@ -586,27 +533,17 @@ export default function WorkoutTable({
     if (!isEditing) {
       return options.value;
     }
-    if (
-      options.rowData.restDuration &&
-      options.rowData.name === 'Descanso' &&
-      property !== 'restDuration'
-    ) {
+    if (options.rowData.restDuration && options.rowData.name === 'Descanso' && property !== 'restDuration') {
       return options.value;
     }
-    if (
-      options.rowData.restDuration &&
-      options.rowData.name !== 'Descanso' &&
-      property === 'restDuration'
-    ) {
+    if (options.rowData.restDuration && options.rowData.name !== 'Descanso' && property === 'restDuration') {
       return options.value;
     }
     return (
       <InputText
         type="text"
         value={options.rowData[property][weekIndex]}
-        onChange={(e) =>
-          onEditorValueChange(options, e.target.value, property, weekIndex)
-        }
+        onChange={(e) => onEditorValueChange(options, e.target.value, property, weekIndex)}
       />
     );
   };
@@ -656,8 +593,7 @@ export default function WorkoutTable({
             id: exerciseId,
             newExerciseId: exercise.value,
             rowIndex: exercise.rowIndex,
-            workoutInstanceId:
-              updatedExercises[exercise.rowIndex].workoutInstanceId[weekIndex]
+            workoutInstanceId: updatedExercises[exercise.rowIndex].workoutInstanceId[weekIndex]
           });
         }
       } else if (groupId) {
@@ -667,8 +603,7 @@ export default function WorkoutTable({
           newExerciseId: exercise.value,
           weekIndex: weekIndex,
           rowIndex: exercise.rowIndex,
-          workoutInstanceId:
-            updatedExercises[exercise.rowIndex].workoutInstanceId[weekIndex]
+          workoutInstanceId: updatedExercises[exercise.rowIndex].workoutInstanceId[weekIndex]
         });
       } else {
         // Si no hay ni ID ni groupId (ejercicio completamente nuevo)
@@ -678,9 +613,7 @@ export default function WorkoutTable({
           rowIndex: exercise.rowIndex,
           isNew: true,
           groupNumber: updatedExercises[exercise.rowIndex].groupNumber || 1,
-          workoutInstanceId: newTraining
-            ? null
-            : updatedExercises[exercise.rowIndex].workoutInstanceId[weekIndex]
+          workoutInstanceId: newTraining ? null : updatedExercises[exercise.rowIndex].workoutInstanceId[weekIndex]
         });
       }
     }
@@ -750,20 +683,13 @@ export default function WorkoutTable({
       (ex) => ex.id === updatedExercises[options.rowIndex].id[weekIndex]
     );
     const exerciseIndexByGroupId = updatedEditedExercises.findIndex(
-      (ex) =>
-        ex.groupId === updatedExercises[options.rowIndex].groupId[weekIndex]
+      (ex) => ex.groupId === updatedExercises[options.rowIndex].groupId[weekIndex]
     );
     const exerciseIndexByNewExerciseId = updatedEditedExercises.findIndex(
-      (ex) =>
-        ex.newExerciseId === updatedExercises[options.rowIndex].newExerciseId &&
-        ex.weekIndex === weekIndex
+      (ex) => ex.newExerciseId === updatedExercises[options.rowIndex].newExerciseId && ex.weekIndex === weekIndex
     );
 
-    if (
-      exerciseIndex !== -1 ||
-      exerciseIndexByGroupId !== -1 ||
-      exerciseIndexByNewExerciseId !== -1
-    ) {
+    if (exerciseIndex !== -1 || exerciseIndexByGroupId !== -1 || exerciseIndexByNewExerciseId !== -1) {
       if (exerciseIndex !== -1) {
         updatedEditedExercises[exerciseIndex] = {
           ...updatedEditedExercises[exerciseIndex],
@@ -782,8 +708,7 @@ export default function WorkoutTable({
       }
     } else if (newTraining) {
       updatedEditedExercises.push({
-        newExerciseId:
-          updatedExercises[options.rowIndex].newExerciseId[weekIndex],
+        newExerciseId: updatedExercises[options.rowIndex].newExerciseId[weekIndex],
         [property]: value
       });
     } else {
@@ -866,16 +791,13 @@ export default function WorkoutTable({
                   rowIndex: index,
                   groupNumber: exercise.groupNumber,
                   groupId: exercise.groupId[weekIndex],
-                  newGroupId: editedExercises.find((ex) => ex.id === id)
-                    ?.newGroupId
+                  newGroupId: editedExercises.find((ex) => ex.id === id)?.newGroupId
                 };
               });
             });
 
             // Comparar los snapshots filtrados con los datos actuales
-            const hasChanges =
-              JSON.stringify(exerciseData) !==
-              JSON.stringify(filteredOriginalSnapshot);
+            const hasChanges = JSON.stringify(exerciseData) !== JSON.stringify(filteredOriginalSnapshot);
 
             if (hasChanges && !newTraining) {
               const response = await verifyExerciseChanges(exerciseData);
@@ -930,23 +852,15 @@ export default function WorkoutTable({
   for (let i = 0; i < numWeeks; i++) {
     properties.forEach((property) => {
       const headerLabel = propertyLabels[property] || property;
-      subHeaderColumns.push(
-        <Column header={headerLabel} key={`${property}-header-${i}`} />
-      );
+      subHeaderColumns.push(<Column header={headerLabel} key={`${property}-header-${i}`} />);
     });
   }
 
   const headerGroup = (
     <ColumnGroup>
       <Row>
-        {isEditing && (
-          <Column header="" rowSpan={2} style={{ width: '1rem' }} />
-        )}
-        <Column
-          header={intl.formatMessage({ id: 'workoutTable.exercise' })}
-          rowSpan={2}
-          style={{ width: '40rem' }}
-        />
+        {isEditing && <Column header="" rowSpan={2} style={{ width: '1rem' }} />}
+        <Column header={intl.formatMessage({ id: 'workoutTable.exercise' })} rowSpan={2} style={{ width: '40rem' }} />
         {Array.from({ length: numWeeks }, (_, i) => (
           <Column
             header={`${intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}`}
@@ -978,13 +892,9 @@ export default function WorkoutTable({
 
   const rowClassName = (rowData) => {
     if (isDarkMode) {
-      return rowData.groupNumber % 2 === 0
-        ? 'group-even-dark improved-row'
-        : 'group-odd-dark improved-row';
+      return rowData.groupNumber % 2 === 0 ? 'group-even-dark improved-row' : 'group-odd-dark improved-row';
     } else {
-      return rowData.groupNumber % 2 === 0
-        ? 'group-even improved-row'
-        : 'group-odd improved-row';
+      return rowData.groupNumber % 2 === 0 ? 'group-even improved-row' : 'group-odd improved-row';
     }
   };
 
@@ -1010,8 +920,7 @@ export default function WorkoutTable({
                 {intl.formatMessage(
                   { id: 'workoutTable.day' },
                   {
-                    day: daysOfWeek.find((day) => day.value === dayOfWeek)
-                      ?.label,
+                    day: daysOfWeek.find((day) => day.value === dayOfWeek)?.label,
                     plan: planName
                   }
                 )}
@@ -1096,37 +1005,22 @@ export default function WorkoutTable({
   };
 
   const handleAddNewExercise = (rowData, index) => {
-    const trainingSessionDates =
-      exercises.length > 0
-        ? exercises[index - 1].sessionDates
-        : Array(numWeeks).fill(null);
+    const trainingSessionDates = exercises.length > 0 ? exercises[index - 1].sessionDates : Array(numWeeks).fill(null);
 
-    const trainingGroupId =
-      exercises.length > 0
-        ? exercises[index - 1].groupId
-        : Array(numWeeks).fill(null);
+    const trainingGroupId = exercises.length > 0 ? exercises[index - 1].groupId : Array(numWeeks).fill(null);
 
     const workoutInstanceId =
-      exercises.length > 0
-        ? exercises[index - 1].workoutInstanceId
-        : Array(numWeeks).fill(null);
+      exercises.length > 0 ? exercises[index - 1].workoutInstanceId : Array(numWeeks).fill(null);
 
-    const dayNumber =
-      exercises.length > 0
-        ? exercises[index - 1].dayNumber
-        : Array(numWeeks).fill(null);
+    const dayNumber = exercises.length > 0 ? exercises[index - 1].dayNumber : Array(numWeeks).fill(null);
 
     const emptyExercise = {
       name: intl.formatMessage({ id: 'workoutTable.newExercise' }),
       groupNumber: selectedGroup,
-      sessionDates: newTraining
-        ? Array(numWeeks).fill(null)
-        : trainingSessionDates,
+      sessionDates: newTraining ? Array(numWeeks).fill(null) : trainingSessionDates,
       id: Array(numWeeks).fill(null),
       groupId: newTraining ? Array(numWeeks).fill(null) : trainingGroupId,
-      trainingSessionId: newTraining
-        ? newTrainingSessions.map((session) => session.id)
-        : Array(numWeeks).fill(null),
+      trainingSessionId: newTraining ? newTrainingSessions.map((session) => session.id) : Array(numWeeks).fill(null),
       isNew: true,
       uniqueId: `new-exercise-${Date.now()}`,
       newExerciseId: Array(numWeeks).fill(null),
@@ -1140,9 +1034,7 @@ export default function WorkoutTable({
 
     const updatedExercises = [...exercises];
     // Encontrar la posición correcta para insertar el nuevo ejercicio
-    const insertIndex = updatedExercises.findIndex(
-      (ex) => ex.groupNumber > selectedGroup
-    );
+    const insertIndex = updatedExercises.findIndex((ex) => ex.groupNumber > selectedGroup);
 
     if (insertIndex === -1) {
       updatedExercises.push(emptyExercise);
@@ -1154,45 +1046,28 @@ export default function WorkoutTable({
   };
 
   const handleAddNewGroup = (rowData, index) => {
-    const nextGroupNumber =
-      exercises.length > 0
-        ? exercises[exercises.length - 1].groupNumber + 1
-        : 1;
+    const nextGroupNumber = exercises.length > 0 ? exercises[exercises.length - 1].groupNumber + 1 : 1;
     setSelectedGroup(nextGroupNumber);
 
-    const trainingSessionDates =
-      exercises.length > 0
-        ? exercises[index - 1].sessionDates
-        : Array(numWeeks).fill(null);
+    const trainingSessionDates = exercises.length > 0 ? exercises[index - 1].sessionDates : Array(numWeeks).fill(null);
 
     const workoutInstanceId =
-      exercises.length > 0
-        ? exercises[index - 1].workoutInstanceId
-        : Array(numWeeks).fill(null);
+      exercises.length > 0 ? exercises[index - 1].workoutInstanceId : Array(numWeeks).fill(null);
 
-    const dayNumber =
-      exercises.length > 0
-        ? exercises[index - 1].dayNumber
-        : Array(numWeeks).fill(null);
+    const dayNumber = exercises.length > 0 ? exercises[index - 1].dayNumber : Array(numWeeks).fill(null);
 
     const emptyExercise = {
       name: intl.formatMessage({ id: 'workoutTable.newExercise' }),
       groupNumber: nextGroupNumber,
-      sessionDates: newTraining
-        ? Array(numWeeks).fill(null)
-        : trainingSessionDates,
+      sessionDates: newTraining ? Array(numWeeks).fill(null) : trainingSessionDates,
       id: Array(numWeeks).fill(null),
       isNew: true,
       uniqueId: `new-group-${Date.now()}`,
-      groupId: newTraining
-        ? Array(numWeeks).fill(null)
-        : Array(numWeeks).fill(null),
+      groupId: newTraining ? Array(numWeeks).fill(null) : Array(numWeeks).fill(null),
       newExerciseId: Array(numWeeks).fill(null),
       workoutInstanceId: workoutInstanceId,
       dayNumber: dayNumber,
-      trainingSessionId: newTraining
-        ? newTrainingSessions.map((session) => session.id)
-        : Array(numWeeks).fill(null)
+      trainingSessionId: newTraining ? newTrainingSessions.map((session) => session.id) : Array(numWeeks).fill(null)
     };
 
     possibleProperties.forEach((prop) => {
@@ -1205,22 +1080,16 @@ export default function WorkoutTable({
   const handleDeleteExercise = (exerciseIndex) => {
     if (!newTraining) {
       // También puedes actualizar editedExercises si es necesario
-      const updatedDeletedExercises = exercises
-        .find((ex) => ex.rowIndex === exerciseIndex)
-        .id.map((id) => id);
+      const updatedDeletedExercises = exercises.find((ex) => ex.rowIndex === exerciseIndex).id.map((id) => id);
       setDeletedExercises(updatedDeletedExercises);
     }
 
-    const updatedExercises = exercises.filter(
-      (_, index) => index !== exerciseIndex
-    );
+    const updatedExercises = exercises.filter((_, index) => index !== exerciseIndex);
     setExercises(updatedExercises);
   };
 
   const updateProperties = () => {
-    const newProperties = selectedProperties.filter(
-      (prop) => !properties.includes(prop)
-    );
+    const newProperties = selectedProperties.filter((prop) => !properties.includes(prop));
     setProperties([...properties, ...newProperties]);
   };
 
@@ -1250,11 +1119,7 @@ export default function WorkoutTable({
 
   return (
     <div>
-      <Card
-        title={renderCardTitle}
-        className="mb-4 workout-table-card font-medium"
-        cardTitleClassName="font-medium"
-      >
+      <Card title={renderCardTitle} className="mb-4 workout-table-card font-medium" cardTitleClassName="font-medium">
         <div className="grid">
           <div className="col-6">
             <div className="p-field">
@@ -1266,8 +1131,7 @@ export default function WorkoutTable({
                 options={cycleOptions}
                 onChange={(e) => {
                   if (e.value === -1) {
-                    if (clientData.user.subscription.status === 'Active')
-                      setNewCycleDialogVisible(true);
+                    if (clientData.user.subscription.status === 'Active') setNewCycleDialogVisible(true);
                     else
                       showToast(
                         'error',
@@ -1287,11 +1151,7 @@ export default function WorkoutTable({
                 showClear
                 disabled={newTraining || isEditing}
                 itemTemplate={(option) => (
-                  <div
-                    className={option.value === -1 ? 'highlighted-option' : ''}
-                  >
-                    {option.label}
-                  </div>
+                  <div className={option.value === -1 ? 'highlighted-option' : ''}>{option.label}</div>
                 )}
               />
             </div>
@@ -1311,15 +1171,7 @@ export default function WorkoutTable({
                 showClear
                 disabled={newTraining || isEditing}
                 itemTemplate={(option) => (
-                  <div
-                    className={
-                      daysUsed.includes(option.value)
-                        ? 'highlighted-option'
-                        : ''
-                    }
-                  >
-                    {option.label}
-                  </div>
+                  <div className={daysUsed.includes(option.value) ? 'highlighted-option' : ''}>{option.label}</div>
                 )}
               />
             </div>
@@ -1349,25 +1201,12 @@ export default function WorkoutTable({
       >
         <div>
           <div className="flex align-items-center justify-content-between">
-            <label>
-              {intl.formatMessage({ id: 'workoutTable.modifyAll' })}
-            </label>
-            <Checkbox
-              checked={selectedWeeks.length === numWeeks}
-              onChange={toggleSelectAllWeeks}
-            />
+            <label>{intl.formatMessage({ id: 'workoutTable.modifyAll' })}</label>
+            <Checkbox checked={selectedWeeks.length === numWeeks} onChange={toggleSelectAllWeeks} />
           </div>
           {Array.from({ length: numWeeks }, (_, i) => (
-            <div
-              key={i}
-              className="flex align-items-center justify-content-between"
-            >
-              <label>
-                {intl.formatMessage(
-                  { id: 'workoutTable.week' },
-                  { week: i + 1 }
-                )}
-              </label>
+            <div key={i} className="flex align-items-center justify-content-between">
+              <label>{intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}</label>
               <Checkbox
                 checked={selectedWeeks.includes(i)}
                 onChange={(e) => {
@@ -1404,10 +1243,7 @@ export default function WorkoutTable({
               onClick={() => {
                 if (dialogContext === 'newTraining') {
                   handleAddTraining();
-                } else if (
-                  dialogContext === 'edit' ||
-                  dialogContext === 'addProperties'
-                ) {
+                } else if (dialogContext === 'edit' || dialogContext === 'addProperties') {
                   updateProperties();
                 }
                 setShowTrainingNameDialog(false);
@@ -1418,9 +1254,7 @@ export default function WorkoutTable({
       >
         {dialogContext !== 'addProperties' && (
           <div className="p-field">
-            <label htmlFor="trainingName">
-              {intl.formatMessage({ id: 'workoutTable.trainingName' })}
-            </label>
+            <label htmlFor="trainingName">{intl.formatMessage({ id: 'workoutTable.trainingName' })}</label>
             <InputText
               id="trainingName"
               value={planName}
@@ -1431,9 +1265,7 @@ export default function WorkoutTable({
           </div>
         )}
         <div className="p-field">
-          <label>
-            {intl.formatMessage({ id: 'workoutTable.selectProperties' })}
-          </label>
+          <label>{intl.formatMessage({ id: 'workoutTable.selectProperties' })}</label>
           {possibleProperties.map((property) => (
             <div key={property} className="flex align-items-center">
               <Checkbox

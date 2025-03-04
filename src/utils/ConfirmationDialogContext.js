@@ -4,8 +4,7 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 
 const ConfirmationDialogContext = createContext();
 
-export const useConfirmationDialog = () =>
-  useContext(ConfirmationDialogContext);
+export const useConfirmationDialog = () => useContext(ConfirmationDialogContext);
 
 export const ConfirmationDialogProvider = ({ children }) => {
   const [confirmationDialogState, setConfirmationDialogState] = useState({
@@ -17,13 +16,7 @@ export const ConfirmationDialogProvider = ({ children }) => {
     reject: null
   });
 
-  const showConfirmationDialog = ({
-    message,
-    header,
-    icon,
-    accept,
-    reject
-  }) => {
+  const showConfirmationDialog = ({ message, header, icon, accept, reject }) => {
     setConfirmationDialogState({
       visible: true,
       message,

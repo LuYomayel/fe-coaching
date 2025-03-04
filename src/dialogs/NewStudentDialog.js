@@ -28,9 +28,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
 
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line
-  const [studentId, setStudentId] = useState(
-    studentData ? studentData.id : null
-  );
+  const [studentId, setStudentId] = useState(studentData ? studentData.id : null);
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
 
   useEffect(() => {
@@ -39,9 +37,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       setEmail(studentData.user.email);
       setFitnessGoal(studentData.fitnessGoal);
       setActivityLevel(studentData.activityLevel);
-      setBirthDate(
-        studentData.birthdate ? new Date(studentData.birthdate) : null
-      );
+      setBirthDate(studentData.birthdate ? new Date(studentData.birthdate) : null);
       setGender(studentData.gender);
       setHeight(studentData.height);
       setWeight(studentData.weight);
@@ -81,14 +77,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
           .split(',')
           .filter(
             (goal) =>
-              ![
-                'weight loss',
-                'muscle gain',
-                'gain mobility',
-                'maintenance',
-                'flexibility',
-                'other'
-              ].includes(goal)
+              !['weight loss', 'muscle gain', 'gain mobility', 'maintenance', 'flexibility', 'other'].includes(goal)
           )
           .map((goal) => ({
             label: goal,
@@ -123,11 +112,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
             intl.formatMessage({ id: 'student.updatedSuccessfully' })
           );
         } else {
-          showToast(
-            'error',
-            intl.formatMessage({ id: 'error' }),
-            response.error
-          );
+          showToast('error', intl.formatMessage({ id: 'error' }), response.error);
         }
       } else {
         const response = await saveStudent(body);
@@ -138,22 +123,13 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
             intl.formatMessage({ id: 'student.addedSuccessfully' })
           );
         } else {
-          showToast(
-            'error',
-            intl.formatMessage({ id: 'error' }),
-            response.error
-          );
+          showToast('error', intl.formatMessage({ id: 'error' }), response.error);
         }
       }
       onClose();
       setRefreshKey((old) => old + 1);
     } catch (error) {
-      showToast(
-        'error',
-        intl.formatMessage({ id: 'error' }),
-        error.message,
-        true
-      );
+      showToast('error', intl.formatMessage({ id: 'error' }), error.message, true);
     } finally {
       setLoading(false);
     }
@@ -222,22 +198,13 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
         <label htmlFor="email">
           <FormattedMessage id="email" />
         </label>
-        <InputText
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={studentId}
-        />
+        <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={studentId} />
       </div>
       <div className="p-field">
         <label htmlFor="name">
           <FormattedMessage id="name" />
         </label>
-        <InputText
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="p-field">
         <label htmlFor="fitnessGoal">
@@ -289,8 +256,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       </div>
       <div className="p-field">
         <label htmlFor="height">
-          <FormattedMessage id="height" />{' '}
-          {propertyUnits?.height ? `(${propertyUnits?.height})` : ''}
+          <FormattedMessage id="height" /> {propertyUnits?.height ? `(${propertyUnits?.height})` : ''}
         </label>
         <InputNumber
           id="height"
@@ -303,8 +269,7 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       </div>
       <div className="p-field">
         <label htmlFor="weight">
-          <FormattedMessage id="weight" />{' '}
-          {propertyUnits?.weight ? `(${propertyUnits?.weight})` : ''}
+          <FormattedMessage id="weight" /> {propertyUnits?.weight ? `(${propertyUnits?.weight})` : ''}
         </label>
         <InputNumber
           id="weight"

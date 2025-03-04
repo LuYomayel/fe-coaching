@@ -24,7 +24,7 @@ import { extractYouTubeVideoId } from '../utils/UtilFunctions';
 import { fetchCoachExercises, createExercises } from '../services/exercisesService';
 import { InputNumber } from 'primereact/inputnumber';
 import { ButtonGroup } from 'primereact/buttongroup';
-const NewCreatePlan = ({ isEdit }) => {
+const CreatePlan = ({ isEdit }) => {
   const intl = useIntl();
   const { state, pathname } = useLocation();
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
@@ -1037,7 +1037,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                                         }
                                                       />
                                                     }
-                                                    onShow={(e) => {
+                                                    onShow={() => {
                                                       const filterInput = document.querySelector(`.p-dropdown-filter`);
                                                       console.log(filterInput);
                                                       if (filterInput) {
@@ -1059,7 +1059,6 @@ const NewCreatePlan = ({ isEdit }) => {
                                                         e.originalEvent.key === 'Enter'
                                                       ) {
                                                         e.originalEvent.preventDefault();
-                                                        console.log('onFilter', e);
                                                         handleCreateNewExercise(groupIndex, exerciseIndex);
                                                       }
                                                     }}
@@ -1271,7 +1270,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                 }}
                                 placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
                                 className="w-full"
-                                onHide={(e) => {
+                                onHide={() => {
                                   const dropdown = document.querySelector(`#exercise-dropdown-button-${groupIndex}`);
                                   if (dropdown) {
                                     dropdown.setAttribute('data-p-focus', 'true');
@@ -1329,7 +1328,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                     onClick={() => handleCreateNewExercise(groupIndex, null)}
                                   />
                                 }
-                                onShow={(e) => {
+                                onShow={() => {
                                   const filterInput = document.querySelector('.p-dropdown-filter');
                                   if (filterInput) {
                                     filterInput.focus();
@@ -1476,4 +1475,4 @@ const NewCreatePlan = ({ isEdit }) => {
   );
 };
 
-export default NewCreatePlan;
+export default CreatePlan;

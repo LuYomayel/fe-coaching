@@ -69,11 +69,7 @@ export default function Settings() {
     <div className="settings-page p-3 w-6 m-auto">
       <Card title={intl.formatMessage({ id: 'settings.title' })}>
         <div className="field-checkbox">
-          <Checkbox
-            inputId="darkMode"
-            checked={isDarkMode}
-            onChange={(e) => setIsDarkMode(e.checked)}
-          />
+          <Checkbox inputId="darkMode" checked={isDarkMode} onChange={(e) => setIsDarkMode(e.checked)} />
           <label htmlFor="darkMode">
             <FormattedMessage id="settings.darkMode" />
           </label>
@@ -83,23 +79,13 @@ export default function Settings() {
           <label htmlFor="language">
             <FormattedMessage id="settings.language" />
           </label>
-          <Dropdown
-            id="language"
-            value={locale}
-            options={languageOptions}
-            onChange={handleLanguageChange}
-          />
+          <Dropdown id="language" value={locale} options={languageOptions} onChange={handleLanguageChange} />
         </div>
         <div className="field">
           <Accordion>
-            <AccordionTab
-              header={intl.formatMessage({ id: 'settings.unitConfiguration' })}
-            >
+            <AccordionTab header={intl.formatMessage({ id: 'settings.unitConfiguration' })}>
               {Object.keys(propertyUnits).map((propertyKey) => (
-                <div
-                  key={propertyKey}
-                  className="flex justify-content-between align-items-center mb-2"
-                >
+                <div key={propertyKey} className="flex justify-content-between align-items-center mb-2">
                   <span className="mr-4">
                     {intl.formatMessage({
                       id: `exercise.properties.${propertyKey === 'repetitions' ? 'reps' : propertyKey}`
@@ -107,9 +93,7 @@ export default function Settings() {
                   </span>
                   <InputText
                     value={propertyUnits[propertyKey]}
-                    onChange={(e) =>
-                      handleUnitChange(propertyKey, e.target.value)
-                    }
+                    onChange={(e) => handleUnitChange(propertyKey, e.target.value)}
                     placeholder="Enter Unit"
                     style={{ width: '120px' }}
                   />
@@ -138,16 +122,8 @@ export default function Settings() {
         */}
 
         <div className="flex justify-content-around">
-          <Button
-            label={intl.formatMessage({ id: 'common.save' })}
-            icon="pi pi-check"
-            onClick={handleSave}
-          />
-          <Button
-            label={intl.formatMessage({ id: 'common.cancel' })}
-            icon="pi pi-times"
-            onClick={handleCancel}
-          />
+          <Button label={intl.formatMessage({ id: 'common.save' })} icon="pi pi-check" onClick={handleSave} />
+          <Button label={intl.formatMessage({ id: 'common.cancel' })} icon="pi pi-times" onClick={handleCancel} />
         </div>
       </Card>
     </div>

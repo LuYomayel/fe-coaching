@@ -10,13 +10,7 @@ import { fetchCoachPlans } from '../services/usersService';
 import { registerPayment } from '../services/subscriptionService';
 import { useIntl } from 'react-intl';
 
-const RegisterPaymentDialog = ({
-  studentId,
-  coachId,
-  onClose,
-  oldSubscription,
-  oldCoachPlan
-}) => {
+const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, oldCoachPlan }) => {
   const intl = useIntl();
   const { user } = useContext(UserContext);
   const showToast = useToast();
@@ -92,11 +86,7 @@ const RegisterPaymentDialog = ({
       setLoading(true);
       const response = await registerPayment(body);
       if (response.message === 'success') {
-        showToast(
-          'success',
-          'Success',
-          'Payment registered and subscription updated successfully'
-        );
+        showToast('success', 'Success', 'Payment registered and subscription updated successfully');
         onClose(); // Assuming onClose closes a modal or dialog
       } else {
         showToast('error', 'Error', response.error);
@@ -154,12 +144,7 @@ const RegisterPaymentDialog = ({
           onChange={(e) => setSelectedCoachPlan(e.value)}
         />
       </div>
-      <Button
-        label="Register Payment"
-        icon="pi pi-dollar"
-        loading={loading}
-        onClick={onClickRegisterPayment}
-      />
+      <Button label="Register Payment" icon="pi pi-dollar" loading={loading} onClick={onClickRegisterPayment} />
     </div>
   );
 };

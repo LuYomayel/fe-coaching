@@ -84,9 +84,7 @@ const fetchCoachStudents = async (userId) => {
 
 const fetchMessages = async (coachId, clientId, page = 1) => {
   try {
-    const response = await fetch(
-      `${apiUrl}/messages/${coachId}/${clientId}?page=${page}&limit=100`
-    );
+    const response = await fetch(`${apiUrl}/messages/${coachId}/${clientId}?page=${page}&limit=100`);
     const data = await response.json();
 
     if (data.error) {
@@ -107,16 +105,13 @@ const markMessagesAsRead = async (senderId, receiverId) => {
   };
 
   try {
-    const response = await fetch(
-      `${apiUrl}/messages/mark-as-read/conversation/${senderId}/${receiverId}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      }
-    );
+    const response = await fetch(`${apiUrl}/messages/mark-as-read/conversation/${senderId}/${receiverId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
 
     const data = await response.json();
 
@@ -148,9 +143,7 @@ const fetchClientActivitiesByUserId = async (userId) => {
 };
 
 const fetchLastMessages = async (coachId) => {
-  const response = await fetch(
-    `${apiUrl}/messages/coach/${coachId}/last-messages`
-  );
+  const response = await fetch(`${apiUrl}/messages/coach/${coachId}/last-messages`);
   const data = await response.json();
 
   if (data.error) {
@@ -161,9 +154,7 @@ const fetchLastMessages = async (coachId) => {
 };
 
 const fetchUnreadMessages = async (userId) => {
-  const response = await fetch(
-    `${apiUrl}/messages/get-unread-messages/${userId}`
-  );
+  const response = await fetch(`${apiUrl}/messages/get-unread-messages/${userId}`);
   const data = await response.json();
 
   if (data.error) {

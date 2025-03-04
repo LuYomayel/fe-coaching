@@ -21,10 +21,7 @@ const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
   } else if (user.userType === 'coach' && !coach) {
     return <CoachProfileForm />;
   }
-  if (
-    user.userType === 'client' &&
-    client?.user?.subscription?.status === 'Inactive'
-  ) {
+  if (user.userType === 'client' && client?.user?.subscription?.status === 'Inactive') {
     return <NotSubscribed />;
   }
 

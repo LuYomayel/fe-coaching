@@ -17,10 +17,7 @@ const NotSubscribed = () => {
   };
 
   return (
-    <div
-      className="flex justify-content-center align-items-center flex-column"
-      style={{ height: '80vh' }}
-    >
+    <div className="flex justify-content-center align-items-center flex-column" style={{ height: '80vh' }}>
       <h1>
         <FormattedMessage id="notSubscribed.title" />
       </h1>

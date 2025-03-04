@@ -22,7 +22,7 @@ import { fetchClientActivitiesByUserId } from '../services/usersService';
 import { fetchSubscriptionForStudent } from '../services/subscriptionService';
 import { UserContext } from '../utils/UserContext';
 
-export default function NewStudentDetails() {
+export default function StudentDetails() {
   const intl = useIntl();
   const navigate = useNavigate();
   const toast = useRef(null);
@@ -50,12 +50,8 @@ export default function NewStudentDetails() {
         const subscriptionData = await fetchSubscriptionForStudent(studentId);
         setStudent(subscriptionData);
 
-        const completed = subscriptionData.workoutInstances.filter(
-          (workout) => workout.status === 'completed'
-        ).length;
-        const pending = subscriptionData.workoutInstances.filter(
-          (workout) => workout.status === 'pending'
-        ).length;
+        const completed = subscriptionData.workoutInstances.filter((workout) => workout.status === 'completed').length;
+        const pending = subscriptionData.workoutInstances.filter((workout) => workout.status === 'pending').length;
 
         setProgressData({
           labels: ['Completed', 'Pending'],
@@ -68,9 +64,7 @@ export default function NewStudentDetails() {
           ]
         });
 
-        const activitiesData = await fetchClientActivitiesByUserId(
-          client.user.id
-        );
+        const activitiesData = await fetchClientActivitiesByUserId(client.user.id);
         setActivities(activitiesData);
 
         // Set currentPlans and completedPlans
@@ -125,10 +119,7 @@ export default function NewStudentDetails() {
       setCurrentPlans(currentPlans.filter((p) => p.id !== plan.id));
       showToast(
         'success',
-        intl.formatMessage(
-          { id: 'studentDetails.success.planDeleted' },
-          { name: plan.workout.planName }
-        )
+        intl.formatMessage({ id: 'studentDetails.success.planDeleted' }, { name: plan.workout.planName })
       );
       setRefreshKey((prev) => prev + 1);
     } catch (error) {
@@ -164,13 +155,7 @@ export default function NewStudentDetails() {
   };
 
   const progressBodyTemplate = (rowData) => {
-    return (
-      <ProgressBar
-        value={rowData.progress}
-        showValue={false}
-        style={{ height: '8px' }}
-      />
-    );
+    return <ProgressBar value={rowData.progress} showValue={false} style={{ height: '8px' }} />;
   };
 
   if (loading)
@@ -199,10 +184,7 @@ export default function NewStudentDetails() {
       />
 
       <h1 className="text-4xl font-bold mb-4">
-        <FormattedMessage
-          id="studentDetails.title"
-          values={{ name: student?.client?.name }}
-        />
+        <FormattedMessage id="studentDetails.title" values={{ name: student?.client?.name }} />
       </h1>
 
       <div className="grid">
@@ -221,15 +203,13 @@ export default function NewStudentDetails() {
             </p>
             <p>
               <strong>
-                <FormattedMessage id="studentDetails.personalInfo.fitnessGoal" />
-                :
+                <FormattedMessage id="studentDetails.personalInfo.fitnessGoal" />:
               </strong>{' '}
               {student?.client?.fitnessGoal}
             </p>
             <p>
               <strong>
-                <FormattedMessage id="studentDetails.personalInfo.activityLevel" />
-                :
+                <FormattedMessage id="studentDetails.personalInfo.activityLevel" />:
               </strong>{' '}
               {student?.client?.activityLevel}
             </p>
@@ -252,43 +232,22 @@ export default function NewStudentDetails() {
         </div>
 
         <div className="col-12 md:col-6 lg:col-4">
-          <Card
-            title={intl.formatMessage({ id: 'studentDetails.progress.title' })}
-            className="mb-4"
-          >
-            <Chart
-              type="pie"
-              data={progressData}
-              options={{ responsive: true }}
-            />
+          <Card title={intl.formatMessage({ id: 'studentDetails.progress.title' })} className="mb-4">
+            <Chart type="pie" data={progressData} options={{ responsive: true }} />
           </Card>
         </div>
       </div>
 
-      <Card
-        title={intl.formatMessage({ id: 'studentDetails.plans.current' })}
-        className="mb-4"
-      >
-        <DataTable
-          value={currentPlans}
-          paginator
-          rows={5}
-          className="p-datatable-responsive"
-        >
-          <Column
-            field="workout.planName"
-            header={intl.formatMessage({ id: 'studentDetails.plans.name' })}
-          />
+      <Card title={intl.formatMessage({ id: 'studentDetails.plans.current' })} className="mb-4">
+        <DataTable value={currentPlans} paginator rows={5} className="p-datatable-responsive">
+          <Column field="workout.planName" header={intl.formatMessage({ id: 'studentDetails.plans.name' })} />
           <Column
             field="instanceName"
             header={intl.formatMessage({
               id: 'studentDetails.plans.description'
             })}
           />
-          <Column
-            field="personalizedNotes"
-            header={intl.formatMessage({ id: 'studentDetails.plans.notes' })}
-          />
+          <Column field="personalizedNotes" header={intl.formatMessage({ id: 'studentDetails.plans.notes' })} />
           <Column
             field="expectedStartDate"
             header={intl.formatMessage({
@@ -301,47 +260,26 @@ export default function NewStudentDetails() {
             header={intl.formatMessage({ id: 'studentDetails.plans.endDate' })}
             body={(rowData) => formatDate(rowData.expectedEndDate)}
           />
-          <Column
-            field="status"
-            header={intl.formatMessage({ id: 'studentDetails.plans.status' })}
-          />
+          <Column field="status" header={intl.formatMessage({ id: 'studentDetails.plans.status' })} />
           <Column
             field="progress"
             header={intl.formatMessage({ id: 'studentDetails.plans.progress' })}
             body={progressBodyTemplate}
           />
-          <Column
-            body={actionBodyTemplate}
-            exportable={false}
-            style={{ minWidth: '8rem' }}
-          />
+          <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }} />
         </DataTable>
       </Card>
 
-      <Card
-        title={intl.formatMessage({ id: 'studentDetails.plans.completed' })}
-        className="mb-4"
-      >
-        <DataTable
-          value={completedPlans}
-          paginator
-          rows={5}
-          className="p-datatable-responsive"
-        >
-          <Column
-            field="workout.planName"
-            header={intl.formatMessage({ id: 'studentDetails.plans.name' })}
-          />
+      <Card title={intl.formatMessage({ id: 'studentDetails.plans.completed' })} className="mb-4">
+        <DataTable value={completedPlans} paginator rows={5} className="p-datatable-responsive">
+          <Column field="workout.planName" header={intl.formatMessage({ id: 'studentDetails.plans.name' })} />
           <Column
             field="instanceName"
             header={intl.formatMessage({
               id: 'studentDetails.plans.description'
             })}
           />
-          <Column
-            field="personalizedNotes"
-            header={intl.formatMessage({ id: 'studentDetails.plans.notes' })}
-          />
+          <Column field="personalizedNotes" header={intl.formatMessage({ id: 'studentDetails.plans.notes' })} />
           <Column
             field="expectedStartDate"
             header={intl.formatMessage({
@@ -354,20 +292,13 @@ export default function NewStudentDetails() {
             header={intl.formatMessage({ id: 'studentDetails.plans.endDate' })}
             body={(rowData) => formatDate(rowData.expectedEndDate)}
           />
-          <Column
-            field="status"
-            header={intl.formatMessage({ id: 'studentDetails.plans.status' })}
-          />
+          <Column field="status" header={intl.formatMessage({ id: 'studentDetails.plans.status' })} />
           <Column
             field="progress"
             header={intl.formatMessage({ id: 'studentDetails.plans.progress' })}
             body={progressBodyTemplate}
           />
-          <Column
-            body={actionBodyTemplate}
-            exportable={false}
-            style={{ minWidth: '8rem' }}
-          />
+          <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }} />
         </DataTable>
       </Card>
 

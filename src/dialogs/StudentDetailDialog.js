@@ -14,13 +14,9 @@ const StudentDetailDialog = ({ student, onClose }) => {
   const showToast = useToast();
   const [name, setName] = useState(student.name);
   const [email, setEmail] = useState(student.email);
-  const [fitnessGoal, setFitnessGoal] = useState(
-    student.fitnessGoal ? student.fitnessGoal.split(',') : []
-  );
+  const [fitnessGoal, setFitnessGoal] = useState(student.fitnessGoal ? student.fitnessGoal.split(',') : []);
   const [activityLevel, setActivityLevel] = useState(student.activityLevel);
-  const [birthdate, setBirthDate] = useState(
-    student.birthdate ? new Date(student.birthdate) : null
-  );
+  const [birthdate, setBirthDate] = useState(student.birthdate ? new Date(student.birthdate) : null);
   const [gender, setGender] = useState(student.gender);
   const [height, setHeight] = useState(student.height);
   const [weight, setWeight] = useState(student.weight);
@@ -95,19 +91,11 @@ const StudentDetailDialog = ({ student, onClose }) => {
     <div className="student-detail">
       <div className="p-field">
         <label htmlFor="name">Name</label>
-        <InputText
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="p-field">
         <label htmlFor="email">Email</label>
-        <InputText
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div className="p-field">
         <label htmlFor="fitnessGoal">Fitness Goal</label>
@@ -145,19 +133,11 @@ const StudentDetailDialog = ({ student, onClose }) => {
       </div>
       <div className="p-field">
         <label htmlFor="height">Height</label>
-        <InputNumber
-          id="height"
-          value={height}
-          onChange={(e) => setHeight(e.target.value)}
-        />
+        <InputNumber id="height" value={height} onChange={(e) => setHeight(e.target.value)} />
       </div>
       <div className="p-field">
         <label htmlFor="weight">Weight</label>
-        <InputNumber
-          id="weight"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-        />
+        <InputNumber id="weight" value={weight} onChange={(e) => setWeight(e.target.value)} />
       </div>
       <div className="p-field">
         <label htmlFor="birthdate">Birthdate</label>
@@ -169,12 +149,7 @@ const StudentDetailDialog = ({ student, onClose }) => {
           onChange={(e) => setBirthDate(e.value)}
         />
       </div>
-      <Button
-        label="Save"
-        icon="pi pi-save"
-        loading={loading}
-        onClick={handleSaveStudent}
-      />
+      <Button label="Save" icon="pi pi-save" loading={loading} onClick={handleSaveStudent} />
     </div>
   );
 };

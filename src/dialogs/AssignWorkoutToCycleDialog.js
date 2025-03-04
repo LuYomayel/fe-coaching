@@ -14,20 +14,11 @@ import {
 import { useIntl } from 'react-intl';
 import '../styles/AssignWorkoutToCycleDialog.css';
 
-const AssignWorkoutToCycleDialog = ({
-  visible,
-  onHide,
-  clientId,
-  setRefreshKey,
-  cycleOptions,
-  actionType
-}) => {
+const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, cycleOptions, actionType }) => {
   const intl = useIntl();
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
-  const [assignments, setAssignments] = useState([
-    { workoutId: null, dayOfWeek: null }
-  ]);
+  const [assignments, setAssignments] = useState([{ workoutId: null, dayOfWeek: null }]);
   const [cycle, setCycle] = useState(-1);
   const [cycles, setCycles] = useState([]);
   const { coach } = useContext(UserContext);
@@ -66,10 +57,7 @@ const AssignWorkoutToCycleDialog = ({
     const loadAssignedWorkouts = async () => {
       if (actionType === 'unassign' && cycle !== -1 && selectedDay !== null) {
         try {
-          const { data } = await fetchAssignedWorkoutsForCycleDay(
-            cycle,
-            selectedDay
-          ); // Fetch para los workouts asignados
+          const { data } = await fetchAssignedWorkoutsForCycleDay(cycle, selectedDay); // Fetch para los workouts asignados
           console.log(data);
           setAssignedWorkouts(
             data.map((workout) => ({
@@ -98,16 +86,11 @@ const AssignWorkoutToCycleDialog = ({
 
   const handleAction = async () => {
     const body = {
-      assignments: assignments.filter(
-        (assignment) =>
-          assignment.dayOfWeek !== null && assignment.workoutId !== null
-      )
+      assignments: assignments.filter((assignment) => assignment.dayOfWeek !== null && assignment.workoutId !== null)
     };
-    if (body.assignments.length === 0)
-      return showToast('error', 'Error', 'Please select at least one workout.');
+    if (body.assignments.length === 0) return showToast('error', 'Error', 'Please select at least one workout.');
 
-    if (cycle === -1)
-      return showToast('error', 'Error', 'Please select a cycle.');
+    if (cycle === -1) return showToast('error', 'Error', 'Please select a cycle.');
 
     try {
       setLoading(true);
@@ -169,10 +152,7 @@ const AssignWorkoutToCycleDialog = ({
   };
 
   const handleAddAssignment = () => {
-    if (
-      !assignments[assignments.length - 1].workoutId ||
-      assignments[assignments.length - 1].dayOfWeek === null
-    )
+    if (!assignments[assignments.length - 1].workoutId || assignments[assignments.length - 1].dayOfWeek === null)
       return showToast(
         'error',
         'Error',
@@ -190,9 +170,7 @@ const AssignWorkoutToCycleDialog = ({
   };
 
   const removeAssignment = (index) => {
-    const updatedAssignments = assignments.filter(
-      (assignments, i) => index !== i
-    );
+    const updatedAssignments = assignments.filter((assignments, i) => index !== i);
     if (updatedAssignments.length > 0) setAssignments(updatedAssignments);
     else {
       showToast(
@@ -226,9 +204,7 @@ const AssignWorkoutToCycleDialog = ({
     >
       <div className="col-12">
         <div className="p-field">
-          <label>
-            {intl.formatMessage({ id: 'assignWorkoutToCycleDialog.cycle' })}:
-          </label>
+          <label>{intl.formatMessage({ id: 'assignWorkoutToCycleDialog.cycle' })}:</label>
           <Dropdown
             value={cycle}
             options={cycles
@@ -307,9 +283,7 @@ const AssignWorkoutToCycleDialog = ({
                     label: workout.planName,
                     value: workout.id
                   }))}
-                  onChange={(e) =>
-                    handleAssignmentChange(index, 'workoutId', e.value)
-                  }
+                  onChange={(e) => handleAssignmentChange(index, 'workoutId', e.value)}
                   placeholder={intl.formatMessage({
                     id: 'assignWorkoutToCycleDialog.selectWorkout'
                   })}
@@ -320,19 +294,14 @@ const AssignWorkoutToCycleDialog = ({
                   value={assignment.dayOfWeek}
                   options={daysOfWeek}
                   optionValue="value"
-                  onChange={(e) =>
-                    handleAssignmentChange(index, 'dayOfWeek', e.value)
-                  }
+                  onChange={(e) => handleAssignmentChange(index, 'dayOfWeek', e.value)}
                   placeholder={intl.formatMessage({
                     id: 'assignWorkoutToCycleDialog.selectDayOfWeek'
                   })}
                 />
               </div>
               <div className="col-1">
-                <Button
-                  icon="pi pi-times"
-                  onClick={() => removeAssignment(index)}
-                />
+                <Button icon="pi pi-times" onClick={() => removeAssignment(index)} />
               </div>
             </div>
           </Card>

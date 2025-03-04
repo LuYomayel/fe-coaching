@@ -4,17 +4,10 @@ import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useToast } from '../utils/ToastContext';
-import {
-  fetchCoachSubscriptionPlans,
-  makePayment,
-  updateCoachSubscription
-} from '../services/subscriptionService';
+import { fetchCoachSubscriptionPlans, makePayment, updateCoachSubscription } from '../services/subscriptionService';
 import { UserContext } from '../utils/UserContext';
 
-export default function SubscriptionPaymentPage({
-  setUserPayment,
-  setIsPlanDialogVisible
-}) {
+export default function SubscriptionPaymentPage({ setUserPayment, setIsPlanDialogVisible }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [plans, setPlans] = useState([]);
   const toast = useRef(null);
@@ -74,21 +67,13 @@ export default function SubscriptionPaymentPage({
         });
         setUserPayment(selectedPlan);
         setIsPlanDialogVisible(false);
-        showToast(
-          'success',
-          'Payment Successful',
-          `Your payment for ${selectedPlan.name} plan has been processed.`
-        );
+        showToast('success', 'Payment Successful', `Your payment for ${selectedPlan.name} plan has been processed.`);
       } else {
         showToast('error', 'Error', data.error || 'Payment failed');
       }
     } catch (err) {
       console.error('Payment processing error:', err);
-      showToast(
-        'error',
-        'Error',
-        'An error occurred during payment processing.'
-      );
+      showToast('error', 'Error', 'An error occurred during payment processing.');
     }
   };
 
@@ -96,9 +81,7 @@ export default function SubscriptionPaymentPage({
     <div className="min-h-screen flex flex-column">
       <Toast ref={toast} />
       <main className="flex-grow-1 container mx-auto p-4">
-        <h2 className="text-3xl font-bold mb-4 text-center">
-          Choose Your Subscription Plan
-        </h2>
+        <h2 className="text-3xl font-bold mb-4 text-center">Choose Your Subscription Plan</h2>
         <div className="grid">
           {plans.map((plan) => (
             <div key={plan.id} className="col-12 md:col-4 p-3">
@@ -111,11 +94,7 @@ export default function SubscriptionPaymentPage({
                 <ul className="list-none p-0 mb-4">
                   <li className="mb-2">✓ {plan.max_clients} clients</li>
                 </ul>
-                <Button
-                  label="Select"
-                  className="p-button-outlined w-full"
-                  onClick={() => setSelectedPlan(plan)}
-                />
+                <Button label="Select" className="p-button-outlined w-full" onClick={() => setSelectedPlan(plan)} />
               </Card>
             </div>
           ))}
@@ -123,11 +102,7 @@ export default function SubscriptionPaymentPage({
         {selectedPlan && (
           <div>
             <CardElement />
-            <Button
-              label={`Pay $${selectedPlan.price} Now`}
-              className="w-full"
-              onClick={handlePayment}
-            />
+            <Button label={`Pay $${selectedPlan.price} Now`} className="w-full" onClick={handlePayment} />
           </div>
         )}
       </main>

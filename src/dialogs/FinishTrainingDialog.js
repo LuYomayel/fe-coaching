@@ -19,8 +19,7 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
 
   const [isEnergyLevelEnabled, setIsEnergyLevelEnabled] = useState(false);
   const [isMoodEnabled, setIsMoodEnabled] = useState(false);
-  const [isPerceivedDifficultyEnabled, setIsPerceivedDifficultyEnabled] =
-    useState(false);
+  const [isPerceivedDifficultyEnabled, setIsPerceivedDifficultyEnabled] = useState(false);
 
   const handleTimeChange = (e) => {
     setSessionTime(e.value);
@@ -39,9 +38,7 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
       generalFeedback,
       energyLevel: isEnergyLevelEnabled ? energyLevel : null,
       mood: isMoodEnabled ? mood : null,
-      perceivedDifficulty: isPerceivedDifficultyEnabled
-        ? perceivedDifficulty
-        : null,
+      perceivedDifficulty: isPerceivedDifficultyEnabled ? perceivedDifficulty : null,
       additionalNotes
     });
     onHide();
@@ -103,11 +100,7 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
         />
       </div>
       <div className="p-field-checkbox">
-        <Checkbox
-          inputId="enableMood"
-          checked={isMoodEnabled}
-          onChange={(e) => setIsMoodEnabled(e.checked)}
-        />
+        <Checkbox inputId="enableMood" checked={isMoodEnabled} onChange={(e) => setIsMoodEnabled(e.checked)} />
         <label htmlFor="enableMood" className="p-checkbox-label">
           Enable Mood
         </label>

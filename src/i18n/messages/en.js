@@ -28,8 +28,7 @@ const messages = {
   'common.noData': 'No data available',
   'common.back': 'Back',
   'common.next': 'Next',
-  'common.confirmation.saveChanges':
-    'Are you sure you want to save these changes?',
+  'common.confirmation.saveChanges': 'Are you sure you want to save these changes?',
   'common.selectDate': 'Select Date',
   'common.noResults': 'No results found.',
   'common.status': 'Status',
@@ -54,46 +53,38 @@ const messages = {
   'common.extraNotes': 'Extra notes',
   'common.group': 'Group',
   'common.days': 'Days',
+
+  'common.day': 'Day',
+  'common.week': 'Week',
+  'common.cycle': 'Cycle',
+  'common.selectCycle': 'Select cycle',
+
   'home.success.checkEmail': 'Check your email to continue!',
   // Mensajes de confirmacion
-  'assignPlan.confirmation.message':
-    'Are you sure you want to assign this plan?',
-  'assignSubscription.confirmation.message':
-    'Are you sure you want to generate a subscription for this client?',
-  'createCycle.confirmation.message':
-    'Are you sure you want to create this plan?',
-  'deletePlan.confirmation.message':
-    'Are you sure you want to delete this workout plan?',
-  'deleteStudent.confirmation.message':
-    'Are you sure you want to delete this student?',
+  'assignPlan.confirmation.message': 'Are you sure you want to assign this plan?',
+  'assignSubscription.confirmation.message': 'Are you sure you want to generate a subscription for this client?',
+  'createCycle.confirmation.message': 'Are you sure you want to create this plan?',
+  'deletePlan.confirmation.message': 'Are you sure you want to delete this workout plan?',
+  'deleteStudent.confirmation.message': 'Are you sure you want to delete this student?',
   'registerPayment.confirmation.message':
     "Are you sure you want to register this payment and update the client's subscription?",
-  'deleteExercise.confirmation.message':
-    'Are you sure you want to delete this exercise?',
-  'createExercise.confirmation.message':
-    'Are you sure you want to create this exercise?',
-  'updateExercise.confirmation.message':
-    'Are you sure you want to update this exercise?',
+  'deleteExercise.confirmation.message': 'Are you sure you want to delete this exercise?',
+  'createExercise.confirmation.message': 'Are you sure you want to create this exercise?',
+  'updateExercise.confirmation.message': 'Are you sure you want to update this exercise?',
   'coach.plan.confirm.create': 'Are you sure you want to create this plan?',
   'coach.plan.confirm.update': 'Are you sure you want to update this plan?',
   'coach.plan.confirm.delete': 'Are you sure you want to delete this plan?',
-  'coach.workout.confirm.delete':
-    'Are you sure you want to delete this workout?',
+  'coach.workout.confirm.delete': 'Are you sure you want to delete this workout?',
 
-  'coach.exercise.confirm.upload':
-    'Are you sure you want to upload {rowsCount} exercises?',
+  'coach.exercise.confirm.upload': 'Are you sure you want to upload {rowsCount} exercises?',
 
   'coach.exercise.success.created': 'Exercise created successfully',
   'coach.exercise.success.updated': 'Exercise updated successfully',
 
-  'coach.rpe.confirm.delete':
-    'Are you sure you want to delete this RPE Method?',
-  'coach.rpe.confirm.assign':
-    'Are you sure you want to assign {rpe} to the selected {type}?',
-  'coach.plan.confirm.clear':
-    'Are you sure you want to clear the entire workout plan?',
-  'coach.subscription.confirm.delete':
-    "Are you sure you want to delete this client's subscription?",
+  'coach.rpe.confirm.delete': 'Are you sure you want to delete this RPE Method?',
+  'coach.rpe.confirm.assign': 'Are you sure you want to assign {rpe} to the selected {type}?',
+  'coach.plan.confirm.clear': 'Are you sure you want to clear the entire workout plan?',
+  'coach.subscription.confirm.delete': "Are you sure you want to delete this client's subscription?",
   // Messages for NewCoachHome
   'welcome.back': 'Welcome back, {name}!',
   'stats.totalClients': 'Total Clients',
@@ -203,12 +194,9 @@ const messages = {
   'coach.workout.details': 'Workout Details',
   'coach.workout.success.deleted.message': 'Workout deleted successfully!',
   'coach.workout.success.assigned.message': 'Workout assigned successfully!',
-  'coach.workout.success.unassigned.message':
-    'Workout unassigned successfully!',
-  'coach.workout.error.selectWorkoutAndDay':
-    'Please select a workout and a day of the week for the last assignment.',
-  'coach.workout.error.selectAtLeastOneWorkout':
-    'Please select at least one workout.',
+  'coach.workout.success.unassigned.message': 'Workout unassigned successfully!',
+  'coach.workout.error.selectWorkoutAndDay': 'Please select a workout and a day of the week for the last assignment.',
+  'coach.workout.error.selectAtLeastOneWorkout': 'Please select at least one workout.',
   'coach.workoutsPerWeek': 'Workouts per week',
   'coach.exercise.upload.success': 'Exercises uploaded',
   'coach.exercise.upload.duplicated': 'Duplicated Exercises',
@@ -218,8 +206,7 @@ const messages = {
   // NewCreatePlan
   'coach.createPlan.title': 'Create Training Plan',
   'coach.createPlan.subtitle': 'Create a custom training plan for your clients',
-  'coach.createPlan.description':
-    'Use this page to create a custom training plan for your clients',
+  'coach.createPlan.description': 'Use this page to create a custom training plan for your clients',
   'coach.createPlan.buttons.add': 'Add {item}',
   'coach.createPlan.buttons.assign': 'Assign {item}',
   'coach.createPlan.buttons.import': 'Import Exercises',
@@ -232,12 +219,10 @@ const messages = {
   'coach.createPlan.buttons.addRestPeriod': 'Add Rest Period',
   'coach.createPlan.buttons.addRestPeriod.label': 'Rest Period (seconds)',
   'coach.createPlan.buttons.restPeriod.label': 'Rest Period',
-  'coach.delete.confirmation':
-    'Are you sure you want to delete this workout plan?',
+  'coach.delete.confirmation': 'Are you sure you want to delete this workout plan?',
   'coach.delete.header': 'Confirm Delete',
   'coach.delete.error.referenced': 'Error',
-  'coach.delete.error.referenced.detail':
-    'This workout plan is being used by a client',
+  'coach.delete.error.referenced.detail': 'This workout plan is being used by a client',
   'coach.delete.error.generic': 'Error',
 
   'coach.tabs.workouts': 'Workouts',
@@ -279,8 +264,7 @@ const messages = {
   'coach.exercise.edit': 'Edit Exercise',
   'coach.exercise.error.name.empty': 'Exercise name can not be empty.',
   'coach.exercise.error.video.invalid': 'Please enter a valid YouTube URL',
-  'coach.exercise.error.video.invalid.message':
-    'Please enter a valid YouTube URL',
+  'coach.exercise.error.video.invalid.message': 'Please enter a valid YouTube URL',
   'coach.exercise.error.video.invalid.header': 'Error',
 
   // NewManageStudents
@@ -319,10 +303,8 @@ const messages = {
   'students.dialog.studentDetails': 'Student Details',
   'students.dialog.editProfile': 'Edit Profile',
 
-  'students.confirm.deleteSubscription':
-    "Are you sure you want to delete this client's subscription?",
-  'students.confirm.deleteClient':
-    'Are you sure you want to delete this client?',
+  'students.confirm.deleteSubscription': "Are you sure you want to delete this client's subscription?",
+  'students.confirm.deleteClient': 'Are you sure you want to delete this client?',
   'students.success.deleted': 'Client successfully deleted!',
   'students.success.verificationSent': 'Verification email sent successfully!',
   'students.success.updated': 'Profile updated successfully!',
@@ -381,12 +363,10 @@ const messages = {
   'studentDetails.plans.progress': 'Progress',
 
   'studentDetails.dialog.planDetails': 'Plan Details',
-  'studentDetails.dialog.confirmDelete':
-    'Are you sure you want to delete this plan?',
+  'studentDetails.dialog.confirmDelete': 'Are you sure you want to delete this plan?',
   'studentDetails.dialog.confirmDeleteHeader': 'Confirm Delete',
 
-  'studentDetails.success.planDeleted':
-    'You have deleted the plan {name} successfully!',
+  'studentDetails.success.planDeleted': 'You have deleted the plan {name} successfully!',
   'studentDetails.error.fetchData': 'Failed to fetch student data',
 
   'studentDetails.tooltip.viewDetails': 'View Details',
@@ -413,8 +393,7 @@ const messages = {
   'training.buttons.viewDetails': 'View Details',
 
   'training.success.saved': 'Your progress has been saved successfully.',
-  'training.success.finished':
-    'Congratulations, you have finished your routine.',
+  'training.success.finished': 'Congratulations, you have finished your routine.',
 
   'training.error.noFeedback': 'No valid feedback to submit.',
   'training.error.exerciseNotFound': 'Original exercise not found.',
@@ -465,8 +444,7 @@ const messages = {
   'plan.group.rest': 'Rest (seconds)',
   'plan.group.addExercise': 'Add Exercise',
   'plan.group.removed': 'Group Removed',
-  'plan.group.removed.message.number':
-    'The group number {number} has been removed',
+  'plan.group.removed.message.number': 'The group number {number} has been removed',
   'plan.group.removed.message.name': 'The group "{name}" has been removed',
   'plan.group.empty': 'Drag and drop exercises here to add them to the group.',
   'plan.group.restDurationSuffix': ' seconds',
@@ -476,21 +454,18 @@ const messages = {
   'plan.exercise.notes': 'Notes',
   'plan.exercise.property.add': 'Add Property',
 
-  'plan.dialog.confirmClear':
-    'Are you sure you want to clear the entire workout plan?',
+  'plan.dialog.confirmClear': 'Are you sure you want to clear the entire workout plan?',
   'plan.dialog.confirmCreate': 'Are you sure you want to create this plan?',
   'plan.dialog.confirmEdit': 'Are you sure you want to edit this plan?',
 
   'plan.success.created': 'You have created the plan {name} successfully!',
   'plan.success.updated': 'You have updated the plan {name} successfully!',
-  'plan.success.imported':
-    'The workout plan has been imported from the image successfully.',
+  'plan.success.imported': 'The workout plan has been imported from the image successfully.',
 
   'plan.error.nameRequired': 'Plan name is required.',
   'plan.error.groupRequired': 'At least one group is required.',
   'plan.error.exerciseRequired': 'Each group must have at least one exercise.',
-  'plan.error.exerciseSelect':
-    'Each exercise must be selected. {name} is not selected.',
+  'plan.error.exerciseSelect': 'Each exercise must be selected. {name} is not selected.',
 
   // Exercise properties
   'exercise.properties.sets': 'Sets',
@@ -548,8 +523,7 @@ const messages = {
   'training.checkbox.readOnly': 'Read Only',
 
   'training.session.finished': 'Session finished!',
-  'training.session.congrats':
-    'Congratulations, you have finished your routine!',
+  'training.session.congrats': 'Congratulations, you have finished your routine!',
 
   'training.property.repetitions': 'Repetitions',
   'training.property.weight': 'Weight',
@@ -614,8 +588,7 @@ const messages = {
   'coach.home.daysLeft': 'Days Left',
   'coach.home.last7daysFrequency': 'Last 7 Days Frequency',
   'coach.home.noDaysLeftData': 'No days left data yet',
-  'coach.home.noFrequencyData7days':
-    'No frequency data for the last 7 days yet',
+  'coach.home.noFrequencyData7days': 'No frequency data for the last 7 days yet',
   'coach.home.noPaidData': 'No paid data yet',
   'coach.home.noUnpaidData': 'No unpaid data yet',
   'coach.home.allPaid': 'All clients have paid their subscriptions',
@@ -665,27 +638,21 @@ const messages = {
   'home.header.login': 'Login',
 
   'home.hero.title': 'Transform Your Fitness Journey with EaseTrain',
-  'home.hero.subtitle':
-    'Empower trainers, motivate clients, and achieve fitness goals together.',
+  'home.hero.subtitle': 'Empower trainers, motivate clients, and achieve fitness goals together.',
   'home.hero.getStarted': 'Get Started',
   'home.hero.learnMore': 'Learn More',
 
   'home.features.title': 'Key Features',
   'home.features.manageClients': 'Manage Clients',
-  'home.features.manageClientsDesc':
-    'Easily manage your clients details and progress in one place.',
+  'home.features.manageClientsDesc': 'Easily manage your clients details and progress in one place.',
   'home.features.customPlans': 'Custom Training Plans',
-  'home.features.customPlansDesc':
-    "Create personalized workout routines tailored to each client's needs.",
+  'home.features.customPlansDesc': "Create personalized workout routines tailored to each client's needs.",
   'home.features.trackProgress': 'Track Progress',
-  'home.features.trackProgressDesc':
-    'Visualize client progress with data-driven charts and reports.',
+  'home.features.trackProgressDesc': 'Visualize client progress with data-driven charts and reports.',
   'home.features.messaging': 'In-App Messaging',
-  'home.features.messagingDesc':
-    'Stay connected with clients through direct messaging.',
+  'home.features.messagingDesc': 'Stay connected with clients through direct messaging.',
   'home.features.videoTutorials': 'Video Tutorials',
-  'home.features.videoTutorialsDesc':
-    'Share video tutorials to guide clients through exercises.',
+  'home.features.videoTutorialsDesc': 'Share video tutorials to guide clients through exercises.',
 
   'home.pricing.title': 'Pricing Plans',
   'home.pricing.maxClients': 'Max Clients: {max}',
@@ -730,8 +697,7 @@ const messages = {
 
   // NotSubscribed
   'notSubscribed.title': 'No active subscription',
-  'notSubscribed.message':
-    "You don't have any subscription available. Talk to your coach to fix this.",
+  'notSubscribed.message': "You don't have any subscription available. Talk to your coach to fix this.",
   'notSubscribed.button': 'Go to Login',
 
   // Unauthorized
@@ -828,8 +794,7 @@ const messages = {
   'coachProfileForm.success': 'Profile updated!',
   'coachProfileForm.error': 'Error',
   'coachProfileForm.error.selectPlan': 'Please select a subscription plan.',
-  'coachProfileForm.error.trainingType':
-    'At least one training type must be selected.',
+  'coachProfileForm.error.trainingType': 'At least one training type must be selected.',
   'coachProfileForm.error.subscriptionType': 'Subscription type is required.',
   'coachProfileForm.error.name': 'Name is required.',
   'coachProfileForm.dialog.header': 'Select a Subscription Plan',
@@ -837,8 +802,7 @@ const messages = {
   'coachProfileForm.step.trainingDetails': 'Training Details',
   'coachProfileForm.step.subscription': 'Subscription',
   'coachProfileForm.step.confirmation': 'Confirmation',
-  'coachProfileForm.confirmationMessage':
-    'Please review all information before confirming.',
+  'coachProfileForm.confirmationMessage': 'Please review all information before confirming.',
 
   // NewStudentDialog
   'gender.male': 'Male',
@@ -857,14 +821,11 @@ const messages = {
   'student.addedSuccessfully': 'Student added successfully',
   'student.error.nameEmailRequired': 'Name and Email cannot be null or empty',
   'student.error.birthdateInvalid': 'Birthdate cannot be later than today',
-  'student.warning.youngClient':
-    'Client is very young, please double-check the birthdate',
-  'student.confirmation.create':
-    'Are you sure you want to create this student?',
+  'student.warning.youngClient': 'Client is very young, please double-check the birthdate',
+  'student.confirmation.create': 'Are you sure you want to create this student?',
   'student.updatedSuccessfully': 'Student updated successfully',
   'student.error.noSubscription': 'Client does not have an active subscription',
-  'student.error.noCoachPlans':
-    'No coach plans found. Please create a coach plan first',
+  'student.error.noCoachPlans': 'No coach plans found. Please create a coach plan first',
   'student.verificationEmailSent': 'Verification email sent successfully!',
 
   confirmation: 'Confirmation',
@@ -906,18 +867,14 @@ const messages = {
 
   // NewCoachProfile
   'coach.plan.success.created': 'Plan created successfully',
-  'coach.plan.success.created.message':
-    'The plan {name} has been created successfully',
+  'coach.plan.success.created.message': 'The plan {name} has been created successfully',
   'coach.plan.success.updated': 'Plan updated successfully',
-  'coach.plan.success.updated.message':
-    'The plan {name} has been updated successfully',
+  'coach.plan.success.updated.message': 'The plan {name} has been updated successfully',
   'coach.plan.success.deleted': 'Plan deleted successfully',
-  'coach.plan.success.deleted.message':
-    'The plan {name} has been deleted successfully',
+  'coach.plan.success.deleted.message': 'The plan {name} has been deleted successfully',
   'coach.plan.error.name.empty': 'The plan name cannot be empty',
   'coach.plan.error.price.zero': 'The plan price cannot be 0',
-  'coach.plan.error.workouts.zero':
-    'The number of workouts per week cannot be 0',
+  'coach.plan.error.workouts.zero': 'The number of workouts per week cannot be 0',
   'coach.plan.error.not.updated': 'Error updating the plan',
   'coach.plan.create': 'Create New Coach Plan',
   'coach.plan.edit': 'Edit Coach Plan',
@@ -950,24 +907,19 @@ const messages = {
   'assignWorkoutToCycleDialog.assignWorkouts': 'Assign Workouts',
   'assignWorkoutToCycleDialog.unassignWorkouts': 'Unassign Workouts',
   'assignWorkoutToCycleDialog.addAssignment': 'Add Assignment',
-  'assignWorkoutToCycleDialog.assignWorkoutsToCycle':
-    'Assign Workouts to Cycle',
-  'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle':
-    'Unassign Workouts from Cycle',
+  'assignWorkoutToCycleDialog.assignWorkoutsToCycle': 'Assign Workouts to Cycle',
+  'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle': 'Unassign Workouts from Cycle',
   'assignWorkoutToCycleDialog.selectCycle': 'Select Cycle',
   'assignWorkoutToCycleDialog.selectDayOfWeek': 'Select Day of Week',
   'assignWorkoutToCycleDialog.selectWorkout': 'Select Workout',
-  'assignWorkoutToCycleDialog.selectWorkoutToUnassign':
-    'Select Workout to Unassign',
+  'assignWorkoutToCycleDialog.selectWorkoutToUnassign': 'Select Workout to Unassign',
   'assignWorkoutToCycleDialog.dayOfWeek': 'Day of Week',
   'assignWorkoutToCycleDialog.success.assign': 'Success',
-  'assignWorkoutToCycleDialog.success.assign.detail':
-    'Workouts assigned to cycle successfully',
+  'assignWorkoutToCycleDialog.success.assign.detail': 'Workouts assigned to cycle successfully',
   'assignWorkoutToCycleDialog.error.assign': 'Error',
   'assignWorkoutToCycleDialog.error.assign.detail': 'No workouts were assigned',
   'assignWorkoutToCycleDialog.success.unassign': 'Success',
-  'assignWorkoutToCycleDialog.success.unassign.detail':
-    'Workouts unassigned from cycle successfully',
+  'assignWorkoutToCycleDialog.success.unassign.detail': 'Workouts unassigned from cycle successfully',
   'assignWorkoutToCycleDialog.error.unassign': 'Error',
   'assignWorkoutToCycleDialog.error.unassign.detail':
     'No workouts were unassigned because they are being used by a client',
@@ -992,8 +944,7 @@ const messages = {
   'settings.view.default': 'Default View',
   'settings.view.excel': 'Excel View',
   'settings.language': 'Language',
-  'settings.allowIncompleteStudent':
-    'Allow adding students without complete data',
+  'settings.allowIncompleteStudent': 'Allow adding students without complete data',
   'settings.developerOptions': 'Developer Options',
   'settings.save': 'Save Settings',
   'plansPage.title': 'Plans Page',
@@ -1034,10 +985,8 @@ const messages = {
   'plansPage.error.allFieldsRequired': 'All fields are required',
   'plansPage.success.templateCreated': 'Template created successfully!',
   'plansPage.error.creatingTemplate': 'Error creating template',
-  'plansPage.error.exceedDuration':
-    'You cannot add more weeks than the specified duration.',
-  'plansPage.confirmation.reduceWeeks':
-    'Reducing the duration will remove extra weeks. Do you want to proceed?',
+  'plansPage.error.exceedDuration': 'You cannot add more weeks than the specified duration.',
+  'plansPage.confirmation.reduceWeeks': 'Reducing the duration will remove extra weeks. Do you want to proceed?',
   'plansPage.coachId': 'Coach ID',
   'plansPage.numberOfWeeks': 'Number of Weeks',
   'plansPage.createCycle': 'Create Cycle',

@@ -26,7 +26,8 @@ import {
 import { fetchClientByClientId } from '../services/usersService';
 import '../styles/ClientDashboard.css';
 import { formatDate, formatDateToApi } from '../utils/UtilFunctions';
-import WorkoutTable from '../components/WorkoutTable';
+// import WorkoutTable from '../components/WorkoutTable';
+import NewWorkoutTable from '../components/NewWorkoutTable';
 import { Badge } from 'primereact/badge';
 import { useIntl, FormattedMessage } from 'react-intl';
 import allLocales from '@fullcalendar/core/locales-all';
@@ -43,8 +44,7 @@ export default function ClientDashboard() {
   const { setLoading } = useSpinner();
   const { locale } = useLanguage();
   const intl = useIntl();
-  const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] =
-    useState(false);
+  const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
 
   // State variables
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -86,7 +86,6 @@ export default function ClientDashboard() {
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleOptions }) => {
         setCycleOptions(cycleOptions);
-        console.log('Events', events[0]);
         setCalendarEvents((e) => [...events, ...e]);
         const options = cycleOptions.map((cycle) => ({
           label: cycle.name,
@@ -98,14 +97,11 @@ export default function ClientDashboard() {
         });
         setCycleDropdownOptions(options);
       })
-      .catch((error) =>
-        showToast('error', 'Error fetching training cycles', error.message)
-      )
+      .catch((error) => showToast('error', 'Error fetching training cycles', error.message))
       .finally(() => setLoading(false));
 
     fetchTrainingSessionWithNoWeekByClientId(clientId)
       .then(({ data }) => {
-        console.log('Data', data);
         const events = data.map((session) => {
           const start = formatDateToApi(new Date(session.sessionDate));
 
@@ -122,16 +118,9 @@ export default function ClientDashboard() {
             }
           };
         });
-        console.log('Events', events);
         setCalendarEvents((e) => [...events, ...e]);
       })
-      .catch((error) =>
-        showToast(
-          'error',
-          'Error fetching training sessions without weeks',
-          error.message
-        )
-      )
+      .catch((error) => showToast('error', 'Error fetching training sessions without weeks', error.message))
       .finally(() => setLoading(false));
 
     fetchWorkoutsByClientId(clientId)
@@ -142,25 +131,16 @@ export default function ClientDashboard() {
             data
               .flatMap((workout) =>
                 workout.groups.flatMap((group) =>
-                  group.exercises.map((ex) => [
-                    ex.exercise.id,
-                    { id: ex.exercise.id, name: ex.exercise.name }
-                  ])
+                  group.exercises.map((ex) => [ex.exercise.id, { id: ex.exercise.id, name: ex.exercise.name }])
                 )
               )
               .map((entry) => [entry[0], entry[1]])
           )
         ].map((entry) => entry[1]);
 
-        setExerciseOptions(
-          exercises.map((ex) => ({ label: ex.name, value: ex.id }))
-        );
+        setExerciseOptions(exercises.map((ex) => ({ label: ex.name, value: ex.id })));
 
-        const uniqueWorkouts = [
-          ...new Map(
-            data.map((workout) => [workout.workout.id, workout.workout])
-          ).values()
-        ];
+        const uniqueWorkouts = [...new Map(data.map((workout) => [workout.workout.id, workout.workout])).values()];
         setWorkoutOptions(
           uniqueWorkouts.map((workout) => ({
             label: workout.planName,
@@ -219,10 +199,7 @@ export default function ClientDashboard() {
         .filter((workout) => workout.date);
 
       const processedData = filteredWorkouts.map((fw) => {
-        const totalReps = fw.sets.reduce(
-          (sum, set) => sum + set.completedReps,
-          0
-        );
+        const totalReps = fw.sets.reduce((sum, set) => sum + set.completedReps, 0);
         const totalWeight = fw.sets.reduce((sum, set) => sum + set.weight, 0);
         const averageReps = fw.sets.length ? totalReps / fw.sets.length : 0;
         const averageWeight = fw.sets.length ? totalWeight / fw.sets.length : 0;
@@ -282,13 +259,9 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (selectedWorkout) {
       const filtered = workouts.filter(
-        (workout) =>
-          workout.workout.id === selectedWorkout &&
-          workout.status === 'completed'
+        (workout) => workout.workout.id === selectedWorkout && workout.status === 'completed'
       );
-      const sortedWorkouts = [...filtered].sort(
-        (a, b) => new Date(b.realEndDate) - new Date(a.realEndDate)
-      );
+      const sortedWorkouts = [...filtered].sort((a, b) => new Date(b.realEndDate) - new Date(a.realEndDate));
 
       setFilteredWorkouts(sortedWorkouts);
     }
@@ -381,14 +354,8 @@ export default function ClientDashboard() {
   };
 
   const showCreateCycleDialog = () => {
-    if (clientData.user.subscription.status === 'Active')
-      setDialogVisible(true);
-    else
-      showToast(
-        'error',
-        'Error',
-        intl.formatMessage({ id: 'student.error.noSubscription' })
-      );
+    if (clientData.user.subscription.status === 'Active') setDialogVisible(true);
+    else showToast('error', 'Error', intl.formatMessage({ id: 'student.error.noSubscription' }));
   };
 
   const hideCreateCycleDialog = () => {
@@ -414,20 +381,16 @@ export default function ClientDashboard() {
     <div>
       <p className="font-bold">{rowData.workout.planName}</p>
       <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.completedOn" />:{' '}
-        {formatDate(rowData.realEndDate)}
+        <FormattedMessage id="clientDashboard.workout.completedOn" />: {formatDate(rowData.realEndDate)}
       </p>
       <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.sessionTime" />:{' '}
-        {rowData.sessionTime}
+        <FormattedMessage id="clientDashboard.workout.sessionTime" />: {rowData.sessionTime}
       </p>
       <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.feedback" />:{' '}
-        {rowData.generalFeedback}
+        <FormattedMessage id="clientDashboard.workout.feedback" />: {rowData.generalFeedback}
       </p>
       <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.mood" />:{' '}
-        {rowData.mood ? `${rowData.mood}/10` : '-'}
+        <FormattedMessage id="clientDashboard.workout.mood" />: {rowData.mood ? `${rowData.mood}/10` : '-'}
       </p>
       <p className="text-sm">
         <FormattedMessage id="clientDashboard.workout.energy" />:{' '}
@@ -435,13 +398,10 @@ export default function ClientDashboard() {
       </p>
       <p className="text-sm">
         <FormattedMessage id="clientDashboard.workout.difficulty" />:{' '}
-        {rowData.perceivedDifficulty
-          ? `${rowData.perceivedDifficulty}/10`
-          : '-'}
+        {rowData.perceivedDifficulty ? `${rowData.perceivedDifficulty}/10` : '-'}
       </p>
       <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.notes" />:{' '}
-        {rowData.feedback}
+        <FormattedMessage id="clientDashboard.workout.notes" />: {rowData.feedback}
       </p>
     </div>
   );
@@ -470,31 +430,21 @@ export default function ClientDashboard() {
                 // && exercise.setLogs.some(log => log[prop] != null)
               );
             });
-            const tableData =
-              exercise.setLogs.length > 0
-                ? exercise.setLogs
-                : [{ setNumber: 1 }];
+            const tableData = exercise.setLogs.length > 0 ? exercise.setLogs : [{ setNumber: 1 }];
             const expandedData = tableData.flatMap((setLog) => {
               return [
                 {
                   setNumber: setLog.setNumber,
                   type: 'Expected',
-                  ...availableProperties.reduce(
-                    (acc, prop) => ({ ...acc, [prop]: exercise[prop] || '-' }),
-                    {}
-                  ),
+                  ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: exercise[prop] || '-' }), {}),
                   rpe: '-'
                 },
                 {
                   setNumber: setLog.setNumber,
                   type: 'Completed',
-                  ...availableProperties.reduce(
-                    (acc, prop) => ({ ...acc, [prop]: setLog[prop] || '-' }),
-                    {}
-                  ),
+                  ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: setLog[prop] || '-' }), {}),
                   rpe: exercise.rpe || '-',
-                  notCompleted:
-                    !exercise.completed && !exercise.completedNotAsPlanned
+                  notCompleted: !exercise.completed && !exercise.completedNotAsPlanned
                 }
               ];
             });
@@ -505,17 +455,9 @@ export default function ClientDashboard() {
                   <>
                     {exercise.exercise.name}
                     <Badge
-                      value={
-                        expandedData.some((data) => data.notCompleted)
-                          ? '✘'
-                          : '✔'
-                      }
+                      value={expandedData.some((data) => data.notCompleted) ? '✘' : '✔'}
                       className="ml-2"
-                      severity={
-                        expandedData.some((data) => data.notCompleted)
-                          ? 'danger'
-                          : 'success'
-                      }
+                      severity={expandedData.some((data) => data.notCompleted) ? 'danger' : 'success'}
                     />
                   </>
                 }
@@ -528,18 +470,10 @@ export default function ClientDashboard() {
                   sortField="setNumber"
                   sortOrder={1}
                 >
-                  <Column
-                    field="setNumber"
-                    header="Set"
-                    body={(rowData) => `Set ${rowData.setNumber}`}
-                  />
+                  <Column field="setNumber" header="Set" body={(rowData) => `Set ${rowData.setNumber}`} />
                   <Column field="type" header="Type" />
                   {availableProperties.map((prop) => (
-                    <Column
-                      key={prop}
-                      field={prop}
-                      header={prop.charAt(0).toUpperCase() + prop.slice(1)}
-                    />
+                    <Column key={prop} field={prop} header={prop.charAt(0).toUpperCase() + prop.slice(1)} />
                   ))}
                 </DataTable>
               </AccordionTab>
@@ -553,9 +487,7 @@ export default function ClientDashboard() {
   const renderTabView = () => {
     return (
       <TabView>
-        <TabPanel
-          header={intl.formatMessage({ id: 'clientDashboard.tabs.calendar' })}
-        >
+        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.calendar' })}>
           <div className="mb-3 flex flex-wrap gap-2">
             <Button
               label={intl.formatMessage({
@@ -584,15 +516,8 @@ export default function ClientDashboard() {
           </div>
           <Card>
             <FullCalendar
-              plugins={[
-                dayGridPlugin,
-                interactionPlugin,
-                listPlugin,
-                timeGridPlugin
-              ]}
-              initialView={
-                window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'
-              }
+              plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
+              initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
               events={calendarEvents}
               eventContent={renderEventContent}
               ref={calendarRef}
@@ -605,15 +530,9 @@ export default function ClientDashboard() {
               dateClick={handleDateClick}
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
-                if (
-                  arg.view.type === 'dayGridMonth' &&
-                  window.innerWidth <= 768
-                ) {
+                if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
                   calendarApi.changeView('listMonth');
-                } else if (
-                  arg.view.type === 'listMonth' &&
-                  window.innerWidth > 768
-                ) {
+                } else if (arg.view.type === 'listMonth' && window.innerWidth > 768) {
                   calendarApi.changeView('dayGridMonth');
                 }
               }}
@@ -665,9 +584,7 @@ export default function ClientDashboard() {
           </Dialog>
         </TabPanel>
 
-        <TabPanel
-          header={intl.formatMessage({ id: 'clientDashboard.tabs.details' })}
-        >
+        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.details' })}>
           <div className="grid">
             <div className="col-12">
               <Dropdown
@@ -680,11 +597,7 @@ export default function ClientDashboard() {
                 className="w-full mb-2"
                 style={{ maxWidth: '300px' }}
               />
-              <DataTable
-                value={filteredWorkouts}
-                className="improved-table"
-                rowClassName="improved-row"
-              >
+              <DataTable value={filteredWorkouts} className="improved-table" rowClassName="improved-row">
                 <Column
                   body={renderPlanName}
                   header={intl.formatMessage({
@@ -703,16 +616,15 @@ export default function ClientDashboard() {
           </div>
         </TabPanel>
 
-        <TabPanel
-          header={intl.formatMessage({ id: 'clientDashboard.tabs.excelView' })}
-        >
-          <WorkoutTable
+        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.excelView' })}>
+          <NewWorkoutTable cycleOptions={cycleDropdownOptions} clientId={clientId} />
+          {/* <WorkoutTable
             trainingCycles={cycleOptions}
             cycleOptions={cycleDropdownOptions}
             setRefreshKey={setRefreshKey}
             clientId={clientId}
             clientData={clientData}
-          />
+          /> */}
         </TabPanel>
       </TabView>
     );
@@ -723,10 +635,7 @@ export default function ClientDashboard() {
     return (
       <div className={className}>
         <div className="flex align-items-center gap-2">
-          <Avatar
-            image={clientData?.profilePicture || '/image.webp'}
-            shape="circle"
-          />
+          <Avatar image={clientData?.profilePicture || '/image.webp'} shape="circle" />
           <span className="font-bold">{clientData?.name}</span>
           <div className="flex align-items-center">
             <Button
@@ -739,14 +648,9 @@ export default function ClientDashboard() {
               })}
             />
             {clientData &&
-              [
-                'fitnessGoal',
-                'activityLevel',
-                'gender',
-                'weight',
-                'height',
-                'birthdate'
-              ].some((field) => !clientData[field]) && (
+              ['fitnessGoal', 'activityLevel', 'gender', 'weight', 'height', 'birthdate'].some(
+                (field) => !clientData[field]
+              ) && (
                 <>
                   <Tooltip target=".missing-data-icon" />
                   <i
@@ -782,11 +686,7 @@ export default function ClientDashboard() {
         className="responsive-dialog"
         style={{ width: '50vw' }}
       >
-        <NewStudentDialog
-          onClose={handleNewStudentDialogHide}
-          setRefreshKey={setRefreshKey}
-          studentData={clientData}
-        />
+        <NewStudentDialog onClose={handleNewStudentDialogHide} setRefreshKey={setRefreshKey} studentData={clientData} />
       </Dialog>
     </div>
   );

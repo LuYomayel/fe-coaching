@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  useRef,
-  useCallback
-} from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { ListBox } from 'primereact/listbox';
@@ -15,11 +9,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Message } from 'primereact/message';
 import { UserContext } from '../utils/UserContext';
 import io from 'socket.io-client';
-import {
-  fetchMessages,
-  fetchCoachStudents,
-  markMessagesAsRead
-} from '../services/usersService';
+import { fetchMessages, fetchCoachStudents, markMessagesAsRead } from '../services/usersService';
 import { Dialog } from 'primereact/dialog';
 import ReactPlayer from 'react-player';
 import { useChatSidebar } from '../utils/ChatSideBarContext';
@@ -120,16 +110,12 @@ export default function ChatSidebar({ isCoach }) {
       try {
         setLoading(true);
         const fetchedMessages = await fetchMessages(userId, chatUserId);
-        const sortedMessages = fetchedMessages.sort(
-          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-        );
+        const sortedMessages = fetchedMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
         setMessages(sortedMessages);
 
         if (sortedMessages.length > 0) {
-          const unreadCount = sortedMessages.filter(
-            (message) => !message.isRead
-          ).length;
+          const unreadCount = sortedMessages.filter((message) => !message.isRead).length;
           setUnreadMessages((prev) => prev - unreadCount);
           await markMessagesAsRead(chatUserId, userId);
         }
@@ -213,24 +199,14 @@ export default function ChatSidebar({ isCoach }) {
     const file = event.files[0];
     if (!file) return;
 
-    const validTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'video/mp4',
-      'video/quicktime'
-    ];
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
     if (!validTypes.includes(file.type)) {
-      setErrorMessage(
-        'Formato de archivo no soportado. Use JPG, PNG, GIF o MP4.'
-      );
+      setErrorMessage('Formato de archivo no soportado. Use JPG, PNG, GIF o MP4.');
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      setErrorMessage(
-        `El archivo excede el límite de ${MAX_FILE_SIZE / 1000000}MB`
-      );
+      setErrorMessage(`El archivo excede el límite de ${MAX_FILE_SIZE / 1000000}MB`);
       return;
     }
 
@@ -256,9 +232,7 @@ export default function ChatSidebar({ isCoach }) {
     <Card className="chat-sidebar">
       <div className="flex justify-content-between align-items-center mb-3">
         <h2 className="text-xl font-bold">Chat</h2>
-        {errorMessage && (
-          <Message severity="error" text={errorMessage} className="mb-2" />
-        )}
+        {errorMessage && <Message severity="error" text={errorMessage} className="mb-2" />}
       </div>
 
       {isCoach && !selectedChat && (
@@ -277,9 +251,7 @@ export default function ChatSidebar({ isCoach }) {
                     image={`/images/${option.photo}`}
                     shape="circle"
                     className="mr-2"
-                    onError={(e) =>
-                      (e.target.src = '/images/default-avatar.png')
-                    }
+                    onError={(e) => (e.target.src = '/images/default-avatar.png')}
                   />
                   <span>{option.name}</span>
                 </div>
@@ -293,11 +265,7 @@ export default function ChatSidebar({ isCoach }) {
         <div className="chat-window">
           <div className="chat-header">
             {isCoach && (
-              <Button
-                icon="pi pi-arrow-left"
-                onClick={() => setSelectedChat(null)}
-                className="p-button-text mr-2"
-              />
+              <Button icon="pi pi-arrow-left" onClick={() => setSelectedChat(null)} className="p-button-text mr-2" />
             )}
             <Avatar
               image={`/images/${selectedChat.photo}`}
@@ -328,27 +296,14 @@ export default function ChatSidebar({ isCoach }) {
                       }
                     >
                       {msg.fileType?.includes('video') ? (
-                        <ReactPlayer
-                          url={msg.fileUrl}
-                          controls
-                          width="100%"
-                          height="200px"
-                        />
+                        <ReactPlayer url={msg.fileUrl} controls width="100%" height="200px" />
                       ) : (
-                        <img
-                          src={msg.fileUrl}
-                          alt="attachment"
-                          className="message-image"
-                        />
+                        <img src={msg.fileUrl} alt="attachment" className="message-image" />
                       )}
                     </div>
                   )}
-                  {msg.content && (
-                    <p className="message-content">{msg.content}</p>
-                  )}
-                  <small className="message-time">
-                    {new Date(msg.timestamp).toLocaleTimeString()}
-                  </small>
+                  {msg.content && <p className="message-content">{msg.content}</p>}
+                  <small className="message-time">{new Date(msg.timestamp).toLocaleTimeString()}</small>
                 </div>
               ))
             )}
@@ -361,13 +316,7 @@ export default function ChatSidebar({ isCoach }) {
                 {selectedFile?.type.startsWith('image/') ? (
                   <img src={filePreview} alt="preview" />
                 ) : (
-                  <ReactPlayer
-                    url={filePreview}
-                    controls
-                    width="100%"
-                    height="150px"
-                    style={{ maxHeight: '150px' }}
-                  />
+                  <ReactPlayer url={filePreview} controls width="100%" height="150px" style={{ maxHeight: '150px' }} />
                 )}
                 <Button
                   icon="pi pi-times"
@@ -404,11 +353,7 @@ export default function ChatSidebar({ isCoach }) {
               <Button
                 icon="pi pi-send"
                 onClick={handleSendMessage}
-                disabled={
-                  (!newMessage.trim() && !selectedFile) ||
-                  !isConnected ||
-                  loading
-                }
+                disabled={(!newMessage.trim() && !selectedFile) || !isConnected || loading}
               />
             </div>
           </div>
@@ -423,18 +368,9 @@ export default function ChatSidebar({ isCoach }) {
         className="media-dialog"
       >
         {dialogContent?.fileType?.includes('video') ? (
-          <ReactPlayer
-            url={dialogContent?.fileUrl}
-            controls
-            width="100%"
-            height="100%"
-          />
+          <ReactPlayer url={dialogContent?.fileUrl} controls width="100%" height="100%" />
         ) : (
-          <img
-            src={dialogContent?.fileUrl}
-            alt="attachment"
-            className="dialog-image"
-          />
+          <img src={dialogContent?.fileUrl} alt="attachment" className="dialog-image" />
         )}
       </Dialog>
     </Card>

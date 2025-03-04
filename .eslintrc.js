@@ -21,8 +21,8 @@ module.exports = {
     'no-undef': 'warn',
     'comma-dangle': ['warn', 'never'],
     'react/prop-types': 'off',
-    'no-prototype-builtins': 'off'
-
+    'no-prototype-builtins': 'off',
+    'react/no-unknown-property': 'off'
     // Agregá o ajustá tus reglas personalizadas
   },
   settings: {

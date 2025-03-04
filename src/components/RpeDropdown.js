@@ -1,19 +1,10 @@
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  useMemo,
-  useCallback
-} from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import '../styles/RpeDropdown.css';
 import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
 import { useParams } from 'react-router-dom';
 import { useToast } from '../utils/ToastContext';
-import {
-  fetchWorkoutInstance,
-  getRpeMethods
-} from '../services/workoutService';
+import { fetchWorkoutInstance, getRpeMethods } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
@@ -72,9 +63,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
       const { data } = await fetchWorkoutInstance(planId);
       setWorkout(data);
 
-      let assignedRpeMethod = rpeMethods.find(
-        (method) => method.name === data.assignedRpe
-      );
+      let assignedRpeMethod = rpeMethods.find((method) => method.name === data.assignedRpe);
 
       // Si no hay método RPE asignado, usar el primero disponible
       if (!assignedRpeMethod) {
@@ -106,14 +95,10 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
     if (selectedRpeMethod.valuesMeta.length === 0) {
       return Array.from(
         {
-          length:
-            (selectedRpeMethod.maxValue - selectedRpeMethod.minValue) /
-              selectedRpeMethod.step +
-            1
+          length: (selectedRpeMethod.maxValue - selectedRpeMethod.minValue) / selectedRpeMethod.step + 1
         },
         (_, index) => {
-          const value =
-            selectedRpeMethod.minValue + index * selectedRpeMethod.step;
+          const value = selectedRpeMethod.minValue + index * selectedRpeMethod.step;
           return {
             label: value.toString(),
             value: value
@@ -145,13 +130,10 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
   }
 
   if (!selectedRpeMethod) {
-    return (
-      <div className="warning-message">No hay método RPE seleccionado</div>
-    );
+    return <div className="warning-message">No hay método RPE seleccionado</div>;
   }
 
-  const shouldUseInputNumber =
-    selectedRpeMethod.valuesMeta.length > 10 || getRpeOptions.length > 10;
+  const shouldUseInputNumber = selectedRpeMethod.valuesMeta.length > 10 || getRpeOptions.length > 10;
 
   return (
     <div className="rpe-dropdown">

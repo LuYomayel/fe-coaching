@@ -259,10 +259,7 @@ export default function HomePage() {
 
   const renderHero = () => {
     return (
-      <div
-        className="relative overflow-hidden"
-        style={{ background: 'linear-gradient(to right, #7e5bef, #5a9bd4)' }}
-      >
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(to right, #7e5bef, #5a9bd4)' }}>
         <div className="absolute inset-0">
           <svg
             className="absolute"
@@ -276,23 +273,8 @@ export default function HomePage() {
             viewBox="0 0 375 283"
             fill="none"
           >
-            <rect
-              x="159.52"
-              y="175"
-              width="152"
-              height="152"
-              rx="8"
-              transform="rotate(-45 159.52 175)"
-              fill="white"
-            />
-            <rect
-              y="107.48"
-              width="152"
-              height="152"
-              rx="8"
-              transform="rotate(-45 0 107.48)"
-              fill="white"
-            />
+            <rect x="159.52" y="175" width="152" height="152" rx="8" transform="rotate(-45 159.52 175)" fill="white" />
+            <rect y="107.48" width="152" height="152" rx="8" transform="rotate(-45 0 107.48)" fill="white" />
           </svg>
           <div
             className="absolute inset-0"
@@ -302,10 +284,7 @@ export default function HomePage() {
             }}
           />
         </div>
-        <div
-          className="relative mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32"
-          style={{ maxWidth: '1200px' }}
-        >
+        <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32" style={{ maxWidth: '1200px' }}>
           <div className="grid align-items-center justify-content-between">
             <div className="col-12 md:col-6 text-center md:text-left mb-6 md:mb-0">
               <h1
@@ -367,9 +346,7 @@ export default function HomePage() {
                   }}
                 >
                   <div className="flex align-items-center justify-content-center w-4rem h-4rem bg-purple-600 border-circle mb-4">
-                    <Dumbbell
-                      style={{ width: '32px', height: '32px', color: '#fff' }}
-                    />
+                    <Dumbbell style={{ width: '32px', height: '32px', color: '#fff' }} />
                   </div>
                   <h3
                     style={{
@@ -439,9 +416,7 @@ export default function HomePage() {
                 <Card className="m-2">
                   <div className="flex flex-column align-items-center">
                     {feature.icon}
-                    <h3 className="text-xl font-bold mt-3 mb-2">
-                      {feature.title}
-                    </h3>
+                    <h3 className="text-xl font-bold mt-3 mb-2">{feature.title}</h3>
                     <p className="text-center">{feature.description}</p>
                   </div>
                 </Card>
@@ -472,10 +447,7 @@ export default function HomePage() {
                   <li className="flex align-items-center mb-2">
                     <i className="pi pi-check-circle mr-2 text-green-500"></i>
                     <span>
-                      <FormattedMessage
-                        id="home.pricing.maxClients"
-                        values={{ max: plan.max_clients }}
-                      />
+                      <FormattedMessage id="home.pricing.maxClients" values={{ max: plan.max_clients }} />
                     </span>
                   </li>
                 </ul>
@@ -538,10 +510,7 @@ export default function HomePage() {
               label={intl.formatMessage({ id: 'home.footer.privacy' })}
               className="p-button-text p-button-sm mr-2"
             />
-            <Button
-              label={intl.formatMessage({ id: 'home.footer.contact' })}
-              className="p-button-text p-button-sm"
-            />
+            <Button label={intl.formatMessage({ id: 'home.footer.contact' })} className="p-button-text p-button-sm" />
           </div>
         </div>
       </div>
@@ -569,14 +538,10 @@ export default function HomePage() {
               id="email"
               type="email"
               value={loginForm.email}
-              onChange={(e) =>
-                setLoginForm({ ...loginForm, email: e.target.value })
-              }
+              onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
               className={classNames({ 'p-invalid': loginErrors.email })}
             />
-            {loginErrors.email && (
-              <small className="p-error">{loginErrors.email}</small>
-            )}
+            {loginErrors.email && <small className="p-error">{loginErrors.email}</small>}
           </div>
           <div className="field">
             <label htmlFor="password" className="font-bold">
@@ -585,16 +550,12 @@ export default function HomePage() {
             <Password
               id="password"
               value={loginForm.password}
-              onChange={(e) =>
-                setLoginForm({ ...loginForm, password: e.target.value })
-              }
+              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
               toggleMask
               className={classNames({ 'p-invalid': loginErrors.password })}
               feedback={false}
             />
-            {loginErrors.password && (
-              <small className="p-error">{loginErrors.password}</small>
-            )}
+            {loginErrors.password && <small className="p-error">{loginErrors.password}</small>}
           </div>
           <Button
             type="submit"
@@ -603,10 +564,7 @@ export default function HomePage() {
             loading={loading}
           />
           <div className="text-center mt-2">
-            <a
-              href="/forgot-password"
-              className="font-medium no-underline ml-2 text-blue-500 cursor-pointer"
-            >
+            <a href="/forgot-password" className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
               <FormattedMessage id="home.login.forgotPassword" />
             </a>
           </div>
@@ -636,14 +594,10 @@ export default function HomePage() {
               id="signUpEmail"
               type="email"
               value={signUpForm.email}
-              onChange={(e) =>
-                setSignUpForm({ ...signUpForm, email: e.target.value })
-              }
+              onChange={(e) => setSignUpForm({ ...signUpForm, email: e.target.value })}
               className={classNames({ 'p-invalid': signUpErrors.email })}
             />
-            {signUpErrors.email && (
-              <small className="p-error">{signUpErrors.email}</small>
-            )}
+            {signUpErrors.email && <small className="p-error">{signUpErrors.email}</small>}
           </div>
           <div className="field">
             <label htmlFor="signUpPassword" className="font-bold">
@@ -652,15 +606,11 @@ export default function HomePage() {
             <Password
               id="signUpPassword"
               value={signUpForm.password}
-              onChange={(e) =>
-                setSignUpForm({ ...signUpForm, password: e.target.value })
-              }
+              onChange={(e) => setSignUpForm({ ...signUpForm, password: e.target.value })}
               toggleMask
               className={classNames({ 'p-invalid': signUpErrors.password })}
             />
-            {signUpErrors.password && (
-              <small className="p-error">{signUpErrors.password}</small>
-            )}
+            {signUpErrors.password && <small className="p-error">{signUpErrors.password}</small>}
           </div>
           <div className="field">
             <label htmlFor="confirmPassword" className="font-bold">
@@ -681,9 +631,7 @@ export default function HomePage() {
               })}
               feedback={false}
             />
-            {signUpErrors.confirmPassword && (
-              <small className="p-error">{signUpErrors.confirmPassword}</small>
-            )}
+            {signUpErrors.confirmPassword && <small className="p-error">{signUpErrors.confirmPassword}</small>}
           </div>
           <Button
             type="submit"

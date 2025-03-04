@@ -15,8 +15,7 @@ import Spinner from '../utils/LittleSpinner';
 export default function Header() {
   const intl = useIntl();
   // eslint-disable-next-line
-  const { isChatSidebarOpen, closeChatSidebar, openChatSidebar } =
-    useChatSidebar();
+  const { isChatSidebarOpen, closeChatSidebar, openChatSidebar } = useChatSidebar();
   const op = useRef(null);
   const { user, client, setUser, isLoading } = useContext(UserContext);
   const navigate = useNavigate();
@@ -31,16 +30,12 @@ export default function Header() {
     {
       label: intl.formatMessage({ id: 'header.home' }),
       icon: 'pi pi-home',
-      command: () =>
-        navigate(user.userType === 'client' ? '/student' : '/coach')
+      command: () => navigate(user.userType === 'client' ? '/student' : '/coach')
     },
     {
       label: intl.formatMessage({ id: 'header.profile' }),
       icon: 'pi pi-user',
-      command: () =>
-        navigate(
-          user.userType === 'client' ? '/student/profile' : '/coach/profile'
-        )
+      command: () => navigate(user.userType === 'client' ? '/student/profile' : '/coach/profile')
     },
     {
       label: intl.formatMessage({ id: 'header.clients' }),
@@ -119,11 +114,7 @@ export default function Header() {
 
   if (user.userType === 'client') {
     // Check that client and client.user exist, then check subscription status safely.
-    if (
-      !client ||
-      !client.user ||
-      client.user.subscription?.status === 'Inactive'
-    ) {
+    if (!client || !client.user || client.user.subscription?.status === 'Inactive') {
       return null;
     }
   }
@@ -132,12 +123,7 @@ export default function Header() {
     <div className="flex justify-content-between align-items-center p-3 surface-0 shadow-1">
       <div className="flex align-items-center">
         <Link to={user.userType === 'client' ? '/student' : '/coach'}>
-          <img
-            src="/logo512.png"
-            alt="EaseTrain Logo"
-            className="mr-2"
-            style={{ height: '40px' }}
-          />
+          <img src="/logo512.png" alt="EaseTrain Logo" className="mr-2" style={{ height: '40px' }} />
         </Link>
         <span className="text-xl font-bold">EaseTrain</span>
       </div>
@@ -171,11 +157,7 @@ export default function Header() {
           </div>
         </OverlayPanel>
         */}
-        <Avatar
-          image={user.profilePicture || '/image.webp'}
-          shape="circle"
-          onClick={(e) => op.current.toggle(e)}
-        />
+        <Avatar image={user.profilePicture || '/image.webp'} shape="circle" onClick={(e) => op.current.toggle(e)} />
         <OverlayPanel ref={op}>
           <Menu model={menuItems} />
         </OverlayPanel>

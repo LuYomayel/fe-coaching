@@ -25,16 +25,9 @@ const ForgotPassword = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.log(errorData);
-        throw new Error(
-          errorData.message ||
-            intl.formatMessage({ id: 'forgotPassword.error' })
-        );
+        throw new Error(errorData.message || intl.formatMessage({ id: 'forgotPassword.error' }));
       } else {
-        showToast(
-          'success',
-          'Success',
-          intl.formatMessage({ id: 'forgotPassword.success' })
-        );
+        showToast('success', 'Success', intl.formatMessage({ id: 'forgotPassword.success' }));
       }
     } catch (error) {
       showToast('error', 'Error', error.message);
@@ -50,11 +43,7 @@ const ForgotPassword = () => {
             <label htmlFor="email">
               <FormattedMessage id="forgotPassword.email" />
             </label>
-            <InputText
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="flex align-items-center justify-content-center gap-1 pt-4">
             <Button

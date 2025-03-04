@@ -21,21 +21,11 @@ import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useSpinner } from '../utils/GlobalSpinner';
-import {
-  fetchClient,
-  fetchClientActivitiesByUserId,
-  updatePersonalInfo
-} from '../services/usersService';
+import { fetchClient, fetchClientActivitiesByUserId, updatePersonalInfo } from '../services/usersService';
 import { fetchSubscriptionDetails } from '../services/subscriptionService';
-import {
-  formatDate,
-  getDayMonthYear,
-  getSeverity,
-  sortBySessionDate,
-  updateStatus
-} from '../utils/UtilFunctions';
+import { formatDate, getDayMonthYear, getSeverity, sortBySessionDate, updateStatus } from '../utils/UtilFunctions';
 
-export default function NewClientProfile() {
+export default function ClientProfile() {
   const { user } = useContext(UserContext);
   const showToast = useToast();
   const { showConfirmationDialog } = useConfirmationDialog();
@@ -87,35 +77,21 @@ export default function NewClientProfile() {
         }
 
         // Fetch activities
-        const { data: dataActivities } = await fetchClientActivitiesByUserId(
-          user.userId
-        );
+        const { data: dataActivities } = await fetchClientActivitiesByUserId(user.userId);
         setActivities(dataActivities);
 
         // Fetch subscription details
-        const { data: subscriptionData } = await fetchSubscriptionDetails(
-          user.userId
-        );
+        const { data: subscriptionData } = await fetchSubscriptionDetails(user.userId);
         setSubscription(subscriptionData);
 
-        const checkStatusWorkouts = updateStatus(
-          subscriptionData.workoutInstances
-        );
+        const checkStatusWorkouts = updateStatus(subscriptionData.workoutInstances);
         const workoutsSorted = sortBySessionDate(checkStatusWorkouts);
         setWorkoutHistory(workoutsSorted);
 
-        const completed = workoutsSorted.filter(
-          (workout) => workout.status === 'completed'
-        ).length;
-        const pending = workoutsSorted.filter(
-          (workout) => workout.status === 'pending'
-        ).length;
-        const expired = workoutsSorted.filter(
-          (workout) => workout.status === 'expired'
-        ).length;
-        const current = workoutsSorted.filter(
-          (workout) => workout.status === 'current'
-        ).length;
+        const completed = workoutsSorted.filter((workout) => workout.status === 'completed').length;
+        const pending = workoutsSorted.filter((workout) => workout.status === 'pending').length;
+        const expired = workoutsSorted.filter((workout) => workout.status === 'expired').length;
+        const current = workoutsSorted.filter((workout) => workout.status === 'current').length;
 
         setProgressData({
           labels: ['Completed', 'Pending', 'Expired', 'Current'],
@@ -156,8 +132,7 @@ export default function NewClientProfile() {
     // Validate inputs
     for (const [key, value] of Object.entries(body)) {
       if (key === 'fitnessGoal') {
-        if (value.length === 0)
-          return showToast('error', 'Error', `${key} cannot be null or empty`);
+        if (value.length === 0) return showToast('error', 'Error', `${key} cannot be null or empty`);
       }
       if (value == null || value === '' || value === 0) {
         showToast('error', 'Error', `${key} cannot be null or empty`);
@@ -173,11 +148,7 @@ export default function NewClientProfile() {
         try {
           setLoading(true);
           await updatePersonalInfo(personalInfo.id, body);
-          showToast(
-            'success',
-            'Success',
-            'Personal information updated successfully'
-          );
+          showToast('success', 'Success', 'Personal information updated successfully');
           setEditDialogVisible(false);
           setRefreshKey((prev) => prev + 1);
         } catch (error) {
@@ -196,9 +167,7 @@ export default function NewClientProfile() {
   };
 
   const statusBodyTemplate = (rowData) => {
-    return (
-      <Tag value={rowData.status} severity={getSeverity(rowData.status)} />
-    );
+    return <Tag value={rowData.status} severity={getSeverity(rowData.status)} />;
   };
 
   const statusFilterTemplate = (options) => {
@@ -263,11 +232,7 @@ export default function NewClientProfile() {
             number: rowData.trainingSession.trainingWeek?.weekNumber || 'N/A'
           }}
         />{' '}
-        -{' '}
-        <FormattedMessage
-          id="profile.table.day"
-          values={{ number: rowData.trainingSession.dayNumber || 'N/A' }}
-        />
+        - <FormattedMessage id="profile.table.day" values={{ number: rowData.trainingSession.dayNumber || 'N/A' }} />
       </p>
     );
   };
@@ -321,10 +286,7 @@ export default function NewClientProfile() {
 
       <div className="grid">
         <div className="col-12 md:col-4">
-          <Card
-            title={intl.formatMessage({ id: 'profile.personalInfo' })}
-            className="mb-4"
-          >
+          <Card title={intl.formatMessage({ id: 'profile.personalInfo' })} className="mb-4">
             <p>
               <strong>
                 <FormattedMessage id="profile.name" />:
@@ -363,10 +325,7 @@ export default function NewClientProfile() {
             />
           </Card>
 
-          <Card
-            title={intl.formatMessage({ id: 'profile.subscription' })}
-            className="mb-4"
-          >
+          <Card title={intl.formatMessage({ id: 'profile.subscription' })} className="mb-4">
             <p>
               <strong>
                 <FormattedMessage id="profile.subscription.planName" />:
@@ -396,9 +355,7 @@ export default function NewClientProfile() {
 
         <div className="col-12 md:col-8">
           <TabView>
-            <TabPanel
-              header={intl.formatMessage({ id: 'profile.tabs.workoutHistory' })}
-            >
+            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.workoutHistory' })}>
               <DataTable
                 value={workoutHistory}
                 paginator
@@ -419,21 +376,12 @@ export default function NewClientProfile() {
                   })}
                   filterElement={planNameFilterTemplate}
                 />
-                <Column
-                  header={intl.formatMessage({ id: 'profile.table.details' })}
-                  body={setPlanDetails}
-                />
+                <Column header={intl.formatMessage({ id: 'profile.table.details' })} body={setPlanDetails} />
                 <Column
                   header={intl.formatMessage({
                     id: 'profile.table.trainingDate'
                   })}
-                  body={(rowData) =>
-                    formatDate(
-                      getDayMonthYear(rowData.trainingSession)
-                        .toISOString()
-                        .split('T')[0]
-                    )
-                  }
+                  body={(rowData) => formatDate(getDayMonthYear(rowData.trainingSession).toISOString().split('T')[0])}
                   sortable
                   filter
                   filterField="trainingSession.sessionDate"
@@ -461,22 +409,13 @@ export default function NewClientProfile() {
               </DataTable>
             </TabPanel>
 
-            <TabPanel
-              header={intl.formatMessage({ id: 'profile.tabs.progress' })}
-            >
+            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.progress' })}>
               <div className="flex justify-content-center">
-                <Chart
-                  type="pie"
-                  data={progressData}
-                  options={{ responsive: true }}
-                  style={{ width: '50%' }}
-                />
+                <Chart type="pie" data={progressData} options={{ responsive: true }} style={{ width: '50%' }} />
               </div>
             </TabPanel>
 
-            <TabPanel
-              header={intl.formatMessage({ id: 'profile.tabs.activities' })}
-            >
+            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.activities' })}>
               <DataTable
                 value={activities}
                 paginator
@@ -570,9 +509,7 @@ export default function NewClientProfile() {
               id="editPhone"
               useGrouping={false}
               value={personalInfo?.phoneNumber}
-              onChange={(e) =>
-                setPersonalInfo({ ...personalInfo, phoneNumber: e.value })
-              }
+              onChange={(e) => setPersonalInfo({ ...personalInfo, phoneNumber: e.value })}
             />
           </div>
         </div>

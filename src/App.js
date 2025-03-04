@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate
-} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './i18n/LanguageContext.js';
 import { ThemeProvider } from './utils/ThemeContext';
 import { ToastProvider } from './utils/ToastContext';
@@ -20,18 +15,18 @@ import ForgotPassword from './auth/ForgotPassword.js';
 import ResetPassword from './auth/ResetPassword.js';
 import NotSubscribed from './components/NotSubscribed.js';
 import Home from './auth/Home.js';
-import NewCoachHome from './pages/NewCoachHome.js';
+import CoachHome from './pages/CoachHome.js';
 import PlansPage from './pages/PlansPage.js';
-import NewCoachProfile from './pages/NewCoachProfile.js';
-import NewManageStudentsPage from './pages/NewManageStudents.js';
-import NewClientDashboard from './pages/NewClientDashboard.js';
-import NewCreatePlan from './pages/NewCreatePlan.js';
+import CoachProfile from './pages/CoachProfile.js';
+import ManageStudentsPage from './pages/ManageStudents.js';
+import ClientDashboard from './pages/ClientDashboard.js';
+import CreatePlan from './pages/CreatePlan.js';
 import { ChatSidebarProvider } from './utils/ChatSideBarContext.js';
-import NewStudentDetails from './pages/NewStudentsDetails.js';
-import NewStudentHome from './pages/NewStudentHome.js';
-import NewClientProfile from './pages/NewClientProfile.js';
-import NewTrainingPlanDetails from './pages/NewTrainingDetails.js';
-import NewPlanDetail from './dialogs/NewPlanDetails.js';
+import StudentDetails from './pages/StudentDetails.js';
+import StudentHome from './pages/StudentHome.js';
+import ClientProfile from './pages/ClientProfile.js';
+import TrainingPlanDetails from './pages/TrainingPlanDetails.js';
+import PlanDetail from './dialogs/PlanDetails.js';
 import BodyContainer from './utils/BodyContainer.js';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -57,155 +52,67 @@ const App = () => {
                           <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/login" element={<Home />} />
-                            <Route
-                              path="/unauthorized"
-                              element={<Unauthorized />}
-                            />
+                            <Route path="/unauthorized" element={<Unauthorized />} />
 
-                            <Route
-                              path="/coach"
-                              element={
-                                <PrivateRoute
-                                  element={NewCoachHome}
-                                  requiredType="coach"
-                                />
-                              }
-                            />
+                            <Route path="/coach" element={<PrivateRoute element={CoachHome} requiredType="coach" />} />
                             <Route
                               path="/coach/profile"
-                              element={
-                                <PrivateRoute
-                                  element={NewCoachProfile}
-                                  requiredType="coach"
-                                />
-                              }
+                              element={<PrivateRoute element={CoachProfile} requiredType="coach" />}
                             />
                             <Route
                               path="/coach/plans"
-                              element={
-                                <PrivateRoute
-                                  element={PlansPage}
-                                  requiredType="coach"
-                                />
-                              }
+                              element={<PrivateRoute element={PlansPage} requiredType="coach" />}
                             />
                             <Route
                               path="/plans/create"
-                              element={
-                                <PrivateRoute
-                                  element={NewCreatePlan}
-                                  requiredType="coach"
-                                  isEdit={false}
-                                />
-                              }
+                              element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={false} />}
                             />
                             <Route
                               path="/plans/edit-template/:planId"
-                              element={
-                                <PrivateRoute
-                                  element={NewCreatePlan}
-                                  requiredType="coach"
-                                  isEdit={true}
-                                />
-                              }
+                              element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
                             />
                             <Route
                               path="/plans/edit/:planId"
-                              element={
-                                <PrivateRoute
-                                  element={NewCreatePlan}
-                                  requiredType="coach"
-                                  isEdit={true}
-                                />
-                              }
+                              element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
                             />
                             <Route
                               path="/plans/:planId/:studentId"
-                              element={
-                                <PrivateRoute
-                                  element={NewPlanDetail}
-                                  requiredType="coach"
-                                />
-                              }
+                              element={<PrivateRoute element={PlanDetail} requiredType="coach" />}
                             />
                             <Route
                               path="/students/:studentId/details"
-                              element={
-                                <PrivateRoute
-                                  element={NewStudentDetails}
-                                  requiredType="coach"
-                                />
-                              }
+                              element={<PrivateRoute element={StudentDetails} requiredType="coach" />}
                             />
                             <Route
                               path="/manage-students"
-                              element={
-                                <PrivateRoute
-                                  element={NewManageStudentsPage}
-                                  requiredType="coach"
-                                />
-                              }
+                              element={<PrivateRoute element={ManageStudentsPage} requiredType="coach" />}
                             />
                             <Route
                               path="/client-dashboard/:clientId"
-                              element={
-                                <PrivateRoute
-                                  element={NewClientDashboard}
-                                  requiredType="coach"
-                                />
-                              }
+                              element={<PrivateRoute element={ClientDashboard} requiredType="coach" />}
                             />
 
                             <Route
                               path="/student"
-                              element={
-                                <PrivateRoute
-                                  element={NewStudentHome}
-                                  requiredType="client"
-                                />
-                              }
+                              element={<PrivateRoute element={StudentHome} requiredType="client" />}
                             />
                             <Route
                               path="/student/profile"
-                              element={
-                                <PrivateRoute
-                                  element={NewClientProfile}
-                                  requiredType="client"
-                                />
-                              }
+                              element={<PrivateRoute element={ClientProfile} requiredType="client" />}
                             />
                             <Route
                               path="/plans/start-session/:planId"
-                              element={
-                                <PrivateRoute
-                                  element={NewTrainingPlanDetails}
-                                  requiredType="client"
-                                />
-                              }
+                              element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />}
                             />
 
-                            <Route
-                              path="/verify-email"
-                              element={<VerifyEmail />}
-                            />
+                            <Route path="/verify-email" element={<VerifyEmail />} />
                             <Route
                               path="/complete-coach-profile"
-                              element={
-                                <PrivateRoute element={CoachProfileForm} />
-                              }
+                              element={<PrivateRoute element={CoachProfileForm} />}
                             />
-                            <Route
-                              path="/forgot-password"
-                              element={<ForgotPassword />}
-                            />
-                            <Route
-                              path="/reset-password"
-                              element={<ResetPassword />}
-                            />
-                            <Route
-                              path="/not-subscribed"
-                              element={<NotSubscribed />}
-                            />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
+                            <Route path="/reset-password" element={<ResetPassword />} />
+                            <Route path="/not-subscribed" element={<NotSubscribed />} />
 
                             <Route path="/settings" element={<Settings />} />
 
