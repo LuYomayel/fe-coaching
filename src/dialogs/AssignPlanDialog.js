@@ -17,13 +17,13 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   const { showConfirmationDialog } = useConfirmationDialog();
   const showToast = useToast();
   const [assignmentData, setAssignmentData] = useState(
-    selectedPlans.map(plan => ({
+    selectedPlans.map((plan) => ({
       planId: plan.id,
       expectedStartDate: null,
       expectedEndDate: null,
       notes: '',
       status: 'pending',
-      instanceName: '',
+      instanceName: ''
     }))
   );
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   const statusOptions = [
     { label: 'Pending', value: 'pending' },
     { label: 'In Progress', value: 'in-progress' },
-    { label: 'Completed', value: 'completed' },
+    { label: 'Completed', value: 'completed' }
   ];
 
   const handleInputChange = (index, field, value) => {
@@ -43,28 +43,32 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   const handleAssign = (index) => {
     const data = {
       studentId: selectedStudent.id,
-      ...assignmentData[index],
+      ...assignmentData[index]
     };
 
-    const { isValid, message } = validateDates(data.expectedStartDate, data.expectedEndDate, intl)
+    const { isValid, message } = validateDates(
+      data.expectedStartDate,
+      data.expectedEndDate,
+      intl
+    );
     if (!isValid) {
       showToast('error', 'Error', message);
       return;
     }
 
     showConfirmationDialog({
-        message: intl.formatMessage({ id: 'assignPlan.confirmation.message' }),
-        header: intl.formatMessage({ id: 'common.confirmation' }),
-        icon: "pi pi-exclamation-triangle",
-        accept: () => confirmAssign(index),
-        reject: () => console.log('Rejected u mf')
+      message: intl.formatMessage({ id: 'assignPlan.confirmation.message' }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => confirmAssign(index),
+      reject: () => console.log('Rejected u mf')
     });
   };
 
   const confirmAssign = async (index) => {
     const data = {
       studentId: selectedStudent.id,
-      ...assignmentData[index],
+      ...assignmentData[index]
     };
     try {
       setLoading(true);
@@ -76,40 +80,92 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
     } finally {
       setLoading(false);
     }
-    
   };
 
   return (
     <div>
       {/* {loading && <ProgressSpinner />} */}
-      <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
+      <TabView
+        activeIndex={activeIndex}
+        onTabChange={(e) => setActiveIndex(e.index)}
+      >
         {currentPlans.map((plan, index) => (
           <TabPanel key={index} header={plan.planName}>
             <div className="p-grid">
               <div className="p-col-6">
-                <label htmlFor={`expectedStartDate-${index}`}>Expected Start Date*</label>
-                <Calendar id={`expectedStartDate-${index}`} locale={intl.locale} dateFormat="dd/mm/yy" value={assignmentData[index].expectedStartDate} onChange={(e) => handleInputChange(index, 'expectedStartDate', e.value)} />
+                <label htmlFor={`expectedStartDate-${index}`}>
+                  Expected Start Date*
+                </label>
+                <Calendar
+                  id={`expectedStartDate-${index}`}
+                  locale={intl.locale}
+                  dateFormat="dd/mm/yy"
+                  value={assignmentData[index].expectedStartDate}
+                  onChange={(e) =>
+                    handleInputChange(index, 'expectedStartDate', e.value)
+                  }
+                />
               </div>
               <div className="p-col-6">
-                <label htmlFor={`expectedEndDate-${index}`}>Expected End Date*</label>
-                <Calendar id={`expectedEndDate-${index}`} locale={intl.locale} dateFormat="dd/mm/yy" value={assignmentData[index].expectedEndDate} onChange={(e) => handleInputChange(index, 'expectedEndDate', e.value)} />
+                <label htmlFor={`expectedEndDate-${index}`}>
+                  Expected End Date*
+                </label>
+                <Calendar
+                  id={`expectedEndDate-${index}`}
+                  locale={intl.locale}
+                  dateFormat="dd/mm/yy"
+                  value={assignmentData[index].expectedEndDate}
+                  onChange={(e) =>
+                    handleInputChange(index, 'expectedEndDate', e.value)
+                  }
+                />
               </div>
               <div className="p-col-12">
                 <label htmlFor={`notes-${index}`}>Description</label>
-                <InputTextarea id={`notes-${index}`} value={assignmentData[index].instanceName} onChange={(e) => handleInputChange(index, 'instanceName', e.target.value)} rows={3} />
+                <InputTextarea
+                  id={`notes-${index}`}
+                  value={assignmentData[index].instanceName}
+                  onChange={(e) =>
+                    handleInputChange(index, 'instanceName', e.target.value)
+                  }
+                  rows={3}
+                />
               </div>
               <div className="p-col-12">
                 <label htmlFor={`notes-${index}`}>Notes</label>
-                <InputTextarea id={`notes-${index}`} value={assignmentData[index].notes} onChange={(e) => handleInputChange(index, 'notes', e.target.value)} rows={3} />
+                <InputTextarea
+                  id={`notes-${index}`}
+                  value={assignmentData[index].notes}
+                  onChange={(e) =>
+                    handleInputChange(index, 'notes', e.target.value)
+                  }
+                  rows={3}
+                />
               </div>
               <div className="p-col-12">
                 <label htmlFor={`status-${index}`}>Status</label>
-                <Dropdown id={`status-${index}`} value={assignmentData[index].status} options={statusOptions} onChange={(e) => handleInputChange(index, 'status', e.value)} />
+                <Dropdown
+                  id={`status-${index}`}
+                  value={assignmentData[index].status}
+                  options={statusOptions}
+                  onChange={(e) => handleInputChange(index, 'status', e.value)}
+                />
               </div>
             </div>
             <div className="p-d-flex p-jc-between">
-              <Button label="Cancel" icon="pi pi-times" className="p-button-danger" onClick={onClose} />
-              <Button label="Assign" icon="pi pi-check" className="p-button-success" onClick={() => handleAssign(index)} loading={loading}/>
+              <Button
+                label="Cancel"
+                icon="pi pi-times"
+                className="p-button-danger"
+                onClick={onClose}
+              />
+              <Button
+                label="Assign"
+                icon="pi pi-check"
+                className="p-button-success"
+                onClick={() => handleAssign(index)}
+                loading={loading}
+              />
             </div>
           </TabPanel>
         ))}

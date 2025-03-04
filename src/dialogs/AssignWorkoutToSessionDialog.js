@@ -4,14 +4,25 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
-import { assignSession, assignTrainingSessionToClient, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
+import {
+  assignSession,
+  assignTrainingSessionToClient,
+  findAllWorkoutTemplatesByCoachId
+} from '../services/workoutService';
 import { formatDateToApi } from '../utils/UtilFunctions';
-const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey, selectedDate }) => {
+const AssignWorkoutToSessionDialog = ({
+  visible,
+  onHide,
+  sessionId,
+  clientId,
+  setRefreshKey,
+  selectedDate
+}) => {
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-  const[loading, setLoading] = useState(false)
-  const {coach} = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
+  const { coach } = useContext(UserContext);
 
   useEffect(() => {
     setSelectedWorkout([null]);
@@ -20,8 +31,8 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   useEffect(() => {
     const loadWorkouts = async () => {
       try {
-        const {data} = await findAllWorkoutTemplatesByCoachId(coach.id);
-        setWorkouts(data)
+        const { data } = await findAllWorkoutTemplatesByCoachId(coach.id);
+        setWorkouts(data);
       } catch (error) {
         showToast('error', 'Error', error.message);
       }
@@ -35,7 +46,9 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       showToast('error', 'Error', 'Please select a workout');
       return;
     }
-    const sessionDate = formatDateToApi(selectedDate ? selectedDate : new Date());
+    const sessionDate = formatDateToApi(
+      selectedDate ? selectedDate : new Date()
+    );
     const body = {
       sessionId,
       workoutId: selectedWorkout,
@@ -43,9 +56,9 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       sessionDate: sessionDate
     };
     console.log('Body', body);
-     
+
     try {
-      setLoading(true)
+      setLoading(true);
       if (sessionId) {
         await assignSession(sessionId, body);
       } else {
@@ -53,31 +66,47 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       }
       showToast('success', 'Session assigned successfully');
       onHide();
-      setRefreshKey(old=>old+1);
+      setRefreshKey((old) => old + 1);
     } catch (error) {
       showToast('error', 'Error', error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
   return (
-    <Dialog draggable={false} dismissableMask
-    resizable={false}  header="Assign Workout to Session" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+    <Dialog
+      draggable={false}
+      dismissableMask
+      resizable={false}
+      header="Assign Workout to Session"
+      className="responsive-dialog"
+      visible={visible}
+      style={{ width: '50vw' }}
+      onHide={onHide}
+    >
       <div className="p-fluid">
         <div className="p-field">
           <label htmlFor="workout">Workout</label>
-            <Dropdown id="workouts" 
-            options={workouts} 
-            optionLabel={(option) => option.instanceName ? option.instanceName : option.planName}
-            optionValue="id" 
-            value={selectedWorkout} 
-            onChange={(e) => setSelectedWorkout(e.value)} 
-            placeholder="Select Workouts" 
-            />
+          <Dropdown
+            id="workouts"
+            options={workouts}
+            optionLabel={(option) =>
+              option.instanceName ? option.instanceName : option.planName
+            }
+            optionValue="id"
+            value={selectedWorkout}
+            onChange={(e) => setSelectedWorkout(e.value)}
+            placeholder="Select Workouts"
+          />
         </div>
       </div>
-      <Button label="Assign" icon="pi pi-check" onClick={handleAssign} loading={loading} />
+      <Button
+        label="Assign"
+        icon="pi pi-check"
+        onClick={handleAssign}
+        loading={loading}
+      />
     </Dialog>
   );
 };

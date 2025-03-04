@@ -8,9 +8,15 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { formatDateToApi, validateDates } from '../utils/UtilFunctions';
 import { fetchCoachPlans } from '../services/usersService';
 import { registerPayment } from '../services/subscriptionService';
-import { useIntl } from 'react-intl'; 
+import { useIntl } from 'react-intl';
 
-const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, oldCoachPlan }) => {
+const RegisterPaymentDialog = ({
+  studentId,
+  coachId,
+  onClose,
+  oldSubscription,
+  oldCoachPlan
+}) => {
   const intl = useIntl();
   const { user } = useContext(UserContext);
   const showToast = useToast();
@@ -35,12 +41,12 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     setSelectedCoachPlan(oldCoachPlan.id);
     const loadCoachPlans = async () => {
       try {
-        const {data} = await fetchCoachPlans(user.userId);
-        setCoachPlans(data)
+        const { data } = await fetchCoachPlans(user.userId);
+        setCoachPlans(data);
       } catch (error) {
-        showToast('error', 'Error', error.message)
+        showToast('error', 'Error', error.message);
       }
-    }
+    };
     loadCoachPlans();
   }, [user.userId, oldSubscription, oldCoachPlan, showToast]);
 
@@ -54,7 +60,7 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
       coachPlanId: selectedCoachPlan
     };
 
-    const { isValid, message } = validateDates(startDate, endDate, intl)
+    const { isValid, message } = validateDates(startDate, endDate, intl);
     if (!isValid) {
       showToast('error', 'Error', message);
       return;
@@ -71,9 +77,11 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     }
 
     showConfirmationDialog({
-      message: intl.formatMessage({ id: 'registerPayment.confirmation.message' }),
+      message: intl.formatMessage({
+        id: 'registerPayment.confirmation.message'
+      }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
-      icon: "pi pi-exclamation-triangle",
+      icon: 'pi pi-exclamation-triangle',
       accept: () => handleRegisterPayment(body),
       reject: () => console.log('Payment registration cancelled')
     });
@@ -83,9 +91,13 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     try {
       setLoading(true);
       const response = await registerPayment(body);
-      if(response.message === 'success') {
-        showToast('success', 'Success', 'Payment registered and subscription updated successfully');
-        onClose();  // Assuming onClose closes a modal or dialog
+      if (response.message === 'success') {
+        showToast(
+          'success',
+          'Success',
+          'Payment registered and subscription updated successfully'
+        );
+        onClose(); // Assuming onClose closes a modal or dialog
       } else {
         showToast('error', 'Error', response.error);
       }
@@ -100,21 +112,54 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     <div className="register-payment-dialog">
       <div className="p-field">
         <label htmlFor="startDate">New Start Date</label>
-        <Calendar id="startDate" locale={intl.locale} dateFormat="dd/mm/yy" value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
+        <Calendar
+          id="startDate"
+          locale={intl.locale}
+          dateFormat="dd/mm/yy"
+          value={startDate}
+          onChange={(e) => setStartDate(e.value)}
+          showIcon
+        />
       </div>
       <div className="p-field">
         <label htmlFor="endDate">New End Date</label>
-        <Calendar id="endDate" locale={intl.locale} dateFormat="dd/mm/yy" value={endDate} onChange={(e) => setEndDate(e.value)} showIcon />
+        <Calendar
+          id="endDate"
+          locale={intl.locale}
+          dateFormat="dd/mm/yy"
+          value={endDate}
+          onChange={(e) => setEndDate(e.value)}
+          showIcon
+        />
       </div>
       <div className="p-field">
         <label htmlFor="paymentDate">Payment Date</label>
-        <Calendar id="paymentDate" locale={intl.locale} dateFormat="dd/mm/yy" value={paymentDate} onChange={(e) => setPaymentDate(e.value)} showIcon />
+        <Calendar
+          id="paymentDate"
+          locale={intl.locale}
+          dateFormat="dd/mm/yy"
+          value={paymentDate}
+          onChange={(e) => setPaymentDate(e.value)}
+          showIcon
+        />
       </div>
       <div className="p-field">
         <label htmlFor="coachPlan">Select Plan</label>
-        <Dropdown id="coachPlan" options={coachPlans} optionLabel="name" optionValue="id" value={selectedCoachPlan} onChange={(e) => setSelectedCoachPlan(e.value)} />
+        <Dropdown
+          id="coachPlan"
+          options={coachPlans}
+          optionLabel="name"
+          optionValue="id"
+          value={selectedCoachPlan}
+          onChange={(e) => setSelectedCoachPlan(e.value)}
+        />
       </div>
-      <Button label="Register Payment" icon="pi pi-dollar" loading={loading} onClick={onClickRegisterPayment} />
+      <Button
+        label="Register Payment"
+        icon="pi pi-dollar"
+        loading={loading}
+        onClick={onClickRegisterPayment}
+      />
     </div>
   );
 };

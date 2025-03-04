@@ -21,9 +21,19 @@ import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { fetchClient, fetchClientActivitiesByUserId, updatePersonalInfo } from '../services/usersService';
+import {
+  fetchClient,
+  fetchClientActivitiesByUserId,
+  updatePersonalInfo
+} from '../services/usersService';
 import { fetchSubscriptionDetails } from '../services/subscriptionService';
-import { formatDate, getDayMonthYear, getSeverity, sortBySessionDate, updateStatus } from '../utils/UtilFunctions';
+import {
+  formatDate,
+  getDayMonthYear,
+  getSeverity,
+  sortBySessionDate,
+  updateStatus
+} from '../utils/UtilFunctions';
 
 export default function NewClientProfile() {
   const { user } = useContext(UserContext);
@@ -45,9 +55,15 @@ export default function NewClientProfile() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'workout.planName': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+    'workout.planName': {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
+    },
     status: { value: null, matchMode: FilterMatchMode.EQUALS },
-    description: { operator: 'and', constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    description: {
+      operator: 'and',
+      constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }]
+    }
   });
   const [statuses] = useState(['current', 'expired', 'completed', 'pending']);
 
@@ -58,34 +74,48 @@ export default function NewClientProfile() {
         setLoading(true);
 
         // Fetch personal information
-        const {data: dataClient} = await fetchClient(user.userId);
-        
+        const { data: dataClient } = await fetchClient(user.userId);
+
         setPersonalInfo(dataClient);
         setActivityLevel(dataClient.activityLevel);
         if (dataClient.fitnessGoal) {
-          const goals = dataClient.fitnessGoal.split(',')
-            .map(goal => goal.trim())
+          const goals = dataClient.fitnessGoal
+            .split(',')
+            .map((goal) => goal.trim())
             .filter((value, index, self) => self.indexOf(value) === index);
           setFitnessGoal(goals);
         }
 
         // Fetch activities
-        const {data: dataActivities} = await fetchClientActivitiesByUserId(user.userId);
+        const { data: dataActivities } = await fetchClientActivitiesByUserId(
+          user.userId
+        );
         setActivities(dataActivities);
 
         // Fetch subscription details
-        const {data: subscriptionData} = await fetchSubscriptionDetails(user.userId);
+        const { data: subscriptionData } = await fetchSubscriptionDetails(
+          user.userId
+        );
         setSubscription(subscriptionData);
 
-        const checkStatusWorkouts = updateStatus(subscriptionData.workoutInstances);
+        const checkStatusWorkouts = updateStatus(
+          subscriptionData.workoutInstances
+        );
         const workoutsSorted = sortBySessionDate(checkStatusWorkouts);
         setWorkoutHistory(workoutsSorted);
-        
 
-        const completed = workoutsSorted.filter(workout => workout.status === 'completed').length;
-        const pending = workoutsSorted.filter(workout => workout.status === 'pending').length;
-        const expired = workoutsSorted.filter(workout => workout.status === 'expired').length;
-        const current = workoutsSorted.filter(workout => workout.status === 'current').length;
+        const completed = workoutsSorted.filter(
+          (workout) => workout.status === 'completed'
+        ).length;
+        const pending = workoutsSorted.filter(
+          (workout) => workout.status === 'pending'
+        ).length;
+        const expired = workoutsSorted.filter(
+          (workout) => workout.status === 'expired'
+        ).length;
+        const current = workoutsSorted.filter(
+          (workout) => workout.status === 'current'
+        ).length;
 
         setProgressData({
           labels: ['Completed', 'Pending', 'Expired', 'Current'],
@@ -93,9 +123,9 @@ export default function NewClientProfile() {
             {
               data: [completed, pending, expired, current],
               backgroundColor: ['green', 'yellow', 'red', 'blue'],
-              hoverBackgroundColor: ['green', 'yellow', 'red', 'blue'],
-            },
-          ],
+              hoverBackgroundColor: ['green', 'yellow', 'red', 'blue']
+            }
+          ]
         });
       } catch (error) {
         showToast('error', 'Error', error.message);
@@ -114,11 +144,15 @@ export default function NewClientProfile() {
 
   const handleEditDialogClose = () => {
     setEditDialogVisible(false);
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   const handleSavePersonalInfo = async () => {
-    const body = { fitnessGoal, activityLevel, phoneNumber: personalInfo.phoneNumber };
+    const body = {
+      fitnessGoal,
+      activityLevel,
+      phoneNumber: personalInfo.phoneNumber
+    };
     // Validate inputs
     for (const [key, value] of Object.entries(body)) {
       if (key === 'fitnessGoal') {
@@ -139,16 +173,20 @@ export default function NewClientProfile() {
         try {
           setLoading(true);
           await updatePersonalInfo(personalInfo.id, body);
-          showToast('success', 'Success', 'Personal information updated successfully');
+          showToast(
+            'success',
+            'Success',
+            'Personal information updated successfully'
+          );
           setEditDialogVisible(false);
-          setRefreshKey(prev => prev + 1);
+          setRefreshKey((prev) => prev + 1);
         } catch (error) {
           showToast('error', 'Error', error.message);
         } finally {
           setLoading(false);
         }
       },
-      reject: () => {},
+      reject: () => {}
     });
   };
 
@@ -158,7 +196,9 @@ export default function NewClientProfile() {
   };
 
   const statusBodyTemplate = (rowData) => {
-    return <Tag value={rowData.status} severity={getSeverity(rowData.status)} />;
+    return (
+      <Tag value={rowData.status} severity={getSeverity(rowData.status)} />
+    );
   };
 
   const statusFilterTemplate = (options) => {
@@ -215,14 +255,17 @@ export default function NewClientProfile() {
   };
 
   const setPlanDetails = (rowData) => {
-    
     return (
       <p>
-        <FormattedMessage 
-          id="profile.table.week" 
-          values={{ number: rowData.trainingSession.trainingWeek?.weekNumber || 'N/A' }}
-        /> - <FormattedMessage 
-          id="profile.table.day" 
+        <FormattedMessage
+          id="profile.table.week"
+          values={{
+            number: rowData.trainingSession.trainingWeek?.weekNumber || 'N/A'
+          }}
+        />{' '}
+        -{' '}
+        <FormattedMessage
+          id="profile.table.day"
           values={{ number: rowData.trainingSession.dayNumber || 'N/A' }}
         />
       </p>
@@ -230,17 +273,41 @@ export default function NewClientProfile() {
   };
 
   const fitnessGoalOptions = [
-    { label: intl.formatMessage({ id: 'profile.goals.weightLoss' }), value: 'weight loss' },
-    { label: intl.formatMessage({ id: 'profile.goals.muscleGain' }), value: 'muscle gain' },
-    { label: intl.formatMessage({ id: 'profile.goals.mobility' }), value: 'gain mobility' },
-    { label: intl.formatMessage({ id: 'profile.goals.maintenance' }), value: 'maintenance' },
-    { label: intl.formatMessage({ id: 'profile.goals.flexibility' }), value: 'flexibility' },
+    {
+      label: intl.formatMessage({ id: 'profile.goals.weightLoss' }),
+      value: 'weight loss'
+    },
+    {
+      label: intl.formatMessage({ id: 'profile.goals.muscleGain' }),
+      value: 'muscle gain'
+    },
+    {
+      label: intl.formatMessage({ id: 'profile.goals.mobility' }),
+      value: 'gain mobility'
+    },
+    {
+      label: intl.formatMessage({ id: 'profile.goals.maintenance' }),
+      value: 'maintenance'
+    },
+    {
+      label: intl.formatMessage({ id: 'profile.goals.flexibility' }),
+      value: 'flexibility'
+    }
   ];
 
   const activityLevelOptions = [
-    { label: intl.formatMessage({ id: 'profile.activity.sedentary' }), value: 'sedentary' },
-    { label: intl.formatMessage({ id: 'profile.activity.moderate' }), value: 'moderately active' },
-    { label: intl.formatMessage({ id: 'profile.activity.active' }), value: 'very active' },
+    {
+      label: intl.formatMessage({ id: 'profile.activity.sedentary' }),
+      value: 'sedentary'
+    },
+    {
+      label: intl.formatMessage({ id: 'profile.activity.moderate' }),
+      value: 'moderately active'
+    },
+    {
+      label: intl.formatMessage({ id: 'profile.activity.active' }),
+      value: 'very active'
+    }
   ];
 
   return (
@@ -254,21 +321,39 @@ export default function NewClientProfile() {
 
       <div className="grid">
         <div className="col-12 md:col-4">
-          <Card title={intl.formatMessage({ id: 'profile.personalInfo' })} className="mb-4">
+          <Card
+            title={intl.formatMessage({ id: 'profile.personalInfo' })}
+            className="mb-4"
+          >
             <p>
-              <strong><FormattedMessage id="profile.name" />:</strong> {personalInfo?.name}
+              <strong>
+                <FormattedMessage id="profile.name" />:
+              </strong>{' '}
+              {personalInfo?.name}
             </p>
             <p>
-              <strong><FormattedMessage id="profile.email" />:</strong> {personalInfo?.user?.email}
+              <strong>
+                <FormattedMessage id="profile.email" />:
+              </strong>{' '}
+              {personalInfo?.user?.email}
             </p>
             <p>
-              <strong><FormattedMessage id="profile.birthdate" />:</strong> {formatDate(personalInfo?.birthdate)}
+              <strong>
+                <FormattedMessage id="profile.birthdate" />:
+              </strong>{' '}
+              {formatDate(personalInfo?.birthdate)}
             </p>
             <p>
-              <strong><FormattedMessage id="profile.gender" />:</strong> {personalInfo?.gender}
+              <strong>
+                <FormattedMessage id="profile.gender" />:
+              </strong>{' '}
+              {personalInfo?.gender}
             </p>
             <p>
-              <strong><FormattedMessage id="profile.phone" />:</strong> {personalInfo?.phoneNumber}
+              <strong>
+                <FormattedMessage id="profile.phone" />:
+              </strong>{' '}
+              {personalInfo?.phoneNumber}
             </p>
             <Button
               label={intl.formatMessage({ id: 'profile.edit' })}
@@ -278,25 +363,42 @@ export default function NewClientProfile() {
             />
           </Card>
 
-          <Card title={intl.formatMessage({ id: 'profile.subscription' })} className="mb-4">
+          <Card
+            title={intl.formatMessage({ id: 'profile.subscription' })}
+            className="mb-4"
+          >
             <p>
-              <strong><FormattedMessage id="profile.subscription.planName" />:</strong> {subscription?.coachPlan?.name}
+              <strong>
+                <FormattedMessage id="profile.subscription.planName" />:
+              </strong>{' '}
+              {subscription?.coachPlan?.name}
             </p>
             <p>
-              <strong><FormattedMessage id="profile.subscription.startDate" />:</strong> {formatDate(subscription?.subscription?.startDate)}
+              <strong>
+                <FormattedMessage id="profile.subscription.startDate" />:
+              </strong>{' '}
+              {formatDate(subscription?.subscription?.startDate)}
             </p>
             <p>
-              <strong><FormattedMessage id="profile.subscription.endDate" />:</strong> {formatDate(subscription?.subscription?.endDate)}
+              <strong>
+                <FormattedMessage id="profile.subscription.endDate" />:
+              </strong>{' '}
+              {formatDate(subscription?.subscription?.endDate)}
             </p>
             <p>
-              <strong><FormattedMessage id="profile.subscription.status" />:</strong> {subscription?.subscription?.status}
+              <strong>
+                <FormattedMessage id="profile.subscription.status" />:
+              </strong>{' '}
+              {subscription?.subscription?.status}
             </p>
           </Card>
         </div>
 
         <div className="col-12 md:col-8">
           <TabView>
-            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.workoutHistory' })}>
+            <TabPanel
+              header={intl.formatMessage({ id: 'profile.tabs.workoutHistory' })}
+            >
               <DataTable
                 value={workoutHistory}
                 paginator
@@ -312,16 +414,26 @@ export default function NewClientProfile() {
                   header={intl.formatMessage({ id: 'profile.table.planName' })}
                   sortable
                   filter
-                  filterPlaceholder={intl.formatMessage({ id: 'common.search' })}
+                  filterPlaceholder={intl.formatMessage({
+                    id: 'common.search'
+                  })}
                   filterElement={planNameFilterTemplate}
                 />
-                <Column 
-                  header={intl.formatMessage({ id: 'profile.table.details' })} 
-                  body={setPlanDetails} 
+                <Column
+                  header={intl.formatMessage({ id: 'profile.table.details' })}
+                  body={setPlanDetails}
                 />
                 <Column
-                  header={intl.formatMessage({ id: 'profile.table.trainingDate' })}
-                  body={(rowData) => formatDate(getDayMonthYear(rowData.trainingSession).toISOString().split('T')[0])}
+                  header={intl.formatMessage({
+                    id: 'profile.table.trainingDate'
+                  })}
+                  body={(rowData) =>
+                    formatDate(
+                      getDayMonthYear(rowData.trainingSession)
+                        .toISOString()
+                        .split('T')[0]
+                    )
+                  }
                   sortable
                   filter
                   filterField="trainingSession.sessionDate"
@@ -329,7 +441,9 @@ export default function NewClientProfile() {
                 />
                 <Column
                   field="realEndDate"
-                  header={intl.formatMessage({ id: 'profile.table.dayTrained' })}
+                  header={intl.formatMessage({
+                    id: 'profile.table.dayTrained'
+                  })}
                   body={(rowData) => formatDate(rowData.realEndDate)}
                   sortable
                   filter
@@ -347,13 +461,22 @@ export default function NewClientProfile() {
               </DataTable>
             </TabPanel>
 
-            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.progress' })}>
+            <TabPanel
+              header={intl.formatMessage({ id: 'profile.tabs.progress' })}
+            >
               <div className="flex justify-content-center">
-                <Chart type="pie" data={progressData} options={{ responsive: true }} style={{ width: '50%' }} />
+                <Chart
+                  type="pie"
+                  data={progressData}
+                  options={{ responsive: true }}
+                  style={{ width: '50%' }}
+                />
               </div>
             </TabPanel>
 
-            <TabPanel header={intl.formatMessage({ id: 'profile.tabs.activities' })}>
+            <TabPanel
+              header={intl.formatMessage({ id: 'profile.tabs.activities' })}
+            >
               <DataTable
                 value={activities}
                 paginator
@@ -398,17 +521,17 @@ export default function NewClientProfile() {
         dismissableMask
         footer={
           <div>
-            <Button 
-              label={intl.formatMessage({ id: 'profile.dialog.cancel' })} 
-              icon="pi pi-times" 
-              onClick={handleEditDialogClose} 
-              className="p-button-text" 
+            <Button
+              label={intl.formatMessage({ id: 'profile.dialog.cancel' })}
+              icon="pi pi-times"
+              onClick={handleEditDialogClose}
+              className="p-button-text"
             />
-            <Button 
-              label={intl.formatMessage({ id: 'profile.dialog.save' })} 
-              icon="pi pi-check" 
-              onClick={handleSavePersonalInfo} 
-              autoFocus 
+            <Button
+              label={intl.formatMessage({ id: 'profile.dialog.save' })}
+              icon="pi pi-check"
+              onClick={handleSavePersonalInfo}
+              autoFocus
             />
           </div>
         }
@@ -447,7 +570,9 @@ export default function NewClientProfile() {
               id="editPhone"
               useGrouping={false}
               value={personalInfo?.phoneNumber}
-              onChange={(e) => setPersonalInfo({ ...personalInfo, phoneNumber: e.value })}
+              onChange={(e) =>
+                setPersonalInfo({ ...personalInfo, phoneNumber: e.value })
+              }
             />
           </div>
         </div>

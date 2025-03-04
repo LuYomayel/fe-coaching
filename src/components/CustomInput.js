@@ -33,7 +33,7 @@ const CustomInput = ({ type, id, value, onChange, disabled }) => {
         { label: 'Easy', value: 2 },
         { label: 'Moderate', value: 3 },
         { label: 'Hard', value: 4 },
-        { label: 'Very Hard', value: 5 },
+        { label: 'Very Hard', value: 5 }
       ];
       return (
         <Dropdown

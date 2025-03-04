@@ -15,10 +15,10 @@ export const ChatSidebarProvider = ({ children }) => {
   const [unreadMessages, setUnreadMessages] = useState([]);
   const openChatSidebar = () => setIsChatSidebarOpen(true);
   const closeChatSidebar = () => setIsChatSidebarOpen(false);
-  const {user} = useContext(UserContext)
-  // eslint-disable-next-line 
+  const { user } = useContext(UserContext);
+  // eslint-disable-next-line
   const [socket, setSocket] = useState(null);
-  // eslint-disable-next-line 
+  // eslint-disable-next-line
   const [isConnected, setIsConnected] = useState(false); // Estado de conexión del socket
   const showToast = useToast();
   useEffect(() => {
@@ -34,19 +34,26 @@ export const ChatSidebarProvider = ({ children }) => {
 
     // Recibir nuevos mensajes
     newSocket.on('receiveMessage', (message) => {
-      if(message.sender.id !== user.userId)
-      if(isChatSidebarOpen && selectedChat.user.id !== message.sender.id){
-        setUnreadMessages((prevCount) => prevCount + 1);
-        console.log('Message: ', message.content, message)
-        showToast('success', `New message from: ${message.sender.coach ? message.sender.coach.name : message.sender.client.name}`, message.content)
-      }else if(!isChatSidebarOpen){
-        setUnreadMessages((prevCount) => prevCount + 1);
-        showToast('success', `New message from: ${message.sender.coach ? message.sender.coach.name : message.sender.client.name}`, message.content)
-      }
+      if (message.sender.id !== user.userId)
+        if (isChatSidebarOpen && selectedChat.user.id !== message.sender.id) {
+          setUnreadMessages((prevCount) => prevCount + 1);
+          console.log('Message: ', message.content, message);
+          showToast(
+            'success',
+            `New message from: ${message.sender.coach ? message.sender.coach.name : message.sender.client.name}`,
+            message.content
+          );
+        } else if (!isChatSidebarOpen) {
+          setUnreadMessages((prevCount) => prevCount + 1);
+          showToast(
+            'success',
+            `New message from: ${message.sender.coach ? message.sender.coach.name : message.sender.client.name}`,
+            message.content
+          );
+        }
     });
 
     return () => newSocket.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChat]);
 
   useEffect(() => {
@@ -55,10 +62,8 @@ export const ChatSidebarProvider = ({ children }) => {
         //const messages = await fetchUnreadMessages(user.userId);
         //const unreadMessageCount = messages.filter(msg => !msg.isRead).length;
         setUnreadMessages(0);
-        
       } catch (error) {
         console.error('Error fetching messages:', error);
-      } finally {
       }
     };
 
@@ -68,7 +73,17 @@ export const ChatSidebarProvider = ({ children }) => {
   }, [user]);
 
   return (
-    <ChatSidebarContext.Provider value={{ isChatSidebarOpen, selectedChat, unreadMessages, setUnreadMessages, setSelectedChat, openChatSidebar, closeChatSidebar }}>
+    <ChatSidebarContext.Provider
+      value={{
+        isChatSidebarOpen,
+        selectedChat,
+        unreadMessages,
+        setUnreadMessages,
+        setSelectedChat,
+        openChatSidebar,
+        closeChatSidebar
+      }}
+    >
       {children}
     </ChatSidebarContext.Provider>
   );

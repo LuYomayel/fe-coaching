@@ -16,21 +16,44 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { assignRpeToTarget, createOrUpdateRpeMethod, deleteRpe, fetchTrainingCyclesByCoachId, getRpeMethods, deleteWorkoutPlan, findAllWorkoutTemplatesByCoachId } from '../services/workoutService';
-import { fetchCoach, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
+import {
+  assignRpeToTarget,
+  createOrUpdateRpeMethod,
+  deleteRpe,
+  fetchTrainingCyclesByCoachId,
+  getRpeMethods,
+  deleteWorkoutPlan,
+  findAllWorkoutTemplatesByCoachId
+} from '../services/workoutService';
+import {
+  fetchCoach,
+  fetchCoachPlans,
+  fetchCoachStudents
+} from '../services/usersService';
 import {
   createOrUpdateCoachPlan,
   fetchCoachSubscription,
-  fetchCoachSubscriptionPlans,
+  fetchCoachSubscriptionPlans
 } from '../services/subscriptionService';
 import { useSpinner } from '../utils/GlobalSpinner'; // <- spinner context
-import { extractYouTubeVideoId, getYouTubeThumbnail, isValidYouTubeUrl } from '../utils/UtilFunctions';
+import {
+  extractYouTubeVideoId,
+  getYouTubeThumbnail,
+  isValidYouTubeUrl
+} from '../utils/UtilFunctions';
 import { MultiSelect } from 'primereact/multiselect';
 import { FilterMatchMode } from 'primereact/api';
 import * as XLSX from 'xlsx';
 import Spinner from '../utils/LittleSpinner';
 import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
-import { createExercise, deleteExercise, fetchBodyAreas, fetchCoachExercises, importExercises, updateExercise } from '../services/exercisesService';
+import {
+  createExercise,
+  deleteExercise,
+  fetchBodyAreas,
+  fetchCoachExercises,
+  importExercises,
+  updateExercise
+} from '../services/exercisesService';
 import { ProgressBar } from 'primereact/progressbar';
 import { Tooltip } from 'primereact/tooltip';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
@@ -49,13 +72,15 @@ export default function CoachProfilePage() {
   const [isCoachInfoLoading, setIsCoachInfoLoading] = useState(true);
   const [isExercisesLoading, setIsExercisesLoading] = useState(true);
   // eslint-disable-next-line
-  const [isCoachSubscriptionLoading, setIsCoachSubscriptionLoading] = useState(true);
+  const [isCoachSubscriptionLoading, setIsCoachSubscriptionLoading] =
+    useState(true);
   // eslint-disable-next-line
   const [isCoachPlansLoading, setIsCoachPlansLoading] = useState(true);
   // eslint-disable-next-line
   const [isBodyAreasLoading, setIsBodyAreasLoading] = useState(true);
   // eslint-disable-next-line
-  const [isSubscriptionPlansLoading, setIsSubscriptionPlansLoading] = useState(true);
+  const [isSubscriptionPlansLoading, setIsSubscriptionPlansLoading] =
+    useState(true);
   // State variables
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -94,7 +119,7 @@ export default function CoachProfilePage() {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
     exerciseType: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    description: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    description: { value: null, matchMode: FilterMatchMode.CONTAINS }
   });
   // eslint-disable-next-line
   const [numRows, setNumRows] = useState(0);
@@ -104,217 +129,232 @@ export default function CoachProfilePage() {
     description: '',
     multimedia: '',
     exerciseType: '',
-    equipmentNeeded: '',
+    equipmentNeeded: ''
   });
   const [newPlan, setNewPlan] = useState({
     name: '',
     price: 0,
     workoutsPerWeek: 0,
-    includeMealPlan: false,
+    includeMealPlan: false
   });
 
   // States for RPE methods
-    const [rpeMethods, setRpeMethods] = useState([
-      { id: 1, name: 'RPE', minValue: 0, maxValue: 10, step: 1 },
-    ]);
-    const [isRpeLoading, setIsRpeLoading] = useState(true);
-    const [rpeDialogVisible, setRpeDialogVisible] = useState(false);
-    const [rpeAssignmentDialogVisible, setRpeAssignmentDialogVisible] = useState(false);
-    const [newRpe, setNewRpe] = useState({ name: '', minValue: 0, maxValue: 10, step: 1, valuesMeta: [] });
-    const [selectedType, setSelectedType] = useState(null);
-    const [selectedTarget, setSelectedTarget] = useState(null);
-    const [selectedRpe, setSelectedRpe] = useState(null);
+  const [rpeMethods, setRpeMethods] = useState([
+    { id: 1, name: 'RPE', minValue: 0, maxValue: 10, step: 1 }
+  ]);
+  const [isRpeLoading, setIsRpeLoading] = useState(true);
+  const [rpeDialogVisible, setRpeDialogVisible] = useState(false);
+  const [rpeAssignmentDialogVisible, setRpeAssignmentDialogVisible] =
+    useState(false);
+  const [newRpe, setNewRpe] = useState({
+    name: '',
+    minValue: 0,
+    maxValue: 10,
+    step: 1,
+    valuesMeta: []
+  });
+  const [selectedType, setSelectedType] = useState(null);
+  const [selectedTarget, setSelectedTarget] = useState(null);
+  const [selectedRpe, setSelectedRpe] = useState(null);
 
-    const typeOptions = [
-      { label: 'Workout', value: 'workout' },
-      { label: 'Training Cycle', value: 'trainingCycle' },
-      { label: 'User', value: 'user' },
-    ];
+  const typeOptions = [
+    { label: 'Workout', value: 'workout' },
+    { label: 'Training Cycle', value: 'trainingCycle' },
+    { label: 'User', value: 'user' }
+  ];
 
-    const renderTargetDropdown = () => {
-      let options = [];
-  
-      if (selectedType === 'workout') {
-        options = workouts.map((workout) => ({
-          label: workout.planName,
-          value: workout.id,
-        }));
-      } else if (selectedType === 'trainingCycle') {
-        options = trainingCycles.map((cycle) => ({
-          label: cycle.name,
-          value: cycle.id,
-        }));
-      } else if (selectedType === 'user') {
-        options = users.map((user) => ({
-          label: `${user.name}`,
-          value: user.id,
-        }));
-      }
-  
-      return (
-        <Dropdown
-          value={selectedTarget}
-          options={options}
-          onChange={(e) => setSelectedTarget(e.value)}
-          placeholder={`Select ${selectedType}`}
-          className="w-full"
-        />
-      );
-    };
+  const renderTargetDropdown = () => {
+    let options = [];
 
-    const fetchRpeMethods = async () => {
-      setIsRpeLoading(true);
+    if (selectedType === 'workout') {
+      options = workouts.map((workout) => ({
+        label: workout.planName,
+        value: workout.id
+      }));
+    } else if (selectedType === 'trainingCycle') {
+      options = trainingCycles.map((cycle) => ({
+        label: cycle.name,
+        value: cycle.id
+      }));
+    } else if (selectedType === 'user') {
+      options = users.map((user) => ({
+        label: `${user.name}`,
+        value: user.id
+      }));
+    }
+
+    return (
+      <Dropdown
+        value={selectedTarget}
+        options={options}
+        onChange={(e) => setSelectedTarget(e.value)}
+        placeholder={`Select ${selectedType}`}
+        className="w-full"
+      />
+    );
+  };
+
+  const fetchRpeMethods = async () => {
+    setIsRpeLoading(true);
+    try {
+      const { data } = await getRpeMethods(user.userId);
+      setRpeMethods(data);
+    } catch (error) {
+      console.log('error', error);
+      showToast('error', 'Error', error.message);
+    } finally {
+      setIsRpeLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchWorkouts = async () => {
       try {
-        const {data} = await getRpeMethods(user.userId);
-        setRpeMethods(data);
+        setIsWorkoutsLoading(true);
+        const { data } = await findAllWorkoutTemplatesByCoachId(coach.id);
+        setWorkouts(data);
       } catch (error) {
         console.log('error', error);
         showToast('error', 'Error', error.message);
       } finally {
-        setIsRpeLoading(false);
+        setIsWorkoutsLoading(false);
       }
     };
 
-    useEffect(() => {
-      const fetchWorkouts = async () => { 
-        try {
-          setIsWorkoutsLoading(true);
-          //const {data} = await fetchCoachWorkouts(user.userId);
-          const {data} = await findAllWorkoutTemplatesByCoachId(coach.id);
-          setWorkouts(data);
-        } catch (error) {
-          console.log('error', error);
-          showToast('error', 'Error', error.message);
-        } finally {
-          setIsWorkoutsLoading(false);
+    const fetchCoachInfo = async () => {
+      try {
+        setIsCoachInfoLoading(true);
+        const { data } = await fetchCoach(user.userId);
+        setCoachInfo(data);
+      } catch (error) {
+        if (error.message === 'Coach not found') {
+          navigate('/complete-coach-profile');
         }
-      };
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsCoachInfoLoading(false);
+      }
+    };
 
-      const fetchCoachInfo = async () => {
-        try {
-          setIsCoachInfoLoading(true);
-          const {data} = await fetchCoach(user.userId);
-          setCoachInfo(data);
-        } catch (error) {
-          if (error.message === 'Coach not found') {
-            navigate('/complete-coach-profile');
-          }
-          showToast('error', 'Error', error.message);
-        } finally {
-          setIsCoachInfoLoading(false);
-        }
+    const fetchCoachSubscriptionData = async () => {
+      try {
+        setIsCoachSubscriptionLoading(true);
+        const { data } = await fetchCoachSubscription(coach.id);
+        setCurrentPlanId(data.subscriptionPlan.id);
+      } catch (error) {
+        console.log('error', error);
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsCoachSubscriptionLoading(false);
+      }
+    };
 
-      };
+    const fetchCoachPlansData = async () => {
+      try {
+        setIsCoachPlansLoading(true);
+        const { data } = await fetchCoachPlans(user.userId);
 
-      const fetchCoachSubscriptionData = async () => {
-        try {
-          setIsCoachSubscriptionLoading(true);
-          const {data} = await fetchCoachSubscription(coach.id);
-          setCurrentPlanId(data.subscriptionPlan.id);
-        } catch (error) {
-          console.log('error', error);
-          showToast('error', 'Error', error.message);
-        } finally {
-          setIsCoachSubscriptionLoading(false);
-        }
-      };
+        setCoachPlans(data);
+      } catch (error) {
+        console.log('error', error);
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsCoachPlansLoading(false);
+      }
+    };
 
-      const fetchCoachPlansData = async () => {
-        try {
-          setIsCoachPlansLoading(true);
-          const {data} = await fetchCoachPlans(user.userId);
-          
-          setCoachPlans(data);
-        } catch (error) {
-          console.log('error', error);
-          showToast('error', 'Error', error.message);
-        } finally{
-          setIsCoachPlansLoading(false);
-        }
-      };
-
-      const fetchExercises = async () => {
-        try {
-          setIsExercisesLoading(true);
-          const {data} = await fetchCoachExercises(coach.id);
-          if (data.error) {
-            throw new Error(data.message || 'Something went wrong');
-          }
-          
-          const missingExercises = data.filter(exercise => !exercise.multimedia || !exercise.exerciseType || !exercise.description || !exercise.equipmentNeeded);
-          setMissingExercises(missingExercises);
-          setExercises(data);
-        } catch (error) {
-          console.error('error', error);
-          showToast('error', 'Error', error.message);
-        } finally {
-          setIsExercisesLoading(false);
+    const fetchExercises = async () => {
+      try {
+        setIsExercisesLoading(true);
+        const { data } = await fetchCoachExercises(coach.id);
+        if (data.error) {
+          throw new Error(data.message || 'Something went wrong');
         }
 
-      };
+        const missingExercises = data.filter(
+          (exercise) =>
+            !exercise.multimedia ||
+            !exercise.exerciseType ||
+            !exercise.description ||
+            !exercise.equipmentNeeded
+        );
+        setMissingExercises(missingExercises);
+        setExercises(data);
+      } catch (error) {
+        console.error('error', error);
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsExercisesLoading(false);
+      }
+    };
 
-      const fetchBodyAreasData = async () => {
-        try {
-          setIsBodyAreasLoading(true);
-          const {data} = await fetchBodyAreas();
-          if (data.error) {
-            throw new Error(data.message || 'Something went wrong');
-          }
-          const formattedBodyAreas = data.map((bodyArea) => ({ label: bodyArea.name, value: bodyArea.id }));
-          setBodyAreas(formattedBodyAreas);
-        } catch (error) {
-          console.log('error', error);
-          showToast('error', 'Error', error.message);
-        } finally {
-          setIsBodyAreasLoading(false);
+    const fetchBodyAreasData = async () => {
+      try {
+        setIsBodyAreasLoading(true);
+        const { data } = await fetchBodyAreas();
+        if (data.error) {
+          throw new Error(data.message || 'Something went wrong');
         }
-      };
+        const formattedBodyAreas = data.map((bodyArea) => ({
+          label: bodyArea.name,
+          value: bodyArea.id
+        }));
+        setBodyAreas(formattedBodyAreas);
+      } catch (error) {
+        console.log('error', error);
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsBodyAreasLoading(false);
+      }
+    };
 
-      const fetchSubscriptionPlans = async () => {
-        try {
-          setIsSubscriptionPlansLoading(true);
-          const {data} = await fetchCoachSubscriptionPlans();
-          setSubscriptionPlans(data);
-        } catch (error) {
-          console.log('error', error);
-          showToast('error', 'Error', error.message);
-        } finally {
-          setIsSubscriptionPlansLoading(false);
-        }
-      };
+    const fetchSubscriptionPlans = async () => {
+      try {
+        setIsSubscriptionPlansLoading(true);
+        const { data } = await fetchCoachSubscriptionPlans();
+        setSubscriptionPlans(data);
+      } catch (error) {
+        console.log('error', error);
+        showToast('error', 'Error', error.message);
+      } finally {
+        setIsSubscriptionPlansLoading(false);
+      }
+    };
 
-      const fetchClients = async () => {
-        try {
-          const {data} = await fetchCoachStudents(user.userId);
-          const activeClients = data.filter(client => client.user.subscription.status === 'Active');
-          setUsers(activeClients);
-        } catch (error) {
-          console.error('Error fetching clients:', error);
-        } finally {
-        }
-      };
-  
-      const fetchTrainingPlans = async () => {
-        try {
-          const {data} = await fetchTrainingCyclesByCoachId(user.userId);
-          setTrainingCycles(data);
-        } catch (error) {
-          console.error('Error fetching training plans:', error);
-        }
-      };
-      
-      fetchWorkouts();
-      fetchCoachInfo();
-      fetchCoachSubscriptionData();
-      fetchCoachPlansData();
-      fetchExercises();
-      fetchBodyAreasData();
-      fetchSubscriptionPlans();
-      fetchRpeMethods(); 
-      fetchClients();
-      fetchTrainingPlans(); 
-      // eslint-disable-next-line
-    }, [user.userId, showToast, navigate, refreshKey]);
+    const fetchClients = async () => {
+      try {
+        const { data } = await fetchCoachStudents(user.userId);
+        const activeClients = data.filter(
+          (client) => client.user.subscription.status === 'Active'
+        );
+        setUsers(activeClients);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      } finally {
+      }
+    };
+
+    const fetchTrainingPlans = async () => {
+      try {
+        const { data } = await fetchTrainingCyclesByCoachId(user.userId);
+        setTrainingCycles(data);
+      } catch (error) {
+        console.error('Error fetching training plans:', error);
+      }
+    };
+
+    fetchWorkouts();
+    fetchCoachInfo();
+    fetchCoachSubscriptionData();
+    fetchCoachPlansData();
+    fetchExercises();
+    fetchBodyAreasData();
+    fetchSubscriptionPlans();
+    fetchRpeMethods();
+    fetchClients();
+    fetchTrainingPlans();
+    // eslint-disable-next-line
+  }, [user.userId, showToast, navigate, refreshKey]);
 
   const handleViewPlanDetails = (workoutInstanceId) => {
     setLoading(true);
@@ -326,14 +366,23 @@ export default function CoachProfilePage() {
   const handleSaveRpeMethod = async () => {
     try {
       setIsRpeLoading(true);
-      const response = await createOrUpdateRpeMethod(dialogMode, newRpe, user.userId);
-      if(response){
-        showToast('success', 'Success', dialogMode === 'create' ? 'New RPE Method created successfully' : 'RPE Method updated successfully');
+      const response = await createOrUpdateRpeMethod(
+        dialogMode,
+        newRpe,
+        user.userId
+      );
+      if (response) {
+        showToast(
+          'success',
+          'Success',
+          dialogMode === 'create'
+            ? 'New RPE Method created successfully'
+            : 'RPE Method updated successfully'
+        );
         setRpeDialogVisible(false);
         setNewRpe({ name: '', minValue: 0, maxValue: 10, step: 1 });
         fetchRpeMethods();
-      }
-      else {
+      } else {
         showToast('error', 'Error', 'RPE Method not created or edited');
       }
     } catch (error) {
@@ -342,7 +391,6 @@ export default function CoachProfilePage() {
     } finally {
       setIsRpeLoading(false);
     }
-
   };
 
   const renderHeader = (text) => {
@@ -350,33 +398,46 @@ export default function CoachProfilePage() {
       <div className="flex justify-content-between align-items-center">
         <div className="flex align-items-center gap-2">
           <h2 className="text-xl font-bold">{text}</h2>
-          {text === intl.formatMessage({ id: 'coach.tabs.exercises' }) && missingExercises.length > 0 && (
-          <Button
-            icon="pi pi-exclamation-triangle"
-            className="p-button-danger p-button-text"
-            tooltip={intl.formatMessage({ id: 'common.missingData' })}
-            tooltipOptions={{ position: 'right' }}
-            onClick={() => {
-              if (filters.name.value) {
-                // Si ya hay un filtro activo, lo eliminamos
-                setFilters({
-                  ...filters,
-                  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-                  name: { value: null, matchMode: FilterMatchMode.STARTS_WITH }
-                });
-              } else {
-                // Si no hay filtro activo, lo activamos
-                setFilters({
-                  ...filters,
-                  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-                  name: { value: missingExercises.map(ex => ex.name), matchMode: FilterMatchMode.IN }
-                });
-              }
-            }}
-            badge={missingExercises.length.toString()}
-            badgeClassName="p-badge-danger"
-          />
-        )}
+          {text === intl.formatMessage({ id: 'coach.tabs.exercises' }) &&
+            missingExercises.length > 0 && (
+              <Button
+                icon="pi pi-exclamation-triangle"
+                className="p-button-danger p-button-text"
+                tooltip={intl.formatMessage({ id: 'common.missingData' })}
+                tooltipOptions={{ position: 'right' }}
+                onClick={() => {
+                  if (filters.name.value) {
+                    // Si ya hay un filtro activo, lo eliminamos
+                    setFilters({
+                      ...filters,
+                      global: {
+                        value: null,
+                        matchMode: FilterMatchMode.CONTAINS
+                      },
+                      name: {
+                        value: null,
+                        matchMode: FilterMatchMode.STARTS_WITH
+                      }
+                    });
+                  } else {
+                    // Si no hay filtro activo, lo activamos
+                    setFilters({
+                      ...filters,
+                      global: {
+                        value: null,
+                        matchMode: FilterMatchMode.CONTAINS
+                      },
+                      name: {
+                        value: missingExercises.map((ex) => ex.name),
+                        matchMode: FilterMatchMode.IN
+                      }
+                    });
+                  }
+                }}
+                badge={missingExercises.length.toString()}
+                badgeClassName="p-badge-danger"
+              />
+            )}
         </div>
         <div className="flex align-items-center gap-2">
           <Button
@@ -384,30 +445,39 @@ export default function CoachProfilePage() {
               { id: 'common.add', defaultMessage: 'Add {item}' },
               { item: text.slice(0, -1) }
             )}
-          icon="pi pi-plus"
-          onClick={() =>
-            text === intl.formatMessage({ id: 'coach.tabs.exercises' }) ? openCreateExerciseDialog() : text === intl.formatMessage({ id: 'coach.tabs.workouts' }) ? navigate('/plans/create') : openCreatePlanDialog()
-          }
-        />
+            icon="pi pi-plus"
+            onClick={() =>
+              text === intl.formatMessage({ id: 'coach.tabs.exercises' })
+                ? openCreateExerciseDialog()
+                : text === intl.formatMessage({ id: 'coach.tabs.workouts' })
+                  ? navigate('/plans/create')
+                  : openCreatePlanDialog()
+            }
+          />
         </div>
       </div>
     );
   };
 
   const missingDataIconTemplate = (rowData) => {
-    const missingFields = ['multimedia', 'exerciseType', 'description', 'equipmentNeeded'].filter(
-      (field) => !rowData[field]
-    );
-  
+    const missingFields = [
+      'multimedia',
+      'exerciseType',
+      'description',
+      'equipmentNeeded'
+    ].filter((field) => !rowData[field]);
+
     return missingFields.length > 0 ? (
       <div>
         <Tooltip target=".custom-target-icon" />
-        <i className="custom-target-icon pi pi-exclamation-triangle" 
+        <i
+          className="custom-target-icon pi pi-exclamation-triangle"
           data-pr-tooltip={intl.formatMessage({ id: 'common.missingData' })}
           data-pr-position="right"
           data-pr-at="right+5 top"
           data-pr-my="left center-2"
-          style={{ color: 'red', cursor: 'pointer' }} />
+          style={{ color: 'red', cursor: 'pointer' }}
+        />
       </div>
     ) : null;
   };
@@ -436,7 +506,9 @@ export default function CoachProfilePage() {
             if (type === 'exercise') {
               openEditExerciseDialog(rowData);
             } else if (type === 'workout') {
-              navigate(`/plans/edit-template/${rowData.workoutInstanceTemplates[0].id}`);
+              navigate(
+                `/plans/edit-template/${rowData.workoutInstanceTemplates[0].id}`
+              );
             } else if (type === 'plan') {
               console.log('rowData', rowData);
               openEditPlanDialog(rowData);
@@ -450,11 +522,13 @@ export default function CoachProfilePage() {
           onClick={() => {
             if (type === 'exercise') {
               showConfirmationDialog({
-                message: intl.formatMessage({ id: 'deleteExercise.confirmation.message' }),
+                message: intl.formatMessage({
+                  id: 'deleteExercise.confirmation.message'
+                }),
                 header: intl.formatMessage({ id: 'common.confirmation' }),
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => handleDeleteExercise(rowData.id),
-                reject: () => console.log('Rejected'),
+                reject: () => console.log('Rejected')
               });
             } else if (type === 'plan') {
               console.log('rowData', rowData);
@@ -463,7 +537,6 @@ export default function CoachProfilePage() {
               console.log('rowData', rowData);
               confirmDeleteWorkout(rowData.workoutInstanceTemplates[0].id);
             }
-
           }}
         />
       </React.Fragment>
@@ -492,7 +565,7 @@ export default function CoachProfilePage() {
       description: '',
       multimedia: '',
       exerciseType: '',
-      equipmentNeeded: '',
+      equipmentNeeded: ''
     });
     setSelectedBodyAreas([]);
     setExerciseDialogVisible(true);
@@ -501,7 +574,9 @@ export default function CoachProfilePage() {
   const openEditExerciseDialog = (exercise) => {
     setDialogMode('edit');
     setNewExercise(exercise);
-    const arrayBodyAreas = exercise.exerciseBodyAreas.map((exerciseBodyArea) => exerciseBodyArea.bodyArea.id);
+    const arrayBodyAreas = exercise.exerciseBodyAreas.map(
+      (exerciseBodyArea) => exerciseBodyArea.bodyArea.id
+    );
     setSelectedBodyAreas(arrayBodyAreas);
     setExerciseDialogVisible(true);
   };
@@ -512,7 +587,7 @@ export default function CoachProfilePage() {
       description: '',
       multimedia: '',
       exerciseType: '',
-      equipmentNeeded: '',
+      equipmentNeeded: ''
     });
     setSelectedBodyAreas([]);
     setExerciseDialogVisible(false);
@@ -522,28 +597,33 @@ export default function CoachProfilePage() {
     const body = {
       ...newExercise,
       bodyArea: selectedBodyAreas,
-      coachId: user.userId,
+      coachId: user.userId
     };
 
     try {
-      
       if (dialogMode === 'create') {
-        const {message} = await createExercise(body);
+        const { message } = await createExercise(body);
         if (message !== 'success') {
           throw new Error(message);
         } else {
-          showToast('success', 'Success', intl.formatMessage({ id: 'coach.exercise.success.created' }));
+          showToast(
+            'success',
+            'Success',
+            intl.formatMessage({ id: 'coach.exercise.success.created' })
+          );
         }
       } else {
-        const {message} = await updateExercise(newExercise.id, body);
+        const { message } = await updateExercise(newExercise.id, body);
         if (message !== 'success') {
           throw new Error(message);
         } else {
-          showToast('success', 'Success', intl.formatMessage({ id: 'coach.exercise.success.updated' }));
+          showToast(
+            'success',
+            'Success',
+            intl.formatMessage({ id: 'coach.exercise.success.updated' })
+          );
         }
       }
-
-      
 
       closeExerciseDialog();
       setRefreshKey((old) => old + 1);
@@ -559,7 +639,11 @@ export default function CoachProfilePage() {
         draggable={false}
         resizable={false}
         dismissableMask
-        header={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.exercise.create' }) : intl.formatMessage({ id: 'coach.exercise.edit' })}
+        header={
+          dialogMode === 'create'
+            ? intl.formatMessage({ id: 'coach.exercise.create' })
+            : intl.formatMessage({ id: 'coach.exercise.edit' })
+        }
         className="responsive-dialog"
         visible={exerciseDialogVisible}
         style={{ width: '50vw' }}
@@ -567,41 +651,76 @@ export default function CoachProfilePage() {
       >
         <div className="p-fluid">
           <div className="p-field">
-            <label htmlFor="name">{dialogMode === 'create' ? intl.formatMessage({ id: 'coach.exercise.name' }) : intl.formatMessage({ id: 'coach.exercise.name' })}</label>
-            <InputText id="name" value={newExercise.name} onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })} />
+            <label htmlFor="name">
+              {dialogMode === 'create'
+                ? intl.formatMessage({ id: 'coach.exercise.name' })
+                : intl.formatMessage({ id: 'coach.exercise.name' })}
+            </label>
+            <InputText
+              id="name"
+              value={newExercise.name}
+              onChange={(e) =>
+                setNewExercise({ ...newExercise, name: e.target.value })
+              }
+            />
           </div>
           <div className="p-field">
-            <label htmlFor="description">{intl.formatMessage({ id: 'coach.exercise.description' })}</label>
+            <label htmlFor="description">
+              {intl.formatMessage({ id: 'coach.exercise.description' })}
+            </label>
             <InputTextarea
               id="description"
               className="overflow-hidden text-overflow-ellipsis"
               value={newExercise.description}
-              onChange={(e) => setNewExercise({ ...newExercise, description: e.target.value })}
+              onChange={(e) =>
+                setNewExercise({ ...newExercise, description: e.target.value })
+              }
               rows={3}
             />
           </div>
           <div className="p-field">
-            <label htmlFor="multimedia">{intl.formatMessage({ id: 'coach.exercise.video' })}</label>
-            <InputText id="multimedia" value={newExercise.multimedia} onChange={(e) => setNewExercise({ ...newExercise, multimedia: e.target.value })} />
+            <label htmlFor="multimedia">
+              {intl.formatMessage({ id: 'coach.exercise.video' })}
+            </label>
+            <InputText
+              id="multimedia"
+              value={newExercise.multimedia}
+              onChange={(e) =>
+                setNewExercise({ ...newExercise, multimedia: e.target.value })
+              }
+            />
           </div>
           <div className="p-field">
-            <label htmlFor="exerciseType">{intl.formatMessage({ id: 'coach.exercise.type' })}</label>
+            <label htmlFor="exerciseType">
+              {intl.formatMessage({ id: 'coach.exercise.type' })}
+            </label>
             <InputText
               id="exerciseType"
               value={newExercise.exerciseType}
-              onChange={(e) => setNewExercise({ ...newExercise, exerciseType: e.target.value })}
+              onChange={(e) =>
+                setNewExercise({ ...newExercise, exerciseType: e.target.value })
+              }
             />
           </div>
           <div className="p-field">
-            <label htmlFor="equipmentNeeded">{intl.formatMessage({ id: 'coach.exercise.equipment' })}</label>
+            <label htmlFor="equipmentNeeded">
+              {intl.formatMessage({ id: 'coach.exercise.equipment' })}
+            </label>
             <InputText
               id="equipmentNeeded"
               value={newExercise.equipmentNeeded}
-              onChange={(e) => setNewExercise({ ...newExercise, equipmentNeeded: e.target.value })}
+              onChange={(e) =>
+                setNewExercise({
+                  ...newExercise,
+                  equipmentNeeded: e.target.value
+                })
+              }
             />
           </div>
           <div className="p-field">
-            <label htmlFor="equipmentNeeded">{intl.formatMessage({ id: 'coach.exercise.bodyArea' })}</label>
+            <label htmlFor="equipmentNeeded">
+              {intl.formatMessage({ id: 'coach.exercise.bodyArea' })}
+            </label>
             <MultiSelect
               options={bodyAreas}
               filter
@@ -614,22 +733,43 @@ export default function CoachProfilePage() {
           </div>
           <div className="p-field">
             <Button
-              label={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.exercise.create' }) : intl.formatMessage({ id: 'coach.exercise.edit' })}
+              label={
+                dialogMode === 'create'
+                  ? intl.formatMessage({ id: 'coach.exercise.create' })
+                  : intl.formatMessage({ id: 'coach.exercise.edit' })
+              }
               icon="pi pi-check"
               onClick={() => {
-                if (newExercise.name === '') return showToast('error', 'Error', intl.formatMessage({ id: 'coach.exercise.error.name.empty' }));
+                if (newExercise.name === '')
+                  return showToast(
+                    'error',
+                    'Error',
+                    intl.formatMessage({
+                      id: 'coach.exercise.error.name.empty'
+                    })
+                  );
                 if (!isValidYouTubeUrl(newExercise.multimedia)) {
-                  return showToast('error', 'Error', intl.formatMessage({ id: 'coach.exercise.error.video.invalid' }));
+                  return showToast(
+                    'error',
+                    'Error',
+                    intl.formatMessage({
+                      id: 'coach.exercise.error.video.invalid'
+                    })
+                  );
                 }
                 showConfirmationDialog({
                   message:
                     dialogMode === 'create'
-                      ? intl.formatMessage({ id: 'createExercise.confirmation.message' })
-                      : intl.formatMessage({ id: 'updateExercise.confirmation.message' }),
+                      ? intl.formatMessage({
+                          id: 'createExercise.confirmation.message'
+                        })
+                      : intl.formatMessage({
+                          id: 'updateExercise.confirmation.message'
+                        }),
                   header: intl.formatMessage({ id: 'common.confirmation' }),
                   icon: 'pi pi-exclamation-triangle',
                   accept: () => handleSaveExercise(),
-                  reject: () => console.log('Rejected'),
+                  reject: () => console.log('Rejected')
                 });
               }}
             />
@@ -645,7 +785,11 @@ export default function CoachProfilePage() {
         draggable={false}
         resizable={false}
         dismissableMask
-        header={dialogMode === 'create' ?  intl.formatMessage({ id: 'coach.plan.create' }) : intl.formatMessage({ id: 'coach.plan.edit' })}
+        header={
+          dialogMode === 'create'
+            ? intl.formatMessage({ id: 'coach.plan.create' })
+            : intl.formatMessage({ id: 'coach.plan.edit' })
+        }
         className="responsive-dialog"
         visible={createPlanDialogVisible}
         style={{ width: '50vw' }}
@@ -653,32 +797,56 @@ export default function CoachProfilePage() {
       >
         <div className="p-fluid">
           <div className="p-field">
-            <label htmlFor="name">{intl.formatMessage({ id: 'coach.plan.name' })}</label>
-            <InputText id="name" value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })} />
+            <label htmlFor="name">
+              {intl.formatMessage({ id: 'coach.plan.name' })}
+            </label>
+            <InputText
+              id="name"
+              value={newPlan.name}
+              onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+            />
           </div>
           <div className="p-field">
-            <label htmlFor="price">{intl.formatMessage({ id: 'coach.plan.price' })}</label>
-            <InputNumber id="price" value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.value })} />
+            <label htmlFor="price">
+              {intl.formatMessage({ id: 'coach.plan.price' })}
+            </label>
+            <InputNumber
+              id="price"
+              value={newPlan.price}
+              onChange={(e) => setNewPlan({ ...newPlan, price: e.value })}
+            />
           </div>
           <div className="p-field">
-            <label htmlFor="workoutsPerWeek">{intl.formatMessage({ id: 'coach.plan.workoutsPerWeek' })}</label>
+            <label htmlFor="workoutsPerWeek">
+              {intl.formatMessage({ id: 'coach.plan.workoutsPerWeek' })}
+            </label>
             <InputNumber
               id="workoutsPerWeek"
               value={newPlan.workoutsPerWeek}
-              onChange={(e) => setNewPlan({ ...newPlan, workoutsPerWeek: e.value })}
+              onChange={(e) =>
+                setNewPlan({ ...newPlan, workoutsPerWeek: e.value })
+              }
             />
           </div>
           <div className="p-field-checkbox">
             <Checkbox
               inputId="includeMealPlan"
               checked={newPlan.includeMealPlan}
-              onChange={(e) => setNewPlan({ ...newPlan, includeMealPlan: e.checked })}
+              onChange={(e) =>
+                setNewPlan({ ...newPlan, includeMealPlan: e.checked })
+              }
             />
-            <label htmlFor="includeMealPlan">{intl.formatMessage({ id: 'coach.plan.includeMealPlan' })}</label>
+            <label htmlFor="includeMealPlan">
+              {intl.formatMessage({ id: 'coach.plan.includeMealPlan' })}
+            </label>
           </div>
           <div className="p-field">
             <Button
-              label={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.plan.create' }) : intl.formatMessage({ id: 'coach.plan.edit' })}
+              label={
+                dialogMode === 'create'
+                  ? intl.formatMessage({ id: 'coach.plan.create' })
+                  : intl.formatMessage({ id: 'coach.plan.edit' })
+              }
               icon="pi pi-check"
               onClick={confirmCreatePlan}
             />
@@ -690,69 +858,92 @@ export default function CoachProfilePage() {
 
   const renderVideoModal = () => {
     return (
-        <Dialog draggable={false} dismissableMask resizable={false} header="Video" visible={videoDialogVisible} className="responsive-dialog" style={{ width: '50vw' }} onHide={() => setVideoDialogVisible(false)}>
-                <iframe
-                width="100%"
-                height="400px"
-                src={currentVideoUrl}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Exercise Video"
-                />
-            </Dialog>
-    );
-    };
-
-    const renderRpeMethodDialog = () => (
       <Dialog
         draggable={false}
-        resizable={false}
         dismissableMask
-        header={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.rpe.create' }) : intl.formatMessage({ id: 'coach.rpe.edit' })}
+        resizable={false}
+        header="Video"
+        visible={videoDialogVisible}
         className="responsive-dialog"
-        visible={rpeDialogVisible}
         style={{ width: '50vw' }}
-        onHide={() => setRpeDialogVisible(false)}
+        onHide={() => setVideoDialogVisible(false)}
       >
-        <div className="p-fluid">
-          <div className="p-field">
-            <label htmlFor="name">{intl.formatMessage({ id: 'coach.rpe.name' })}</label>
-            <InputText
-              id="name"
-              value={newRpe.name}
-              onChange={(e) => setNewRpe({ ...newRpe, name: e.target.value })}
-            />
-          </div>
-          <div className="p-field">
-            <label htmlFor="minValue">{intl.formatMessage({ id: 'coach.rpe.minValue' })}</label>
-            <InputNumber
-              id="minValue"
-              value={newRpe.minValue}
-              onChange={(e) => setNewRpe({ ...newRpe, minValue: e.value })}
-            />
-          </div>
-          <div className="p-field">
-            <label htmlFor="maxValue">{intl.formatMessage({ id: 'coach.rpe.maxValue' })}</label>
-            <InputNumber
-              id="maxValue"
-              value={newRpe.maxValue}
-              onChange={(e) => setNewRpe({ ...newRpe, maxValue: e.value })}
-            />
-          </div>
-          <div className="p-field">
-            <label htmlFor="step">{intl.formatMessage({ id: 'coach.rpe.step' })}</label>
-            <InputNumber
-              id="step"
-              value={newRpe.step}
-              onChange={(e) => setNewRpe({ ...newRpe, step: e.value })}
-            />
-          </div>
-    
-          {/* Campo para agregar valoresMeta */}
-          <div className="p-field">
-            <label>{intl.formatMessage({ id: 'coach.rpe.valuesMeta' })}</label>
-            {newRpe.valuesMeta && Array.isArray(newRpe.valuesMeta) && newRpe.valuesMeta.map((valueMeta, index) => (
+        <iframe
+          width="100%"
+          height="400px"
+          src={currentVideoUrl}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title="Exercise Video"
+        />
+      </Dialog>
+    );
+  };
+
+  const renderRpeMethodDialog = () => (
+    <Dialog
+      draggable={false}
+      resizable={false}
+      dismissableMask
+      header={
+        dialogMode === 'create'
+          ? intl.formatMessage({ id: 'coach.rpe.create' })
+          : intl.formatMessage({ id: 'coach.rpe.edit' })
+      }
+      className="responsive-dialog"
+      visible={rpeDialogVisible}
+      style={{ width: '50vw' }}
+      onHide={() => setRpeDialogVisible(false)}
+    >
+      <div className="p-fluid">
+        <div className="p-field">
+          <label htmlFor="name">
+            {intl.formatMessage({ id: 'coach.rpe.name' })}
+          </label>
+          <InputText
+            id="name"
+            value={newRpe.name}
+            onChange={(e) => setNewRpe({ ...newRpe, name: e.target.value })}
+          />
+        </div>
+        <div className="p-field">
+          <label htmlFor="minValue">
+            {intl.formatMessage({ id: 'coach.rpe.minValue' })}
+          </label>
+          <InputNumber
+            id="minValue"
+            value={newRpe.minValue}
+            onChange={(e) => setNewRpe({ ...newRpe, minValue: e.value })}
+          />
+        </div>
+        <div className="p-field">
+          <label htmlFor="maxValue">
+            {intl.formatMessage({ id: 'coach.rpe.maxValue' })}
+          </label>
+          <InputNumber
+            id="maxValue"
+            value={newRpe.maxValue}
+            onChange={(e) => setNewRpe({ ...newRpe, maxValue: e.value })}
+          />
+        </div>
+        <div className="p-field">
+          <label htmlFor="step">
+            {intl.formatMessage({ id: 'coach.rpe.step' })}
+          </label>
+          <InputNumber
+            id="step"
+            value={newRpe.step}
+            onChange={(e) => setNewRpe({ ...newRpe, step: e.value })}
+          />
+        </div>
+
+        {/* Campo para agregar valoresMeta */}
+        <div className="p-field">
+          <label>{intl.formatMessage({ id: 'coach.rpe.valuesMeta' })}</label>
+          {newRpe.valuesMeta &&
+            Array.isArray(newRpe.valuesMeta) &&
+            newRpe.valuesMeta.map((valueMeta, index) => (
               <div key={index} className="p-grid p-align-center p-mb-2">
                 <div className="p-col-3">
                   <InputNumber
@@ -762,7 +953,7 @@ export default function CoachProfilePage() {
                         ...newRpe,
                         valuesMeta: newRpe.valuesMeta.map((meta, i) =>
                           i === index ? { ...meta, value: e.value } : meta
-                        ),
+                        )
                       })
                     }
                     placeholder={intl.formatMessage({ id: 'coach.rpe.value' })}
@@ -775,8 +966,10 @@ export default function CoachProfilePage() {
                       setNewRpe({
                         ...newRpe,
                         valuesMeta: newRpe.valuesMeta.map((meta, i) =>
-                          i === index ? { ...meta, color: e.target.value } : meta
-                        ),
+                          i === index
+                            ? { ...meta, color: e.target.value }
+                            : meta
+                        )
                       })
                     }
                     placeholder={intl.formatMessage({ id: 'coach.rpe.color' })}
@@ -789,8 +982,10 @@ export default function CoachProfilePage() {
                       setNewRpe({
                         ...newRpe,
                         valuesMeta: newRpe.valuesMeta.map((meta, i) =>
-                          i === index ? { ...meta, emoji: e.target.value } : meta
-                        ),
+                          i === index
+                            ? { ...meta, emoji: e.target.value }
+                            : meta
+                        )
                       })
                     }
                     placeholder={intl.formatMessage({ id: 'coach.rpe.emoji' })}
@@ -803,45 +998,73 @@ export default function CoachProfilePage() {
                     onClick={() =>
                       setNewRpe({
                         ...newRpe,
-                        valuesMeta: newRpe.valuesMeta.filter((_, i) => i !== index),
+                        valuesMeta: newRpe.valuesMeta.filter(
+                          (_, i) => i !== index
+                        )
                       })
                     }
                   />
                 </div>
               </div>
             ))}
-            {/* Botón para agregar nuevo valor */}
-            <Button
-              label={intl.formatMessage({ id: 'coach.rpe.addValue' })}
-              icon="pi pi-plus"
-              onClick={() =>
-                setNewRpe({
-                  ...newRpe,
-                  valuesMeta: [...newRpe.valuesMeta, { value: 0, color: '', emoji: '' }],
-                })
-              }
-            />
-          </div>
-    
-          <div className="p-field">
-            <Button
-              label={dialogMode === 'create' ? intl.formatMessage({ id: 'coach.rpe.create' }) : intl.formatMessage({ id: 'coach.rpe.edit' })}
-              icon="pi pi-check"
-              onClick={handleSaveRpeMethod}
-              loading={isRpeLoading}
-            />
-          </div>
+          {/* Botón para agregar nuevo valor */}
+          <Button
+            label={intl.formatMessage({ id: 'coach.rpe.addValue' })}
+            icon="pi pi-plus"
+            onClick={() =>
+              setNewRpe({
+                ...newRpe,
+                valuesMeta: [
+                  ...newRpe.valuesMeta,
+                  { value: 0, color: '', emoji: '' }
+                ]
+              })
+            }
+          />
         </div>
-      </Dialog>
-    );
+
+        <div className="p-field">
+          <Button
+            label={
+              dialogMode === 'create'
+                ? intl.formatMessage({ id: 'coach.rpe.create' })
+                : intl.formatMessage({ id: 'coach.rpe.edit' })
+            }
+            icon="pi pi-check"
+            onClick={handleSaveRpeMethod}
+            loading={isRpeLoading}
+          />
+        </div>
+      </div>
+    </Dialog>
+  );
   const handleCreatePlan = async () => {
     try {
-      const data = await createOrUpdateCoachPlan(newPlan, newPlan.id, user.userId, dialogMode);
+      const data = await createOrUpdateCoachPlan(
+        newPlan,
+        newPlan.id,
+        user.userId,
+        dialogMode
+      );
       console.log('data', data, newPlan.name);
-      if(data === 'updated') {
-        showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message'}, { name: newPlan.name } ));
+      if (data === 'updated') {
+        showToast(
+          'success',
+          intl.formatMessage({ id: 'coach.plan.success.updated' }),
+          intl.formatMessage(
+            { id: 'coach.plan.success.updated.message' },
+            { name: newPlan.name }
+          )
+        );
       } else {
-        showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message'}, { name: newPlan.name }));
+        showToast(
+          'success',
+          intl.formatMessage({ id: 'coach.plan.success.created' }),
+          intl.formatMessage(
+            { id: 'coach.plan.success.created.message' },
+            { name: newPlan.name }
+          )
+        );
       }
       closeCreatePlanDialog();
       setRefreshKey((old) => old + 1);
@@ -852,17 +1075,34 @@ export default function CoachProfilePage() {
   };
 
   const confirmCreatePlan = async () => {
-    if (newPlan.name === '') return showToast('error', 'Error', intl.formatMessage({ id: 'coach.plan.error.name.empty' }));
-    if (newPlan.price <= 0) return showToast('error', 'Error', intl.formatMessage({ id: 'coach.plan.error.price.zero' }));
-    if (newPlan.workoutsPerWeek <= 0) return showToast('error', 'Error', intl.formatMessage({ id: 'coach.plan.error.workouts.zero' }));
+    if (newPlan.name === '')
+      return showToast(
+        'error',
+        'Error',
+        intl.formatMessage({ id: 'coach.plan.error.name.empty' })
+      );
+    if (newPlan.price <= 0)
+      return showToast(
+        'error',
+        'Error',
+        intl.formatMessage({ id: 'coach.plan.error.price.zero' })
+      );
+    if (newPlan.workoutsPerWeek <= 0)
+      return showToast(
+        'error',
+        'Error',
+        intl.formatMessage({ id: 'coach.plan.error.workouts.zero' })
+      );
 
     showConfirmationDialog({
       message:
-        dialogMode === 'create' ? intl.formatMessage({ id: 'coach.plan.confirm.create' }) : intl.formatMessage({ id: 'coach.plan.confirm.update' }),
+        dialogMode === 'create'
+          ? intl.formatMessage({ id: 'coach.plan.confirm.create' })
+          : intl.formatMessage({ id: 'coach.plan.confirm.update' }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleCreatePlan(),
-      reject: () => console.log('Rejected'),
+      reject: () => console.log('Rejected')
     });
   };
 
@@ -871,7 +1111,7 @@ export default function CoachProfilePage() {
       name: '',
       price: 0,
       workoutsPerWeek: 0,
-      includeMealPlan: false,
+      includeMealPlan: false
     });
     setCreatePlanDialogVisible(false);
   };
@@ -882,7 +1122,7 @@ export default function CoachProfilePage() {
       name: '',
       price: 0,
       workoutsPerWeek: 0,
-      includeMealPlan: false,
+      includeMealPlan: false
     });
     setCreatePlanDialogVisible(true);
   };
@@ -897,16 +1137,18 @@ export default function CoachProfilePage() {
 
   const handleDeletePlan = async (planId) => {
     try {
-      const response = await fetch(`${apiUrl}/subscription/coach/coachPlan/${planId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${apiUrl}/subscription/coach/coachPlan/${planId}`,
+        {
+          method: 'DELETE'
+        }
+      );
       const data = await response.json();
       console.log('data', data);
       if (data.error) {
         throw new Error(data.error || 'Something went wrong');
       }
 
-      
       setRefreshKey((old) => old + 1);
       showToast('success', 'Success', 'Plan deleted successfully');
     } catch (error) {
@@ -921,7 +1163,7 @@ export default function CoachProfilePage() {
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDeletePlan(planId),
-      reject: () => console.log('Rejected'),
+      reject: () => console.log('Rejected')
     });
   };
 
@@ -931,7 +1173,7 @@ export default function CoachProfilePage() {
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleDeleteWorkout(workoutId),
-      reject: () => console.log('Rejected'),
+      reject: () => console.log('Rejected')
     });
   };
 
@@ -942,7 +1184,11 @@ export default function CoachProfilePage() {
         throw new Error(response.error || 'Something went wrong');
       }
       setRefreshKey((old) => old + 1);
-      showToast('success', intl.formatMessage({ id: 'common.success' }), intl.formatMessage({ id: 'coach.workout.success.deleted.message' }));
+      showToast(
+        'success',
+        intl.formatMessage({ id: 'common.success' }),
+        intl.formatMessage({ id: 'coach.workout.success.deleted.message' })
+      );
     } catch (error) {
       console.log('error', error);
       showToast('error', 'Error', error.message);
@@ -958,7 +1204,7 @@ export default function CoachProfilePage() {
     let files = e.files;
 
     Object.keys(files).forEach((key) => {
-        _totalSize = files[key].size || 0;
+      _totalSize = files[key].size || 0;
     });
 
     setTotalSize(_totalSize);
@@ -968,7 +1214,11 @@ export default function CoachProfilePage() {
   const onTemplateError = (e) => {
     setTotalSize(0);
     console.error('Error during upload:', e);
-    console.log({ severity: 'error', summary: 'Error', detail: 'File Upload Failed' });
+    console.log({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'File Upload Failed'
+    });
   };
 
   const onTemplateClear = () => {
@@ -980,7 +1230,7 @@ export default function CoachProfilePage() {
   const handleUpload = async (formData, files) => {
     try {
       setLoading(true);
-      const {data} = await importExercises(coach.id, formData);
+      const { data } = await importExercises(coach.id, formData);
       console.log('data', data);
       onTemplateUpload({ files });
       setRefreshKey((old) => old + 1);
@@ -992,7 +1242,11 @@ export default function CoachProfilePage() {
           true
         );
       } else {
-        showToast('success', 'Success', `${data.registeredExercises.map((ex) => `${ex.name} at row ${ex.row}. `)}`);
+        showToast(
+          'success',
+          'Success',
+          `${data.registeredExercises.map((ex) => `${ex.name} at row ${ex.row}. `)}`
+        );
       }
       fileUploadRef.current.clear();
       setSelectedFile(null);
@@ -1010,11 +1264,14 @@ export default function CoachProfilePage() {
     formData.append('file', files[0]);
     const rowsCount = await readFile(files[0]);
     showConfirmationDialog({
-      message: intl.formatMessage({ id: 'coach.exercise.confirm.upload' }, { rowsCount }),
+      message: intl.formatMessage(
+        { id: 'coach.exercise.confirm.upload' },
+        { rowsCount }
+      ),
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleUpload(formData, files),
-      reject: () => console.log('Rejected'),
+      reject: () => console.log('Rejected')
     });
   };
 
@@ -1052,8 +1309,19 @@ export default function CoachProfilePage() {
 
   const videoBodyTemplate = (rowData) => {
     return (
-      <a href="#/" onClick={() => handleVideoClick(rowData.multimedia ? rowData.multimedia : '')}>
-        <img src={getYouTubeThumbnail(rowData.multimedia ? rowData.multimedia : ''  )} alt="Video thumbnail" style={{ width: '100px', cursor: 'pointer' }} />
+      <a
+        href="#/"
+        onClick={() =>
+          handleVideoClick(rowData.multimedia ? rowData.multimedia : '')
+        }
+      >
+        <img
+          src={getYouTubeThumbnail(
+            rowData.multimedia ? rowData.multimedia : ''
+          )}
+          alt="Video thumbnail"
+          style={{ width: '100px', cursor: 'pointer' }}
+        />
       </a>
     );
   };
@@ -1094,18 +1362,29 @@ export default function CoachProfilePage() {
   const actionsBodyTemplate = (rowData) => {
     return (
       <>
-        <Button icon="pi pi-pencil" rounded text className=" p-button-success p-button-sm p-mr-2" onClick={() => openEditExerciseDialog(rowData)} />
-        <Button icon="pi pi-trash" rounded text className=" p-button-danger p-button-sm" onClick={() => {
-                
-                showConfirmationDialog({
-                    message: intl.formatMessage({ id: 'deleteExercise.confirmation.message' }),
-                    header: intl.formatMessage({ id: 'common.confirmation' }),
-                    icon: "pi pi-exclamation-triangle",
-                    accept: () => handleDeleteExercise(rowData.id),
-                    reject: () => console.log('Rejected'),
-                
-                })
-            }}
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          text
+          className=" p-button-success p-button-sm p-mr-2"
+          onClick={() => openEditExerciseDialog(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          rounded
+          text
+          className=" p-button-danger p-button-sm"
+          onClick={() => {
+            showConfirmationDialog({
+              message: intl.formatMessage({
+                id: 'deleteExercise.confirmation.message'
+              }),
+              header: intl.formatMessage({ id: 'common.confirmation' }),
+              icon: 'pi pi-exclamation-triangle',
+              accept: () => handleDeleteExercise(rowData.id),
+              reject: () => console.log('Rejected')
+            });
+          }}
         />
       </>
     );
@@ -1127,7 +1406,7 @@ export default function CoachProfilePage() {
             header: intl.formatMessage({ id: 'common.confirmation' }),
             icon: 'pi pi-exclamation-triangle',
             accept: () => handleDeleteRpeMethod(rowData.id),
-            reject: () => console.log('Rejected'),
+            reject: () => console.log('Rejected')
           })
         }
       />
@@ -1139,16 +1418,15 @@ export default function CoachProfilePage() {
     setNewRpe(rpeMethod);
     setRpeDialogVisible(true);
   };
-  
+
   const handleDeleteRpeMethod = async (rpeId) => {
     try {
       setIsRpeLoading(true);
       const response = await deleteRpe(rpeId, user.userId);
-      if(response){
+      if (response) {
         showToast('success', 'Success', 'RPE Method deleted successfully');
         fetchRpeMethods();
-      }
-      else {  
+      } else {
         showToast('error', 'Error', 'RPE Method not deleted');
       }
     } catch (error) {
@@ -1161,12 +1439,21 @@ export default function CoachProfilePage() {
 
   const handleAssign = async () => {
     try {
-      const response = await assignRpeToTarget(selectedRpe, selectedType, selectedTarget, user.userId);
+      const response = await assignRpeToTarget(
+        selectedRpe,
+        selectedType,
+        selectedTarget,
+        user.userId
+      );
       if (!response) {
         showToast('error', 'Error', 'RPE Method not assigned');
         return;
       }
-      showToast('success', 'Success', `RPE Method assigned successfully to the selected ${selectedType}`);
+      showToast(
+        'success',
+        'Success',
+        `RPE Method assigned successfully to the selected ${selectedType}`
+      );
       setSelectedType(null);
       setSelectedTarget(null);
       setSelectedRpe(null);
@@ -1179,15 +1466,15 @@ export default function CoachProfilePage() {
 
   const renderRpeAssignmentDialog = () => (
     <Dialog
-        draggable={false}
-        resizable={false}
-        header="Assign RPE Method"
-        className="responsive-dialog"
-        dismissableMask
-        visible={rpeAssignmentDialogVisible}
-        style={{ width: '50vw' }}
-        onHide={() => setRpeAssignmentDialogVisible(false)}
-      >
+      draggable={false}
+      resizable={false}
+      header="Assign RPE Method"
+      className="responsive-dialog"
+      dismissableMask
+      visible={rpeAssignmentDialogVisible}
+      style={{ width: '50vw' }}
+      onHide={() => setRpeAssignmentDialogVisible(false)}
+    >
       <div className="assign-rpe p-4">
         <h2 className="text-2xl mb-4">Assign RPE Method</h2>
         <div className="p-grid p-fluid">
@@ -1200,13 +1487,15 @@ export default function CoachProfilePage() {
               className="w-full"
             />
           </div>
-          <div className="p-col-12 p-md-4">{selectedType && renderTargetDropdown()}</div>
+          <div className="p-col-12 p-md-4">
+            {selectedType && renderTargetDropdown()}
+          </div>
           <div className="p-col-12 p-md-4">
             <Dropdown
               value={selectedRpe}
               options={rpeMethods.map((rpe) => ({
                 label: rpe.name,
-                value: rpe.id,
+                value: rpe.id
               }))}
               onChange={(e) => setSelectedRpe(e.value)}
               placeholder={intl.formatMessage({ id: 'coach.rpe.assign.rpe' })}
@@ -1214,7 +1503,7 @@ export default function CoachProfilePage() {
             />
           </div>
         </div>
-    
+
         <div className="p-d-flex p-jc-end mt-4">
           <Button
             label="Assign RPE Method"
@@ -1226,58 +1515,96 @@ export default function CoachProfilePage() {
       </div>
     </Dialog>
   );
-  
+
   // Función para confirmar la asignación usando showConfirmationDialog
   const handleConfirmAssign = () => {
     showConfirmationDialog({
-      message: intl.formatMessage({ id: 'coach.rpe.confirm.assign' }, { rpe: rpeMethods.find((r) => r.id === selectedRpe)?.name, type: selectedType }),
+      message: intl.formatMessage(
+        { id: 'coach.rpe.confirm.assign' },
+        {
+          rpe: rpeMethods.find((r) => r.id === selectedRpe)?.name,
+          type: selectedType
+        }
+      ),
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: handleAssign,
-      reject: () => console.log('Assignment cancelled.'),
+      reject: () => console.log('Assignment cancelled.')
     });
   };
 
   const headerTemplate = (options) => {
-    
     const { className, chooseButton, uploadButton, cancelButton } = options;
     const value = totalSize / 10000;
-    const formatedValue = fileUploadRef && fileUploadRef.current ? fileUploadRef.current.formatSize(totalSize) : '0 B';
+    const formatedValue =
+      fileUploadRef && fileUploadRef.current
+        ? fileUploadRef.current.formatSize(totalSize)
+        : '0 B';
 
     return (
-        <div className={className} style={{ backgroundColor: 'transparent', display: 'flex', alignItems: 'center' }}>
-            {chooseButton}
-            {uploadButton}
-            {cancelButton}
-            <div className="flex align-items-center gap-3 ml-auto">
-                <span>{formatedValue} / 1 MB</span>
-                <ProgressBar value={value} showValue={false} style={{ width: '10rem', height: '12px' }}></ProgressBar>
-            </div>
+      <div
+        className={className}
+        style={{
+          backgroundColor: 'transparent',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+      >
+        {chooseButton}
+        {uploadButton}
+        {cancelButton}
+        <div className="flex align-items-center gap-3 ml-auto">
+          <span>{formatedValue} / 1 MB</span>
+          <ProgressBar
+            value={value}
+            showValue={false}
+            style={{ width: '10rem', height: '12px' }}
+          ></ProgressBar>
         </div>
+      </div>
     );
-};
+  };
 
   return (
     <div className="coach-profile p-4">
-      <Card className={isCoachInfoLoading ? 'flex justify-content-center' : 'mb-4'}>
-        {isCoachInfoLoading ? <Spinner/> : (
+      <Card
+        className={isCoachInfoLoading ? 'flex justify-content-center' : 'mb-4'}
+      >
+        {isCoachInfoLoading ? (
+          <Spinner />
+        ) : (
           <div className="flex flex-column md:flex-row">
             <div className="flex-grow-1">
               <h1 className="text-3xl font-bold mb-2">
-                <FormattedMessage id="coach.welcome" values={{ name: coachInfo?.name }} />
+                <FormattedMessage
+                  id="coach.welcome"
+                  values={{ name: coachInfo?.name }}
+                />
               </h1>
               <p className="mb-2">
-                <strong><FormattedMessage id="coach.email" />:</strong> {coachInfo?.user.email}
+                <strong>
+                  <FormattedMessage id="coach.email" />:
+                </strong>{' '}
+                {coachInfo?.user.email}
               </p>
               <p className="mb-2">
-                <strong><FormattedMessage id="coach.experience" />:</strong> {coachInfo?.experience}
+                <strong>
+                  <FormattedMessage id="coach.experience" />:
+                </strong>{' '}
+                {coachInfo?.experience}
               </p>
               <p className="mb-2">
-                <strong><FormattedMessage id="coach.trainingType" />:</strong> {coachInfo?.trainingType.join(', ')}
+                <strong>
+                  <FormattedMessage id="coach.trainingType" />:
+                </strong>{' '}
+                {coachInfo?.trainingType.join(', ')}
               </p>
               {coachInfo?.hasGym && (
                 <p>
-                  <strong><FormattedMessage id="coach.gymLocation" />:</strong> {coachInfo?.gymLocation}
+                  <strong>
+                    <FormattedMessage id="coach.gymLocation" />:
+                  </strong>{' '}
+                  {coachInfo?.gymLocation}
                 </p>
               )}
             </div>
@@ -1291,27 +1618,46 @@ export default function CoachProfilePage() {
         )}
       </Card>
 
-      <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
+      <TabView
+        activeIndex={activeIndex}
+        onTabChange={(e) => setActiveIndex(e.index)}
+      >
         <TabPanel header={intl.formatMessage({ id: 'coach.tabs.workouts' })}>
           <DataTable
             value={workouts}
             className="p-datatable-sm"
-            header={renderHeader(intl.formatMessage({ id: 'coach.tabs.workouts' }))}
+            header={renderHeader(
+              intl.formatMessage({ id: 'coach.tabs.workouts' })
+            )}
             loading={isWorkoutsLoading}
           >
-            <Column field="planName" header={intl.formatMessage({ id: 'coach.workouts.title' })}></Column>
-            <Column body={(rowData) => actionBodyTemplate(rowData, 'workout')} style={{ width: '120px' }}></Column>
+            <Column
+              field="planName"
+              header={intl.formatMessage({ id: 'coach.workouts.title' })}
+            ></Column>
+            <Column
+              body={(rowData) => actionBodyTemplate(rowData, 'workout')}
+              style={{ width: '120px' }}
+            ></Column>
           </DataTable>
         </TabPanel>
 
         <TabPanel header={intl.formatMessage({ id: 'coach.tabs.plans' })}>
-          <div>{renderHeader(intl.formatMessage({ id: 'coach.tabs.plans' }))}</div>
+          <div>
+            {renderHeader(intl.formatMessage({ id: 'coach.tabs.plans' }))}
+          </div>
           <div className="grid">
             {coachPlans.map((plan) => (
               <div key={plan.id} className="col-12 md:col-6 lg:col-4">
-                <Card title={plan.name} subTitle={`$${plan.price} / month`} className="h-full">
-                  
-                  <p className="m-0">{intl.formatMessage({ id: 'coach.workoutsPerWeek' })}: {plan.workoutsPerWeek}</p>
+                <Card
+                  title={plan.name}
+                  subTitle={`$${plan.price} / month`}
+                  className="h-full"
+                >
+                  <p className="m-0">
+                    {intl.formatMessage({ id: 'coach.workoutsPerWeek' })}:{' '}
+                    {plan.workoutsPerWeek}
+                  </p>
                   <div className="flex justify-content-between mt-4">
                     <Button
                       label="Edit"
@@ -1339,7 +1685,9 @@ export default function CoachProfilePage() {
             value={exercises}
             responsiveLayout="scroll"
             className="p-datatable-sm"
-            header={renderHeader(intl.formatMessage({ id: 'coach.tabs.exercises' }))}
+            header={renderHeader(
+              intl.formatMessage({ id: 'coach.tabs.exercises' })
+            )}
             filters={filters}
             globalFilterFields={['name', 'exerciseType', 'description']}
             onFilter={(e) => setFilters(e.filters)}
@@ -1357,22 +1705,22 @@ export default function CoachProfilePage() {
               body={(rowData) => {
                 return (
                   <div className="flex align-items-center gap-2">
-                    {rowData.name} 
+                    {rowData.name}
                     {missingDataIconTemplate(rowData)}
                   </div>
-                )
+                );
               }}
             />
-            <Column 
-              field="multimedia" 
-              header={intl.formatMessage({ id: 'coach.exercise.video' })} 
-              body={videoBodyTemplate} 
+            <Column
+              field="multimedia"
+              header={intl.formatMessage({ id: 'coach.exercise.video' })}
+              body={videoBodyTemplate}
             />
-            <Column 
-              field="exerciseType" 
-              header={intl.formatMessage({ id: 'coach.exercise.type' })} 
-              filter 
-              filterElement={exerciseTypeFilterTemplate} 
+            <Column
+              field="exerciseType"
+              header={intl.formatMessage({ id: 'coach.exercise.type' })}
+              filter
+              filterElement={exerciseTypeFilterTemplate}
             />
             <Column
               field="description"
@@ -1381,9 +1729,9 @@ export default function CoachProfilePage() {
               filter
               filterElement={descriptionFilterTemplate}
             />
-            <Column 
-              field="equipmentNeeded" 
-              header={intl.formatMessage({ id: 'coach.exercise.equipment' })} 
+            <Column
+              field="equipmentNeeded"
+              header={intl.formatMessage({ id: 'coach.exercise.equipment' })}
             />
             <Column
               field="actions"
@@ -1393,21 +1741,25 @@ export default function CoachProfilePage() {
           </DataTable>
         </TabPanel>
 
-        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.subscription' })}>
+        <TabPanel
+          header={intl.formatMessage({ id: 'coach.tabs.subscription' })}
+        >
           <div className="grid">
             {subscriptionPlans.map((plan) => (
               <div key={plan.id} className="col-12 md:col-6 lg:col-4">
                 <Card
                   title={plan.name}
                   subTitle={`$${plan.price} / month`}
-                  className={classNames('h-full relative', { 'border-primary': plan.id === currentPlanId })}
+                  className={classNames('h-full relative', {
+                    'border-primary': plan.id === currentPlanId
+                  })}
                 >
                   <ul className="list-none p-0 m-0">
                     <li className="flex align-items-center mb-2">
                       <i className="pi pi-check-circle mr-2 text-green-500"></i>
-                      <FormattedMessage 
-                        id="coach.subscription.maxClients" 
-                        values={{ max: plan.max_clients }} 
+                      <FormattedMessage
+                        id="coach.subscription.maxClients"
+                        values={{ max: plan.max_clients }}
                       />
                     </li>
                   </ul>
@@ -1424,50 +1776,73 @@ export default function CoachProfilePage() {
 
         <TabPanel header={intl.formatMessage({ id: 'coach.tabs.rpe' })}>
           <div className="flex justify-content-end mb-3">
-            <Button 
-              label={intl.formatMessage({ id: 'common.add' }, { item: 'RPE Method' })} 
-              icon="pi pi-plus" 
-              onClick={() => setRpeDialogVisible(true)} 
+            <Button
+              label={intl.formatMessage(
+                { id: 'common.add' },
+                { item: 'RPE Method' }
+              )}
+              icon="pi pi-plus"
+              onClick={() => setRpeDialogVisible(true)}
             />
-            <Button 
-              label={intl.formatMessage({ id: 'common.assign' }, { item: 'RPE Method' })} 
-              icon="pi pi-plus" 
-              onClick={() => setRpeAssignmentDialogVisible(true)} 
+            <Button
+              label={intl.formatMessage(
+                { id: 'common.assign' },
+                { item: 'RPE Method' }
+              )}
+              icon="pi pi-plus"
+              onClick={() => setRpeAssignmentDialogVisible(true)}
             />
           </div>
           <DataTable value={rpeMethods} className="mt-4" loading={isRpeLoading}>
-            <Column field="name" header={intl.formatMessage({ id: 'coach.rpe.name' })} />
-            <Column field="minValue" header={intl.formatMessage({ id: 'coach.rpe.minValue' })} />
-            <Column field="maxValue" header={intl.formatMessage({ id: 'coach.rpe.maxValue' })} />
-            <Column field="step" header={intl.formatMessage({ id: 'coach.rpe.step' })} />
-            <Column header={intl.formatMessage({ id: 'common.actions' })} body={rpeActionsBodyTemplate} />
+            <Column
+              field="name"
+              header={intl.formatMessage({ id: 'coach.rpe.name' })}
+            />
+            <Column
+              field="minValue"
+              header={intl.formatMessage({ id: 'coach.rpe.minValue' })}
+            />
+            <Column
+              field="maxValue"
+              header={intl.formatMessage({ id: 'coach.rpe.maxValue' })}
+            />
+            <Column
+              field="step"
+              header={intl.formatMessage({ id: 'coach.rpe.step' })}
+            />
+            <Column
+              header={intl.formatMessage({ id: 'common.actions' })}
+              body={rpeActionsBodyTemplate}
+            />
           </DataTable>
         </TabPanel>
       </TabView>
 
-      {activeIndex === 2 && <Card className="mt-4">
-        <h2 className="text-xl font-bold mb-3">
-          <FormattedMessage id="coach.buttons.import" />
-        </h2>
-        <FileUpload
-          name="file"
-          ref={fileUploadRef}
-          customUpload
-          headerTemplate={headerTemplate}
-          uploadHandler={uploadHandler}
-          onUpload={onTemplateUpload}
-          onSelect={onTemplateSelect}
-          onError={onTemplateError}
-          onClear={onTemplateClear}
-          accept=".csv,.xlsx"
-          maxFileSize={1000000}
-          emptyTemplate={
-            <p className="m-0">
-              <FormattedMessage id="coach.exercise.dragDrop" />
-            </p>
-          }
-        />
-      </Card>}
+      {activeIndex === 2 && (
+        <Card className="mt-4">
+          <h2 className="text-xl font-bold mb-3">
+            <FormattedMessage id="coach.buttons.import" />
+          </h2>
+          <FileUpload
+            name="file"
+            ref={fileUploadRef}
+            customUpload
+            headerTemplate={headerTemplate}
+            uploadHandler={uploadHandler}
+            onUpload={onTemplateUpload}
+            onSelect={onTemplateSelect}
+            onError={onTemplateError}
+            onClear={onTemplateClear}
+            accept=".csv,.xlsx"
+            maxFileSize={1000000}
+            emptyTemplate={
+              <p className="m-0">
+                <FormattedMessage id="coach.exercise.dragDrop" />
+              </p>
+            }
+          />
+        </Card>
+      )}
 
       <Dialog
         draggable={false}

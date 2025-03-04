@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback
+} from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { ListBox } from 'primereact/listbox';
@@ -9,7 +15,11 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Message } from 'primereact/message';
 import { UserContext } from '../utils/UserContext';
 import io from 'socket.io-client';
-import { fetchMessages, fetchCoachStudents, markMessagesAsRead } from '../services/usersService';
+import {
+  fetchMessages,
+  fetchCoachStudents,
+  markMessagesAsRead
+} from '../services/usersService';
 import { Dialog } from 'primereact/dialog';
 import ReactPlayer from 'react-player';
 import { useChatSidebar } from '../utils/ChatSideBarContext';
@@ -24,7 +34,7 @@ export default function ChatSidebar({ isCoach }) {
   const { setUnreadMessages } = useChatSidebar();
 
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [newMessage, setNewMessage] = useState('');
   const [clients, setClients] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
@@ -44,7 +54,7 @@ export default function ChatSidebar({ isCoach }) {
       auth: { token: localStorage.getItem('token') },
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionDelay: 1000
     });
 
     setSocket(newSocket);
@@ -65,10 +75,10 @@ export default function ChatSidebar({ isCoach }) {
 
     const handleNewMessage = (message) => {
       if (selectedChat && message.sender.id === selectedChat.user.id) {
-        setMessages(prevMessages => [message, ...prevMessages]);
+        setMessages((prevMessages) => [message, ...prevMessages]);
         markMessagesAsRead(selectedChat.user.id, user.userId);
       } else {
-        setUnreadMessages(prev => prev + 1);
+        setUnreadMessages((prev) => prev + 1);
       }
     };
 
@@ -81,7 +91,7 @@ export default function ChatSidebar({ isCoach }) {
   useEffect(() => {
     const loadClients = async () => {
       if (!isCoach || !coach) return;
-      
+
       try {
         setLoading(true);
         const clientsData = await fetchCoachStudents(coach.user.id);
@@ -105,26 +115,33 @@ export default function ChatSidebar({ isCoach }) {
   }, [isCoach, client, setSelectedChat]);
 
   // Cargar mensajes del chat seleccionado
-  const loadMessages = useCallback(async (userId, chatUserId) => {
-    try {
-      setLoading(true);
-      const fetchedMessages = await fetchMessages(userId, chatUserId);
-      const sortedMessages = fetchedMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      
-      setMessages(sortedMessages);
-      
-      if (sortedMessages.length > 0) {
-        const unreadCount = sortedMessages.filter(message => !message.isRead).length;
-        setUnreadMessages(prev => prev - unreadCount);
-        await markMessagesAsRead(chatUserId, userId);
+  const loadMessages = useCallback(
+    async (userId, chatUserId) => {
+      try {
+        setLoading(true);
+        const fetchedMessages = await fetchMessages(userId, chatUserId);
+        const sortedMessages = fetchedMessages.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+
+        setMessages(sortedMessages);
+
+        if (sortedMessages.length > 0) {
+          const unreadCount = sortedMessages.filter(
+            (message) => !message.isRead
+          ).length;
+          setUnreadMessages((prev) => prev - unreadCount);
+          await markMessagesAsRead(chatUserId, userId);
+        }
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        setErrorMessage('Error al cargar los mensajes');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading messages:', error);
-      setErrorMessage('Error al cargar los mensajes');
-    } finally {
-      setLoading(false);
-    }
-  }, [setUnreadMessages]);
+    },
+    [setUnreadMessages]
+  );
 
   useEffect(() => {
     if (selectedChat && user) {
@@ -140,7 +157,7 @@ export default function ChatSidebar({ isCoach }) {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() && !selectedFile) return;
-    
+
     try {
       setLoading(true);
       let fileUrl = null;
@@ -149,22 +166,22 @@ export default function ChatSidebar({ isCoach }) {
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        
-        const response = await fetch(`${apiUrl}/upload`, { 
-          method: 'POST', 
+
+        const response = await fetch(`${apiUrl}/upload`, {
+          method: 'POST',
           body: formData,
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            Authorization: `Bearer ${localStorage.getItem('token')}`
           }
-        }).catch(error => {
+        }).catch((error) => {
           throw new Error(`Error en la carga: ${error.message}`);
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Error al subir el archivo');
         }
-        
+
         const data = await response.json();
         fileUrl = data.url;
         fileType = data.mimeType;
@@ -180,8 +197,8 @@ export default function ChatSidebar({ isCoach }) {
       };
 
       socket.emit('sendMessage', newMsg);
-      setMessages(prev => [newMsg, ...prev]);
-      setNewMessage("");
+      setMessages((prev) => [newMsg, ...prev]);
+      setNewMessage('');
       clearFileSelection();
       setLoading(false);
     } catch (error) {
@@ -196,14 +213,24 @@ export default function ChatSidebar({ isCoach }) {
     const file = event.files[0];
     if (!file) return;
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
+    const validTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'video/mp4',
+      'video/quicktime'
+    ];
     if (!validTypes.includes(file.type)) {
-      setErrorMessage('Formato de archivo no soportado. Use JPG, PNG, GIF o MP4.');
+      setErrorMessage(
+        'Formato de archivo no soportado. Use JPG, PNG, GIF o MP4.'
+      );
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      setErrorMessage(`El archivo excede el límite de ${MAX_FILE_SIZE / 1000000}MB`);
+      setErrorMessage(
+        `El archivo excede el límite de ${MAX_FILE_SIZE / 1000000}MB`
+      );
       return;
     }
 
@@ -233,24 +260,26 @@ export default function ChatSidebar({ isCoach }) {
           <Message severity="error" text={errorMessage} className="mb-2" />
         )}
       </div>
-      
+
       {isCoach && !selectedChat && (
         <div className="clients-list">
           <h3 className="text-lg font-semibold mb-2">Tus Clientes</h3>
           {loading ? (
             <ProgressBar mode="indeterminate" style={{ height: '6px' }} />
           ) : (
-            <ListBox 
-              options={clients} 
-              optionLabel="name" 
-              onChange={(e) => handleSelectChat(e.value)} 
+            <ListBox
+              options={clients}
+              optionLabel="name"
+              onChange={(e) => handleSelectChat(e.value)}
               itemTemplate={(option) => (
                 <div className="flex align-items-center p-2">
-                  <Avatar 
-                    image={`/images/${option.photo}`} 
-                    shape="circle" 
+                  <Avatar
+                    image={`/images/${option.photo}`}
+                    shape="circle"
                     className="mr-2"
-                    onError={(e) => e.target.src = '/images/default-avatar.png'} 
+                    onError={(e) =>
+                      (e.target.src = '/images/default-avatar.png')
+                    }
                   />
                   <span>{option.name}</span>
                 </div>
@@ -264,17 +293,17 @@ export default function ChatSidebar({ isCoach }) {
         <div className="chat-window">
           <div className="chat-header">
             {isCoach && (
-              <Button 
-                icon="pi pi-arrow-left" 
-                onClick={() => setSelectedChat(null)} 
+              <Button
+                icon="pi pi-arrow-left"
+                onClick={() => setSelectedChat(null)}
                 className="p-button-text mr-2"
               />
             )}
-            <Avatar 
-              image={`/images/${selectedChat.photo}`} 
-              shape="circle" 
+            <Avatar
+              image={`/images/${selectedChat.photo}`}
+              shape="circle"
               className="mr-2"
-              onError={(e) => e.target.src = '/images/default-avatar.png'} 
+              onError={(e) => (e.target.src = '/images/default-avatar.png')}
             />
             <h3 className="text-lg font-semibold">{selectedChat.name}</h3>
           </div>
@@ -284,16 +313,33 @@ export default function ChatSidebar({ isCoach }) {
               <ProgressBar mode="indeterminate" style={{ height: '6px' }} />
             ) : (
               messages.map((msg) => (
-                <div 
-                  key={msg.id} 
+                <div
+                  key={msg.id}
                   className={`message ${msg.sender?.id === user.userId || msg.senderId === user.userId ? 'sent' : 'received'}`}
                 >
                   {msg.fileUrl && (
-                    <div className="message-attachment" onClick={() => setDialogContent({ fileUrl: msg.fileUrl, fileType: msg.fileType })}>
+                    <div
+                      className="message-attachment"
+                      onClick={() =>
+                        setDialogContent({
+                          fileUrl: msg.fileUrl,
+                          fileType: msg.fileType
+                        })
+                      }
+                    >
                       {msg.fileType?.includes('video') ? (
-                        <ReactPlayer url={msg.fileUrl} controls width="100%" height="200px" />
+                        <ReactPlayer
+                          url={msg.fileUrl}
+                          controls
+                          width="100%"
+                          height="200px"
+                        />
                       ) : (
-                        <img src={msg.fileUrl} alt="attachment" className="message-image" />
+                        <img
+                          src={msg.fileUrl}
+                          alt="attachment"
+                          className="message-image"
+                        />
                       )}
                     </div>
                   )}
@@ -315,31 +361,31 @@ export default function ChatSidebar({ isCoach }) {
                 {selectedFile?.type.startsWith('image/') ? (
                   <img src={filePreview} alt="preview" />
                 ) : (
-                  <ReactPlayer 
-                    url={filePreview} 
-                    controls 
-                    width="100%" 
+                  <ReactPlayer
+                    url={filePreview}
+                    controls
+                    width="100%"
                     height="150px"
                     style={{ maxHeight: '150px' }}
                   />
                 )}
-                <Button 
-                  icon="pi pi-times" 
-                  onClick={clearFileSelection} 
+                <Button
+                  icon="pi pi-times"
+                  onClick={clearFileSelection}
                   className="remove-file-button p-button-rounded p-button-danger p-button-text"
                 />
               </div>
             )}
-            
+
             <div className="input-group">
-              <InputText 
-                value={newMessage} 
+              <InputText
+                value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Escribe un mensaje..."
                 disabled={!isConnected || loading}
               />
-              <FileUpload 
+              <FileUpload
                 mode="basic"
                 name="file"
                 accept="image/*,video/*"
@@ -348,41 +394,45 @@ export default function ChatSidebar({ isCoach }) {
                 uploadHandler={handleFileSelect}
                 ref={fileInputRef}
                 auto
-                chooseOptions={{ 
-                  icon: 'pi pi-paperclip', 
+                chooseOptions={{
+                  icon: 'pi pi-paperclip',
                   iconOnly: true,
                   disabled: !isConnected || loading
                 }}
                 className="p-button-outlined"
               />
-              <Button 
-                icon="pi pi-send" 
+              <Button
+                icon="pi pi-send"
                 onClick={handleSendMessage}
-                disabled={(!newMessage.trim() && !selectedFile) || !isConnected || loading}
+                disabled={
+                  (!newMessage.trim() && !selectedFile) ||
+                  !isConnected ||
+                  loading
+                }
               />
             </div>
           </div>
         </div>
       )}
 
-      <Dialog 
-        visible={!!dialogContent} 
+      <Dialog
+        visible={!!dialogContent}
         onHide={() => setDialogContent(null)}
         header="Archivo adjunto"
         maximizable
         className="media-dialog"
       >
         {dialogContent?.fileType?.includes('video') ? (
-          <ReactPlayer 
-            url={dialogContent?.fileUrl} 
-            controls 
+          <ReactPlayer
+            url={dialogContent?.fileUrl}
+            controls
             width="100%"
             height="100%"
           />
         ) : (
-          <img 
-            src={dialogContent?.fileUrl} 
-            alt="attachment" 
+          <img
+            src={dialogContent?.fileUrl}
+            alt="attachment"
             className="dialog-image"
           />
         )}

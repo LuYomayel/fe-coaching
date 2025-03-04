@@ -10,7 +10,7 @@ import { Toast } from 'primereact/toast';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card } from 'primereact/card';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { createExercises, fetchWorkoutInstance, fetchWorkoutInstanceTemplate, submitPlan } from '../services/workoutService';
+import { fetchWorkoutInstance, fetchWorkoutInstanceTemplate, submitPlan } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
@@ -21,7 +21,7 @@ import '../styles/CreatePlan.css';
 import { FaGripVertical } from 'react-icons/fa'; // Importa el ícono de "handle"
 import { useTheme } from '../utils/ThemeContext';
 import { extractYouTubeVideoId } from '../utils/UtilFunctions';
-import { fetchCoachExercises } from '../services/exercisesService';
+import { fetchCoachExercises, createExercises } from '../services/exercisesService';
 import { InputNumber } from 'primereact/inputnumber';
 import { ButtonGroup } from 'primereact/buttongroup';
 const NewCreatePlan = ({ isEdit }) => {
@@ -32,15 +32,60 @@ const NewCreatePlan = ({ isEdit }) => {
   const changeToTemplate = state?.changeToTemplate;
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
   const propertyList = [
-    { name: intl.formatMessage({ id: 'exercise.properties.sets' }), key: 'sets', default: true, suffix: propertyUnits?.sets || '' },
-    { name: intl.formatMessage({ id: 'exercise.properties.reps' }), key: 'repetitions', default: true, suffix: propertyUnits?.repetitions || '' },
-    { name: intl.formatMessage({ id: 'exercise.properties.time' }), key: 'time', default: false, suffix: propertyUnits?.time || '' },
-    { name: intl.formatMessage({ id: 'exercise.properties.weight' }), key: 'weight', default: false, suffix: propertyUnits?.weight || '' },
-    { name: intl.formatMessage({ id: 'exercise.properties.restInterval' }), key: 'restInterval', default: false, suffix: propertyUnits?.restInterval || '' },
-    { name: intl.formatMessage({ id: 'exercise.properties.tempo' }), key: 'tempo', default: false, suffix: propertyUnits?.tempo || '' },
-    { name: intl.formatMessage({ id: 'exercise.properties.difficulty' }), key: 'difficulty', default: false, suffix: propertyUnits?.difficulty || '' },
-    { name: intl.formatMessage({ id: 'exercise.properties.duration' }), key: 'duration', default: false, suffix: propertyUnits?.duration || '' },
-    { name: intl.formatMessage({ id: 'exercise.properties.distance' }), key: 'distance', default: false, suffix: propertyUnits?.distance || '' },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.sets' }),
+      key: 'sets',
+      default: true,
+      suffix: propertyUnits?.sets || ''
+    },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.reps' }),
+      key: 'repetitions',
+      default: true,
+      suffix: propertyUnits?.repetitions || ''
+    },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.time' }),
+      key: 'time',
+      default: false,
+      suffix: propertyUnits?.time || ''
+    },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.weight' }),
+      key: 'weight',
+      default: false,
+      suffix: propertyUnits?.weight || ''
+    },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.restInterval' }),
+      key: 'restInterval',
+      default: false,
+      suffix: propertyUnits?.restInterval || ''
+    },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.tempo' }),
+      key: 'tempo',
+      default: false,
+      suffix: propertyUnits?.tempo || ''
+    },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.difficulty' }),
+      key: 'difficulty',
+      default: false,
+      suffix: propertyUnits?.difficulty || ''
+    },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.duration' }),
+      key: 'duration',
+      default: false,
+      suffix: propertyUnits?.duration || ''
+    },
+    {
+      name: intl.formatMessage({ id: 'exercise.properties.distance' }),
+      key: 'distance',
+      default: false,
+      suffix: propertyUnits?.distance || ''
+    }
   ];
   const navigate = useNavigate();
   const { planId } = useParams();
@@ -51,38 +96,40 @@ const NewCreatePlan = ({ isEdit }) => {
   const [deletedGroup, setDeletedGroup] = useState(null);
   const [deletedGroupIndex, setDeletedGroupIndex] = useState(null);
   const { isDarkMode } = useTheme();
-  const [ newExercises, setNewExercises] = useState([]);
+  const [newExercises, setNewExercises] = useState([]);
   const [editingExercise, setEditingExercise] = useState({});
   const [isTemplate, setIsTemplate] = useState(pathname.includes('edit-template'));
   const [plan, setPlan] = useState(() => {
     const savedPlan = localStorage.getItem('unsavedPlan');
-    return savedPlan && !isEdit ? JSON.parse(savedPlan) : {
-    // return savedPlan ? JSON.parse(savedPlan) : {
-      workout: {
-        id: '',
-        planName: '',
-        coach: {
-          id: '',
-          user: {
-            id: user.userId
-          }
-        }
-      },
-      isTemplate: true,
-      dateAssigned: '',
-      dateCompleted: '',
-      expectedEndDate: '',
-      expectedStartDate: '',
-      feedback: '',
-      instanceName: '',
-      isRepeated: false,
-      personalizedNotes: '',
-      realEndDate: '',
-      realStartedDate: '',
-      repeatDays: [],
-      status: '',
-      groups: []
-    };
+    return savedPlan && !isEdit
+      ? JSON.parse(savedPlan)
+      : {
+          // return savedPlan ? JSON.parse(savedPlan) : {
+          workout: {
+            id: '',
+            planName: '',
+            coach: {
+              id: '',
+              user: {
+                id: user.userId
+              }
+            }
+          },
+          isTemplate: true,
+          dateAssigned: '',
+          dateCompleted: '',
+          expectedEndDate: '',
+          expectedStartDate: '',
+          feedback: '',
+          instanceName: '',
+          isRepeated: false,
+          personalizedNotes: '',
+          realEndDate: '',
+          realStartedDate: '',
+          repeatDays: [],
+          status: '',
+          groups: []
+        };
   });
 
   useEffect(() => {
@@ -90,7 +137,6 @@ const NewCreatePlan = ({ isEdit }) => {
     setIsTemplate(pathname.includes('edit-template'));
     // eslint-disable-next-line
   }, []);
-
 
   useEffect(() => {
     // Este if es porque si se esta editando un plan, no se quiere que se guarde en el localStorage
@@ -110,52 +156,61 @@ const NewCreatePlan = ({ isEdit }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [exerciseCounter, setExerciseCounter] = useState(0);
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            // Si hay algún ejercicio en modo edición
-            if (Object.keys(editingExercise).length > 0) {
-                // Buscar si el click fue dentro de un dropdown
-                const dropdownClicked = event.target.closest('.p-dropdown, .p-dropdown-panel, .p-dropdown-items-wrapper');
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Si hay algún ejercicio en modo edición
+      if (Object.keys(editingExercise).length > 0) {
+        // Buscar si el click fue dentro de un dropdown
+        const dropdownClicked = event.target.closest('.p-dropdown, .p-dropdown-panel, .p-dropdown-items-wrapper');
 
-                // Si el click no fue en un dropdown, resetear el estado
-                if (!dropdownClicked) {
-                    setEditingExercise({});
-                }
-            }
-        };
+        // Si el click no fue en un dropdown, resetear el estado
+        if (!dropdownClicked) {
+          setEditingExercise({});
+        }
+      }
+    };
 
-        document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
 
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [editingExercise]);
-    
-    useEffect(() => {
-        setLoading(isUploading)
-    }, [isUploading, setLoading]);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editingExercise]);
+
+  useEffect(() => {
+    setLoading(isUploading);
+  }, [isUploading, setLoading]);
 
   useEffect(() => {
     const fetchPlanDetails = async () => {
       if (isEdit && planId) {
         setLoading(true);
         try {
-          const {data} = isTemplate ? await fetchWorkoutInstanceTemplate(planId) : await fetchWorkoutInstance(planId);
+          const { data } = isTemplate ? await fetchWorkoutInstanceTemplate(planId) : await fetchWorkoutInstance(planId);
           console.log(data);
           //const {data} = await fetchWorkoutInstanceTemplate(planId);
           // const {data} = await fetchWorkoutInstance(planId);
           data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber);
-          
+
           // Iterate through each group
-          data.groups.forEach(group => {
+          data.groups.forEach((group) => {
             // Iterate through each exercise in the group
-            group.exercises.forEach(exercise => {
+            group.exercises.forEach((exercise) => {
               // Check and modify the properties
               if (exercise) {
-                const properties = ['sets', 'repetitions', 'tempo', 'time', 'weight', 
-                                  'restInterval', 'difficulty', 'duration', 'distance'];
-                                  
-                properties.forEach(prop => {
+                const properties = [
+                  'sets',
+                  'repetitions',
+                  'tempo',
+                  'time',
+                  'weight',
+                  'restInterval',
+                  'difficulty',
+                  'duration',
+                  'distance'
+                ];
+
+                properties.forEach((prop) => {
                   exercise[prop] = exercise[prop] === '' ? null : exercise[prop];
                 });
               }
@@ -179,7 +234,7 @@ const NewCreatePlan = ({ isEdit }) => {
       try {
         const { data } = await fetchCoachExercises(coach.id);
         const ejerciciosGuardados = localStorage.getItem('newExercises');
-        const ejerciciosFiltrados = data.filter(ejercicio => ejercicio.exerciseType !== null);
+        const ejerciciosFiltrados = data.filter((ejercicio) => ejercicio.exerciseType !== null);
 
         if (ejerciciosGuardados) {
           const ejerciciosParsed = JSON.parse(ejerciciosGuardados);
@@ -188,7 +243,6 @@ const NewCreatePlan = ({ isEdit }) => {
         } else {
           setExercises(ejerciciosFiltrados);
         }
-
       } catch (error) {
         showToast('error', 'Error fetching exercises', `${error.message}`);
       }
@@ -229,10 +283,17 @@ const NewCreatePlan = ({ isEdit }) => {
     setDeletedGroup(groupToRemove);
     setDeletedGroupIndex(index);
     setPlan({ ...plan, groups: newGroups });
-    groupToRemove.name ? 
-      showToast('info', intl.formatMessage({ id: 'plan.group.removed' }), intl.formatMessage({ id: 'plan.group.removed.message.name' }, { name: groupToRemove.name }))
-        :
-      showToast('info', intl.formatMessage({ id: 'plan.group.removed' }), intl.formatMessage({ id: 'plan.group.removed.message.number' }, { number: groupToRemove.groupNumber }));
+    groupToRemove.name
+      ? showToast(
+          'info',
+          intl.formatMessage({ id: 'plan.group.removed' }),
+          intl.formatMessage({ id: 'plan.group.removed.message.name' }, { name: groupToRemove.name })
+        )
+      : showToast(
+          'info',
+          intl.formatMessage({ id: 'plan.group.removed' }),
+          intl.formatMessage({ id: 'plan.group.removed.message.number' }, { number: groupToRemove.groupNumber })
+        );
   };
 
   const handleUndoDelete = () => {
@@ -282,12 +343,11 @@ const NewCreatePlan = ({ isEdit }) => {
         });
         localStorage.removeItem('unsavedPlan');
         showToast('info', 'Plan Cleared', 'The workout plan has been cleared');
-      },
+      }
     });
   };
 
   const addExercise = (groupIndex) => {
-
     if (selectedExercise?.[groupIndex]) {
       const newExercise = {
         exercise: {
@@ -295,25 +355,24 @@ const NewCreatePlan = ({ isEdit }) => {
         },
         id: exerciseCounter,
         notes: '',
-        sets: propertyList.find(prop => prop.key === 'sets').default ? '' : null,
-        repetitions: propertyList.find(prop => prop.key === 'repetitions').default ? '' : null,
-        weight: propertyList.find(prop => prop.key === 'weight').default ? '' : null,
-        time: propertyList.find(prop => prop.key === 'time').default ? '' : null,
-        tempo: propertyList.find(prop => prop.key === 'tempo').default ? '' : null,
-        distance: propertyList.find(prop => prop.key === 'distance').default ? '' : null,
-        restInterval: propertyList.find(prop => prop.key === 'restInterval').default ? '' : null,
-        difficulty: propertyList.find(prop => prop.key === 'difficulty').default ? '' : null,
-        duration: propertyList.find(prop => prop.key === 'duration').default ? '' : null,
+        sets: propertyList.find((prop) => prop.key === 'sets').default ? '' : null,
+        repetitions: propertyList.find((prop) => prop.key === 'repetitions').default ? '' : null,
+        weight: propertyList.find((prop) => prop.key === 'weight').default ? '' : null,
+        time: propertyList.find((prop) => prop.key === 'time').default ? '' : null,
+        tempo: propertyList.find((prop) => prop.key === 'tempo').default ? '' : null,
+        distance: propertyList.find((prop) => prop.key === 'distance').default ? '' : null,
+        restInterval: propertyList.find((prop) => prop.key === 'restInterval').default ? '' : null,
+        difficulty: propertyList.find((prop) => prop.key === 'difficulty').default ? '' : null,
+        duration: propertyList.find((prop) => prop.key === 'duration').default ? '' : null
       };
       const newGroups = [...plan.groups];
       newGroups[groupIndex].exercises.push(newExercise);
       setPlan({ ...plan, groups: newGroups });
       setExerciseCounter(exerciseCounter + 1);
       setShowExerciseDialog(false);
-      setSelectedExercise((prev) => ({...prev, [groupIndex]: null}));
+      setSelectedExercise((prev) => ({ ...prev, [groupIndex]: null }));
     }
   };
-
 
   const removeExercise = (groupIndex, exerciseIndex) => {
     const newGroups = [...plan.groups];
@@ -357,11 +416,11 @@ const NewCreatePlan = ({ isEdit }) => {
 
   const editGroupName = (groupIndex) => {
     // Now i need to enable the input text and the buttons without a dialog
-    setEditingGroupName(prev => ({...prev, [groupIndex]: true}));    
+    setEditingGroupName((prev) => ({ ...prev, [groupIndex]: true }));
   };
 
   const saveGroupName = (groupIndex) => {
-    setEditingGroupName(prev => ({...prev, [groupIndex]: false}));
+    setEditingGroupName((prev) => ({ ...prev, [groupIndex]: false }));
   };
 
   const onDragEnd = (result) => {
@@ -402,7 +461,6 @@ const NewCreatePlan = ({ isEdit }) => {
     }
   };
 
-
   const submitPlanClick = () => {
     if (isTemplate && !plan.workoutTemplate.planName.trim()) {
       showToast('error', 'Error', intl.formatMessage({ id: 'plan.error.nameRequired' }));
@@ -425,81 +483,83 @@ const NewCreatePlan = ({ isEdit }) => {
         return;
       }
 
-      if(!group.isRestPeriod) {
+      if (!group.isRestPeriod) {
         for (const exercise of group.exercises) {
           if (!exercise.exercise.id) {
-            showToast('error', 'Error', intl.formatMessage(
-              { id: 'plan.error.exerciseSelect' }, 
-              { name: exercise.exercise.name }
-            ));
+            showToast(
+              'error',
+              'Error',
+              intl.formatMessage({ id: 'plan.error.exerciseSelect' }, { name: exercise.exercise.name })
+            );
             return;
           }
         }
       }
     }
-    let contador = 0;  
+    let contador = 0;
     if (changeToTemplate) {
       plan.isTemplate = true;
     }
     // Create a clean version of the plan object
-    const cleanPlan = JSON.parse(JSON.stringify({
-      ...plan,
-      workout: {
-        ...plan.workout,
-        planName: plan.workoutTemplate ? plan.workoutTemplate.planName : plan.workout.planName,
-        coach: {
-          id: '',
-          user: {
-            id: user.userId
-          }
-        }
-      },
-      groups: plan.groups.map((group) => {
-
-        return {
-          ...group,
-          exercises: group.exercises.map((exercise) => {
-            return {
-              ...exercise,
-              rowIndex: contador++,
-          exercise: {
-            id: exercise.exercise.id,
-                name: exercise.exercise.name
-              }
+    const cleanPlan = JSON.parse(
+      JSON.stringify({
+        ...plan,
+        workout: {
+          ...plan.workout,
+          planName: plan.workoutTemplate ? plan.workoutTemplate.planName : plan.workout.planName,
+          coach: {
+            id: '',
+            user: {
+              id: user.userId
             }
-          })
-        }
+          }
+        },
+        groups: plan.groups.map((group) => {
+          return {
+            ...group,
+            exercises: group.exercises.map((exercise) => {
+              return {
+                ...exercise,
+                rowIndex: contador++,
+                exercise: {
+                  id: exercise.exercise.id,
+                  name: exercise.exercise.name
+                }
+              };
+            })
+          };
+        })
       })
-    }));
+    );
 
     console.log(cleanPlan);
-    
+
     showConfirmationDialog({
-      message: intl.formatMessage({ 
-        id: isEdit ? 'plan.dialog.confirmEdit' : 'plan.dialog.confirmCreate' 
+      message: intl.formatMessage({
+        id: isEdit ? 'plan.dialog.confirmEdit' : 'plan.dialog.confirmCreate'
       }),
-      header: intl.formatMessage({ 
-        id: isEdit ? 'plan.edit.title' : 'plan.create.title' 
+      header: intl.formatMessage({
+        id: isEdit ? 'plan.edit.title' : 'plan.create.title'
       }),
       icon: 'pi pi-exclamation-triangle',
-      accept: () => fetchSubmit(cleanPlan),
+      accept: () => fetchSubmit(cleanPlan)
     });
   };
 
   const fetchSubmit = async (cleanPlan) => {
     try {
       if (newExercises.length > 0) {
-        const {data} = await createExercises(newExercises);
+        const { data } = await createExercises(newExercises);
         setNewExercises([]);
         // Actualizar cleanPlan con los ejercicios recién creados
-        cleanPlan.groups = cleanPlan.groups.map(group => ({
+        cleanPlan.groups = cleanPlan.groups.map((group) => ({
           ...group,
-          exercises: group.exercises.map(exercise => {
+          exercises: group.exercises.map((exercise) => {
             // Buscar si el ejercicio actual corresponde a uno recién creado
             const createdExercise = data.find(
-              created => created.name.toLowerCase() === exercise.exercise.name.toLowerCase()
+              (created) => created.name.toLowerCase() === exercise.exercise.name.toLowerCase()
             );
-            
+
             if (createdExercise) {
               // Si encontramos coincidencia, actualizamos con el ejercicio creado
               return {
@@ -514,20 +574,34 @@ const NewCreatePlan = ({ isEdit }) => {
           })
         }));
         const response = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit, isTemplate);
-        if(response.error){
+        if (response.error) {
           showToast('error', 'Error', response.message);
         }
       } else {
         console.log(cleanPlan, planId, changeToTemplate, isEdit);
-        const {data} = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit, isTemplate);
-        if(data.error){
+        const { data } = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit, isTemplate);
+        if (data.error) {
           showToast('error', 'Error', data.message);
         }
       }
       if (isEdit) {
-        showToast('success', intl.formatMessage({ id: 'coach.plan.success.updated' }), intl.formatMessage({ id: 'coach.plan.success.updated.message' }, { name: cleanPlan.instanceName ? cleanPlan.instanceName : cleanPlan.workout.planName }));
+        showToast(
+          'success',
+          intl.formatMessage({ id: 'coach.plan.success.updated' }),
+          intl.formatMessage(
+            { id: 'coach.plan.success.updated.message' },
+            { name: cleanPlan.instanceName ? cleanPlan.instanceName : cleanPlan.workout.planName }
+          )
+        );
       } else {
-        showToast('success', intl.formatMessage({ id: 'coach.plan.success.created' }), intl.formatMessage({ id: 'coach.plan.success.created.message' }, { name: cleanPlan.instanceName ? cleanPlan.instanceName : cleanPlan.workout.planName }));
+        showToast(
+          'success',
+          intl.formatMessage({ id: 'coach.plan.success.created' }),
+          intl.formatMessage(
+            { id: 'coach.plan.success.created.message' },
+            { name: cleanPlan.instanceName ? cleanPlan.instanceName : cleanPlan.workout.planName }
+          )
+        );
       }
       localStorage.removeItem('unsavedPlan');
       localStorage.removeItem('newExercises');
@@ -539,7 +613,7 @@ const NewCreatePlan = ({ isEdit }) => {
   };
 
   const handleCreateNewExercise = (groupIndex, exerciseIndex) => {
-    // Obtener el texto del filtro del Dropdown    
+    // Obtener el texto del filtro del Dropdown
     const filterInput = document.querySelector('.p-dropdown-filter');
     const exerciseName = filterInput ? filterInput.value : '';
 
@@ -556,22 +630,22 @@ const NewCreatePlan = ({ isEdit }) => {
       };
 
       // Actualizar el estado de nuevos ejercicios
-      setNewExercises(prevExercises => {
+      setNewExercises((prevExercises) => {
         const updatedExercises = [...prevExercises, newExercise];
         localStorage.setItem('newExercises', JSON.stringify(updatedExercises)); // Guardar en local storage
         return updatedExercises;
       });
 
       // Actualizar el estado de ejercicios
-      setExercises(prevExercises => [...prevExercises, newExercise]);
+      setExercises((prevExercises) => [...prevExercises, newExercise]);
 
       // Seleccionar el nuevo ejercicio
-      if(exerciseIndex !== null){
+      if (exerciseIndex !== null) {
         console.log('groupIndex', groupIndex, exerciseIndex);
         const newGroups = [...plan.groups];
         newGroups[groupIndex].exercises[exerciseIndex].exercise = newExercise;
-        setPlan({...plan, groups: newGroups});
-        setEditingExercise(prev => ({
+        setPlan({ ...plan, groups: newGroups });
+        setEditingExercise((prev) => ({
           ...prev,
           [groupIndex]: {
             ...prev?.[groupIndex],
@@ -579,7 +653,7 @@ const NewCreatePlan = ({ isEdit }) => {
           }
         }));
       } else {
-        const newSelectedExercises = {...selectedExercise};
+        const newSelectedExercises = { ...selectedExercise };
         newSelectedExercises[groupIndex] = newExercise;
         setSelectedExercise(newSelectedExercises);
       }
@@ -590,89 +664,91 @@ const NewCreatePlan = ({ isEdit }) => {
       showToast('error', 'Error', 'No se pudo obtener el nombre del ejercicio');
     }
   };
-  
+
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
-        setIsUploading(true);
-        try {
-            const planFromImage = await getPlanFromImage(file);
+      setIsUploading(true);
+      try {
+        const planFromImage = await getPlanFromImage(file);
 
-            // Array para almacenar nuevos ejercicios
-            setNewExercises([]);
+        // Array para almacenar nuevos ejercicios
+        setNewExercises([]);
 
-            // Filtramos los grupos y sus ejercicios
-            const newGroups = planFromImage.groups.reduce((acc, group) => {
-                const exercisesToAdd = group.exercises.map(exercise => {
-                    const existingExercise = exercises.find(e => e.name.toLowerCase() === exercise.exercise.name.toLowerCase());
-                    
-                    if (!existingExercise) {
-                        // Crear nuevo ejercicio temporal
-                        const newExercise = {
-                            id: uuidv4(),
-                            name: exercise.exercise.name,
-                            description: '',
-                            exerciseType: 'OTHER', // Tipo por defecto
-                            videoUrl: '',
-                            isTemporary: true, // Flag para identificar ejercicios temporales
-                            coachId: coach.id
-                        };
-                        setNewExercises(prevExercises => [...prevExercises, newExercise]);
-                        return {
-                            ...exercise,
-                            id: uuidv4(),
-                            notes: exercise.notes,
-                            exercise: newExercise
-                        };
-                    }
-                    
-                    return {
-                      ...exercise,
-                        id: uuidv4(),
-                        notes: exercise.notes,
-                        exercise: {...existingExercise}
-                    };
-                });
+        // Filtramos los grupos y sus ejercicios
+        const newGroups = planFromImage.groups.reduce((acc, group) => {
+          const exercisesToAdd = group.exercises.map((exercise) => {
+            const existingExercise = exercises.find(
+              (e) => e.name.toLowerCase() === exercise.exercise.name.toLowerCase()
+            );
 
-                const newGroup = {
-                    set: group.set,
-                    rest: group.rest,
-                    groupNumber: group.groupNumber,
-                    exercises: exercisesToAdd
-                };
-                acc.push(newGroup);
-                return acc;
-            }, []);
-
-            // Actualizamos los grupos en el plan
-            planFromImage.groups = newGroups;
-
-            setPlan(() => ({
-                isTemplate: true,
-                instanceName: '',
-                ...planFromImage
-            }));
-            console.log(planFromImage);
-            // Actualizamos el estado de ejercicios con los nuevos
-            setExercises(prevExercises => [...prevExercises, ...newExercises]);
-
-            // Mostramos un toast con los nuevos ejercicios
-            if (newExercises.length > 0) {
-                const message = `New exercises to be created: ${newExercises.map(e => e.name).join(', ')}`;
-                showToast('info', 'New exercises detected', message, true);
+            if (!existingExercise) {
+              // Crear nuevo ejercicio temporal
+              const newExercise = {
+                id: uuidv4(),
+                name: exercise.exercise.name,
+                description: '',
+                exerciseType: 'OTHER', // Tipo por defecto
+                videoUrl: '',
+                isTemporary: true, // Flag para identificar ejercicios temporales
+                coachId: coach.id
+              };
+              setNewExercises((prevExercises) => [...prevExercises, newExercise]);
+              return {
+                ...exercise,
+                id: uuidv4(),
+                notes: exercise.notes,
+                exercise: newExercise
+              };
             }
 
-            showToast('success', 'Plan imported!', 'The workout plan has been imported from the image successfully.');
-        } catch (error) {
-            showToast('error', 'Error importing plan', error.message, true);
-            // Clean up the input
-            event.target.value = null;
-          } finally {
-            event.target.value = null;
-            setIsUploading(false);
+            return {
+              ...exercise,
+              id: uuidv4(),
+              notes: exercise.notes,
+              exercise: { ...existingExercise }
+            };
+          });
+
+          const newGroup = {
+            set: group.set,
+            rest: group.rest,
+            groupNumber: group.groupNumber,
+            exercises: exercisesToAdd
+          };
+          acc.push(newGroup);
+          return acc;
+        }, []);
+
+        // Actualizamos los grupos en el plan
+        planFromImage.groups = newGroups;
+
+        setPlan(() => ({
+          isTemplate: true,
+          instanceName: '',
+          ...planFromImage
+        }));
+        console.log(planFromImage);
+        // Actualizamos el estado de ejercicios con los nuevos
+        setExercises((prevExercises) => [...prevExercises, ...newExercises]);
+
+        // Mostramos un toast con los nuevos ejercicios
+        if (newExercises.length > 0) {
+          const message = `New exercises to be created: ${newExercises.map((e) => e.name).join(', ')}`;
+          showToast('info', 'New exercises detected', message, true);
         }
+
+        showToast('success', 'Plan imported!', 'The workout plan has been imported from the image successfully.');
+      } catch (error) {
+        showToast('error', 'Error importing plan', error.message, true);
+        // Clean up the input
+        event.target.value = null;
+      } finally {
+        event.target.value = null;
+        setIsUploading(false);
+      }
     }
-};
+  };
 
   const getPlanFromImage = async (imageFile) => {
     // Create a FormData object to send the image file
@@ -683,15 +759,15 @@ const NewCreatePlan = ({ isEdit }) => {
     // Set up the API request
     const response = await fetch(`${process.env.REACT_APP_API_URL}/workout/import-plan-from-image`, {
       method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-    //   },
-      body: formData,
+      //   headers: {
+      //     'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+      //   },
+      body: formData
     });
-    
+
     const data = await response.json();
     // Assuming the API returns the plan object in the response
-    if(data.error){
+    if (data.error) {
       throw new Error(data.message);
     }
     return data.data;
@@ -719,7 +795,13 @@ const NewCreatePlan = ({ isEdit }) => {
             </label>
             <InputText
               id="plan-name"
-              value={isTemplate ? plan.workoutTemplate?.planName : plan.instanceName ? plan.instanceName : plan.workout?.planName}
+              value={
+                isTemplate
+                  ? plan.workoutTemplate?.planName
+                  : plan.instanceName
+                    ? plan.instanceName
+                    : plan.workout?.planName
+              }
               //value={plan.workoutTemplate.planName}
               onChange={(e) => {
                 if (isTemplate) {
@@ -733,32 +815,32 @@ const NewCreatePlan = ({ isEdit }) => {
           </div>
           <div className="w-full md:w-6 flex justify-content-end">
             <Button
-                label={intl.formatMessage({ id: 'plan.buttons.import' })}
-                icon="pi pi-upload"
-                onClick={() => document.getElementById('image-upload-input').click()}
-                className="mr-2"
-                disabled={isUploading}
-                loading={isUploading}
+              label={intl.formatMessage({ id: 'plan.buttons.import' })}
+              icon="pi pi-upload"
+              onClick={() => document.getElementById('image-upload-input').click()}
+              className="mr-2"
+              disabled={isUploading}
+              loading={isUploading}
             />
             <input
-                type="file"
-                id="image-upload-input"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={handleImageUpload}
+              type="file"
+              id="image-upload-input"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleImageUpload}
             />
-            <Button 
+            <Button
               label={intl.formatMessage({ id: 'plan.buttons.undoDelete' })}
-              icon="pi pi-undo" 
-              onClick={handleUndoDelete} 
-              className="p-button-info responsive-button mr-2" 
-              disabled={!deletedGroup} 
+              icon="pi pi-undo"
+              onClick={handleUndoDelete}
+              className="p-button-info responsive-button mr-2"
+              disabled={!deletedGroup}
             />
-            <Button 
+            <Button
               label={intl.formatMessage({ id: 'plan.buttons.clearPlan' })}
-              icon="pi pi-trash" 
-              onClick={clearPlan} 
-              className="p-button-danger" 
+              icon="pi pi-trash"
+              onClick={clearPlan}
+              className="p-button-danger"
             />
           </div>
         </div>
@@ -768,23 +850,25 @@ const NewCreatePlan = ({ isEdit }) => {
         <label htmlFor="personalized-notes" className="block text-sm font-medium mb-1">
           <FormattedMessage id="plan.notes" />
         </label>
-        <InputTextarea rows={1} id="personalized-notes" value={plan.personalizedNotes ? plan.personalizedNotes : ''} onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })}  className="w-full" />
+        <InputTextarea
+          rows={1}
+          id="personalized-notes"
+          value={plan.personalizedNotes ? plan.personalizedNotes : ''}
+          onChange={(e) => setPlan({ ...plan, personalizedNotes: e.target.value })}
+          className="w-full"
+        />
       </Card>
 
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="groups" direction="horizontal" type="group">
           {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                style={{ display: 'flex', overflowX: 'auto' }}
-              >
+            <div {...provided.droppableProps} ref={provided.innerRef} style={{ display: 'flex', overflowX: 'auto' }}>
               {plan.groups.map((group, groupIndex) => (
-                  <Draggable
-                    key={group.id ? `group-${group.id}` : `group-${group.groupNumber}`}
-                    draggableId={group.id ? `group-${group.id}` : `group-${group.groupNumber}`}
-                    index={groupIndex}
-                  >
+                <Draggable
+                  key={group.id ? `group-${group.id}` : `group-${group.groupNumber}`}
+                  draggableId={group.id ? `group-${group.id}` : `group-${group.groupNumber}`}
+                  index={groupIndex}
+                >
                   {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}
@@ -792,7 +876,7 @@ const NewCreatePlan = ({ isEdit }) => {
                       className={`col-12 md:col-6 lg:col-4 xl:col-3 p-2 ${snapshot.isDragging ? 'opacity-50' : ''}`}
                       style={{
                         ...provided.draggableProps.style,
-                        transition: snapshot.isDropAnimating ? 'all 0.3s ease' : undefined,
+                        transition: snapshot.isDropAnimating ? 'all 0.3s ease' : undefined
                       }}
                     >
                       <Card className="h-full">
@@ -803,63 +887,101 @@ const NewCreatePlan = ({ isEdit }) => {
                             </span>
                             {group.isRestPeriod ? (
                               <div className="flex flex-c justify-content-between align-items-center">
-                              <div>
-                                <h3 className="text-xl m-0">
-                                  <FormattedMessage id="plan.group.restPeriod" />
-                                </h3>
-                              </div>
+                                <div>
+                                  <h3 className="text-xl m-0">
+                                    <FormattedMessage id="plan.group.restPeriod" />
+                                  </h3>
+                                </div>
                               </div>
                             ) : (
                               <div className="flex justify-content-between align-items-center">
                                 <div className="w-4/5 pr-2">
                                   <h3 className="text-xl m-0">
                                     {editingGroupName?.[groupIndex] ? (
-                                      <InputText value={group.name} onChange={(e) => updateGroupName(groupIndex, e.target.value)} />
+                                      <InputText
+                                        value={group.name}
+                                        onChange={(e) => updateGroupName(groupIndex, e.target.value)}
+                                      />
                                     ) : (
-                                      <span>{group.name ? group.name : <FormattedMessage id="plan.group.title" values={{ number: group.groupNumber }} />}</span>
+                                      <span>
+                                        {group.name ? (
+                                          group.name
+                                        ) : (
+                                          <FormattedMessage
+                                            id="plan.group.title"
+                                            values={{ number: group.groupNumber }}
+                                          />
+                                        )}
+                                      </span>
                                     )}
                                   </h3>
                                 </div>
                                 <div className="w-1/5">
                                   {editingGroupName?.[groupIndex] ? (
-                                    <Button icon="pi pi-check" raised className="p-button-text" onClick={() => saveGroupName(groupIndex)} />
+                                    <Button
+                                      icon="pi pi-check"
+                                      raised
+                                      className="p-button-text"
+                                      onClick={() => saveGroupName(groupIndex)}
+                                    />
                                   ) : (
-                                    <Button icon="pi pi-pencil" raised className="p-button-text" onClick={() => editGroupName(groupIndex)} />
+                                    <Button
+                                      icon="pi pi-pencil"
+                                      raised
+                                      className="p-button-text"
+                                      onClick={() => editGroupName(groupIndex)}
+                                    />
                                   )}
                                 </div>
                               </div>
                             )}
                           </div>
-                          <Button icon="pi pi-trash" raised className="p-button-danger p-button-text" onClick={() => removeGroup(groupIndex)} />
+                          <Button
+                            icon="pi pi-trash"
+                            raised
+                            className="p-button-danger p-button-text"
+                            onClick={() => removeGroup(groupIndex)}
+                          />
                         </div>
                         <Droppable droppableId={`group-${groupIndex}`} type="exercise">
                           {(provided) => (
-                            <div 
-                                {...provided.droppableProps} 
-                                ref={provided.innerRef} 
-                                className="exercise-container"
-                                style={!group.isRestPeriod ? {
-                                minHeight: '50px',
-                                padding: '5px',
-                                border: group.exercises.length === 0 ? '2px dashed #ccc' : 'none',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'stretch',
-                                justifyContent: 'center',
-                                backgroundColor: group.exercises.length === 0 ? (isDarkMode ? '#2a2a2a' : '#f9f9f9') : 'transparent'
-                              } : {}}
+                            <div
+                              {...provided.droppableProps}
+                              ref={provided.innerRef}
+                              className="exercise-container"
+                              style={
+                                !group.isRestPeriod
+                                  ? {
+                                      minHeight: '50px',
+                                      padding: '5px',
+                                      border: group.exercises.length === 0 ? '2px dashed #ccc' : 'none',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignItems: 'stretch',
+                                      justifyContent: 'center',
+                                      backgroundColor:
+                                        group.exercises.length === 0
+                                          ? isDarkMode
+                                            ? '#2a2a2a'
+                                            : '#f9f9f9'
+                                          : 'transparent'
+                                    }
+                                  : {}
+                              }
                             >
                               {!group.isRestPeriod && (
                                 <>
                                   {group.exercises.length === 0 && (
-                                    <span style={{ color: '#999' }}>{intl.formatMessage({ id: 'plan.group.empty' })}</span> // Texto visible si está vacío
+                                    <span style={{ color: '#999' }}>
+                                      {intl.formatMessage({ id: 'plan.group.empty' })}
+                                    </span> // Texto visible si está vacío
                                   )}
                                   {group.exercises
                                     .sort((a, b) => a.rowIndex - b.rowIndex)
                                     .map((exercise, exerciseIndex) => (
-                                      <Draggable 
-                                        key={`exercise-${exercise.id}`} 
-                                        draggableId={`exercise-${exercise.id}`} 
+                                      <Draggable
+                                        key={`exercise-${exercise.id}`}
+                                        draggableId={`exercise-${exercise.id}`}
                                         index={exerciseIndex}
                                         isDragDisabled={exercise.exercise.isTemporary}
                                       >
@@ -869,7 +991,7 @@ const NewCreatePlan = ({ isEdit }) => {
                                             {...provided.draggableProps}
                                             className="mb-3 p-2 border-1 border-gray-200 border-round"
                                             style={{
-                                              ...provided.draggableProps.style,
+                                              ...provided.draggableProps.style
                                               //width: '100%',
                                             }}
                                           >
@@ -887,19 +1009,18 @@ const NewCreatePlan = ({ isEdit }) => {
                                                       // Solo actualizar si hay un valor seleccionado
                                                       console.log('onChange', e.value);
                                                       // if (e.value) {
-                                                        const newGroups = [...plan.groups];
-                                                        newGroups[groupIndex].exercises[exerciseIndex].exercise = e.value;
-                                                        setPlan({...plan, groups: newGroups});
-                                                        setEditingExercise(prev => ({
-                                                          ...prev,
-                                                          [groupIndex]: {
-                                                            ...prev?.[groupIndex],
-                                                            [exerciseIndex]: false
-                                                          }
-                                                        }));
+                                                      const newGroups = [...plan.groups];
+                                                      newGroups[groupIndex].exercises[exerciseIndex].exercise = e.value;
+                                                      setPlan({ ...plan, groups: newGroups });
+                                                      setEditingExercise((prev) => ({
+                                                        ...prev,
+                                                        [groupIndex]: {
+                                                          ...prev?.[groupIndex],
+                                                          [exerciseIndex]: false
+                                                        }
+                                                      }));
                                                       //}
                                                     }}
-                                                    
                                                     optionLabel="name"
                                                     filter
                                                     filterBy="name,exerciseType"
@@ -911,7 +1032,9 @@ const NewCreatePlan = ({ isEdit }) => {
                                                         icon="pi pi-plus"
                                                         text
                                                         raised
-                                                        onClick={() => handleCreateNewExercise(groupIndex, exerciseIndex)}
+                                                        onClick={() =>
+                                                          handleCreateNewExercise(groupIndex, exerciseIndex)
+                                                        }
                                                       />
                                                     }
                                                     onShow={(e) => {
@@ -921,7 +1044,8 @@ const NewCreatePlan = ({ isEdit }) => {
                                                         filterInput.focus();
                                                         filterInput.addEventListener('keydown', (event) => {
                                                           if (event.key === 'Enter') {
-                                                            const emptyMessage = document.querySelector(`.p-dropdown-empty-message`);
+                                                            const emptyMessage =
+                                                              document.querySelector(`.p-dropdown-empty-message`);
                                                             if (emptyMessage) {
                                                               handleCreateNewExercise(groupIndex, exerciseIndex);
                                                             }
@@ -930,7 +1054,10 @@ const NewCreatePlan = ({ isEdit }) => {
                                                       }
                                                     }}
                                                     onFilter={(e) => {
-                                                      if (e.originalEvent instanceof KeyboardEvent && e.originalEvent.key === 'Enter') {
+                                                      if (
+                                                        e.originalEvent instanceof KeyboardEvent &&
+                                                        e.originalEvent.key === 'Enter'
+                                                      ) {
                                                         e.originalEvent.preventDefault();
                                                         console.log('onFilter', e);
                                                         handleCreateNewExercise(groupIndex, exerciseIndex);
@@ -938,12 +1065,17 @@ const NewCreatePlan = ({ isEdit }) => {
                                                     }}
                                                     itemTemplate={(option) => {
                                                       return (
-                                                        <div className='flex justify-content-between align-items-center w-full' style={{gap: '1rem'}}>
-                                                          <div className='flex flex-column flex-grow-1'>
+                                                        <div
+                                                          className="flex justify-content-between align-items-center w-full"
+                                                          style={{ gap: '1rem' }}
+                                                        >
+                                                          <div className="flex flex-column flex-grow-1">
                                                             <span>{option.name}</span>
-                                                            {option.exerciseType && <small className='text-xs'>{option.exerciseType}</small>}
+                                                            {option.exerciseType && (
+                                                              <small className="text-xs">{option.exerciseType}</small>
+                                                            )}
                                                           </div>
-                                                          <div className='flex align-items-center flex-shrink-0'>
+                                                          <div className="flex align-items-center flex-shrink-0">
                                                             {option.isTemporary && (
                                                               <Button
                                                                 icon="pi pi-trash"
@@ -951,17 +1083,23 @@ const NewCreatePlan = ({ isEdit }) => {
                                                                 severity="danger"
                                                                 onClick={(e) => {
                                                                   e.stopPropagation();
-                                                                  setExercises(prev => prev.filter(ex => ex.id !== option.id));
-                                                                  setNewExercises(prev => prev.filter(ex => ex.id !== option.id));
-                                                                  
+                                                                  setExercises((prev) =>
+                                                                    prev.filter((ex) => ex.id !== option.id)
+                                                                  );
+                                                                  setNewExercises((prev) =>
+                                                                    prev.filter((ex) => ex.id !== option.id)
+                                                                  );
+
                                                                   // Eliminar el ejercicio de todos los grupos donde esté
-                                                                  setPlan(prevPlan => ({
+                                                                  setPlan((prevPlan) => ({
                                                                     ...prevPlan,
-                                                                    groups: prevPlan.groups.map(group => ({
+                                                                    groups: prevPlan.groups.map((group) => ({
                                                                       ...group,
-                                                                      exercises: group.exercises.filter(ex => 
-                                                                        ex.exercise.id !== option.id && 
-                                                                        ex.exercise.name.toLowerCase() !== option.name.toLowerCase()
+                                                                      exercises: group.exercises.filter(
+                                                                        (ex) =>
+                                                                          ex.exercise.id !== option.id &&
+                                                                          ex.exercise.name.toLowerCase() !==
+                                                                            option.name.toLowerCase()
                                                                       )
                                                                     }))
                                                                   }));
@@ -974,15 +1112,17 @@ const NewCreatePlan = ({ isEdit }) => {
                                                     }}
                                                   />
                                                 ) : (
-                                                  <h6 
-                                                    className="text-lg m-0 cursor-pointer" 
-                                                    onClick={() => setEditingExercise(prev => ({
-                                                      ...prev,
-                                                      [groupIndex]: {
-                                                        ...prev?.[groupIndex],
-                                                        [exerciseIndex]: true
-                                                      }
-                                                    }))}
+                                                  <h6
+                                                    className="text-lg m-0 cursor-pointer"
+                                                    onClick={() =>
+                                                      setEditingExercise((prev) => ({
+                                                        ...prev,
+                                                        [groupIndex]: {
+                                                          ...prev?.[groupIndex],
+                                                          [exerciseIndex]: true
+                                                        }
+                                                      }))
+                                                    }
                                                   >
                                                     {exercise.exercise?.name}
                                                   </h6>
@@ -993,11 +1133,13 @@ const NewCreatePlan = ({ isEdit }) => {
                                                   <>
                                                     <ButtonGroup className="flex align-items-center">
                                                       <Button
-                                                        icon="pi pi-video" 
+                                                        icon="pi pi-video"
                                                         text
                                                         raised
                                                         tooltip={intl.formatMessage({ id: 'exercise.video.view' })}
-                                                        onClick={() => {handleVideoClick(exercise.exercise?.multimedia)}}
+                                                        onClick={() => {
+                                                          handleVideoClick(exercise.exercise?.multimedia);
+                                                        }}
                                                       />
                                                       <Button
                                                         icon="pi pi-plus"
@@ -1019,23 +1161,43 @@ const NewCreatePlan = ({ isEdit }) => {
                                             </div>
                                             <div className="grid">
                                               {Object.entries(exercise).map(([key, value]) => {
-                                                if (key !== 'exercise' && key !== 'id' && value !== null && key !== 'notes' && key !== 'rowIndex') {
+                                                if (
+                                                  key !== 'exercise' &&
+                                                  key !== 'id' &&
+                                                  value !== null &&
+                                                  key !== 'notes' &&
+                                                  key !== 'rowIndex'
+                                                ) {
                                                   return (
                                                     <div key={key} className="col-12 md:col-6 lg:col-6 mb-2">
                                                       <div className="flex flex-column">
-                                                        <label className="">{propertyList.find(p => p.key === key)?.name || key} {propertyList.find(p => p.key === key)?.suffix ? `(${propertyList.find(p => p.key === key)?.suffix})` : ''}</label>
+                                                        <label className="">
+                                                          {propertyList.find((p) => p.key === key)?.name || key}{' '}
+                                                          {propertyList.find((p) => p.key === key)?.suffix
+                                                            ? `(${propertyList.find((p) => p.key === key)?.suffix})`
+                                                            : ''}
+                                                        </label>
                                                         <div className="flex align-items-center">
                                                           <InputNumber
                                                             value={exercise[key]}
-                                                            onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, key, e.value)}
+                                                            onChange={(e) =>
+                                                              updatePropertyValue(
+                                                                groupIndex,
+                                                                exerciseIndex,
+                                                                key,
+                                                                e.value
+                                                              )
+                                                            }
                                                             className="w-full"
-                                                            suffix={propertyList.find(p => p.key === key)?.suffix}
+                                                            suffix={propertyList.find((p) => p.key === key)?.suffix}
                                                           />
                                                           <Button
                                                             icon="pi pi-times"
                                                             raised
                                                             className="p-button-danger p-button-text p-button-sm"
-                                                            onClick={() => removeProperty(groupIndex, exerciseIndex, key)}
+                                                            onClick={() =>
+                                                              removeProperty(groupIndex, exerciseIndex, key)
+                                                            }
                                                           />
                                                         </div>
                                                       </div>
@@ -1046,13 +1208,23 @@ const NewCreatePlan = ({ isEdit }) => {
                                               })}
                                             </div>
                                             <div className="mt-2">
-                                              <label htmlFor={`exercise-${exercise.id}-notes`} className="block text-sm font-medium mb-1">
+                                              <label
+                                                htmlFor={`exercise-${exercise.id}-notes`}
+                                                className="block text-sm font-medium mb-1"
+                                              >
                                                 <FormattedMessage id="plan.exercise.notes" />
                                               </label>
                                               <InputTextarea
                                                 id={`exercise-${exercise.id}-notes`}
                                                 value={exercise.notes ? exercise.notes : ''}
-                                                onChange={(e) => updatePropertyValue(groupIndex, exerciseIndex, 'notes', e.target.value)}
+                                                onChange={(e) =>
+                                                  updatePropertyValue(
+                                                    groupIndex,
+                                                    exerciseIndex,
+                                                    'notes',
+                                                    e.target.value
+                                                  )
+                                                }
                                                 rows={1}
                                                 className="w-full"
                                               />
@@ -1073,38 +1245,52 @@ const NewCreatePlan = ({ isEdit }) => {
                               <Dropdown
                                 id={`exercise-dropdown-${groupIndex}`}
                                 value={selectedExercise?.[groupIndex]}
-                                options={exercises.length > 0 ? exercises : [{ name: `${intl.formatMessage({ id: 'common.noResults' })}`, value: null, exerciseType: null, disabled: true }]}
-                                
+                                options={
+                                  exercises.length > 0
+                                    ? exercises
+                                    : [
+                                        {
+                                          name: `${intl.formatMessage({ id: 'common.noResults' })}`,
+                                          value: null,
+                                          exerciseType: null,
+                                          disabled: true
+                                        }
+                                      ]
+                                }
                                 optionLabel="name"
                                 filter
                                 filterBy="name,exerciseType"
                                 filterInputAutoFocus
                                 resetFilterOnHide
                                 onChange={(e) => {
-                                  if(e.value){
-                                    const newSelectedExercises = {...selectedExercise};
+                                  if (e.value) {
+                                    const newSelectedExercises = { ...selectedExercise };
                                     newSelectedExercises[groupIndex] = e.value;
                                     setSelectedExercise(newSelectedExercises);
                                   }
                                 }}
-                                
                                 placeholder={intl.formatMessage({ id: 'plan.exercise.select' })}
                                 className="w-full"
                                 onHide={(e) => {
                                   const dropdown = document.querySelector(`#exercise-dropdown-button-${groupIndex}`);
-                                  if(dropdown) {
+                                  if (dropdown) {
                                     dropdown.setAttribute('data-p-focus', 'true');
                                     dropdown.focus();
                                   }
                                 }}
                                 itemTemplate={(option) => {
                                   return (
-                                    <div className='flex justify-content-between align-items-center w-full' style={{gap: '1rem'}}>
-                                      <div className='flex flex-column flex-grow-1'>
+                                    <div
+                                      className="flex justify-content-between align-items-center w-full"
+                                      style={{ gap: '1rem' }}
+                                    >
+                                      <div className="flex flex-column flex-grow-1">
                                         <span>{option.name}</span>
-                                        {option.exerciseType && <small className='text-xs'>{option.exerciseType}</small>}
+                                        {option.exerciseType && (
+                                          <small className="text-xs">{option.exerciseType}</small>
+                                        )}
                                       </div>
-                                      <div className='flex align-items-center flex-shrink-0'>
+                                      <div className="flex align-items-center flex-shrink-0">
                                         {option.isTemporary && (
                                           <Button
                                             icon="pi pi-trash"
@@ -1112,17 +1298,18 @@ const NewCreatePlan = ({ isEdit }) => {
                                             severity="danger"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              setExercises(prev => prev.filter(ex => ex.id !== option.id));
-                                              setNewExercises(prev => prev.filter(ex => ex.id !== option.id));
-                                              
+                                              setExercises((prev) => prev.filter((ex) => ex.id !== option.id));
+                                              setNewExercises((prev) => prev.filter((ex) => ex.id !== option.id));
+
                                               // Eliminar el ejercicio de todos los grupos donde esté
-                                              setPlan(prevPlan => ({
+                                              setPlan((prevPlan) => ({
                                                 ...prevPlan,
-                                                groups: prevPlan.groups.map(group => ({
+                                                groups: prevPlan.groups.map((group) => ({
                                                   ...group,
-                                                  exercises: group.exercises.filter(ex => 
-                                                    ex.exercise.id !== option.id && 
-                                                    ex.exercise.name.toLowerCase() !== option.name.toLowerCase()
+                                                  exercises: group.exercises.filter(
+                                                    (ex) =>
+                                                      ex.exercise.id !== option.id &&
+                                                      ex.exercise.name.toLowerCase() !== option.name.toLowerCase()
                                                   )
                                                 }))
                                               }));
@@ -1162,28 +1349,33 @@ const NewCreatePlan = ({ isEdit }) => {
                                     handleCreateNewExercise(groupIndex, null);
                                   }
                                 }}
-                              //style={{ height: '40px' }}
-                            />
+                                //style={{ height: '40px' }}
+                              />
                             </div>
                             <div className="w-1">
-                            <Button
+                              <Button
                                 id={`exercise-dropdown-button-${groupIndex}`}
                                 icon="pi pi-plus"
                                 raised
                                 text
                                 onClick={() => addExercise(groupIndex)}
-                                style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                style={{
+                                  height: '40px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
                               />
                             </div>
                           </div>
                         ) : (
                           <div className="mt-2">
-                            <InputNumber 
-                              value={group.restDuration} 
+                            <InputNumber
+                              value={group.restDuration}
                               onChange={(e) => {
                                 const newGroups = [...plan.groups];
                                 newGroups[groupIndex].restDuration = e.value;
-                                setPlan({...plan, groups: newGroups});
+                                setPlan({ ...plan, groups: newGroups });
                               }}
                               suffix={propertyUnits?.restInterval}
                               min={0}
@@ -1213,7 +1405,7 @@ const NewCreatePlan = ({ isEdit }) => {
                       text
                       label={intl.formatMessage({ id: 'plan.group.addRest' })}
                       icon="pi pi-plus-circle"
-                      onClick={addRestPeriod} 
+                      onClick={addRestPeriod}
                       className="p-button-text w-full sm:w-auto"
                     />
                   </div>
@@ -1235,8 +1427,6 @@ const NewCreatePlan = ({ isEdit }) => {
         />
       </div>
 
-      
-
       <Dialog
         header={intl.formatMessage({ id: 'plan.exercise.property.add' })}
         draggable={false}
@@ -1253,7 +1443,10 @@ const NewCreatePlan = ({ isEdit }) => {
               icon="pi pi-plus"
               className="p-button-text p-button-sm"
               onClick={() => addProperty(property)}
-              disabled={plan.groups[selectedGroup]?.exercises[selectedExercise]?.hasOwnProperty(property.key) && plan.groups[selectedGroup]?.exercises[selectedExercise][property.key] !== null}
+              disabled={
+                plan.groups[selectedGroup]?.exercises[selectedExercise]?.hasOwnProperty(property.key) &&
+                plan.groups[selectedGroup]?.exercises[selectedExercise][property.key] !== null
+              }
             />
           </div>
         ))}
@@ -1267,11 +1460,11 @@ const NewCreatePlan = ({ isEdit }) => {
         dismissableMask
         draggable={false}
         resizable={false}
-        className='responsive-dialog'
+        className="responsive-dialog"
       >
         <iframe
-            width="100%"
-            height="400"
+          width="100%"
+          height="400"
           src={selectedVideo}
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

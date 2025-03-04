@@ -19,7 +19,8 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
 
   const [isEnergyLevelEnabled, setIsEnergyLevelEnabled] = useState(false);
   const [isMoodEnabled, setIsMoodEnabled] = useState(false);
-  const [isPerceivedDifficultyEnabled, setIsPerceivedDifficultyEnabled] = useState(false);
+  const [isPerceivedDifficultyEnabled, setIsPerceivedDifficultyEnabled] =
+    useState(false);
 
   const handleTimeChange = (e) => {
     setSessionTime(e.value);
@@ -38,14 +39,25 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
       generalFeedback,
       energyLevel: isEnergyLevelEnabled ? energyLevel : null,
       mood: isMoodEnabled ? mood : null,
-      perceivedDifficulty: isPerceivedDifficultyEnabled ? perceivedDifficulty : null,
+      perceivedDifficulty: isPerceivedDifficultyEnabled
+        ? perceivedDifficulty
+        : null,
       additionalNotes
     });
     onHide();
   };
 
   return (
-    <Dialog draggable={false}  resizable={false} dismissableMask header="Finish Training" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+    <Dialog
+      draggable={false}
+      resizable={false}
+      dismissableMask
+      header="Finish Training"
+      className="responsive-dialog"
+      visible={visible}
+      style={{ width: '50vw' }}
+      onHide={onHide}
+    >
       <div className="p-field">
         <label htmlFor="sessionTime">Session Time (hh:mm)</label>
         <Calendar
@@ -70,8 +82,14 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
         />
       </div>
       <div className="p-field-checkbox">
-        <Checkbox inputId="enableEnergyLevel" checked={isEnergyLevelEnabled} onChange={(e) => setIsEnergyLevelEnabled(e.checked)} />
-        <label htmlFor="enableEnergyLevel" className="p-checkbox-label">Enable Energy Level</label>
+        <Checkbox
+          inputId="enableEnergyLevel"
+          checked={isEnergyLevelEnabled}
+          onChange={(e) => setIsEnergyLevelEnabled(e.checked)}
+        />
+        <label htmlFor="enableEnergyLevel" className="p-checkbox-label">
+          Enable Energy Level
+        </label>
       </div>
       <div className="p-field">
         <label htmlFor="energyLevel">Energy Level</label>
@@ -85,8 +103,14 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
         />
       </div>
       <div className="p-field-checkbox">
-        <Checkbox inputId="enableMood" checked={isMoodEnabled} onChange={(e) => setIsMoodEnabled(e.checked)} />
-        <label htmlFor="enableMood" className="p-checkbox-label">Enable Mood</label>
+        <Checkbox
+          inputId="enableMood"
+          checked={isMoodEnabled}
+          onChange={(e) => setIsMoodEnabled(e.checked)}
+        />
+        <label htmlFor="enableMood" className="p-checkbox-label">
+          Enable Mood
+        </label>
       </div>
       <div className="p-field">
         <label htmlFor="mood">Mood</label>
@@ -100,8 +124,14 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
         />
       </div>
       <div className="p-field-checkbox">
-        <Checkbox inputId="enablePerceivedDifficulty" checked={isPerceivedDifficultyEnabled} onChange={(e) => setIsPerceivedDifficultyEnabled(e.checked)} />
-        <label htmlFor="enablePerceivedDifficulty" className="p-checkbox-label">Enable Perceived Difficulty</label>
+        <Checkbox
+          inputId="enablePerceivedDifficulty"
+          checked={isPerceivedDifficultyEnabled}
+          onChange={(e) => setIsPerceivedDifficultyEnabled(e.checked)}
+        />
+        <label htmlFor="enablePerceivedDifficulty" className="p-checkbox-label">
+          Enable Perceived Difficulty
+        </label>
       </div>
       <div className="p-field">
         <label htmlFor="perceivedDifficulty">Perceived Difficulty</label>
@@ -123,7 +153,7 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
           onChange={(e) => setAdditionalNotes(e.target.value)}
         />
       </div>
-      <div className='flex justify-content-center'>
+      <div className="flex justify-content-center">
         <Button label="Submit" onClick={handleSubmit} />
       </div>
     </Dialog>

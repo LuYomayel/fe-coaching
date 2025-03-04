@@ -1,14 +1,5 @@
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const fetchExercises = async () => {
-  const response = await fetch(`${apiUrl}/exercise`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
-  }
-  return data;
-};
-
 const fetchCoachExercises = async (coachId) => {
   const response = await fetch(`${apiUrl}/exercise/coach/${coachId}`);
   const data = await response.json();
@@ -67,7 +58,7 @@ const updateExercise = async (exerciseId, exercise) => {
 
 const deleteExercise = async (exerciseId) => {
   const response = await fetch(`${apiUrl}/exercise/${exerciseId}`, {
-    method: 'DELETE',
+    method: 'DELETE'
   });
   const data = await response.json();
   if (data.error) {
@@ -76,4 +67,25 @@ const deleteExercise = async (exerciseId) => {
   return data;
 };
 
-export { fetchExercises, fetchCoachExercises, fetchBodyAreas, deleteExercise, createExercise, updateExercise, importExercises };
+const createExercises = async (exercises) => {
+  const response = await fetch(`${apiUrl}/exercise/generate-exercises`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(exercises)
+  });
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
+
+export {
+  fetchCoachExercises, // checked
+  fetchBodyAreas, // checked
+  deleteExercise, // checked
+  createExercise, // checked
+  updateExercise, // checked
+  importExercises, // checked
+  createExercises // checked
+};

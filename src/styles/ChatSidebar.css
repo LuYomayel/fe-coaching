@@ -1,5 +1,7 @@
 .chat-sidebar {
-  height: calc(100vh - 100px); /* Ajusta este valor según el tamaño de tu header */
+  height: calc(
+    100vh - 100px
+  ); /* Ajusta este valor según el tamaño de tu header */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -139,14 +141,13 @@
   padding: 0;
 }
 
-
 .chat-sidebar .p-fileupload-choose .p-button-icon {
   margin: 0;
 }
 
 .chat-sidebar .p-fileupload-choose .p-button-label {
-    flex: 0;
-}   
+  flex: 0;
+}
 /* Ajustes para el botón de enviar */
 .chat-sidebar .input-group .p-button {
   width: 40px;
@@ -160,14 +161,14 @@
 }
 
 .chat-sidebar .input-preview-container {
-    position: relative;
+  position: relative;
 }
 
 .chat-sidebar .loading-bar {
-    position: absolute;
-    bottom: -10px; /* Ajusta este valor según sea necesario para posicionar la barra justo debajo */
-    left: 0;
-    right: 0;
-    z-index: 10; /* Asegura que esté por encima de cualquier fondo pero por debajo del contenido */
-    margin-bottom: 5px;
+  position: absolute;
+  bottom: -10px; /* Ajusta este valor según sea necesario para posicionar la barra justo debajo */
+  left: 0;
+  right: 0;
+  z-index: 10; /* Asegura que esté por encima de cualquier fondo pero por debajo del contenido */
+  margin-bottom: 5px;
 }

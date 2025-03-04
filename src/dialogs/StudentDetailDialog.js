@@ -14,9 +14,13 @@ const StudentDetailDialog = ({ student, onClose }) => {
   const showToast = useToast();
   const [name, setName] = useState(student.name);
   const [email, setEmail] = useState(student.email);
-  const [fitnessGoal, setFitnessGoal] = useState(student.fitnessGoal ? student.fitnessGoal.split(',') : []);
+  const [fitnessGoal, setFitnessGoal] = useState(
+    student.fitnessGoal ? student.fitnessGoal.split(',') : []
+  );
   const [activityLevel, setActivityLevel] = useState(student.activityLevel);
-  const [birthdate, setBirthDate] = useState(student.birthdate ? new Date(student.birthdate) : null);
+  const [birthdate, setBirthDate] = useState(
+    student.birthdate ? new Date(student.birthdate) : null
+  );
   const [gender, setGender] = useState(student.gender);
   const [height, setHeight] = useState(student.height);
   const [weight, setWeight] = useState(student.weight);
@@ -25,7 +29,7 @@ const StudentDetailDialog = ({ student, onClose }) => {
   const genders = [
     { label: 'Male', value: 'male' },
     { label: 'Female', value: 'female' },
-    { label: 'Other', value: 'other' },
+    { label: 'Other', value: 'other' }
   ];
 
   const fitnessGoals = [
@@ -33,17 +37,26 @@ const StudentDetailDialog = ({ student, onClose }) => {
     { label: 'Muscle Gain', value: 'muscle gain' },
     { label: 'Maintenance', value: 'maintenance' },
     { label: 'Gain Mobility', value: 'gain mobility' },
-    { label: 'Flexibility', value: 'flexibility' },
+    { label: 'Flexibility', value: 'flexibility' }
   ];
 
   const activityLevels = [
     { label: 'Sedentary', value: 'sedentary' },
     { label: 'Moderately Active', value: 'moderately active' },
-    { label: 'Very Active', value: 'very active' },
+    { label: 'Very Active', value: 'very active' }
   ];
 
   const handleSaveStudent = async () => {
-    const body = { name, email, fitnessGoal: fitnessGoal.join(','), activityLevel, birthdate, gender, height, weight };
+    const body = {
+      name,
+      email,
+      fitnessGoal: fitnessGoal.join(','),
+      activityLevel,
+      birthdate,
+      gender,
+      height,
+      weight
+    };
     const { isValid, message } = validateStudentDetails(body, intl);
 
     if (!isValid) {
@@ -53,9 +66,18 @@ const StudentDetailDialog = ({ student, onClose }) => {
 
     try {
       setLoading(true);
-      const body = { name, email, fitnessGoal: fitnessGoal.join(','), activityLevel, birthdate, gender, height, weight };
+      const body = {
+        name,
+        email,
+        fitnessGoal: fitnessGoal.join(','),
+        activityLevel,
+        birthdate,
+        gender,
+        height,
+        weight
+      };
       const response = await updateClient(student.id, body);
-      if(response.message === 'success') {
+      if (response.message === 'success') {
         showToast('success', 'Success', 'Student details updated successfully');
         onClose();
       } else {
@@ -63,7 +85,7 @@ const StudentDetailDialog = ({ student, onClose }) => {
       }
     } catch (error) {
       showToast('error', 'Error', error.message);
-    } finally{
+    } finally {
       setLoading(false);
       onClose();
     }
@@ -73,37 +95,86 @@ const StudentDetailDialog = ({ student, onClose }) => {
     <div className="student-detail">
       <div className="p-field">
         <label htmlFor="name">Name</label>
-        <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} />
+        <InputText
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </div>
       <div className="p-field">
         <label htmlFor="email">Email</label>
-        <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <InputText
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
       <div className="p-field">
         <label htmlFor="fitnessGoal">Fitness Goal</label>
-        <Dropdown id="fitnessGoal" options={fitnessGoals} value={fitnessGoal} optionLabel="label" optionValue="value" onChange={(e) => setFitnessGoal(e.value)} multiple />
+        <Dropdown
+          id="fitnessGoal"
+          options={fitnessGoals}
+          value={fitnessGoal}
+          optionLabel="label"
+          optionValue="value"
+          onChange={(e) => setFitnessGoal(e.value)}
+          multiple
+        />
       </div>
       <div className="p-field">
         <label htmlFor="activityLevel">Activity Level</label>
-        <Dropdown id="activityLevel" options={activityLevels} value={activityLevel} optionLabel="label" optionValue="value" onChange={(e) => setActivityLevel(e.value)} />
+        <Dropdown
+          id="activityLevel"
+          options={activityLevels}
+          value={activityLevel}
+          optionLabel="label"
+          optionValue="value"
+          onChange={(e) => setActivityLevel(e.value)}
+        />
       </div>
       <div className="p-field">
         <label htmlFor="gender">Gender</label>
-        <Dropdown id="gender" options={genders} value={gender} optionLabel='label' optionValue='value' onChange={(e) => setGender(e.value)} />
+        <Dropdown
+          id="gender"
+          options={genders}
+          value={gender}
+          optionLabel="label"
+          optionValue="value"
+          onChange={(e) => setGender(e.value)}
+        />
       </div>
       <div className="p-field">
         <label htmlFor="height">Height</label>
-        <InputNumber id="height" value={height} onChange={(e) => setHeight(e.target.value)} />
+        <InputNumber
+          id="height"
+          value={height}
+          onChange={(e) => setHeight(e.target.value)}
+        />
       </div>
       <div className="p-field">
         <label htmlFor="weight">Weight</label>
-        <InputNumber id="weight" value={weight} onChange={(e) => setWeight(e.target.value)} />
+        <InputNumber
+          id="weight"
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+        />
       </div>
       <div className="p-field">
         <label htmlFor="birthdate">Birthdate</label>
-        <Calendar id="birthdate" locale={intl.locale} dateFormat="dd/mm/yy" value={birthdate} onChange={(e) => setBirthDate(e.value)} />
+        <Calendar
+          id="birthdate"
+          locale={intl.locale}
+          dateFormat="dd/mm/yy"
+          value={birthdate}
+          onChange={(e) => setBirthDate(e.value)}
+        />
       </div>
-      <Button label="Save" icon="pi pi-save" loading={loading} onClick={handleSaveStudent} />
+      <Button
+        label="Save"
+        icon="pi pi-save"
+        loading={loading}
+        onClick={handleSaveStudent}
+      />
     </div>
   );
 };

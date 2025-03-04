@@ -24,7 +24,7 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
   useEffect(() => {
     const loadCoachPlans = async () => {
       try {
-        const {data} = await fetchCoachPlans(user.userId);
+        const { data } = await fetchCoachPlans(user.userId);
         setCoachPlans(data);
       } catch (error) {
         showToast('error', intl.formatMessage({ id: 'error' }), error.message);
@@ -53,13 +53,19 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
     }
 
     if (!selectedCoachPlan) {
-      return showToast('error', intl.formatMessage({ id: 'error' }), intl.formatMessage({ id: 'assignSubscription.error.selectPlan' }));
+      return showToast(
+        'error',
+        intl.formatMessage({ id: 'error' }),
+        intl.formatMessage({ id: 'assignSubscription.error.selectPlan' })
+      );
     }
 
     showConfirmationDialog({
-      message: intl.formatMessage({ id: 'assignSubscription.confirmation.message' }),
+      message: intl.formatMessage({
+        id: 'assignSubscription.confirmation.message'
+      }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
-      icon: "pi pi-exclamation-triangle",
+      icon: 'pi pi-exclamation-triangle',
       accept: () => handleAssignSubscription(body),
       reject: () => console.log('Rejected')
     });
@@ -69,7 +75,11 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
     try {
       setLoading(true);
       await assignSubscription(body);
-      showToast('success', intl.formatMessage({ id: 'success' }), intl.formatMessage({ id: 'assignSubscription.success' }));
+      showToast(
+        'success',
+        intl.formatMessage({ id: 'success' }),
+        intl.formatMessage({ id: 'assignSubscription.success' })
+      );
       onClose();
     } catch (error) {
       showToast('error', intl.formatMessage({ id: 'error' }), error.message);
@@ -81,18 +91,50 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
   return (
     <div className="assign-subscription-dialog">
       <div className="p-field">
-        <label htmlFor="startDate"><FormattedMessage id="startDate" /></label>
-        <Calendar id="startDate" locale={intl.locale} dateFormat='dd/mm/yy' value={startDate} onChange={(e) => setStartDate(e.value)} showIcon />
+        <label htmlFor="startDate">
+          <FormattedMessage id="startDate" />
+        </label>
+        <Calendar
+          id="startDate"
+          locale={intl.locale}
+          dateFormat="dd/mm/yy"
+          value={startDate}
+          onChange={(e) => setStartDate(e.value)}
+          showIcon
+        />
       </div>
       <div className="p-field">
-        <label htmlFor="endDate"><FormattedMessage id="endDate" /></label>
-        <Calendar id="endDate" locale={intl.locale} dateFormat='dd/mm/yy' value={endDate} onChange={(e) => setEndDate(e.value)} showIcon />
+        <label htmlFor="endDate">
+          <FormattedMessage id="endDate" />
+        </label>
+        <Calendar
+          id="endDate"
+          locale={intl.locale}
+          dateFormat="dd/mm/yy"
+          value={endDate}
+          onChange={(e) => setEndDate(e.value)}
+          showIcon
+        />
       </div>
       <div className="p-field">
-        <label htmlFor="coachPlan"><FormattedMessage id="plan" /></label>
-        <Dropdown id="coachPlan" options={coachPlans} optionLabel='name' optionValue='id' value={selectedCoachPlan} onChange={(e) => setSelectedCoachPlan(e.value)} />
+        <label htmlFor="coachPlan">
+          <FormattedMessage id="plan" />
+        </label>
+        <Dropdown
+          id="coachPlan"
+          options={coachPlans}
+          optionLabel="name"
+          optionValue="id"
+          value={selectedCoachPlan}
+          onChange={(e) => setSelectedCoachPlan(e.value)}
+        />
       </div>
-      <Button label={intl.formatMessage({ id: 'common.save' })} icon="pi pi-check" loading={loading} onClick={assingSubscription} />
+      <Button
+        label={intl.formatMessage({ id: 'common.save' })}
+        icon="pi pi-check"
+        loading={loading}
+        onClick={assingSubscription}
+      />
     </div>
   );
 };

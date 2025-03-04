@@ -1,107 +1,106 @@
 /* Common Styles for PlanDetails and TrainingPlanDetails */
 
 .student-plan-container {
-    display: flex;
-    flex-direction: column;
-    padding: 0 2rem 2rem 2rem;
-    color: #fff;
-  }
-  
-  .plan-summary {
-    margin-bottom: 1rem;
-  }
-  
-  .plan-details p {
-    margin-bottom: 0.5rem;
-  }
-  
-  .exercise-groups {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-height: 50rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0 2rem 2rem 2rem;
+  color: #fff;
+}
+
+.plan-summary {
+  margin-bottom: 1rem;
+}
+
+.plan-details p {
+  margin-bottom: 0.5rem;
+}
+
+.exercise-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 50rem;
+}
+
+.scroll {
+  max-height: 35rem;
+  overflow: auto;
+}
+
+.exercise-group {
+  display: flex;
+  margin-bottom: 0;
+}
+
+.group-card {
+  flex: 1 1 20%;
+  background-color: #2b2b2b;
+  border-radius: 5px;
+  padding: 0.5rem;
+}
+
+.exercises-card {
+  flex: 2 1 80%;
+  flex-direction: row;
+}
+
+.exercise-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.exercise-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1 1 150px;
+}
+
+.exercise-field label {
+  font-weight: bold;
+}
+
+.exercise-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.p-field-checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.p-field-checkbox label {
+  margin: 0;
+  padding: 0;
+  padding-left: 1rem;
+}
+
+@media (max-width: 768px) {
+  .student-plan-container {
+    padding: 1rem;
   }
 
-  .scroll {
-    max-height: 35rem;
-    overflow: auto;
-  }
-  
-  .exercise-group {
-    display: flex;
-    margin-bottom: 0;
-  }
-  
-  .group-card {
-    flex: 1 1 20%;
-    background-color: #2b2b2b;
-    border-radius: 5px;
-    padding: .5rem;
-  }
-  
-  .exercises-card {
-    flex: 2 1 80%;
-    flex-direction: row;
-  }
-  
-  .exercise-fields {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  
-  .exercise-field {
-    display: flex;
+  .plan-summary .plan-details {
     flex-direction: column;
     align-items: flex-start;
-    flex: 1 1 150px;
   }
-  
-  .exercise-field label {
-    font-weight: bold;
+
+  .plan-summary .plan-details p,
+  .exercise-fields p {
+    font-size: 0.9rem;
   }
-  
-  .exercise-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  .exercise-groups {
+    height: 32rem;
   }
-  
-  .p-field-checkbox {
-    display: flex;
-    align-items: center;
+
+  .exercise-fields .p-field {
+    margin-bottom: 0.5rem;
   }
-  
-  .p-field-checkbox label {
-    margin: 0;
-    padding: 0;
-    padding-left: 1rem;
+
+  .exercise-fields label {
+    font-size: 0.9rem;
   }
-  
-  
-  @media (max-width: 768px) {
-    .student-plan-container {
-      padding: 1rem;
-    }
-  
-    .plan-summary .plan-details {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  
-    .plan-summary .plan-details p,
-    .exercise-fields p {
-      font-size: 0.9rem;
-    }
-    .exercise-groups{
-        height: 32rem;
-    }
-  
-    .exercise-fields .p-field {
-      margin-bottom: 0.5rem;
-    }
-  
-    .exercise-fields label {
-      font-size: 0.9rem;
-    }
-  }
+}

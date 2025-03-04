@@ -3,7 +3,16 @@ import { Dialog } from 'primereact/dialog';
 
 const VideoDialog = ({ visible, onHide, videoUrl }) => {
   return (
-    <Dialog draggable={false}  resizable={false} dismissableMask header="Video" className="responsive-dialog" visible={visible} style={{ width: '50vw' }} onHide={onHide}>
+    <Dialog
+      draggable={false}
+      resizable={false}
+      dismissableMask
+      header="Video"
+      className="responsive-dialog"
+      visible={visible}
+      style={{ width: '50vw' }}
+      onHide={onHide}
+    >
       <iframe
         width="100%"
         height="400px"

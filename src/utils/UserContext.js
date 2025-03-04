@@ -5,7 +5,6 @@ import { fetchClient, fetchCoach, fetchUser } from '../services/usersService';
 
 export const UserContext = createContext();
 
-
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [coach, setCoach] = useState(null);
@@ -19,57 +18,55 @@ export const UserProvider = ({ children }) => {
         setLoading(true);
         setIsLoading(true);
         const token = localStorage.getItem('token');
-        
+
         if (token) {
-        const decodedUser = jwtDecode(token);
-        setUser(decodedUser);
-        const isTokenExpired = decodedUser.exp * 1000 < Date.now();
-        if(isTokenExpired){
-          localStorage.removeItem('token')
-          setUser(null);
-          setCoach(null);
-          setClient(null);
-          return
-        }
-        const data = await fetchUserData(decodedUser.userId)
-
-        if(decodedUser.isVerified && decodedUser.email === data.email){
-          if (decodedUser.userType === 'coach') {
-            const data = await fetchCoachData(decodedUser.userId);
-            setCoach(data)
-          } else if (decodedUser.userType === 'client') {
-            const data = await fetchClientData(decodedUser.userId);
-            setClient(data)
-          } else {
+          const decodedUser = jwtDecode(token);
+          setUser(decodedUser);
+          const isTokenExpired = decodedUser.exp * 1000 < Date.now();
+          if (isTokenExpired) {
+            localStorage.removeItem('token');
+            setUser(null);
+            setCoach(null);
+            setClient(null);
+            return;
           }
-        }else{
-          localStorage.removeItem('token')
+          const data = await fetchUserData(decodedUser.userId);
+
+          if (decodedUser.isVerified && decodedUser.email === data.email) {
+            if (decodedUser.userType === 'coach') {
+              const data = await fetchCoachData(decodedUser.userId);
+              setCoach(data);
+            } else if (decodedUser.userType === 'client') {
+              const data = await fetchClientData(decodedUser.userId);
+              setClient(data);
+            } else {
+            }
+          } else {
+            localStorage.removeItem('token');
+            setUser(null);
+            setCoach(null);
+            setClient(null);
+          }
+        } else {
           setUser(null);
           setCoach(null);
           setClient(null);
         }
-      } else {
-        setUser(null);
-        setCoach(null);
-        setClient(null);
-      }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       } finally {
-        setLoading(false)
-        setIsLoading(false); 
+        setLoading(false);
+        setIsLoading(false);
       }
-
-      
-    }
+    };
     checkEverything();
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, []);
 
   const fetchUserData = async (userId) => {
     try {
-      const {data} = await fetchUser(userId)
-      return data
+      const { data } = await fetchUser(userId);
+      return data;
     } catch (error) {
       console.log(error);
     }
@@ -77,8 +74,8 @@ export const UserProvider = ({ children }) => {
 
   const fetchCoachData = async (userId) => {
     try {
-      const {data} = await fetchCoach(userId)
-      return data
+      const { data } = await fetchCoach(userId);
+      return data;
     } catch (error) {
       console.log(error);
       setCoach(null);
@@ -87,16 +84,18 @@ export const UserProvider = ({ children }) => {
 
   const fetchClientData = async (userId) => {
     try {
-      const {data} = await fetchClient(userId)
-      return data
+      const { data } = await fetchClient(userId);
+      return data;
     } catch (error) {
       console.log(error);
       setClient(null);
-    } 
+    }
   };
 
   return (
-    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient, isLoading }}>
+    <UserContext.Provider
+      value={{ user, coach, client, setUser, setCoach, setClient, isLoading }}
+    >
       {children}
     </UserContext.Provider>
   );

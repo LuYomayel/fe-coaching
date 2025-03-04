@@ -1,5 +1,3 @@
-
-
 const formatDate = (value) => {
   if (!value) return '';
   const date = new Date(value);
@@ -14,15 +12,16 @@ const formatDateToApi = (date) => {
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
   return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-}
+};
 const isValidYouTubeUrl = (url) => {
-  const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/(watch\?v=|embed\/|shorts\/|v\/|.+)?$/;
+  const regex =
+    /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/(watch\?v=|embed\/|shorts\/|v\/|.+)?$/;
   return regex.test(url);
 };
 
 const extractYouTubeVideoId = (url) => {
   let videoId = '';
-  if(!url) return null;
+  if (!url) return null;
   if (url.includes('youtube.com/watch?v=')) {
     videoId = url.split('v=')[1]?.split('&')[0];
   } else if (url.includes('youtu.be/')) {
@@ -53,15 +52,19 @@ const sortBySessionDate = (workouts) => {
     const dateB = new Date(b.trainingSession.sessionDate);
     return dateA - dateB;
   });
-}
+};
 
 function updateStatus(workouts) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  workouts.forEach(workout => {
+  workouts.forEach((workout) => {
     const sessionDate = new Date(workout.trainingSession.sessionDate);
-    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+    const sessionDay = new Date(
+      sessionDate.getFullYear(),
+      sessionDate.getMonth(),
+      sessionDate.getDate()
+    );
 
     if (workout.status === 'pending') {
       if (sessionDay < today) {
@@ -77,58 +80,118 @@ function updateStatus(workouts) {
 
 const getSeverity = (status) => {
   switch (status) {
-      case 'expired':
-          return 'danger';
+    case 'expired':
+      return 'danger';
 
-      case 'completed':
-          return 'success';
+    case 'completed':
+      return 'success';
 
-      case 'current':
-          return 'info';
+    case 'current':
+      return 'info';
 
-      case 'pending':
-          return 'warning';
+    case 'pending':
+      return 'warning';
 
-      case 'renewal':
-          return null;
-      default:
-          return null;
+    case 'renewal':
+      return null;
+    default:
+      return null;
   }
 };
 
 const validateDates = (startDate, endDate, intl) => {
-  
   if (!startDate) {
-    return { isValid: false, message: intl.formatMessage({ id: 'error.selectStartDate' }) };
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.selectStartDate' })
+    };
   }
   if (!endDate) {
-    return { isValid: false, message: intl.formatMessage({ id: 'error.selectEndDate' }) };
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.selectEndDate' })
+    };
   }
   if (new Date(startDate) > new Date(endDate)) {
-    return { isValid: false, message: intl.formatMessage({ id: 'error.startDateAfterEndDate' }) };
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.startDateAfterEndDate' })
+    };
   }
   return { isValid: true, message: '' };
 };
 
 // utils.js
-const validateStudentDetails = ({ name, email, fitnessGoal, activityLevel, birthdate, gender, height, weight }, intl) => {
-  if (!name) return { isValid: false, message: intl.formatMessage({ id: 'error.nameRequired' }) };
-  if (!email) return { isValid: false, message: intl.formatMessage({ id: 'error.emailRequired' }) };
-  if (!fitnessGoal || fitnessGoal.length === 0) return { isValid: false, message: intl.formatMessage({ id: 'error.fitnessGoalRequired' }) };
-  if (!activityLevel) return { isValid: false, message: intl.formatMessage({ id: 'error.activityLevelRequired' }) };
-  if (!birthdate) return { isValid: false, message: intl.formatMessage({ id: 'error.birthdateRequired' }) };
-  
+const validateStudentDetails = (
+  {
+    name,
+    email,
+    fitnessGoal,
+    activityLevel,
+    birthdate,
+    gender,
+    height,
+    weight
+  },
+  intl
+) => {
+  if (!name)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.nameRequired' })
+    };
+  if (!email)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.emailRequired' })
+    };
+  if (!fitnessGoal || fitnessGoal.length === 0)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.fitnessGoalRequired' })
+    };
+  if (!activityLevel)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.activityLevelRequired' })
+    };
+  if (!birthdate)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.birthdateRequired' })
+    };
+
   const today = new Date();
   const minDate = new Date();
   minDate.setFullYear(today.getFullYear() - 10);
 
-  if (new Date(birthdate) > today) return { isValid: false, message: intl.formatMessage({ id: 'error.birthdateInFuture' }) };
-  if (new Date(birthdate) > minDate) return { isValid: false, message: intl.formatMessage({ id: 'error.ageRequirement' }) };
+  if (new Date(birthdate) > today)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.birthdateInFuture' })
+    };
+  if (new Date(birthdate) > minDate)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.ageRequirement' })
+    };
 
-  if (!gender) return { isValid: false, message: intl.formatMessage({ id: 'error.genderRequired' }) };
-  if (height < 100 || height > 250) return { isValid: false, message: intl.formatMessage({ id: 'error.heightRange' }) };
-  if (weight < 30 || weight > 300) return { isValid: false, message: intl.formatMessage({ id: 'error.weightRange' }) };
-  
+  if (!gender)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.genderRequired' })
+    };
+  if (height < 100 || height > 250)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.heightRange' })
+    };
+  if (weight < 30 || weight > 300)
+    return {
+      isValid: false,
+      message: intl.formatMessage({ id: 'error.weightRange' })
+    };
+
   return { isValid: true, message: '' };
 };
 
@@ -141,4 +204,16 @@ const getDayMonthYear = (session) => {
   return new Date(year, month, day); // Esto crea una fecha sin hora
 };
 
-export { getDayMonthYear, formatDate, formatDateToApi, isValidYouTubeUrl, extractYouTubeVideoId, sortBySessionDate, updateStatus, getSeverity, validateDates, validateStudentDetails, getYouTubeThumbnail }
+export {
+  getDayMonthYear,
+  formatDate,
+  formatDateToApi,
+  isValidYouTubeUrl,
+  extractYouTubeVideoId,
+  sortBySessionDate,
+  updateStatus,
+  getSeverity,
+  validateDates,
+  validateStudentDetails,
+  getYouTubeThumbnail
+};

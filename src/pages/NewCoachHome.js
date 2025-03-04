@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { formatDate } from '../utils/UtilFunctions'; 
+import { formatDate } from '../utils/UtilFunctions';
 import { UserContext } from '../utils/UserContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useToast } from '../utils/ToastContext';
@@ -10,7 +10,7 @@ import {
   fetchLastTimeTrained,
   fetchHowLongToFinishCycle,
   fetchTrainingFrequency
-} from '../services/workoutService'; 
+} from '../services/workoutService';
 import { fetchClientsPaymentStatus } from '../services/subscriptionService';
 import { useIntl } from 'react-intl';
 
@@ -50,7 +50,6 @@ export default function CoachHomePage() {
         setHowLongToFinishCycleData(howLongToFinishCycle.data);
         setTrainingFrequencyData(trainingFrequency.data);
         setPaymentStatusData(clientsPaymentStatus.data);
-
       } catch (error) {
         showToast({
           severity: 'error',
@@ -77,18 +76,30 @@ export default function CoachHomePage() {
     }
 
     const merged = lastTimeTrainedData.map((lt) => {
-      const cycleData = howLongToFinishCycleData.find((cd) => cd.clientId === lt.clientId);
-      const freqData = trainingFrequencyData.find((fd) => fd.clientId === lt.clientId);
-      const payData = paymentStatusData.find((pd) => pd.clientId === lt.clientId);
+      const cycleData = howLongToFinishCycleData.find(
+        (cd) => cd.clientId === lt.clientId
+      );
+      const freqData = trainingFrequencyData.find(
+        (fd) => fd.clientId === lt.clientId
+      );
+      const payData = paymentStatusData.find(
+        (pd) => pd.clientId === lt.clientId
+      );
 
       return {
         clientId: lt.clientId,
         clientName: lt.clientName,
         lastTimeTrained: lt.lastTimeTrained,
         daysLeft: cycleData ? cycleData.daysLeft : null,
-        trainingSessionsLast30Days: freqData ? freqData.trainingSessionsLast30Days : 0,
-        trainingSessionsLast15Days: freqData ? freqData.trainingSessionsLast15Days : 0,
-        trainingSessionsLast7Days: freqData ? freqData.trainingSessionsLast7Days : 0,
+        trainingSessionsLast30Days: freqData
+          ? freqData.trainingSessionsLast30Days
+          : 0,
+        trainingSessionsLast15Days: freqData
+          ? freqData.trainingSessionsLast15Days
+          : 0,
+        trainingSessionsLast7Days: freqData
+          ? freqData.trainingSessionsLast7Days
+          : 0,
         isPaid: payData ? payData.isPaid : false,
         lastPaymentDate: payData ? payData.lastPaymentDate : null,
         nextPaymentDate: payData ? payData.nextPaymentDate : null,
@@ -108,7 +119,9 @@ export default function CoachHomePage() {
   const totalClients = combinedClientData.length;
   const totalPaid = combinedClientData.filter((c) => c.isPaid).length;
   const unpaidClients = combinedClientData.filter((c) => !c.isPaid);
-  const clientsWithDaysLeft = combinedClientData.filter((c) => c.daysLeft !== null);
+  const clientsWithDaysLeft = combinedClientData.filter(
+    (c) => c.daysLeft !== null
+  );
 
   return (
     <div className="grid p-nogutter" style={{ padding: '1rem' }}>
@@ -116,12 +129,17 @@ export default function CoachHomePage() {
         1) Card fusionada: Alumnos Totales + Al Día
       */}
       <div className="col-12 md:col-6 lg:col-3" style={{ padding: '0.5rem' }}>
-        <Card
-          title={intl.formatMessage({ id: 'coach.home.studentsStatus' })}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Card title={intl.formatMessage({ id: 'coach.home.studentsStatus' })}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}
+          >
             <p style={{ fontSize: '1.1rem', margin: '0.3rem' }}>
-              {intl.formatMessage({ id: 'coach.home.totalStudents' })}: {totalClients}
+              {intl.formatMessage({ id: 'coach.home.totalStudents' })}:{' '}
+              {totalClients}
             </p>
             <p style={{ fontSize: '1.1rem', margin: '0.3rem' }}>
               {intl.formatMessage({ id: 'coach.home.paidUp' })}: {totalPaid}
@@ -134,9 +152,7 @@ export default function CoachHomePage() {
         2) Card con la lista de clientes que no están al día con el pago
       */}
       <div className="col-12 md:col-6 lg:col-3" style={{ padding: '0.5rem' }}>
-        <Card
-          title={intl.formatMessage({ id: 'coach.home.unpaidClients' })}
-        >
+        <Card title={intl.formatMessage({ id: 'coach.home.unpaidClients' })}>
           {unpaidClients.length > 0 ? (
             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {unpaidClients.map((client) => (
@@ -158,15 +174,12 @@ export default function CoachHomePage() {
            para terminar su ciclo de entrenamiento
       */}
       <div className="col-12 md:col-6 lg:col-3" style={{ padding: '0.5rem' }}>
-        <Card
-          title={intl.formatMessage({ id: 'coach.home.daysLeft' })}
-        >
+        <Card title={intl.formatMessage({ id: 'coach.home.daysLeft' })}>
           {clientsWithDaysLeft.length > 0 ? (
             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {clientsWithDaysLeft.map((client) => (
                 <li key={client.clientId} style={{ marginBottom: '0.3rem' }}>
-                  {client.clientName}:
-                  <strong> {client.daysLeft}</strong>{' '}
+                  {client.clientName}:<strong> {client.daysLeft}</strong>{' '}
                   {intl.formatMessage({ id: 'common.days' })}
                 </li>
               ))}
@@ -205,9 +218,7 @@ export default function CoachHomePage() {
 
       {/* ====== TABLA DE CLIENTES ====== */}
       <div className="col-12" style={{ padding: '0.5rem' }}>
-        <Card
-          title={intl.formatMessage({ id: 'coach.home.clientsSummary' })}
-        >
+        <Card title={intl.formatMessage({ id: 'coach.home.clientsSummary' })}>
           <DataTable
             value={combinedClientData}
             responsiveLayout="scroll"
@@ -219,7 +230,9 @@ export default function CoachHomePage() {
             />
             <Column
               field="lastTimeTrained"
-              header={intl.formatMessage({ id: 'coach.home.table.lastWorkout' })}
+              header={intl.formatMessage({
+                id: 'coach.home.table.lastWorkout'
+              })}
               body={(rowData) =>
                 rowData.lastTimeTrained
                   ? formatDate(rowData.lastTimeTrained)
@@ -246,14 +259,20 @@ export default function CoachHomePage() {
             />
             <Column
               field="nextPaymentDate"
-              header={intl.formatMessage({ id: 'coach.home.table.nextPayment' })}
+              header={intl.formatMessage({
+                id: 'coach.home.table.nextPayment'
+              })}
               body={(rowData) =>
-                rowData.nextPaymentDate ? formatDate(rowData.nextPaymentDate) : '---'
+                rowData.nextPaymentDate
+                  ? formatDate(rowData.nextPaymentDate)
+                  : '---'
               }
             />
             <Column
               field="paymentStatus"
-              header={intl.formatMessage({ id: 'coach.home.table.subscriptionStatus' })}
+              header={intl.formatMessage({
+                id: 'coach.home.table.subscriptionStatus'
+              })}
             />
           </DataTable>
         </Card>

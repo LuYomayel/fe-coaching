@@ -3,9 +3,18 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
-import { fetchWorkoutInstance, fetchWorkoutInstanceTemplate, deleteWorkoutPlan, getRpeMethods } from '../services/workoutService';
+import {
+  fetchWorkoutInstance,
+  fetchWorkoutInstanceTemplate,
+  deleteWorkoutPlan,
+  getRpeMethods
+} from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
-import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
+import {
+  getYouTubeThumbnail,
+  extractYouTubeVideoId,
+  formatDate
+} from '../utils/UtilFunctions';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
@@ -16,7 +25,7 @@ export default function NewPlanDetailHorizontal({
   setPlanDetailsVisible,
   setRefreshKey,
   setLoading,
-  isTemplate,
+  isTemplate
 }) {
   const intl = useIntl();
   const toast = useRef(null);
@@ -33,13 +42,13 @@ export default function NewPlanDetailHorizontal({
     groups: [],
     workout: {
       id: '',
-      planName: '',
+      planName: ''
     },
     workoutTemplate: {
       id: '',
-      planName: '',
+      planName: ''
     },
-    status: '',
+    status: ''
   });
 
   useEffect(() => {
@@ -63,7 +72,7 @@ export default function NewPlanDetailHorizontal({
               'restInterval',
               'difficulty',
               'duration',
-              'distance',
+              'distance'
             ];
             props.forEach((prop) => {
               if (exercise[prop] === '') {
@@ -87,7 +96,9 @@ export default function NewPlanDetailHorizontal({
     const fetchRpeMethods = async () => {
       try {
         setLoading(true);
-        const { data } = await getRpeMethods(client?.coach?.user?.id || user.userId);
+        const { data } = await getRpeMethods(
+          client?.coach?.user?.id || user.userId
+        );
         setRpeMethods(data);
       } catch (error) {
         showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
@@ -111,7 +122,10 @@ export default function NewPlanDetailHorizontal({
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
-          const response = await deleteWorkoutPlan(planId, workoutPlan.isTemplate);
+          const response = await deleteWorkoutPlan(
+            planId,
+            workoutPlan.isTemplate
+          );
           if (response.message === 'success') {
             showToast(
               'success',
@@ -129,13 +143,13 @@ export default function NewPlanDetailHorizontal({
         } catch (error) {
           showToast('error', 'Error', error.message);
         }
-      },
+      }
     });
   };
 
   const handleStartWorkout = () => {
     navigate(`/plans/start-session/${planId}`, {
-      state: { isTraining: true, planId: workoutPlan.id },
+      state: { isTraining: true, planId: workoutPlan.id }
     });
   };
 
@@ -151,9 +165,13 @@ export default function NewPlanDetailHorizontal({
 
   const renderSetLogs = (setLogs) => {
     if (!setLogs || setLogs.length === 0) {
-      return <p style={{ fontStyle: 'italic', color: '#666' }}>No set logs available</p>;
+      return (
+        <p style={{ fontStyle: 'italic', color: '#666' }}>
+          No set logs available
+        </p>
+      );
     }
-  
+
     // Define the possible columns (excluding "setNumber" which we always want)
     const possibleKeys = [
       'repetitions',
@@ -164,50 +182,59 @@ export default function NewPlanDetailHorizontal({
       'notes',
       'difficulty',
       'duration',
-      'restInterval',
+      'restInterval'
     ];
-  
+
     // Determine which columns have at least one non-empty value
     const columns = possibleKeys.filter((key) =>
       setLogs.some((log) => log[key] !== null && log[key] !== '')
     );
-  
+
     return (
-        <div className="p-datatable p-component" style={{ width: '100%', overflowX: 'auto' }}>
-          <table className="p-datatable-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--surface-border)' }}>
-                <th style={{ padding: '0.5rem', textAlign: 'left' }}>Set</th>
+      <div
+        className="p-datatable p-component"
+        style={{ width: '100%', overflowX: 'auto' }}
+      >
+        <table
+          className="p-datatable-table"
+          style={{ width: '100%', borderCollapse: 'collapse' }}
+        >
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--surface-border)' }}>
+              <th style={{ padding: '0.5rem', textAlign: 'left' }}>Set</th>
+              {columns.map((col) => (
+                <th
+                  key={col}
+                  style={{
+                    padding: '0.5rem',
+                    textAlign: 'left',
+                    textTransform: 'capitalize',
+                    borderBottom: '1px solid var(--surface-border)'
+                  }}
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {setLogs.map((log) => (
+              <tr
+                key={log.id}
+                style={{ borderBottom: '1px solid var(--surface-border)' }}
+              >
+                <td style={{ padding: '0.5rem' }}>{log.setNumber}</td>
                 {columns.map((col) => (
-                  <th
-                    key={col}
-                    style={{
-                      padding: '0.5rem',
-                      textAlign: 'left',
-                      textTransform: 'capitalize',
-                      borderBottom: '1px solid var(--surface-border)',
-                    }}
-                  >
-                    {col}
-                  </th>
+                  <td key={col} style={{ padding: '0.5rem' }}>
+                    {log[col] !== null && log[col] !== '' ? log[col] : '-'}
+                  </td>
                 ))}
               </tr>
-            </thead>
-            <tbody>
-              {setLogs.map((log) => (
-                <tr key={log.id} style={{ borderBottom: '1px solid var(--surface-border)' }}>
-                  <td style={{ padding: '0.5rem' }}>{log.setNumber}</td>
-                  {columns.map((col) => (
-                    <td key={col} style={{ padding: '0.5rem' }}>
-                      {log[col] !== null && log[col] !== '' ? log[col] : '-'}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   // Render basic exercise details (pending/in-progress)
@@ -226,7 +253,12 @@ export default function NewPlanDetailHorizontal({
               src={getYouTubeThumbnail(exercise.exercise.multimedia)}
               alt={`${exercise.exercise.name} thumbnail`}
               className="border-round"
-              style={{ width: '120px', height: '68px', objectFit: 'cover', cursor: 'pointer' }}
+              style={{
+                width: '120px',
+                height: '68px',
+                objectFit: 'cover',
+                cursor: 'pointer'
+              }}
             />
           </a>
         </div>
@@ -236,56 +268,66 @@ export default function NewPlanDetailHorizontal({
         <div className="p-grid">
           {exercise.sets && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.sets' })}: {exercise.sets}
+              {intl.formatMessage({ id: 'exercise.properties.sets' })}:{' '}
+              {exercise.sets}
               {propertyUnits?.sets || ''}
             </div>
           )}
           {exercise.repetitions && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.reps' })}: {exercise.repetitions}
+              {intl.formatMessage({ id: 'exercise.properties.reps' })}:{' '}
+              {exercise.repetitions}
             </div>
           )}
           {exercise.weight && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.weight' })}: {exercise.weight}
+              {intl.formatMessage({ id: 'exercise.properties.weight' })}:{' '}
+              {exercise.weight}
               {propertyUnits?.weight || ''}
             </div>
           )}
           {exercise.time && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.time' })}: {exercise.time}
+              {intl.formatMessage({ id: 'exercise.properties.time' })}:{' '}
+              {exercise.time}
               {propertyUnits?.time || ''}
             </div>
           )}
           {exercise.tempo && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.tempo' })}: {exercise.tempo}
+              {intl.formatMessage({ id: 'exercise.properties.tempo' })}:{' '}
+              {exercise.tempo}
             </div>
           )}
           {exercise.restInterval && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.restInterval' })}: {exercise.restInterval}
+              {intl.formatMessage({ id: 'exercise.properties.restInterval' })}:{' '}
+              {exercise.restInterval}
               {propertyUnits?.restInterval || ''}
             </div>
           )}
           {exercise.difficulty && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.difficulty' })}: {exercise.difficulty}
+              {intl.formatMessage({ id: 'exercise.properties.difficulty' })}:{' '}
+              {exercise.difficulty}
             </div>
           )}
           {exercise.distance && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.distance' })}: {exercise.distance}
+              {intl.formatMessage({ id: 'exercise.properties.distance' })}:{' '}
+              {exercise.distance}
             </div>
           )}
           {exercise.duration && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.duration' })}: {exercise.duration}
+              {intl.formatMessage({ id: 'exercise.properties.duration' })}:{' '}
+              {exercise.duration}
             </div>
           )}
           {exercise.notes && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.notes' })}: {exercise.notes}
+              {intl.formatMessage({ id: 'exercise.properties.notes' })}:{' '}
+              {exercise.notes}
             </div>
           )}
         </div>
@@ -309,7 +351,12 @@ export default function NewPlanDetailHorizontal({
               src={getYouTubeThumbnail(exercise.exercise.multimedia)}
               alt={`${exercise.exercise.name} thumbnail`}
               className="border-round"
-              style={{ width: '120px', height: '68px', objectFit: 'cover', cursor: 'pointer' }}
+              style={{
+                width: '120px',
+                height: '68px',
+                objectFit: 'cover',
+                cursor: 'pointer'
+              }}
             />
           </a>
         </div>
@@ -319,52 +366,62 @@ export default function NewPlanDetailHorizontal({
         <div className="p-grid">
           {exercise.repetitions && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.reps' })}: {exercise.repetitions}
+              {intl.formatMessage({ id: 'exercise.properties.reps' })}:{' '}
+              {exercise.repetitions}
             </div>
           )}
           {exercise.weight && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.weight' })}: {exercise.weight}
+              {intl.formatMessage({ id: 'exercise.properties.weight' })}:{' '}
+              {exercise.weight}
             </div>
           )}
           {exercise.time && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.time' })}: {exercise.time}
+              {intl.formatMessage({ id: 'exercise.properties.time' })}:{' '}
+              {exercise.time}
             </div>
           )}
           {exercise.tempo && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.tempo' })}: {exercise.tempo}
+              {intl.formatMessage({ id: 'exercise.properties.tempo' })}:{' '}
+              {exercise.tempo}
             </div>
           )}
           {exercise.restInterval && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.restInterval' })}: {exercise.restInterval}
+              {intl.formatMessage({ id: 'exercise.properties.restInterval' })}:{' '}
+              {exercise.restInterval}
             </div>
           )}
           {exercise.difficulty && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.difficulty' })}: {exercise.difficulty}
+              {intl.formatMessage({ id: 'exercise.properties.difficulty' })}:{' '}
+              {exercise.difficulty}
             </div>
           )}
           {exercise.notes && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.notes' })}: {exercise.notes}
+              {intl.formatMessage({ id: 'exercise.properties.notes' })}:{' '}
+              {exercise.notes}
             </div>
           )}
           {exercise.distance && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.distance' })}: {exercise.distance}
+              {intl.formatMessage({ id: 'exercise.properties.distance' })}:{' '}
+              {exercise.distance}
             </div>
           )}
           {exercise.duration && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.duration' })}: {exercise.duration}
+              {intl.formatMessage({ id: 'exercise.properties.duration' })}:{' '}
+              {exercise.duration}
             </div>
           )}
           {exercise.sets && (
             <div className="p-col-6 p-md-3">
-              {intl.formatMessage({ id: 'exercise.properties.sets' })}: {exercise.sets}
+              {intl.formatMessage({ id: 'exercise.properties.sets' })}:{' '}
+              {exercise.sets}
             </div>
           )}
         </div>
@@ -372,10 +429,14 @@ export default function NewPlanDetailHorizontal({
       <div className="w-full md:w-12">
         <div className="p-grid">
           {exercise.completed ? (
-            <div className="p-col-3">{intl.formatMessage({ id: 'exercise.properties.completed' })}</div>
+            <div className="p-col-3">
+              {intl.formatMessage({ id: 'exercise.properties.completed' })}
+            </div>
           ) : exercise.completedNotAsPlanned ? (
             <div className="p-col-3">
-              {intl.formatMessage({ id: 'exercise.properties.completedNotAsPlanned' })}
+              {intl.formatMessage({
+                id: 'exercise.properties.completedNotAsPlanned'
+              })}
             </div>
           ) : (
             <div className="p-col-3">
@@ -384,13 +445,20 @@ export default function NewPlanDetailHorizontal({
           )}
           {exercise.rpe && rpeMethods.length > 0 && (
             <div className="p-col-3">
-              {(rpeMethods.find((method) => method.id === exercise.rpe) || { name: rpeMethods[0].name }).name}:
-              {exercise.rpe}
+              {
+                (
+                  rpeMethods.find((method) => method.id === exercise.rpe) || {
+                    name: rpeMethods[0].name
+                  }
+                ).name
+              }
+              :{exercise.rpe}
             </div>
           )}
           {exercise.comments && (
             <div className="p-col-6">
-              {intl.formatMessage({ id: 'exercise.properties.comments' })}: {exercise.comments}
+              {intl.formatMessage({ id: 'exercise.properties.comments' })}:{' '}
+              {exercise.comments}
             </div>
           )}
         </div>
@@ -413,8 +481,8 @@ export default function NewPlanDetailHorizontal({
             {isTemplate
               ? workoutPlan.workoutTemplate?.planName
               : workoutPlan.instanceName
-              ? workoutPlan.instanceName
-              : workoutPlan.workout?.planName}
+                ? workoutPlan.instanceName
+                : workoutPlan.workout?.planName}
           </h2>
 
           {/* If user is coach => show Edit/Delete. If user is client => maybe show Start Workout if pending */}
@@ -445,7 +513,7 @@ export default function NewPlanDetailHorizontal({
                     className="p-button-secondary"
                     onClick={() =>
                       navigate(`/plans/edit/${workoutPlan.id}`, {
-                        state: { isEdit: true, changeToTemplate: true },
+                        state: { isEdit: true, changeToTemplate: true }
                       })
                     }
                   />
@@ -467,24 +535,32 @@ export default function NewPlanDetailHorizontal({
         {!isTemplate && workoutPlan.status === 'completed' && (
           <div className="mt-2">
             <p className="">
-              <strong>{intl.formatMessage({ id: 'common.status' })}:</strong> {workoutPlan.status}
+              <strong>{intl.formatMessage({ id: 'common.status' })}:</strong>{' '}
+              {workoutPlan.status}
             </p>
             <p className="">
-              {intl.formatMessage({ id: 'common.completedOn' })}: {formatDate(workoutPlan.feedback?.realEndDate)}
+              {intl.formatMessage({ id: 'common.completedOn' })}:{' '}
+              {formatDate(workoutPlan.feedback?.realEndDate)}
             </p>
             <p className="">
-              {intl.formatMessage({ id: 'common.sessionTime' })}: {workoutPlan.feedback?.sessionTime}
+              {intl.formatMessage({ id: 'common.sessionTime' })}:{' '}
+              {workoutPlan.feedback?.sessionTime}
             </p>
             <p className="">
-              {intl.formatMessage({ id: 'common.feedback' })}: {workoutPlan.feedback?.generalFeedback}
+              {intl.formatMessage({ id: 'common.feedback' })}:{' '}
+              {workoutPlan.feedback?.generalFeedback}
             </p>
             <p className="">
               {intl.formatMessage({ id: 'common.mood' })}:{' '}
-              {workoutPlan.feedback?.mood ? `${workoutPlan.feedback.mood}/10` : '-'}
+              {workoutPlan.feedback?.mood
+                ? `${workoutPlan.feedback.mood}/10`
+                : '-'}
             </p>
             <p className="">
               {intl.formatMessage({ id: 'common.energyLevel' })}:{' '}
-              {workoutPlan.feedback?.energyLevel ? `${workoutPlan.feedback.energyLevel}/10` : '-'}
+              {workoutPlan.feedback?.energyLevel
+                ? `${workoutPlan.feedback.energyLevel}/10`
+                : '-'}
             </p>
             <p className="">
               {intl.formatMessage({ id: 'common.perceivedDifficulty' })}:{' '}
@@ -493,15 +569,22 @@ export default function NewPlanDetailHorizontal({
                 : '-'}
             </p>
             <p className="">
-              {intl.formatMessage({ id: 'common.extraNotes' })}: {workoutPlan.feedback?.additionalNotes}
+              {intl.formatMessage({ id: 'common.extraNotes' })}:{' '}
+              {workoutPlan.feedback?.additionalNotes}
             </p>
           </div>
         )}
       </Card>
 
-
       {/* Groups horizontally */}
-      <div style={{ display: 'flex', flexDirection: 'row', overflowX: 'auto', gap: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          overflowX: 'auto',
+          gap: '1rem'
+        }}
+      >
         {workoutPlan.groups.map((group, groupIndex) => {
           // Check if all exercises are completed
           const allExercisesCompleted = group.exercises.every(
@@ -523,26 +606,37 @@ export default function NewPlanDetailHorizontal({
                       <h3 className="text-xl m-0">
                         {group.name
                           ? group.name
-                          : intl.formatMessage({ id: 'common.group' }, { number: group.groupNumber })} {group.groupNumber}
-                      </h3> 
+                          : intl.formatMessage(
+                              { id: 'common.group' },
+                              { number: group.groupNumber }
+                            )}{' '}
+                        {group.groupNumber}
+                      </h3>
                     )}
                   </div>
                   {/* If plan is completed, show a check or X for the group */}
-                  {!workoutPlan.isTemplate && workoutPlan.status === 'completed' && (
-                    <span
-                      className="ml-2"
-                      style={{
-                        color: allExercisesCompleted ? 'green' : 'red',
-                        fontSize: '1.2rem',
-                      }}
-                    >
-                      {allExercisesCompleted ? (
-                        <i className="pi pi-check-circle" style={{ color: 'green' }} />
-                      ) : (
-                        <i className="pi pi-times-circle" style={{ color: 'red' }} />
-                      )}
-                    </span>
-                  )}
+                  {!workoutPlan.isTemplate &&
+                    workoutPlan.status === 'completed' && (
+                      <span
+                        className="ml-2"
+                        style={{
+                          color: allExercisesCompleted ? 'green' : 'red',
+                          fontSize: '1.2rem'
+                        }}
+                      >
+                        {allExercisesCompleted ? (
+                          <i
+                            className="pi pi-check-circle"
+                            style={{ color: 'green' }}
+                          />
+                        ) : (
+                          <i
+                            className="pi pi-times-circle"
+                            style={{ color: 'red' }}
+                          />
+                        )}
+                      </span>
+                    )}
                 </div>
 
                 {/* If rest period, show the rest duration */}
@@ -555,7 +649,9 @@ export default function NewPlanDetailHorizontal({
 
                 {/* Render exercises */}
                 {group.exercises.length === 0 && !group.isRestPeriod && (
-                  <p style={{ color: '#999' }}>{intl.formatMessage({ id: 'plan.group.empty' })}</p>
+                  <p style={{ color: '#999' }}>
+                    {intl.formatMessage({ id: 'plan.group.empty' })}
+                  </p>
                 )}
                 {group.exercises.map((exercise) =>
                   workoutPlan.status === 'completed'

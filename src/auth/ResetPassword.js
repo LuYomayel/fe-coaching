@@ -19,7 +19,11 @@ const ResetPassword = () => {
 
   const handleResetPassword = async () => {
     if (newPassword !== confirmPassword) {
-      showToast('error', 'Error', intl.formatMessage({ id: 'resetPassword.error.match' }));
+      showToast(
+        'error',
+        'Error',
+        intl.formatMessage({ id: 'resetPassword.error.match' })
+      );
       return;
     }
 
@@ -28,24 +32,31 @@ const ResetPassword = () => {
       const body = {
         token,
         newPassword
-      }
+      };
       const response = await fetch(`${apiUrl}/auth/reset-password`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(body)
       });
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(errorData)
-        throw new Error(errorData.message || intl.formatMessage({ id: 'resetPassword.error.generic' }));
+        console.log(errorData);
+        throw new Error(
+          errorData.message ||
+            intl.formatMessage({ id: 'resetPassword.error.generic' })
+        );
       } else {
-        showToast('success', 'Success', intl.formatMessage({ id: 'resetPassword.success' }));
+        showToast(
+          'success',
+          'Success',
+          intl.formatMessage({ id: 'resetPassword.success' })
+        );
         navigate('/login');
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       showToast('error', 'Error', error.message);
     }
     setLoading(false);
@@ -59,20 +70,30 @@ const ResetPassword = () => {
             <label htmlFor="newPassword">
               <FormattedMessage id="resetPassword.newPassword" />
             </label>
-            <Password id="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} toggleMask />
+            <Password
+              id="newPassword"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              toggleMask
+            />
           </div>
           <div className="p-field">
             <label htmlFor="confirmPassword">
               <FormattedMessage id="resetPassword.confirmPassword" />
             </label>
-            <Password id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} toggleMask />
+            <Password
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              toggleMask
+            />
           </div>
-          <div className='flex align-items-center justify-content-center gap-1 pt-4'>
-            <Button 
-              label={intl.formatMessage({ id: 'resetPassword.button' })} 
-              icon="pi pi-check" 
-              loading={loading} 
-              onClick={handleResetPassword} 
+          <div className="flex align-items-center justify-content-center gap-1 pt-4">
+            <Button
+              label={intl.formatMessage({ id: 'resetPassword.button' })}
+              icon="pi pi-check"
+              loading={loading}
+              onClick={handleResetPassword}
             />
           </div>
         </Card>

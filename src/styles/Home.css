@@ -1,38 +1,37 @@
 .my-students-container {
-    padding: 2rem;
-    /* min-height: 100vh; */
+  padding: 2rem;
+  /* min-height: 100vh; */
 }
 
 @media (max-width: 576px) {
-    .my-students-container {
-        padding: 0;
-    }
+  .my-students-container {
+    padding: 0;
+  }
 }
 @media (min-width: 576px) {
-    .student-card{
-        width: 22rem;
-    }
+  .student-card {
+    width: 22rem;
+  }
 }
 
 @media (max-width: 1670px) {
-    .student-card{
-        width: 21rem;
-    }
+  .student-card {
+    width: 21rem;
+  }
 }
 
 .students-container {
-    height: 55rem;
-    overflow: auto;
+  height: 55rem;
+  overflow: auto;
 }
 
 .student-card {
-    cursor: pointer;
-
+  cursor: pointer;
 }
 
 .profile-image {
-    width: 100%;
-    height: auto;
-    border-radius: 50%;
-    margin-bottom: 1rem;
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+  margin-bottom: 1rem;
 }

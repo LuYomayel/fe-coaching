@@ -16,15 +16,15 @@ const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
 
   if (!user) {
     return <Navigate to="/" />;
-  }
-
-  else if (requiredType && user.userType !== requiredType) {
+  } else if (requiredType && user.userType !== requiredType) {
     return <Navigate to="/unauthorized" />;
+  } else if (user.userType === 'coach' && !coach) {
+    return <CoachProfileForm />;
   }
-  else if (user.userType === 'coach' && !coach) {
-    return <CoachProfileForm/>;
-  }
-  if (user.userType === 'client' && client?.user?.subscription?.status === 'Inactive') {
+  if (
+    user.userType === 'client' &&
+    client?.user?.subscription?.status === 'Inactive'
+  ) {
     return <NotSubscribed />;
   }
 

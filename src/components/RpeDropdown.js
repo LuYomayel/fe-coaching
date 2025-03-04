@@ -1,16 +1,25 @@
-import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useMemo,
+  useCallback
+} from 'react';
 import '../styles/RpeDropdown.css';
 import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
 import { useParams } from 'react-router-dom';
 import { useToast } from '../utils/ToastContext';
-import { fetchWorkoutInstance, getRpeMethods } from '../services/workoutService';
+import {
+  fetchWorkoutInstance,
+  getRpeMethods
+} from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 const RpeOption = ({ color, value, emoji }) => (
   <div className="rpe-option">
-    <span 
+    <span
       className="rpe-color-indicator"
       style={{
         backgroundColor: color,
@@ -21,7 +30,9 @@ const RpeOption = ({ color, value, emoji }) => (
         borderRadius: '4px'
       }}
     />
-    <span>{value} {emoji}</span>
+    <span>
+      {value} {emoji}
+    </span>
   </div>
 );
 
@@ -40,7 +51,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
     try {
       setLoading(true);
       setError(null);
-      const {data} = await getRpeMethods(client.coach.user.id);
+      const { data } = await getRpeMethods(client.coach.user.id);
       // console.log(data)
       const methods = data;
       setRpeMethods(methods);
@@ -54,13 +65,13 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
 
   const fetchWorkoutData = useCallback(async () => {
     if (!rpeMethods.length) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      const {data} = await fetchWorkoutInstance(planId);
+      const { data } = await fetchWorkoutInstance(planId);
       setWorkout(data);
-      
+
       let assignedRpeMethod = rpeMethods.find(
         (method) => method.name === data.assignedRpe
       );
@@ -69,7 +80,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
       if (!assignedRpeMethod) {
         assignedRpeMethod = rpeMethods[0];
       }
-      
+
       setSelectedRpeMethod(assignedRpeMethod);
     } catch (error) {
       setError('Error al cargar el entrenamiento');
@@ -94,12 +105,18 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
 
     if (selectedRpeMethod.valuesMeta.length === 0) {
       return Array.from(
-        { length: (selectedRpeMethod.maxValue - selectedRpeMethod.minValue) / selectedRpeMethod.step + 1 },
+        {
+          length:
+            (selectedRpeMethod.maxValue - selectedRpeMethod.minValue) /
+              selectedRpeMethod.step +
+            1
+        },
         (_, index) => {
-          const value = selectedRpeMethod.minValue + (index * selectedRpeMethod.step);
+          const value =
+            selectedRpeMethod.minValue + index * selectedRpeMethod.step;
           return {
             label: value.toString(),
-            value: value,
+            value: value
           };
         }
       );
@@ -107,14 +124,17 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
 
     return selectedRpeMethod.valuesMeta.map((meta) => ({
       label: <RpeOption {...meta} />,
-      value: meta.value,
+      value: meta.value
     }));
   }, [selectedRpeMethod]);
 
-  const handleChange = useCallback((e) => {
-    const value = typeof e.value === 'number' ? e.value : parseFloat(e.value);
-    onChange({ value });
-  }, [onChange]);
+  const handleChange = useCallback(
+    (e) => {
+      const value = typeof e.value === 'number' ? e.value : parseFloat(e.value);
+      onChange({ value });
+    },
+    [onChange]
+  );
 
   if (loading) {
     return <ProgressSpinner style={{ width: '50px', height: '50px' }} />;
@@ -125,12 +145,13 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
   }
 
   if (!selectedRpeMethod) {
-    return <div className="warning-message">No hay método RPE seleccionado</div>;
+    return (
+      <div className="warning-message">No hay método RPE seleccionado</div>
+    );
   }
 
-  const shouldUseInputNumber = 
-    selectedRpeMethod.valuesMeta.length > 10 || 
-    getRpeOptions.length > 10;
+  const shouldUseInputNumber =
+    selectedRpeMethod.valuesMeta.length > 10 || getRpeOptions.length > 10;
 
   return (
     <div className="rpe-dropdown">
@@ -144,26 +165,26 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
             min={selectedRpeMethod.minValue}
             max={selectedRpeMethod.maxValue}
             step={selectedRpeMethod.step}
-          onValueChange={handleChange}
-          placeholder="Ingrese valor RPE"
-          className="p-inputnumber-sm"
-          showButtons
-          buttonLayout="horizontal"
-          decrementButtonClassName="p-button-secondary"
-          incrementButtonClassName="p-button-secondary"
-          incrementButtonIcon="pi pi-plus"
-          decrementButtonIcon="pi pi-minus"
-        />
-      ) : (
-        <Dropdown
-          value={selectedRpe}
-          options={getRpeOptions}
-          onChange={handleChange}
-          placeholder="Seleccione valor RPE"
-          optionLabel="label"
-          className="w-full"
-        />
-      )}
+            onValueChange={handleChange}
+            placeholder="Ingrese valor RPE"
+            className="p-inputnumber-sm"
+            showButtons
+            buttonLayout="horizontal"
+            decrementButtonClassName="p-button-secondary"
+            incrementButtonClassName="p-button-secondary"
+            incrementButtonIcon="pi pi-plus"
+            decrementButtonIcon="pi pi-minus"
+          />
+        ) : (
+          <Dropdown
+            value={selectedRpe}
+            options={getRpeOptions}
+            onChange={handleChange}
+            placeholder="Seleccione valor RPE"
+            optionLabel="label"
+            className="w-full"
+          />
+        )}
       </div>
     </div>
   );

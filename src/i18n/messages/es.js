@@ -14,7 +14,8 @@ const messages = {
   'common.select': 'Seleccionar',
   'common.update': 'Actualizar',
   'common.success': 'Éxito',
-  'common.confirmation.saveChanges': '¿Estás seguro de que deseas guardar estos cambios?',
+  'common.confirmation.saveChanges':
+    '¿Estás seguro de que deseas guardar estos cambios?',
   'common.confirmation': 'Confirmación',
   'common.actions': 'Acciones',
   'common.loading': 'Cargando...',
@@ -53,28 +54,45 @@ const messages = {
   'common.extraNotes': 'Notas adicionales',
   'common.group': 'Grupo',
   'common.days': 'Días',
-  
+
   'home.success.checkEmail': '¡Revisa tu correo para continuar!',
   // Mensajes de confirmacion
-  'assignPlan.confirmation.message': '¿Estás seguro de que deseas asignar este plan?',
-  'assignSubscription.confirmation.message': '¿Estás seguro de que deseas generar una suscripción para este cliente?',
-  'createCycle.confirmation.message': '¿Estás seguro de que deseas crear este plan?',
-  'deletePlan.confirmation.message': '¿Estás seguro de que deseas eliminar este plan?',
-  'deleteStudent.confirmation.message': '¿Estás seguro de que deseas eliminar este estudiante?',
-  'registerPayment.confirmation.message': '¿Estás seguro de que deseas registrar este pago y actualizar la suscripción del cliente?',
-  
-  'deleteExercise.confirmation.message': '¿Estás seguro de que deseas eliminar este ejercicio?',
-  'createExercise.confirmation.message': '¿Estás seguro de que deseas crear este ejercicio?',
-  'updateExercise.confirmation.message': '¿Estás seguro de que deseas actualizar este ejercicio?',
+  'assignPlan.confirmation.message':
+    '¿Estás seguro de que deseas asignar este plan?',
+  'assignSubscription.confirmation.message':
+    '¿Estás seguro de que deseas generar una suscripción para este cliente?',
+  'createCycle.confirmation.message':
+    '¿Estás seguro de que deseas crear este plan?',
+  'deletePlan.confirmation.message':
+    '¿Estás seguro de que deseas eliminar este plan?',
+  'deleteStudent.confirmation.message':
+    '¿Estás seguro de que deseas eliminar este estudiante?',
+  'registerPayment.confirmation.message':
+    '¿Estás seguro de que deseas registrar este pago y actualizar la suscripción del cliente?',
+
+  'deleteExercise.confirmation.message':
+    '¿Estás seguro de que deseas eliminar este ejercicio?',
+  'createExercise.confirmation.message':
+    '¿Estás seguro de que deseas crear este ejercicio?',
+  'updateExercise.confirmation.message':
+    '¿Estás seguro de que deseas actualizar este ejercicio?',
   'coach.plan.confirm.create': '¿Estás seguro de que deseas crear este plan?',
-  'coach.plan.confirm.update': '¿Estás seguro de que deseas actualizar este plan?',
-  'coach.plan.confirm.delete': '¿Estás seguro de que deseas eliminar este plan?',
-  'coach.workout.confirm.delete': '¿Estás seguro de que deseas eliminar este entrenamiento?',
-  'coach.exercise.confirm.upload': '¿Estás seguro de que deseas subir {rowsCount} ejercicios?',
-  'coach.rpe.confirm.delete': '¿Estás seguro de que deseas eliminar este método RPE?',
-  'coach.rpe.confirm.assign': '¿Estás seguro de que deseas asignar {rpe} al {type} seleccionado?',
-  'coach.plan.confirm.clear': '¿Estás seguro de que deseas limpiar el plan de entrenamiento?',
-  'coach.subscription.confirm.delete': '¿Estás seguro de que deseas eliminar la suscripción de este cliente?',
+  'coach.plan.confirm.update':
+    '¿Estás seguro de que deseas actualizar este plan?',
+  'coach.plan.confirm.delete':
+    '¿Estás seguro de que deseas eliminar este plan?',
+  'coach.workout.confirm.delete':
+    '¿Estás seguro de que deseas eliminar este entrenamiento?',
+  'coach.exercise.confirm.upload':
+    '¿Estás seguro de que deseas subir {rowsCount} ejercicios?',
+  'coach.rpe.confirm.delete':
+    '¿Estás seguro de que deseas eliminar este método RPE?',
+  'coach.rpe.confirm.assign':
+    '¿Estás seguro de que deseas asignar {rpe} al {type} seleccionado?',
+  'coach.plan.confirm.clear':
+    '¿Estás seguro de que deseas limpiar el plan de entrenamiento?',
+  'coach.subscription.confirm.delete':
+    '¿Estás seguro de que deseas eliminar la suscripción de este cliente?',
   'coach.workoutsPerWeek': 'Entrenamientos por semana',
   'coach.exercise.upload.success': 'Ejercicios subidos',
   'coach.exercise.upload.duplicated': 'Ejercicios duplicados',
@@ -110,11 +128,11 @@ const messages = {
   'clientDashboard.tabs.calendar': 'Calendario de Entrenamientos',
   'clientDashboard.tabs.details': 'Detalles de Entrenamientos',
   'clientDashboard.tabs.excelView': 'Vista Excel',
-  
+
   'clientDashboard.buttons.assign': 'Asignar Entrenamientos',
   'clientDashboard.buttons.unassign': 'Desasignar Entrenamientos',
   'clientDashboard.buttons.createCycle': 'Crear Ciclo de Entrenamiento',
-  
+
   'clientDashboard.workout.completedOn': 'Completado el',
   'clientDashboard.workout.sessionTime': 'Tiempo de sesión',
   'clientDashboard.workout.feedback': 'Retroalimentación',
@@ -122,17 +140,17 @@ const messages = {
   'clientDashboard.workout.energy': 'Nivel de energía',
   'clientDashboard.workout.difficulty': 'Dificultad',
   'clientDashboard.workout.notes': 'Notas adicionales',
-  
+
   'clientDashboard.dropdown.selectWorkout': 'Seleccionar Entrenamiento',
   'clientDashboard.dropdown.selectExercise': 'Seleccionar Ejercicio',
-  
+
   'clientDashboard.table.workoutName': 'Nombre del Entrenamiento',
   'clientDashboard.table.details': 'Detalles',
   'clientDashboard.table.set': 'Serie',
   'clientDashboard.table.type': 'Tipo',
   'clientDashboard.table.expected': 'Esperado',
   'clientDashboard.table.completed': 'Completado',
-  
+
   // NewClientProfile
   'profile.title': 'Perfil del Cliente',
   'profile.personalInfo': 'Información Personal',
@@ -142,17 +160,17 @@ const messages = {
   'profile.gender': 'Género',
   'profile.phone': 'Teléfono',
   'profile.edit': 'Editar',
-  
+
   'profile.subscription': 'Suscripción Actual',
   'profile.subscription.planName': 'Nombre del Plan',
   'profile.subscription.startDate': 'Fecha de Inicio',
   'profile.subscription.endDate': 'Fecha de Fin',
   'profile.subscription.status': 'Estado',
-  
+
   'profile.tabs.workoutHistory': 'Historial de Entrenamientos',
   'profile.tabs.progress': 'Progreso',
   'profile.tabs.activities': 'Actividades del Usuario',
-  
+
   'profile.table.planName': 'Nombre del Plan',
   'profile.table.details': 'Detalles',
   'profile.table.trainingDate': 'Fecha de Entrenamiento',
@@ -162,29 +180,25 @@ const messages = {
   'profile.table.action': 'Acción',
   'profile.table.week': 'Semana {number}',
   'profile.table.day': 'Día {number}',
-  
+
   'profile.dialog.edit': 'Editar Información Personal',
   'profile.dialog.fitnessGoal': 'Objetivo Fitness',
   'profile.dialog.activityLevel': 'Nivel de Actividad',
   'profile.dialog.cancel': 'Cancelar',
   'profile.dialog.save': 'Guardar',
-  
+
   'profile.goals.weightLoss': 'Pérdida de peso',
   'profile.goals.muscleGain': 'Ganancia muscular',
   'profile.goals.mobility': 'Mejorar movilidad',
   'profile.goals.maintenance': 'Mantenimiento',
   'profile.goals.flexibility': 'Flexibilidad',
-  
+
   'profile.activity.sedentary': 'Sedentario',
   'profile.activity.moderate': 'Moderadamente activo',
   'profile.activity.active': 'Muy activo',
-  
-  
-
 
   'fitnessGoal.custom': 'Objetivo Fitness Personalizado',
-  
-  
+
   // NewCoachProfile
   'coach.welcome': 'Bienvenido, {name}!',
   'coach.email': 'Correo',
@@ -192,25 +206,32 @@ const messages = {
   'coach.trainingType': 'Tipo de Entrenamiento',
   'coach.gymLocation': 'Ubicación del Gimnasio',
   'coach.biography': 'Biografía',
-  
+
   'coach.tabs.workouts': 'Entrenamientos',
   'coach.tabs.plans': 'Planes',
   'coach.tabs.exercises': 'Ejercicios',
   'coach.tabs.subscription': 'Planes de Suscripción',
   'coach.tabs.rpe': 'Métodos RPE',
-  
+
   'coach.workouts.title': 'Entrenamientos',
   'coach.workout.details': 'Detalles del Entrenamiento',
-  'coach.workout.success.deleted.message': 'Entrenamiento eliminado exitosamente!',
-  'coach.workout.success.assigned.message': 'Entrenamiento asignado exitosamente!',
-  'coach.workout.success.unassigned.message': 'Entrenamiento desasignado exitosamente!',
-  'coach.workout.error.selectWorkoutAndDay': 'Por favor, selecciona un entrenamiento y un día de la semana para la última asignación.',
-  'coach.workout.error.selectAtLeastOneWorkout': 'Por favor, selecciona al menos un entrenamiento.',
-  
-  // NewCreatePlan  
+  'coach.workout.success.deleted.message':
+    'Entrenamiento eliminado exitosamente!',
+  'coach.workout.success.assigned.message':
+    'Entrenamiento asignado exitosamente!',
+  'coach.workout.success.unassigned.message':
+    'Entrenamiento desasignado exitosamente!',
+  'coach.workout.error.selectWorkoutAndDay':
+    'Por favor, selecciona un entrenamiento y un día de la semana para la última asignación.',
+  'coach.workout.error.selectAtLeastOneWorkout':
+    'Por favor, selecciona al menos un entrenamiento.',
+
+  // NewCreatePlan
   'coach.createPlan.title': 'Crear Plan de Entrenamiento',
-  'coach.createPlan.subtitle': 'Crea un plan de entrenamiento personalizado para tus clientes',
-  'coach.createPlan.description': 'Usa esta página para crear un plan de entrenamiento personalizado para tus clientes',
+  'coach.createPlan.subtitle':
+    'Crea un plan de entrenamiento personalizado para tus clientes',
+  'coach.createPlan.description':
+    'Usa esta página para crear un plan de entrenamiento personalizado para tus clientes',
   'coach.createPlan.buttons.add': 'Agregar {item}',
   'coach.createPlan.buttons.assign': 'Asignar {item}',
   'coach.createPlan.buttons.import': 'Importar Ejercicios',
@@ -221,14 +242,17 @@ const messages = {
   'coach.createPlan.buttons.addGroup': 'Agregar Grupo',
   'coach.createPlan.buttons.addExercise': 'Agregar Ejercicio',
   'coach.createPlan.buttons.addRestPeriod': 'Agregar Período de Descanso',
-  'coach.createPlan.buttons.addRestPeriod.label': 'Período de Descanso (segundos)',
+  'coach.createPlan.buttons.addRestPeriod.label':
+    'Período de Descanso (segundos)',
   'coach.createPlan.buttons.restPeriod.label': 'Período de Descanso',
-  'coach.delete.confirmation': '¿Estás seguro de que deseas eliminar este plan?',
+  'coach.delete.confirmation':
+    '¿Estás seguro de que deseas eliminar este plan?',
   'coach.delete.header': 'Confirmar Eliminación',
   'coach.delete.error.referenced': 'Error',
-  'coach.delete.error.referenced.detail': 'Este plan de entrenamiento está siendo utilizado por un cliente',
+  'coach.delete.error.referenced.detail':
+    'Este plan de entrenamiento está siendo utilizado por un cliente',
   'coach.delete.error.generic': 'Error',
-  
+
   'coach.rpe.name': 'Nombre',
   'coach.rpe.minValue': 'Valor Mínimo',
   'coach.rpe.maxValue': 'Valor Máximo',
@@ -241,7 +265,7 @@ const messages = {
 
   'coach.subscription.currentPlan': 'Plan Actual',
   'coach.subscription.maxClients': 'Clientes Máximos: {max}',
-  
+
   'coach.exercise.dragDrop': 'Arrastra y suelta un archivo aquí para subir.',
   'coach.exercise.name': 'Nombre del Ejercicio',
   'coach.exercise.type': 'Tipo',
@@ -251,20 +275,24 @@ const messages = {
   'coach.exercise.bodyArea': 'Área corporal involucrada',
   'coach.exercise.create': 'Crear Ejercicio',
   'coach.exercise.edit': 'Editar Ejercicio',
-  'coach.exercise.error.name.empty': 'El nombre del ejercicio no puede estar vacío.',
-  'coach.exercise.error.video.invalid': 'Por favor ingresa una URL válida de YouTube',
-  'coach.exercise.error.video.invalid.message': 'Por favor ingresa una URL válida de YouTube',
+  'coach.exercise.error.name.empty':
+    'El nombre del ejercicio no puede estar vacío.',
+  'coach.exercise.error.video.invalid':
+    'Por favor ingresa una URL válida de YouTube',
+  'coach.exercise.error.video.invalid.message':
+    'Por favor ingresa una URL válida de YouTube',
   'coach.exercise.error.video.invalid.header': 'Error',
-  
+
   // NewManageStudents
   'students.title': 'Gestionar Estudiantes',
   'students.subtitle': 'Ver y gestionar el progreso de tus estudiantes',
-  'students.description': 'Usa esta página para seguir el progreso de tus estudiantes, asignar sesiones de entrenamiento y comunicarte directamente con ellos.',
-  
+  'students.description':
+    'Usa esta página para seguir el progreso de tus estudiantes, asignar sesiones de entrenamiento y comunicarte directamente con ellos.',
+
   'students.search': 'Buscar estudiantes',
   'students.addNew': 'Agregar Nuevo Estudiante',
   'students.noStudents': 'No se encontraron estudiantes.',
-  
+
   'students.table.name': 'Nombre',
   'students.table.email': 'Correo',
   'students.table.status': 'Estado',
@@ -272,10 +300,10 @@ const messages = {
   'students.table.nextPayment': 'Próximo Pago',
   'students.table.plan': 'Plan de Suscripción',
   'students.table.actions': 'Acciones',
-  
+
   'students.status.active': 'Activo',
   'students.status.inactive': 'Inactivo',
-  
+
   'students.actions.viewProfile': 'Ver Perfil',
   'students.actions.registerPayment': 'Registrar Pago',
   'students.actions.deleteSubscription': 'Eliminar Suscripción',
@@ -284,18 +312,21 @@ const messages = {
   'students.actions.resendVerification': 'Reenviar Verificación',
   'students.actions.assignSubscription': 'Asignar Suscripción',
   'students.actions.editProfile': 'Editar Perfil',
-  
+
   'students.dialog.newStudent': 'Nuevo Estudiante',
   'students.dialog.assignSubscription': 'Asignar Suscripción',
   'students.dialog.registerPayment': 'Registrar Pago',
   'students.dialog.studentDetails': 'Detalles del Estudiante',
   'students.dialog.editProfile': 'Editar Perfil',
   'students.dialog.editProfile.success': 'Perfil actualizado exitosamente!',
-  'students.confirm.deleteSubscription': '¿Estás seguro que deseas eliminar la suscripción de este cliente?',
-  'students.confirm.deleteClient': '¿Estás seguro que deseas eliminar este cliente?',
+  'students.confirm.deleteSubscription':
+    '¿Estás seguro que deseas eliminar la suscripción de este cliente?',
+  'students.confirm.deleteClient':
+    '¿Estás seguro que deseas eliminar este cliente?',
   'students.success.deleted': 'Cliente eliminado exitosamente!',
-  'students.success.verificationSent': 'Email de verificación enviado exitosamente!',
-  
+  'students.success.verificationSent':
+    'Email de verificación enviado exitosamente!',
+
   // NewStudentHome
   'studentHome.welcome': '¡Bienvenido, {name}!',
   'studentHome.calendar.title': 'Tu Calendario de Entrenamiento',
@@ -303,7 +334,7 @@ const messages = {
   'studentHome.calendar.viewDetails': 'Ver Detalles',
   'studentHome.calendar.startTraining': 'Comenzar Entrenamiento',
   'studentHome.dialog.planDetails': 'Detalles del Plan',
-  
+
   // Meses (si no existen ya)
   'months.january': 'Enero',
   'months.february': 'Febrero',
@@ -317,30 +348,30 @@ const messages = {
   'months.october': 'Octubre',
   'months.november': 'Noviembre',
   'months.december': 'Diciembre',
-  
+
   // Calendario
   'calendar.today': 'Hoy',
   'calendar.month': 'Mes',
   'calendar.week': 'Semana',
   'calendar.day': 'Día',
   'calendar.list': 'Lista',
-  
+
   // Mensajes de error
   'error.fetchTraining': 'Error al cargar los datos de entrenamiento',
-  
+
   // NewStudentsDetails
   'studentDetails.title': 'Detalles de {name}',
   'studentDetails.back': 'Volver',
   'studentDetails.loading': 'Cargando...',
-  
+
   'studentDetails.personalInfo.title': 'Información Personal',
   'studentDetails.personalInfo.email': 'Correo',
   'studentDetails.personalInfo.fitnessGoal': 'Objetivo Fitness',
   'studentDetails.personalInfo.activityLevel': 'Nivel de Actividad',
-  
+
   'studentDetails.activities.title': 'Actividades Recientes',
   'studentDetails.progress.title': 'Progreso',
-  
+
   'studentDetails.plans.current': 'Sesiones de Entrenamiento Actuales',
   'studentDetails.plans.completed': 'Sesiones de Entrenamiento Completados',
   'studentDetails.plans.name': 'Nombre del Plan',
@@ -350,17 +381,19 @@ const messages = {
   'studentDetails.plans.endDate': 'Fecha de Fin',
   'studentDetails.plans.status': 'Estado',
   'studentDetails.plans.progress': 'Progreso',
-  
+
   'studentDetails.dialog.planDetails': 'Detalles del Plan',
-  'studentDetails.dialog.confirmDelete': '¿Estás seguro que deseas eliminar este plan?',
+  'studentDetails.dialog.confirmDelete':
+    '¿Estás seguro que deseas eliminar este plan?',
   'studentDetails.dialog.confirmDeleteHeader': 'Confirmar Eliminación',
-  
-  'studentDetails.success.planDeleted': '¡Has eliminado el plan {name} exitosamente!',
+
+  'studentDetails.success.planDeleted':
+    '¡Has eliminado el plan {name} exitosamente!',
   'studentDetails.error.fetchData': 'Error al cargar los datos del estudiante',
-  
+
   'studentDetails.tooltip.viewDetails': 'Ver Detalles',
   'studentDetails.tooltip.deletePlan': 'Eliminar Plan',
-  
+
   // NewTrainingDetails
   'training.title': 'Plan de Entrenamiento',
   'training.status': 'Estado',
@@ -368,20 +401,20 @@ const messages = {
   'training.setCount': 'Cantidad de Series',
   'training.restInterval': 'Intervalo de Descanso',
   'training.seconds': 'segundos',
-  
+
   'training.exercise.details': 'Detalles del Ejercicio',
   'training.exercise.progress': 'Progreso del Ejercicio',
   'training.exercise.videoUrl': 'URL del Video',
   'training.exercise.set': 'Serie {number}',
   'training.exercise.rpe': 'RPE',
-  
+
   'training.checkbox.completed': 'Completado',
   'training.checkbox.notAsPlanned': 'Completado No Según lo Planeado',
   'training.checkbox.readOnly': 'Solo Lectura',
-  
+
   'training.session.finished': '¡Sesión finalizada!',
   'training.session.congrats': '¡Felicitaciones, has terminado tu rutina!',
-  
+
   'training.property.repetitions': 'Repeticiones',
   'training.property.weight': 'Peso',
   'training.property.time': 'Tiempo',
@@ -390,61 +423,55 @@ const messages = {
   'training.property.difficulty': 'Dificultad',
   'training.property.duration': 'Duración',
   'training.property.restInterval': 'Intervalo de Descanso',
-  
+
   'training.dialog.finishTitle': 'Finalizar Entrenamiento',
   'training.dialog.videoTitle': 'Video del Ejercicio',
-  
+
   'training.buttons.saveProgress': 'Guardar Progreso',
   'training.buttons.finishTraining': 'Finalizar Entrenamiento',
   'training.buttons.viewDetails': 'Ver Detalles',
-  
+
   'training.success.saved': 'Tu progreso ha sido guardado exitosamente.',
   'training.success.finished': '¡Felicitaciones, has terminado tu rutina!',
-  
+
   'training.error.noFeedback': 'No hay retroalimentación válida para enviar.',
   'training.error.exerciseNotFound': 'Ejercicio original no encontrado.',
-  'training.error.fillAllFields': 'Todos los campos relevantes deben estar completos.',
-  
+  'training.error.fillAllFields':
+    'Todos los campos relevantes deben estar completos.',
+
   'training.loading': 'Cargando...',
-  
+
   // TrainingDetails
   'training.group.title': 'Grupo {number}',
   'training.group.set': 'Serie',
   'training.group.rest': 'Descanso (segundos)',
-  
+
   'training.exercise.video': 'URL del Video',
   'training.exercise.sets': 'Serie {number}',
   'training.exercise.comments': 'Comentarios',
-  
+
   'training.plan.name': 'Nombre del Plan',
   'training.plan.status': 'Estado',
-  
 
-
-  
   'training.buttons.save': 'Guardar Progreso',
   'training.buttons.finish': 'Finalizar Entrenamiento',
-  
 
+  'training.error.fillFields':
+    'Todos los campos relevantes deben estar completos.',
 
-  
-
-  'training.error.fillFields': 'Todos los campos relevantes deben estar completos.',
-
-  
   // NewCreatePlan
   'plan.create.title': 'Crear Plan',
   'plan.edit.title': 'Editar Plan',
   'plan.name': 'Nombre del Plan',
   'plan.notes': 'Notas Personalizadas',
-  
+
   'plan.buttons.import': 'Importar desde Imagen',
   'plan.buttons.addGroup': 'Agregar Grupo',
   'plan.buttons.undoDelete': 'Deshacer Eliminación',
   'plan.buttons.clearPlan': 'Limpiar Plan',
   'plan.buttons.createPlan': 'Crear Plan',
   'plan.buttons.editPlan': 'Editar Plan',
-  
+
   'plan.group.title': 'Grupo {number}',
   'plan.group.restPeriod': 'Descanso',
   'plan.group.isRestPeriod': 'Es Descanso',
@@ -458,7 +485,8 @@ const messages = {
   'plan.group.rest': 'Descanso (segundos)',
   'plan.group.addExercise': 'Agregar Ejercicio',
   'plan.group.removed': 'Grupo Eliminado',
-  'plan.group.removed.message.number': 'El grupo número {number} ha sido eliminado',
+  'plan.group.removed.message.number':
+    'El grupo número {number} ha sido eliminado',
   'plan.group.removed.message.name': 'El grupo "{name}" ha sido eliminado',
   'plan.group.empty': 'Arrastra ejercicios aquí para agregarlos al grupo.',
   'plan.group.restDurationSuffix': ' segundos',
@@ -466,24 +494,25 @@ const messages = {
   'plan.exercise.add': 'Agregar Ejercicio',
   'plan.exercise.notes': 'Notas',
   'plan.exercise.property.add': 'Agregar Propiedad',
-  
-  'plan.dialog.confirmClear': '¿Estás seguro que deseas limpiar todo el plan de entrenamiento?',
+
+  'plan.dialog.confirmClear':
+    '¿Estás seguro que deseas limpiar todo el plan de entrenamiento?',
   'plan.dialog.confirmCreate': '¿Estás seguro que deseas crear este plan?',
   'plan.dialog.confirmEdit': '¿Estás seguro que deseas editar este plan?',
-  
+
   'plan.success.created': '¡Has creado el plan {name} exitosamente!',
   'plan.success.updated': '¡Has actualizado el plan {name} exitosamente!',
-  'plan.success.imported': 'El plan de entrenamiento ha sido importado desde la imagen exitosamente.',
-  
+  'plan.success.imported':
+    'El plan de entrenamiento ha sido importado desde la imagen exitosamente.',
+
   'plan.error.nameRequired': 'El nombre del plan es requerido.',
   'plan.error.groupRequired': 'Se requiere al menos un grupo.',
   'plan.error.exerciseRequired': 'Cada grupo debe tener al menos un ejercicio.',
-  'plan.error.exerciseSelect': 'Cada ejercicio debe estar seleccionado. {name} no está seleccionado.',
-  
+  'plan.error.exerciseSelect':
+    'Cada ejercicio debe estar seleccionado. {name} no está seleccionado.',
+
   // Traducciones adicionales
-  
-  
-  
+
   // Propiedades de ejercicios
   'exercise.properties.sets': 'Series',
   'exercise.properties.reps': 'Repeticiones',
@@ -506,35 +535,36 @@ const messages = {
   'exercise.properties.sessionTime': 'Tiempo de Sesión',
   'exercise.properties.completed': 'Completado',
   'exercise.properties.notCompleted': 'No Completado',
-  'exercise.properties.completedNotAsPlanned': 'No Completado Según lo Planeado',
+  'exercise.properties.completedNotAsPlanned':
+    'No Completado Según lo Planeado',
   'exercise.properties.comments': 'Comentarios',
   'exercise.properties.setLogs': 'Registro de Series',
-  
+
   // Mensajes de confirmación
   'confirm.delete': '¿Estás seguro que deseas eliminar esto?',
   'confirm.deleteGroup': '¿Estás seguro que deseas eliminar este grupo?',
   'confirm.header': 'Confirmar Acción',
-  
+
   // Mensajes de éxito/error
   'success.saved': 'Guardado exitosamente',
   'success.deleted': 'Eliminado exitosamente',
   'success.updated': 'Actualizado exitosamente',
   'error.generic': 'Algo salió mal',
   'error.required': 'Este campo es requerido',
-  
+
   // Tooltips
   'tooltip.addExercise': 'Agregar ejercicio',
   'tooltip.removeExercise': 'Eliminar ejercicio',
   'tooltip.addProperty': 'Agregar propiedad',
   'tooltip.removeProperty': 'Eliminar propiedad',
   'tooltip.dragGroup': 'Arrastrar para reordenar',
-  
+
   // Filtros y ordenamiento
   'filter.byName': 'Filtrar por nombre',
   'filter.byType': 'Filtrar por tipo',
   'sort.ascending': 'Ascendente',
   'sort.descending': 'Descendente',
-  
+
   // NewClientDashboard - Adicionales
   'dashboard.calendar.viewDetails': 'Ver Detalles del Entrenamiento',
   'dashboard.calendar.assignWorkout': 'Asignar Entrenamiento al Día',
@@ -544,23 +574,23 @@ const messages = {
   'dashboard.table.type': 'Tipo',
   'dashboard.table.expected': 'Esperado',
   'dashboard.table.completed': 'Completado',
-  
+
   'dashboard.exercise.status.completed': '✔',
   'dashboard.exercise.status.notCompleted': '✘',
-  
+
   'dashboard.dialog.planDetails': 'Detalles del Plan',
-  
+
   'dashboard.chart.expectedReps': 'Repeticiones Esperadas',
   'dashboard.chart.completedReps': 'Repeticiones Completadas',
   'dashboard.chart.averageWeight': 'Peso Promedio (kg)',
   'dashboard.chart.averageRpe': 'RPE Promedio',
-  
+
   'dashboard.calendar.today': 'Hoy',
   'dashboard.calendar.month': 'Mes',
   'dashboard.calendar.week': 'Semana',
   'dashboard.calendar.day': 'Día',
   'dashboard.calendar.list': 'Lista',
-  
+
   // NewCoachHome - Adicionales
   'coach.home.trainingFrequencyChart': 'Gráfico de Frecuencia de Entrenamiento',
   'coach.home.noFrequencyData': 'Sin datos de frecuencia aún',
@@ -583,14 +613,15 @@ const messages = {
   'coach.home.studentsStatus': 'Estado de Alumnos',
   'coach.home.unpaidClients': 'Clientes Impagados',
   'coach.home.daysLeft': 'Días Restantes',
-  'coach.home.last7daysFrequency': 'Frecuencia de Entrenamiento (Últimos 7 Días)',
+  'coach.home.last7daysFrequency':
+    'Frecuencia de Entrenamiento (Últimos 7 Días)',
   'coach.home.noDaysLeftData': 'Sin datos de días restantes aún',
-  'coach.home.noFrequencyData7days': 'Sin datos de frecuencia para los últimos 7 días aún',
+  'coach.home.noFrequencyData7days':
+    'Sin datos de frecuencia para los últimos 7 días aún',
   'coach.home.noPaidData': 'Sin datos de pagos aún',
   'coach.home.noUnpaidData': 'Sin datos de impagos aún',
   'coach.home.allPaid': 'Todos los clientes han pagado sus suscripciones',
 
-  
   'coach.sections.trainingPlans': 'Sesiones de Entrenamiento',
   'coach.sections.recentActivity': 'Actividad Reciente',
   'coach.sections.recentMessages': 'Mensajes Recientes',
@@ -598,8 +629,9 @@ const messages = {
   'coach.sections.upcomingSessions': 'Próximas Sesiones',
   'coach.sections.trainingSessions': 'Sesiones de Entrenamiento',
   'coach.sections.trainingCycles': 'Ciclos de Entrenamiento',
-  
-  'coach.trainingCycle.description': 'Aca puedes ver los ciclos de entrenamiento que tienes y crear nuevos. También puedes asignar sesiones de entrenamiento a un ciclo como tambien asignar un ciclo a un cliente.',
+
+  'coach.trainingCycle.description':
+    'Aca puedes ver los ciclos de entrenamiento que tienes y crear nuevos. También puedes asignar sesiones de entrenamiento a un ciclo como tambien asignar un ciclo a un cliente.',
 
   'coach.buttons.newPlan': 'Nuevo Plan',
   'coach.buttons.editPlan': 'Editar Plan',
@@ -610,25 +642,26 @@ const messages = {
   'coach.buttons.unassignPlans': 'Desasignar Sesiones',
   'coach.subscription.status': 'Estado de Suscripción',
   'coach.subscription.clientsManaged': 'Clientes Gestionados: {current}/{max}',
-  
+
   'coach.progress.completed': 'Completado: {count}',
   'coach.progress.pending': 'Pendiente: {count}',
   'coach.progress.expired': 'Expirado: {count}',
   'coach.progress.total': '{completed}/{total} Completados',
-  
+
   'coach.calendar.noUpcomingSession': 'Sin sesiones próximas',
-  
+
   'coach.chart.completed': 'Completados',
   'coach.chart.pending': 'Pendientes',
   'coach.chart.expired': 'Expirados',
-  
+
   // ForgotPassword
   'forgotPassword.title': 'Olvidé mi Contraseña',
   'forgotPassword.email': 'Correo Electrónico',
   'forgotPassword.sendLink': 'Enviar Enlace de Restablecimiento',
-  'forgotPassword.success': 'El enlace para restablecer la contraseña ha sido enviado a tu correo.',
+  'forgotPassword.success':
+    'El enlace para restablecer la contraseña ha sido enviado a tu correo.',
   'forgotPassword.error': 'Algo salió mal',
-  
+
   // HomePage
   'home.header.features': 'Características',
   'home.header.pricing': 'Precios',
@@ -636,54 +669,63 @@ const messages = {
   'home.header.contact': 'Contacto',
   'home.header.login': 'Iniciar Sesión',
   'home.header.plans': 'Planes',
-  
+
   'home.hero.title': 'Transforma tu Viaje Fitness con EaseTrain',
-  'home.hero.subtitle': 'Empodera a los entrenadores, motiva a los clientes y alcanza metas de fitness juntos.',
+  'home.hero.subtitle':
+    'Empodera a los entrenadores, motiva a los clientes y alcanza metas de fitness juntos.',
   'home.hero.getStarted': 'Comenzar',
   'home.hero.learnMore': 'Aprender Más',
-  
+
   'home.features.title': 'Características Clave',
   'home.features.manageClients': 'Gestionar Clientes',
-  'home.features.manageClientsDesc': 'Gestiona fácilmente los detalles y el progreso de tus clientes en un solo lugar.',
+  'home.features.manageClientsDesc':
+    'Gestiona fácilmente los detalles y el progreso de tus clientes en un solo lugar.',
   'home.features.customPlans': 'Sesiones de Entrenamiento Personalizados',
-  'home.features.customPlansDesc': 'Crea rutinas de entrenamiento personalizadas adaptadas a las necesidades de cada cliente.',
+  'home.features.customPlansDesc':
+    'Crea rutinas de entrenamiento personalizadas adaptadas a las necesidades de cada cliente.',
   'home.features.trackProgress': 'Seguimiento del Progreso',
-  'home.features.trackProgressDesc': 'Visualiza el progreso del cliente con gráficos y reportes basados en datos.',
+  'home.features.trackProgressDesc':
+    'Visualiza el progreso del cliente con gráficos y reportes basados en datos.',
   'home.features.messaging': 'Mensajería en la App',
-  'home.features.messagingDesc': 'Mantente conectado con los clientes a través de mensajes directos.',
+  'home.features.messagingDesc':
+    'Mantente conectado con los clientes a través de mensajes directos.',
   'home.features.videoTutorials': 'Tutoriales en Video',
-  'home.features.videoTutorialsDesc': 'Comparte tutoriales en video para guiar a los clientes en los ejercicios.',
-  
+  'home.features.videoTutorialsDesc':
+    'Comparte tutoriales en video para guiar a los clientes en los ejercicios.',
+
   'home.pricing.title': 'Planes de Precios',
   'home.pricing.maxClients': 'Clientes Máximos: {max}',
-  
+
   'home.testimonials.title': 'Lo que Dicen Nuestros Usuarios',
-  'home.testimonials.sarah': 'EaseTrain ha revolucionado cómo gestiono a mis clientes. ¡Es un cambio de juego para los entrenadores personales!',
-  'home.testimonials.mike': 'La función de seguimiento del progreso me mantiene motivado. Me encanta ver mis mejoras con el tiempo.',
-  'home.testimonials.emily': 'Las sesiones de entrenamiento personalizados y los tutoriales en video me han ayudado a brindar un mejor servicio a mis clientes.',
-  
+  'home.testimonials.sarah':
+    'EaseTrain ha revolucionado cómo gestiono a mis clientes. ¡Es un cambio de juego para los entrenadores personales!',
+  'home.testimonials.mike':
+    'La función de seguimiento del progreso me mantiene motivado. Me encanta ver mis mejoras con el tiempo.',
+  'home.testimonials.emily':
+    'Las sesiones de entrenamiento personalizados y los tutoriales en video me han ayudado a brindar un mejor servicio a mis clientes.',
+
   'home.footer.terms': 'Términos de Servicio',
   'home.footer.privacy': 'Privacidad',
   'home.footer.contact': 'Contacto',
-  
+
   'home.login.title': 'Iniciar Sesión',
   'home.login.email': 'Correo Electrónico',
   'home.login.password': 'Contraseña',
   'home.login.forgotPassword': '¿Olvidaste tu contraseña?',
-  
+
   'home.signup.title': 'Registrarse',
   'home.signup.email': 'Correo Electrónico',
   'home.signup.password': 'Contraseña',
   'home.signup.confirmPassword': 'Confirmar Contraseña',
-  
+
   'home.toast.verifyEmail': '¡Verifica tu correo antes de iniciar sesión!',
   'home.toast.checkEmail': '¡Revisa tu correo para continuar!',
   'home.toast.error': 'Error',
   'home.toast.success': 'Éxito',
-  
+
   'home.error.verifyEmail': '¡Verifica tu correo antes de iniciar sesión!',
   'home.error.checkEmail': '¡Revisa tu correo para continuar!',
-  
+
   // ResetPassword
   'resetPassword.title': 'Restablecer Contraseña',
   'resetPassword.newPassword': 'Nueva Contraseña',
@@ -692,17 +734,18 @@ const messages = {
   'resetPassword.success': 'Contraseña restablecida exitosamente',
   'resetPassword.error.match': 'Las contraseñas no coinciden',
   'resetPassword.error.generic': 'Algo salió mal',
-  
+
   // NotSubscribed
   'notSubscribed.title': 'Sin suscripción activa',
-  'notSubscribed.message': 'No tienes ninguna suscripción disponible. Habla con tu entrenador para solucionar esto.',
+  'notSubscribed.message':
+    'No tienes ninguna suscripción disponible. Habla con tu entrenador para solucionar esto.',
   'notSubscribed.button': 'Ir al Inicio de Sesión',
-  
+
   // Unauthorized
   'unauthorized.title': 'No Autorizado',
   'unauthorized.message': 'No tienes permiso para ver esta página.',
   'unauthorized.button': 'Ir al Inicio de Sesión',
-  
+
   // WorkoutTable
   'workoutTable.trainingDay': 'Día de Entrenamiento: {day}',
   'workoutTable.exercise': 'Ejercicio',
@@ -736,7 +779,7 @@ const messages = {
   'workoutTable.notes': 'Notas',
   'workoutTable.difficulty': 'Dificultad',
   'workoutTable.duration': 'Duración',
-  'workoutTable.distance': 'Distancia', 
+  'workoutTable.distance': 'Distancia',
   'workoutTable.newExercise': 'Nuevo Ejercicio',
   'workoutTable.selectGroup': 'Seleccionar Grupo',
   'workoutTable.addNewGroup': 'Grupo',
@@ -752,10 +795,9 @@ const messages = {
   'workoutTable.newTraining': 'Nuevo Entrenamiento',
   'workoutTable.editTraining': 'Editar Entrenamiento',
   'workoutTable.addProperties': 'Agregar Propiedades',
-  'workoutTable.newCycle' : 'Nuevo Ciclo',
+  'workoutTable.newCycle': 'Nuevo Ciclo',
   'workoutTable.restDuration': 'Duración de Descanso',
 
-  
   // Header
   'header.home': 'Inicio',
   'header.profile': 'Perfil',
@@ -791,18 +833,21 @@ const messages = {
   'coachProfileForm.summary': 'Resumen del Perfil',
   'coachProfileForm.success': '¡Perfil actualizado!',
   'coachProfileForm.error': 'Error',
-  'coachProfileForm.error.selectPlan': 'Por favor, selecciona un plan de suscripción.',
-  'coachProfileForm.error.trainingType': 'Al menos un tipo de entrenamiento debe ser seleccionado.',
-  'coachProfileForm.error.subscriptionType': 'Tipo de suscripción es requerido.',
+  'coachProfileForm.error.selectPlan':
+    'Por favor, selecciona un plan de suscripción.',
+  'coachProfileForm.error.trainingType':
+    'Al menos un tipo de entrenamiento debe ser seleccionado.',
+  'coachProfileForm.error.subscriptionType':
+    'Tipo de suscripción es requerido.',
   'coachProfileForm.error.name': 'Nombre es requerido.',
   'coachProfileForm.dialog.header': 'Selecciona un Plan de Suscripción',
   'coachProfileForm.step.personalInfo': 'Información Personal',
   'coachProfileForm.step.trainingDetails': 'Detalles de Entrenamiento',
   'coachProfileForm.step.subscription': 'Suscripción',
   'coachProfileForm.step.confirmation': 'Confirmación',
-  'coachProfileForm.confirmationMessage': 'Por favor, revisa toda la información antes de confirmar.',
-  
-  
+  'coachProfileForm.confirmationMessage':
+    'Por favor, revisa toda la información antes de confirmar.',
+
   // NewStudentDialog
   'gender.male': 'Masculino',
   'gender.female': 'Femenino',
@@ -819,61 +864,74 @@ const messages = {
   'student.success': 'Éxito',
   'student.updatedSuccessfully': 'Estudiante actualizado exitosamente',
   'student.addedSuccessfully': 'Estudiante agregado exitosamente',
-  'student.error.nameEmailRequired': 'El nombre y el correo electrónico no pueden estar vacíos',
-  'student.error.birthdateInvalid': 'La fecha de nacimiento no puede ser posterior a hoy',
-  'student.warning.youngClient': 'El cliente es muy joven, por favor verifica la fecha de nacimiento',
-  'student.confirmation.create': '¿Estás seguro de que deseas crear este estudiante?',
+  'student.error.nameEmailRequired':
+    'El nombre y el correo electrónico no pueden estar vacíos',
+  'student.error.birthdateInvalid':
+    'La fecha de nacimiento no puede ser posterior a hoy',
+  'student.warning.youngClient':
+    'El cliente es muy joven, por favor verifica la fecha de nacimiento',
+  'student.confirmation.create':
+    '¿Estás seguro de que deseas crear este estudiante?',
   'student.error.noSubscription': 'El cliente no tiene una suscripción activa',
-  'student.error.noCoachPlans': 'No hay planes de entrenador disponibles. Por favor, crea un plan de entrenador primero',
-  'student.verificationEmailSent': '¡Correo de verificación enviado exitosamente!',
-  'confirmation': 'Confirmación',
-  'email': 'Correo Electrónico',
-  'name': 'Nombre',
-  'fitnessGoal': 'Objetivo Fitness',
-  'activityLevel': 'Nivel de Actividad',
-  'gender': 'Género',
-  'height': 'Altura',
-  'weight': 'Peso',
-  'birthdate': 'Fecha de Nacimiento',
-  'save': 'Guardar',
-  'error': 'Error',
-  'warning': 'Advertencia',
-  
+  'student.error.noCoachPlans':
+    'No hay planes de entrenador disponibles. Por favor, crea un plan de entrenador primero',
+  'student.verificationEmailSent':
+    '¡Correo de verificación enviado exitosamente!',
+  confirmation: 'Confirmación',
+  email: 'Correo Electrónico',
+  name: 'Nombre',
+  fitnessGoal: 'Objetivo Fitness',
+  activityLevel: 'Nivel de Actividad',
+  gender: 'Género',
+  height: 'Altura',
+  weight: 'Peso',
+  birthdate: 'Fecha de Nacimiento',
+  save: 'Guardar',
+  error: 'Error',
+  warning: 'Advertencia',
+
   // AssignSubscriptionDialog
-  'assignSubscription.error.selectPlan': 'Por favor, selecciona un plan de entrenador',
-  
+  'assignSubscription.error.selectPlan':
+    'Por favor, selecciona un plan de entrenador',
+
   'assignSubscription.success': 'Suscripción asignada exitosamente',
   'assignSubscription.button': 'Asignar Suscripción',
-  'startDate': 'Fecha de Inicio',
-  'endDate': 'Fecha de Fin',
-  'plan': 'Plan',
-  'success': 'Éxito',
-  
+  startDate: 'Fecha de Inicio',
+  endDate: 'Fecha de Fin',
+  plan: 'Plan',
+  success: 'Éxito',
+
   // Mensajes de error de UtilFunctions
   'error.selectStartDate': 'Por favor, selecciona una fecha de inicio',
   'error.selectEndDate': 'Por favor, selecciona una fecha de fin',
-  'error.startDateAfterEndDate': 'La fecha de inicio no puede ser posterior a la fecha de fin',
+  'error.startDateAfterEndDate':
+    'La fecha de inicio no puede ser posterior a la fecha de fin',
   'error.nameRequired': 'El nombre es requerido',
   'error.emailRequired': 'El correo electrónico es requerido',
   'error.fitnessGoalRequired': 'El objetivo fitness es requerido',
   'error.activityLevelRequired': 'El nivel de actividad es requerido',
   'error.birthdateRequired': 'La fecha de nacimiento es requerida',
-  'error.birthdateInFuture': 'La fecha de nacimiento no puede estar en el futuro',
+  'error.birthdateInFuture':
+    'La fecha de nacimiento no puede estar en el futuro',
   'error.ageRequirement': 'La edad debe ser al menos de 10 años',
   'error.genderRequired': 'El género es requerido',
   'error.heightRange': 'La altura debe estar entre 100 cm y 250 cm',
   'error.weightRange': 'El peso debe estar entre 30 kg y 300 kg',
-  
+
   // NewCoachProfile
   'coach.plan.success.created': 'Plan creado exitosamente',
-  'coach.plan.success.created.message': 'El plan {name} ha sido creado exitosamente',
+  'coach.plan.success.created.message':
+    'El plan {name} ha sido creado exitosamente',
   'coach.plan.success.updated': 'Plan actualizado exitosamente',
-  'coach.plan.success.updated.message': 'El plan {name} ha sido actualizado exitosamente',
+  'coach.plan.success.updated.message':
+    'El plan {name} ha sido actualizado exitosamente',
   'coach.plan.success.deleted': 'Plan eliminado exitosamente',
-  'coach.plan.success.deleted.message': 'El plan {name} ha sido eliminado exitosamente',
+  'coach.plan.success.deleted.message':
+    'El plan {name} ha sido eliminado exitosamente',
   'coach.plan.error.name.empty': 'El nombre del plan no puede estar vacío',
   'coach.plan.error.price.zero': 'El precio del plan no puede ser 0',
-  'coach.plan.error.workouts.zero': 'El número de entrenamientos por semana no puede ser 0',
+  'coach.plan.error.workouts.zero':
+    'El número de entrenamientos por semana no puede ser 0',
   'coach.plan.error.not.updated': 'Error al actualizar el plan',
   'coach.plan.create': 'Crear Nuevo Plan de Entrenador',
   'coach.plan.edit': 'Editar Plan de Entrenador',
@@ -881,7 +939,8 @@ const messages = {
   'coach.plan.price': 'Precio',
   'coach.plan.workoutsPerWeek': 'Entrenamientos por Semana',
   'coach.plan.includeMealPlan': 'Incluir Plan de Alimentación',
-  'coach.plan.description': 'Aquí puedes crear y gestionar tanto planes de entrenamiento generales como planes personalizados asignados a tus clientes/alumnos.',
+  'coach.plan.description':
+    'Aquí puedes crear y gestionar tanto planes de entrenamiento generales como planes personalizados asignados a tus clientes/alumnos.',
   'coach.assign.success': 'Entrenamiento asignado exitosamente',
   'coach.assign.error': 'Error al asignar el entrenamiento',
   'coach.assign.selectClient': 'Selecciona un cliente',
@@ -897,12 +956,9 @@ const messages = {
   'coach.assign.dialog.selectedCycle.weeks': 'Semanas',
   'coach.assign.dialog.selectedCycle.days': 'Días',
   'coach.assign.dialog.selectedCycle.workouts': 'Entrenamientos',
-  
-  
-  
 
   // RPE Method
-  
+
   'coach.rpe.edit': 'Editar Método RPE',
   'coach.rpe.valuesMeta': 'Valores Meta',
   'coach.rpe.value': 'Valor',
@@ -914,23 +970,32 @@ const messages = {
   'assignWorkoutToCycleDialog.assignWorkouts': 'Asignar Entrenamientos',
   'assignWorkoutToCycleDialog.unassignWorkouts': 'Desasignar Entrenamientos',
   'assignWorkoutToCycleDialog.addAssignment': 'Agregar Asignación',
-  'assignWorkoutToCycleDialog.assignWorkoutsToCycle': 'Asignar Entrenamientos al Ciclo',
-  'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle': 'Desasignar Entrenamientos del Ciclo',
+  'assignWorkoutToCycleDialog.assignWorkoutsToCycle':
+    'Asignar Entrenamientos al Ciclo',
+  'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle':
+    'Desasignar Entrenamientos del Ciclo',
   'assignWorkoutToCycleDialog.selectCycle': 'Seleccionar Ciclo',
   'assignWorkoutToCycleDialog.selectDayOfWeek': 'Seleccionar Día de la Semana',
   'assignWorkoutToCycleDialog.selectWorkout': 'Seleccionar Entrenamiento',
-  'assignWorkoutToCycleDialog.selectWorkoutToUnassign': 'Seleccionar Entrenamiento para Desasignar',
-  'assignWorkoutToCycleDialog.error.selectWorkoutAndDay': 'Por favor, selecciona un entrenamiento y un día de la semana para la última asignación.',
-  'assignWorkoutToCycleDialog.error.selectAtLeastOneWorkout': 'Por favor, selecciona al menos un entrenamiento.',
+  'assignWorkoutToCycleDialog.selectWorkoutToUnassign':
+    'Seleccionar Entrenamiento para Desasignar',
+  'assignWorkoutToCycleDialog.error.selectWorkoutAndDay':
+    'Por favor, selecciona un entrenamiento y un día de la semana para la última asignación.',
+  'assignWorkoutToCycleDialog.error.selectAtLeastOneWorkout':
+    'Por favor, selecciona al menos un entrenamiento.',
   'assignWorkoutToCycleDialog.dayOfWeek': 'Día de la Semana',
   'assignWorkoutToCycleDialog.success.assign': 'Éxito',
-  'assignWorkoutToCycleDialog.success.assign.detail': 'Entrenamientos asignados al ciclo exitosamente',
+  'assignWorkoutToCycleDialog.success.assign.detail':
+    'Entrenamientos asignados al ciclo exitosamente',
   'assignWorkoutToCycleDialog.error.assign': 'Error',
-  'assignWorkoutToCycleDialog.error.assign.detail': 'No se asignaron entrenamientos',
+  'assignWorkoutToCycleDialog.error.assign.detail':
+    'No se asignaron entrenamientos',
   'assignWorkoutToCycleDialog.success.unassign': 'Éxito',
-  'assignWorkoutToCycleDialog.success.unassign.detail': 'Entrenamientos desasignados del ciclo exitosamente',
+  'assignWorkoutToCycleDialog.success.unassign.detail':
+    'Entrenamientos desasignados del ciclo exitosamente',
   'assignWorkoutToCycleDialog.error.unassign': 'Error',
-  'assignWorkoutToCycleDialog.error.unassign.detail': 'No se desasignaron entrenamientos porque están siendo utilizados por un cliente',
+  'assignWorkoutToCycleDialog.error.unassign.detail':
+    'No se desasignaron entrenamientos porque están siendo utilizados por un cliente',
   'assignWorkoutToCycleDialog.assignment': 'Asignación',
   // CreateTrainingCycleDialog
   'createCycle.dialog.header': 'Crear Ciclo de Entrenamiento',
@@ -938,14 +1003,14 @@ const messages = {
   'createCycle.durationInMonths': 'Duración en Meses',
   'createCycle.durationInWeeks': 'Duración en Semanas',
   'createCycle.button.create': 'Crear Ciclo Vacío',
-  'createCycle.button.create.confirm': '¿Estás seguro de que deseas crear este ciclo sin ningún entrenamiento asignado? Puedes agregar entrenamientos asignados más tarde.',
+  'createCycle.button.create.confirm':
+    '¿Estás seguro de que deseas crear este ciclo sin ningún entrenamiento asignado? Puedes agregar entrenamientos asignados más tarde.',
   'error.fetchingStudents': 'Error al obtener estudiantes',
   'success.cycleCreated': '¡Ciclo de entrenamiento creado exitosamente!',
   'error.allFieldsRequired': 'Todos los campos son obligatorios',
   'error.enterDuration': 'Por favor, ingresa una duración en semanas o meses',
-  'selectClient': 'Selecciona un cliente',
-  'client': 'Cliente',
-
+  selectClient: 'Selecciona un cliente',
+  client: 'Cliente',
 
   'settings.title': 'Configuraciones',
   'settings.darkMode': 'Modo Oscuro',
@@ -953,7 +1018,8 @@ const messages = {
   'settings.view.default': 'Vista Predeterminada',
   'settings.view.excel': 'Vista Excel',
   'settings.language': 'Idioma',
-  'settings.allowIncompleteStudent': 'Permitir agregar estudiantes sin datos completos',
+  'settings.allowIncompleteStudent':
+    'Permitir agregar estudiantes sin datos completos',
   'settings.developerOptions': 'Opciones para Desarrolladores',
   'settings.save': 'Guardar Configuraciones',
   'plansPage.title': 'Página de Planes',
@@ -990,12 +1056,15 @@ const messages = {
   'plansPage.day': 'Día',
   'plansPage.addWeek': 'Agregar Semana',
   'plansPage.saveTemplate': 'Guardar Plantilla',
-  'plansPage.error.selectWorkoutAndDay': 'Debes seleccionar un entrenamiento y un día',
+  'plansPage.error.selectWorkoutAndDay':
+    'Debes seleccionar un entrenamiento y un día',
   'plansPage.error.allFieldsRequired': 'Todos los campos son obligatorios',
   'plansPage.success.templateCreated': '¡Plantilla creada exitosamente!',
   'plansPage.error.creatingTemplate': 'Error al crear la plantilla',
-  'plansPage.error.exceedDuration': 'No puedes agregar más semanas que la duración especificada.',
-  'plansPage.confirmation.reduceWeeks': 'Reducir la duración eliminará las semanas adicionales. ¿Deseas continuar?',
+  'plansPage.error.exceedDuration':
+    'No puedes agregar más semanas que la duración especificada.',
+  'plansPage.confirmation.reduceWeeks':
+    'Reducir la duración eliminará las semanas adicionales. ¿Deseas continuar?',
   'plansPage.coachId': 'ID del Entrenador',
   'plansPage.numberOfWeeks': 'Número de Semanas',
   'plansPage.createCycle': 'Crear Ciclo',
@@ -1013,6 +1082,6 @@ const messages = {
   'confirm.deleteCycle': '¿Estás seguro de que deseas eliminar este ciclo?',
 
   'coach.exercise.success.created': 'Ejercicio creado exitosamente',
-  'coach.exercise.success.updated': 'Ejercicio actualizado exitosamente',
-}; 
+  'coach.exercise.success.updated': 'Ejercicio actualizado exitosamente'
+};
 export default messages;

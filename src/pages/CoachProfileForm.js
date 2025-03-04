@@ -23,7 +23,7 @@ const trainingTypes = [
   { label: 'Cardio', value: 'cardio' },
   { label: 'Calisthenics', value: 'calisthenics' },
   { label: 'Cross Fit', value: 'cross fit' },
-  { label: 'General Fitness', value: 'general fitness' },
+  { label: 'General Fitness', value: 'general fitness' }
   // Add other training types as needed
 ];
 
@@ -50,7 +50,7 @@ const CoachProfileForm = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const {data} = await fetchCoachSubscriptionPlans();
+        const { data } = await fetchCoachSubscriptionPlans();
         setPlans(data);
       } catch (err) {
         showToast('error', 'Error', err.message);
@@ -65,22 +65,38 @@ const CoachProfileForm = () => {
 
   const steps = [
     { label: intl.formatMessage({ id: 'coachProfileForm.step.personalInfo' }) },
-    { label: intl.formatMessage({ id: 'coachProfileForm.step.trainingDetails' }) },
+    {
+      label: intl.formatMessage({
+        id: 'coachProfileForm.step.trainingDetails'
+      })
+    },
     { label: intl.formatMessage({ id: 'coachProfileForm.step.subscription' }) },
     { label: intl.formatMessage({ id: 'coachProfileForm.step.confirmation' }) }
   ];
 
   const validateStep = () => {
     if (activeStep === 0 && !name) {
-      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'Name is required.');
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'coachProfileForm.error' }),
+        'Name is required.'
+      );
       return false;
     }
     if (activeStep === 1 && trainingType.length === 0) {
-      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'At least one training type must be selected.');
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'coachProfileForm.error' }),
+        'At least one training type must be selected.'
+      );
       return false;
     }
     if (activeStep === 2 && !subscriptionType) {
-      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'Subscription type is required.');
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'coachProfileForm.error' }),
+        'Subscription type is required.'
+      );
       return false;
     }
     return true;
@@ -103,30 +119,38 @@ const CoachProfileForm = () => {
   };
 
   const handleSubmit = async () => {
-    const selectedPlanId = subscriptionType === 'freeTrial'
-      ? plans.find(plan => plan.name === 'Free')?.id
-      : userPayment?.id;
+    const selectedPlanId =
+      subscriptionType === 'freeTrial'
+        ? plans.find((plan) => plan.name === 'Free')?.id
+        : userPayment?.id;
 
-    console.log(subscriptionType, plans)
+    console.log(subscriptionType, plans);
     if (!selectedPlanId) {
-      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' })
+      );
       return;
     }
 
     const body = {
       name,
-      estimatedClients: plans.find(plan => plan.id === selectedPlanId)?.max_clients,
+      estimatedClients: plans.find((plan) => plan.id === selectedPlanId)
+        ?.max_clients,
       trainingType,
       hasGym,
       gymLocation: hasGym ? gymLocation : null,
       bio,
       experience,
       email: user.email,
-      subscriptionPlanId: selectedPlanId,
+      subscriptionPlanId: selectedPlanId
     };
-    console.log(body)
+    console.log(body);
     if (subscriptionType === 'paid' && !userPayment) {
-      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' })
+      );
       return;
     }
 
@@ -136,56 +160,99 @@ const CoachProfileForm = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const {data} = await updateCoach(user.userId, body, token);
+      const { data } = await updateCoach(user.userId, body, token);
       console.log(data);
       setCoach(data);
 
       navigate('/coach');
-      showToast('success', intl.formatMessage({ id: 'coachProfileForm.success' }), `Thanks for subscribing ${data.name}`);
+      showToast(
+        'success',
+        intl.formatMessage({ id: 'coachProfileForm.success' }),
+        `Thanks for subscribing ${data.name}`
+      );
     } catch (error) {
-      showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), error.message);
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'coachProfileForm.error' }),
+        error.message
+      );
     }
     setLoading(false);
   };
 
   return (
     <div className="coach-profile-form-container">
-      <Steps model={steps} activeIndex={activeStep} onSelect={(e) => setActiveStep(e.index)} readOnly={false} />
-      <Card className='coach-profile-form'>
+      <Steps
+        model={steps}
+        activeIndex={activeStep}
+        onSelect={(e) => setActiveStep(e.index)}
+        readOnly={false}
+      />
+      <Card className="coach-profile-form">
         {activeStep === 0 && (
           <div>
-            <h2><FormattedMessage id="coachProfileForm.step.personalInfo" /></h2>
+            <h2>
+              <FormattedMessage id="coachProfileForm.step.personalInfo" />
+            </h2>
             <div className="p-field">
               <label htmlFor="name">
                 <FormattedMessage id="coachProfileForm.name" />
               </label>
-              <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} />
+              <InputText
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
             <div className="p-field">
               <label htmlFor="bio">
                 <FormattedMessage id="coachProfileForm.bio" />
               </label>
-              <InputTextarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} />
+              <InputTextarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+              />
             </div>
             <div className="p-field">
               <label htmlFor="experience">
                 <FormattedMessage id="coachProfileForm.experience" />
               </label>
-              <InputTextarea id="experience" value={experience} onChange={(e) => setExperience(e.target.value)} />
+              <InputTextarea
+                id="experience"
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+              />
             </div>
           </div>
         )}
         {activeStep === 1 && (
           <div>
-            <h2><FormattedMessage id="coachProfileForm.step.trainingDetails" /></h2>
+            <h2>
+              <FormattedMessage id="coachProfileForm.step.trainingDetails" />
+            </h2>
             <div className="p-field">
               <label htmlFor="trainingType">
                 <FormattedMessage id="coachProfileForm.trainingType" />
               </label>
-              <MultiSelect id="trainingType" value={trainingType} options={trainingTypes} optionLabel="label" onChange={(e) => setTrainingType(e.value)} multiple placeholder={intl.formatMessage({ id: 'coachProfileForm.selectTrainingTypes' })} />
+              <MultiSelect
+                id="trainingType"
+                value={trainingType}
+                options={trainingTypes}
+                optionLabel="label"
+                onChange={(e) => setTrainingType(e.value)}
+                multiple
+                placeholder={intl.formatMessage({
+                  id: 'coachProfileForm.selectTrainingTypes'
+                })}
+              />
             </div>
             <div className="flex align-items-center gap-2">
-              <Checkbox inputId="hasGym" checked={hasGym} onChange={(e) => setHasGym(e.checked)} />
+              <Checkbox
+                inputId="hasGym"
+                checked={hasGym}
+                onChange={(e) => setHasGym(e.checked)}
+              />
               <label htmlFor="hasGym" className="p-checkbox-label">
                 <FormattedMessage id="coachProfileForm.hasGym" />
               </label>
@@ -195,14 +262,20 @@ const CoachProfileForm = () => {
                 <label htmlFor="gymLocation">
                   <FormattedMessage id="coachProfileForm.gymLocation" />
                 </label>
-                <InputText id="gymLocation" value={gymLocation} onChange={(e) => setGymLocation(e.target.value)} />
+                <InputText
+                  id="gymLocation"
+                  value={gymLocation}
+                  onChange={(e) => setGymLocation(e.target.value)}
+                />
               </div>
             )}
           </div>
         )}
         {activeStep === 2 && (
           <div>
-            <h2><FormattedMessage id="coachProfileForm.step.subscription" /></h2>
+            <h2>
+              <FormattedMessage id="coachProfileForm.step.subscription" />
+            </h2>
             <div className="p-field">
               <label>
                 <FormattedMessage id="coachProfileForm.subscriptionType" />
@@ -237,7 +310,9 @@ const CoachProfileForm = () => {
             {subscriptionType === 'paid' && !userPayment && (
               <div className="p-field">
                 <Button
-                  label={intl.formatMessage({ id: 'coachProfileForm.choosePlan' })}
+                  label={intl.formatMessage({
+                    id: 'coachProfileForm.choosePlan'
+                  })}
                   className="p-button-outlined w-full"
                   onClick={() => setIsPlanDialogVisible(true)}
                 />
@@ -249,13 +324,22 @@ const CoachProfileForm = () => {
                   <FormattedMessage id="coachProfileForm.subscriptionPlan" />
                 </h4>
                 <p>
-                  <strong><FormattedMessage id="coachProfileForm.plan" />:</strong> {userPayment.name}
+                  <strong>
+                    <FormattedMessage id="coachProfileForm.plan" />:
+                  </strong>{' '}
+                  {userPayment.name}
                 </p>
                 <p>
-                  <strong><FormattedMessage id="coachProfileForm.price" />:</strong> ${userPayment.price}
+                  <strong>
+                    <FormattedMessage id="coachProfileForm.price" />:
+                  </strong>{' '}
+                  ${userPayment.price}
                 </p>
                 <p>
-                  <strong><FormattedMessage id="coachProfileForm.clients" />:</strong> {userPayment.max_clients}
+                  <strong>
+                    <FormattedMessage id="coachProfileForm.clients" />:
+                  </strong>{' '}
+                  {userPayment.max_clients}
                 </p>
               </div>
             )}
@@ -263,30 +347,111 @@ const CoachProfileForm = () => {
         )}
         {activeStep === 3 && (
           <div>
-            <h2><FormattedMessage id="coachProfileForm.step.confirmation" /></h2>
-            <p><FormattedMessage id="coachProfileForm.confirmationMessage" /></p>
+            <h2>
+              <FormattedMessage id="coachProfileForm.step.confirmation" />
+            </h2>
+            <p>
+              <FormattedMessage id="coachProfileForm.confirmationMessage" />
+            </p>
             <div className="confirmation-summary">
-              <h3><FormattedMessage id="coachProfileForm.summary" /></h3>
-              <p><strong><FormattedMessage id="coachProfileForm.name" />:</strong> {name}</p>
-              <p><strong><FormattedMessage id="coachProfileForm.trainingType" />:</strong> {trainingType.join(', ')}</p>
-              <p><strong><FormattedMessage id="coachProfileForm.hasGym" />:</strong> {hasGym ? intl.formatMessage({ id: 'common.yes' }) : intl.formatMessage({ id: 'common.no' })}</p>
-              {hasGym && <p><strong><FormattedMessage id="coachProfileForm.gymLocation" />:</strong> {gymLocation}</p>}
-              <p><strong><FormattedMessage id="coachProfileForm.bio" />:</strong> {bio}</p>
-              <p><strong><FormattedMessage id="coachProfileForm.experience" />:</strong> {experience}</p>
-              <p><strong><FormattedMessage id="coachProfileForm.subscriptionType" />:</strong> {subscriptionType === 'freeTrial' ? intl.formatMessage({ id: 'coachProfileForm.freeTrial' }) : intl.formatMessage({ id: 'coachProfileForm.paid' })}</p>
+              <h3>
+                <FormattedMessage id="coachProfileForm.summary" />
+              </h3>
+              <p>
+                <strong>
+                  <FormattedMessage id="coachProfileForm.name" />:
+                </strong>{' '}
+                {name}
+              </p>
+              <p>
+                <strong>
+                  <FormattedMessage id="coachProfileForm.trainingType" />:
+                </strong>{' '}
+                {trainingType.join(', ')}
+              </p>
+              <p>
+                <strong>
+                  <FormattedMessage id="coachProfileForm.hasGym" />:
+                </strong>{' '}
+                {hasGym
+                  ? intl.formatMessage({ id: 'common.yes' })
+                  : intl.formatMessage({ id: 'common.no' })}
+              </p>
+              {hasGym && (
+                <p>
+                  <strong>
+                    <FormattedMessage id="coachProfileForm.gymLocation" />:
+                  </strong>{' '}
+                  {gymLocation}
+                </p>
+              )}
+              <p>
+                <strong>
+                  <FormattedMessage id="coachProfileForm.bio" />:
+                </strong>{' '}
+                {bio}
+              </p>
+              <p>
+                <strong>
+                  <FormattedMessage id="coachProfileForm.experience" />:
+                </strong>{' '}
+                {experience}
+              </p>
+              <p>
+                <strong>
+                  <FormattedMessage id="coachProfileForm.subscriptionType" />:
+                </strong>{' '}
+                {subscriptionType === 'freeTrial'
+                  ? intl.formatMessage({ id: 'coachProfileForm.freeTrial' })
+                  : intl.formatMessage({ id: 'coachProfileForm.paid' })}
+              </p>
               {userPayment && (
                 <>
-                  <p><strong><FormattedMessage id="coachProfileForm.plan" />:</strong> {userPayment.name}</p>
-                  <p><strong><FormattedMessage id="coachProfileForm.price" />:</strong> ${userPayment.price}</p>
-                  <p><strong><FormattedMessage id="coachProfileForm.clients" />:</strong> {userPayment.max_clients}</p>
+                  <p>
+                    <strong>
+                      <FormattedMessage id="coachProfileForm.plan" />:
+                    </strong>{' '}
+                    {userPayment.name}
+                  </p>
+                  <p>
+                    <strong>
+                      <FormattedMessage id="coachProfileForm.price" />:
+                    </strong>{' '}
+                    ${userPayment.price}
+                  </p>
+                  <p>
+                    <strong>
+                      <FormattedMessage id="coachProfileForm.clients" />:
+                    </strong>{' '}
+                    {userPayment.max_clients}
+                  </p>
                 </>
               )}
             </div>
           </div>
         )}
         <div className="flex justify-content-between mt-4">
-          <Button label={intl.formatMessage({ id: 'common.back' })} icon="pi pi-arrow-left" onClick={handleBack} disabled={activeStep === 0} />
-          <Button label={intl.formatMessage({ id: activeStep === steps.length - 1 ? 'coachProfileForm.submit' : 'common.next' })} icon={activeStep === steps.length - 1 ? "pi pi-check" : "pi pi-arrow-right"} onClick={handleNext} loading={loading} />
+          <Button
+            label={intl.formatMessage({ id: 'common.back' })}
+            icon="pi pi-arrow-left"
+            onClick={handleBack}
+            disabled={activeStep === 0}
+          />
+          <Button
+            label={intl.formatMessage({
+              id:
+                activeStep === steps.length - 1
+                  ? 'coachProfileForm.submit'
+                  : 'common.next'
+            })}
+            icon={
+              activeStep === steps.length - 1
+                ? 'pi pi-check'
+                : 'pi pi-arrow-right'
+            }
+            onClick={handleNext}
+            loading={loading}
+          />
         </div>
       </Card>
       <Dialog
@@ -298,10 +463,13 @@ const CoachProfileForm = () => {
         style={{ width: '50vw' }}
         onHide={() => setIsPlanDialogVisible(false)}
       >
-        <SubscriptionPaymentPage setUserPayment={setUserPayment} setIsPlanDialogVisible={setIsPlanDialogVisible} />
+        <SubscriptionPaymentPage
+          setUserPayment={setUserPayment}
+          setIsPlanDialogVisible={setIsPlanDialogVisible}
+        />
       </Dialog>
     </div>
-  )
+  );
 };
 
 export default CoachProfileForm;
