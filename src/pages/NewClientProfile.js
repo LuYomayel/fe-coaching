@@ -58,25 +58,29 @@ export default function NewClientProfile() {
         setLoading(true);
 
         // Fetch personal information
-        const dataClient = await fetchClient(user.userId);
+        const {data: dataClient} = await fetchClient(user.userId);
+        
         setPersonalInfo(dataClient);
         setActivityLevel(dataClient.activityLevel);
-        const goals = dataClient.fitnessGoal.split(',')
-          .map(goal => goal.trim())
-          .filter((value, index, self) => self.indexOf(value) === index);
-        setFitnessGoal(goals);
+        if (dataClient.fitnessGoal) {
+          const goals = dataClient.fitnessGoal.split(',')
+            .map(goal => goal.trim())
+            .filter((value, index, self) => self.indexOf(value) === index);
+          setFitnessGoal(goals);
+        }
 
         // Fetch activities
-        const dataActivities = await fetchClientActivitiesByUserId(user.userId);
+        const {data: dataActivities} = await fetchClientActivitiesByUserId(user.userId);
         setActivities(dataActivities);
 
         // Fetch subscription details
-        const subscriptionData = await fetchSubscriptionDetails(user.userId);
+        const {data: subscriptionData} = await fetchSubscriptionDetails(user.userId);
         setSubscription(subscriptionData);
 
         const checkStatusWorkouts = updateStatus(subscriptionData.workoutInstances);
         const workoutsSorted = sortBySessionDate(checkStatusWorkouts);
         setWorkoutHistory(workoutsSorted);
+        
 
         const completed = workoutsSorted.filter(workout => workout.status === 'completed').length;
         const pending = workoutsSorted.filter(workout => workout.status === 'pending').length;
@@ -211,14 +215,15 @@ export default function NewClientProfile() {
   };
 
   const setPlanDetails = (rowData) => {
+    
     return (
       <p>
         <FormattedMessage 
           id="profile.table.week" 
-          values={{ number: rowData.trainingSession.trainingWeek.weekNumber }}
+          values={{ number: rowData.trainingSession.trainingWeek?.weekNumber || 'N/A' }}
         /> - <FormattedMessage 
           id="profile.table.day" 
-          values={{ number: rowData.trainingSession.dayNumber }}
+          values={{ number: rowData.trainingSession.dayNumber || 'N/A' }}
         />
       </p>
     );

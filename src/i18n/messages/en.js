@@ -156,8 +156,8 @@ const messages = {
   'profile.table.status': 'Status',
   'profile.table.date': 'Date',
   'profile.table.action': 'Action',
-  'profile.table.week': 'Week',
-  'profile.table.day': 'Day',
+  'profile.table.week': 'Week {number}',
+  'profile.table.day': 'Day {number}',
   
   'profile.dialog.edit': 'Edit Personal Information',
   'profile.dialog.fitnessGoal': 'Fitness Goal',

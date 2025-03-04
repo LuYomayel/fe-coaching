@@ -5,7 +5,7 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { Dropdown } from 'primereact/dropdown';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
-import { validateDates } from '../utils/UtilFunctions';
+import { formatDateToApi, validateDates } from '../utils/UtilFunctions';
 import { fetchCoachPlans } from '../services/usersService';
 import { registerPayment } from '../services/subscriptionService';
 import { useIntl } from 'react-intl'; 
@@ -48,8 +48,8 @@ const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, o
     const body = {
       coachId,
       clientId: studentId,
-      startDate,
-      endDate,
+      startDate: formatDateToApi(startDate),
+      endDate: formatDateToApi(endDate),
       paymentDate,
       coachPlanId: selectedCoachPlan
     };
