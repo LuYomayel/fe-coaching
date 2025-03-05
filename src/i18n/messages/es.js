@@ -751,6 +751,7 @@ const messages = {
   'workoutTable.addProperties': 'Agregar Propiedades',
   'workoutTable.newCycle': 'Nuevo Ciclo',
   'workoutTable.restDuration': 'Duración de Descanso',
+  'workoutTable.exerciseAlreadyExists': 'El ejercicio ya existe en el grupo',
 
   // Header
   'header.home': 'Inicio',
