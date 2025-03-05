@@ -15,7 +15,23 @@ import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useTheme } from '../utils/ThemeContext';
 
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { FaGripVertical } from 'react-icons/fa';
 
 import '../styles/WorkoutTable.css';
@@ -56,6 +72,22 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   const [coachExercises, setCoachExercises] = useState([]);
 
   const [isDraggingGroup, setIsDraggingGroup] = useState(false);
+
+  // Añadir estado para el elemento actualmente arrastrado
+  const [activeId, setActiveId] = useState(null);
+  const [activeGroup, setActiveGroup] = useState(null);
+
+  // Configurar sensores para el arrastre
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5
+      }
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates
+    })
+  );
 
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -537,85 +569,100 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   /****************************************
    * DRAG & DROP: Single Table
    ****************************************/
-  // Modificar la función onDragStart
-  const onDragStart = (start) => {
-    const draggedRowIndex = start.source.index;
-    const draggedRow = tableData[draggedRowIndex];
+  // Reemplazar handleDragStart
+  const handleDragStart = (event) => {
+    const { active } = event;
+    setActiveId(active.id);
 
-    // Primero, establecemos el estado de arrastre de grupo
-    if (draggedRow.rowType === 'group') {
+    // Determinar si estamos arrastrando un grupo
+    if (active.id.toString().startsWith('group-')) {
+      const groupNumber = parseInt(active.id.toString().split('-')[1], 10);
       setIsDraggingGroup(true);
+      setActiveGroup(groupNumber);
 
-      // Creamos una copia nueva del array con los elementos marcados
+      // Marcar todos los elementos del grupo
       const updatedData = tableData.map((row) => {
-        if (row.groupNumber === draggedRow.groupNumber) {
+        if (row.groupNumber === groupNumber) {
           return { ...row, isBeingDragged: true };
         }
         return row;
       });
 
-      // Actualizamos el estado con todos los cambios a la vez
       setTableData(updatedData);
     }
   };
 
-  const onDragEnd = (result) => {
-    // Primero, restablecemos el estado de arrastre
-    setIsDraggingGroup(false);
+  // Reemplazar handleDragEnd
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
 
-    // Limpiamos la marca isBeingDragged de todos los elementos
+    // Restablecer estados
+    setActiveId(null);
+    setIsDraggingGroup(false);
+    setActiveGroup(null);
+
+    // Limpiar marcas de arrastre
     const resetDragState = tableData.map((row) => ({
       ...row,
       isBeingDragged: false
     }));
 
-    setTableData(resetDragState);
+    // Si no hay destino, solo restablecemos el estado
+    if (!over) {
+      setTableData(resetDragState);
+      return;
+    }
 
-    // Si no hay destino, terminamos aquí
-    if (!result.destination) return;
+    // Obtener índices
+    const activeIndex = tableData.findIndex((item) =>
+      item.rowType === 'group'
+        ? `group-${item.groupNumber}` === active.id
+        : `ex-${item.groupNumber}-${item.rowIndex}` === active.id
+    );
 
-    // Continuamos con la lógica de reordenamiento...
-    const fromIndex = result.source.index;
-    const toIndex = result.destination.index;
-    if (fromIndex === toIndex) return;
-    if (toIndex === 0 && tableData[fromIndex].rowType === 'exercise') return;
+    const overIndex = tableData.findIndex((item) =>
+      item.rowType === 'group'
+        ? `group-${item.groupNumber}` === over.id
+        : `ex-${item.groupNumber}-${item.rowIndex}` === over.id
+    );
 
-    // Creamos una copia del array de datos
-    const newData = Array.from(tableData);
-    const [movedRow] = newData.splice(fromIndex, 1);
+    if (activeIndex === overIndex) {
+      setTableData(resetDragState);
+      return;
+    }
 
-    // Si es un grupo, necesitamos mover también todos sus ejercicios
+    // Lógica para mover elementos
+    const newData = [...resetDragState];
+    const movedRow = newData[activeIndex];
+
+    // Si es un grupo, mover todo el grupo
     if (movedRow.rowType === 'group') {
-      // Encontramos todos los ejercicios que pertenecen a este grupo
+      // Encontrar todos los ejercicios del grupo
       const groupExercises = [];
-      let i = fromIndex;
+      newData.splice(activeIndex, 1); // Quitar el grupo
 
-      // Buscamos ejercicios que pertenecen al grupo en las filas siguientes
+      let i = activeIndex;
       while (
         i < newData.length &&
         newData[i].rowType === 'exercise' &&
         newData[i].groupNumber === movedRow.groupNumber
       ) {
         groupExercises.push(newData[i]);
-        newData.splice(i, 1); // Eliminamos el ejercicio de su posición actual
+        newData.splice(i, 1);
       }
 
-      // Calculamos la posición correcta para insertar el grupo
-      // Debemos encontrar el grupo anterior o siguiente más cercano
-      let insertIndex = toIndex;
+      // Calcular posición de inserción
+      let insertIndex = overIndex > activeIndex ? overIndex - 1 : overIndex;
 
-      // Si estamos intentando insertar entre ejercicios, ajustamos la posición
+      // Ajustar si estamos insertando entre ejercicios
       if (insertIndex < newData.length && newData[insertIndex].rowType === 'exercise') {
-        // Buscamos hacia atrás para encontrar el grupo al que pertenecen estos ejercicios
         let groupIndex = insertIndex;
         while (groupIndex > 0 && newData[groupIndex - 1].rowType === 'exercise') {
           groupIndex--;
         }
 
-        // Si encontramos un grupo, insertamos después de todos sus ejercicios
         if (groupIndex > 0 && newData[groupIndex - 1].rowType === 'group') {
           const prevGroupNumber = newData[groupIndex - 1].groupNumber;
-          // Avanzamos hasta el final de los ejercicios de este grupo
           while (
             insertIndex < newData.length &&
             newData[insertIndex].rowType === 'exercise' &&
@@ -626,15 +673,17 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
         }
       }
 
-      // Insertamos el grupo y todos sus ejercicios en la nueva posición
+      // Insertar grupo y ejercicios
       newData.splice(insertIndex, 0, movedRow, ...groupExercises);
+    } else {
+      // Mover ejercicio individual
+      newData.splice(activeIndex, 1);
 
-      setTableData(newData);
-    } else if (movedRow.rowType === 'exercise') {
-      // Para ejercicios individuales, simplemente los movemos
-      newData.splice(toIndex, 0, movedRow);
+      // Calcular posición de inserción
+      let insertIndex = overIndex > activeIndex ? overIndex - 1 : overIndex;
+      newData.splice(insertIndex, 0, movedRow);
 
-      // Actualizamos el groupNumber si es necesario
+      // Actualizar groupNumber si es necesario
       let currentGroupNumber = null;
       newData.forEach((row) => {
         if (row.rowType === 'group') {
@@ -644,7 +693,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
         }
       });
 
-      // Reasignamos rowIndex para mantener el orden correcto
+      // Reasignar rowIndex
       let currentGroup = null;
       let rowIdx = 0;
       newData.forEach((r) => {
@@ -655,9 +704,9 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
           r.rowIndex = rowIdx++;
         }
       });
-
-      setTableData(newData);
     }
+
+    setTableData(newData);
   };
 
   /****************************************
@@ -850,6 +899,77 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     marginBottom: '2rem'
   };
 
+  // Componente para renderizar filas arrastrables
+  function SortableRow({ rowData, index }) {
+    const rowKey =
+      rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
+
+    // Un ejercicio no debería ser arrastrable si su grupo está siendo arrastrado
+    const isDraggable =
+      isEditing && (rowData.rowType === 'group' || (rowData.rowType === 'exercise' && !isDraggingGroup));
+
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+      id: rowKey,
+      disabled: !isDraggable
+    });
+
+    // Determinar si esta fila debe mostrarse como arrastrada
+    const isPartOfDraggedGroup = isDraggingGroup && activeGroup === rowData.groupNumber;
+
+    // Estilo para filas arrastradas
+    const style = {
+      transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+      transition,
+      ...(isDragging || isPartOfDraggedGroup
+        ? {
+            background: isDarkMode ? '#2c3e50' : '#f8f9fa',
+            boxShadow: isDragging ? '0 0 10px rgba(0,0,0,0.2)' : 'none',
+            width: '100%',
+            tableLayout: 'fixed',
+            border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
+            margin: '2px 0',
+            opacity: isDragging ? '0.9' : isPartOfDraggedGroup ? '0.8' : '1',
+            zIndex: isDragging ? '1000' : isPartOfDraggedGroup ? '999' : 'auto'
+          }
+        : {})
+    };
+
+    return (
+      <tr
+        ref={setNodeRef}
+        style={style}
+        className={`${rowClassName(rowData)} ${isPartOfDraggedGroup ? 'group-being-dragged' : ''}`}
+      >
+        <td
+          style={{
+            minWidth: '150px',
+            width: '150px',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0.5rem',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+          {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
+        >
+          {isEditing && (
+            <FaGripVertical
+              style={{
+                marginRight: '0.3rem',
+                cursor: isDraggable ? 'grab' : 'default',
+                flexShrink: 0,
+                opacity: isDraggable ? 1 : 0.5
+              }}
+            />
+          )}
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{renderNameColumn(rowData)}</span>
+        </td>
+        {renderDataCells(rowData)}
+      </tr>
+    );
+  }
+
   return (
     <div style={{ padding: '0.5rem' }}>
       {/* 1) Cycle & Day selection */}
@@ -913,93 +1033,71 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
           <FormattedMessage id="common.noData" />
         </div>
       ) : (
-        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-          <Droppable droppableId="full-table" type="ROW">
-            {(provided) => (
-              <table className="p-datatable p-datatable-sm" style={tableStyles}>
-                {/* Build the multi-row header using your existing logic */}
-                {renderTableHeader()}
-                <tbody ref={provided.innerRef} {...provided.droppableProps}>
-                  {tableData.map((rowData, index) => {
-                    const rowKey =
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToVerticalAxis]}
+        >
+          <table className="p-datatable p-datatable-sm" style={tableStyles}>
+            {renderTableHeader()}
+            <tbody>
+              <SortableContext
+                items={tableData.map((row) =>
+                  row.rowType === 'group' ? `group-${row.groupNumber}` : `ex-${row.groupNumber}-${row.rowIndex}`
+                )}
+                strategy={verticalListSortingStrategy}
+              >
+                {tableData.map((rowData, index) => (
+                  <SortableRow
+                    key={
                       rowData.rowType === 'group'
                         ? `group-${rowData.groupNumber}`
-                        : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
+                        : `ex-${rowData.groupNumber}-${rowData.rowIndex}`
+                    }
+                    rowData={rowData}
+                    index={index}
+                  />
+                ))}
+              </SortableContext>
+            </tbody>
+          </table>
 
-                    // Solo hacemos draggable los grupos y los ejercicios que no están siendo arrastrados como parte de un grupo
-                    const isDraggable =
-                      isEditing &&
-                      (rowData.rowType === 'group' || (rowData.rowType === 'exercise' && !isDraggingGroup));
-
-                    return (
-                      <Draggable key={rowKey} draggableId={rowKey} index={index} isDragDisabled={!isDraggable}>
-                        {(draggableProvided, snapshot) => {
-                          const isBeingDragged = snapshot.isDragging;
-
-                          return (
-                            <tr
-                              ref={draggableProvided.innerRef}
-                              {...draggableProvided.draggableProps}
-                              style={{
-                                ...draggableProvided.draggableProps.style,
-                                // Determinar si está siendo arrastrado usando tanto el snapshot como el estado
-                                ...(isBeingDragged
-                                  ? {
-                                      background: isDarkMode ? '#2c3e50' : '#f8f9fa',
-                                      boxShadow: '0 0 10px rgba(0,0,0,0.2)',
-                                      // Mantener el ancho de la fila
-                                      width: '100%',
-                                      // Asegurar que todas las celdas mantengan su ancho
-                                      tableLayout: 'fixed',
-                                      // Añadir un borde para destacar mejor
-                                      border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
-                                      // Añadir un poco de espacio para que se vea mejor
-                                      margin: '2px 0',
-                                      // Aumentar la opacidad para mejor visibilidad
-                                      opacity: '0.9',
-                                      display: 'flex',
-                                      flexDirection: 'row',
-                                      alignItems: 'center'
-                                    }
-                                  : {})
-                              }}
-                              className={rowClassName(rowData)}
-                            >
-                              <td
-                                {...(isEditing ? draggableProvided.dragHandleProps : {})}
-                                style={{
-                                  minWidth: '150px',
-                                  width: '150px', // Ancho fijo para la primera columna
-                                  display: 'flex',
-
-                                  alignItems: 'center',
-                                  padding: '0.5rem',
-                                  // Evitar que el contenido se desborde
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap'
-                                }}
-                              >
-                                {isEditing && (
-                                  <FaGripVertical style={{ marginRight: '0.3rem', cursor: 'grab', flexShrink: 0 }} />
-                                )}
-                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {renderNameColumn(rowData)}
-                                </span>
-                              </td>
-                              {renderDataCells(rowData)}
-                            </tr>
-                          );
-                        }}
-                      </Draggable>
-                    );
-                  })}
-                  {provided.placeholder}
-                </tbody>
-              </table>
-            )}
-          </Droppable>
-        </DragDropContext>
+          {/* Opcional: Overlay para mostrar una vista previa del grupo completo */}
+          {isDraggingGroup && activeGroup && (
+            <DragOverlay>
+              <div
+                className="group-drag-preview"
+                style={{
+                  background: isDarkMode ? '#1e2a38' : '#ffffff',
+                  border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
+                  borderRadius: '4px',
+                  padding: '8px',
+                  boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
+                  maxWidth: '300px',
+                  overflow: 'hidden',
+                  opacity: 0.6,
+                  marginLeft: '40px'
+                }}
+              >
+                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                  {tableData.find((row) => row.rowType === 'group' && row.groupNumber === activeGroup)?.label ||
+                    `Group ${activeGroup}`}
+                </div>
+                <div style={{ fontSize: '0.9em', color: isDarkMode ? '#aaa' : '#666' }}>
+                  {tableData
+                    .filter((row) => row.rowType === 'exercise' && row.groupNumber === activeGroup)
+                    .map((exercise, idx) => (
+                      <div key={idx} style={{ marginBottom: '2px' }}>
+                        {exercise.name || exercise.exerciseName}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </DragOverlay>
+          )}
+        </DndContext>
       )}
     </div>
   );
