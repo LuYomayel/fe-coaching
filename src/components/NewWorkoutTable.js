@@ -18,6 +18,7 @@ import { useTheme } from '../utils/ThemeContext';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { FaGripVertical } from 'react-icons/fa';
 
+import '../styles/WorkoutTable.css';
 // Our known exercise properties
 const properties = [
   'sets',
@@ -53,6 +54,8 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   const [propertiesUsedByWeek, setPropertiesUsedByWeek] = useState([]);
 
   const [coachExercises, setCoachExercises] = useState([]);
+
+  const [isDraggingGroup, setIsDraggingGroup] = useState(false);
 
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -135,6 +138,34 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     }
   }, [excelData]);
 
+  useEffect(() => {
+    // Calculate propertiesUsedByWeek when tableData changes
+    if (tableData.length === 0 || numWeeks === 0) return;
+
+    // Calcular las propiedades usadas por semana
+    const usedPropertiesByWeek = {};
+
+    // Inicializar el objeto para cada semana
+    for (let i = 1; i <= numWeeks; i++) {
+      usedPropertiesByWeek[i] = [];
+    }
+
+    // Recorrer todos los ejercicios y semanas para determinar qué propiedades se usan
+    tableData.forEach((exercise) => {
+      for (let weekNum = 1; weekNum <= numWeeks; weekNum++) {
+        const weekData = exercise.weeksData[weekNum];
+        if (weekData) {
+          properties.forEach((prop) => {
+            if (weekData[prop] !== null) {
+              usedPropertiesByWeek[weekNum].push(prop);
+            }
+          });
+        }
+      }
+    });
+
+    setPropertiesUsedByWeek(usedPropertiesByWeek);
+  }, [tableData, numWeeks]);
   /**
    * We now produce an array of row objects. Each group is a row with rowType="group", then all exercises for that group with rowType="exercise".
    * This is how we can do group-level reorder or single-exercise reorder in a single table.
@@ -190,7 +221,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
               }
               // For each property, if ex[prop] is defined, store it
               properties.forEach((prop) => {
-                if (ex[prop] !== undefined) {
+                if (ex[prop] !== null) {
                   exRow.weeksData[week.weekNumber][prop] = ex[prop];
                 }
               });
@@ -240,7 +271,6 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       });
     });
 
-    console.log('finalArray:', finalArray);
     return finalArray;
   }
 
@@ -356,7 +386,6 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
             showToast('error', 'Error', intl.formatMessage({ id: 'workoutTable.exerciseAlreadyExists' }));
           } else {
             if (e.value) {
-              console.log(e.value, 'e.value');
               rowData.name = e.value;
               options.editorCallback(e.value);
             }
@@ -458,7 +487,6 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
         </div>
       );
     }
-    console.log(usedProps, 'usedProps');
     const dynamicCols = buildDataColumns(usedProps);
 
     return (
@@ -509,59 +537,125 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   /****************************************
    * DRAG & DROP: Single Table
    ****************************************/
+  // Modificar la función onDragStart
+  const onDragStart = (start) => {
+    const draggedRowIndex = start.source.index;
+    const draggedRow = tableData[draggedRowIndex];
+
+    // Primero, establecemos el estado de arrastre de grupo
+    if (draggedRow.rowType === 'group') {
+      setIsDraggingGroup(true);
+
+      // Creamos una copia nueva del array con los elementos marcados
+      const updatedData = tableData.map((row) => {
+        if (row.groupNumber === draggedRow.groupNumber) {
+          return { ...row, isBeingDragged: true };
+        }
+        return row;
+      });
+
+      // Actualizamos el estado con todos los cambios a la vez
+      setTableData(updatedData);
+    }
+  };
+
   const onDragEnd = (result) => {
+    // Primero, restablecemos el estado de arrastre
+    setIsDraggingGroup(false);
+
+    // Limpiamos la marca isBeingDragged de todos los elementos
+    const resetDragState = tableData.map((row) => ({
+      ...row,
+      isBeingDragged: false
+    }));
+
+    setTableData(resetDragState);
+
+    // Si no hay destino, terminamos aquí
     if (!result.destination) return;
+
+    // Continuamos con la lógica de reordenamiento...
     const fromIndex = result.source.index;
     const toIndex = result.destination.index;
     if (fromIndex === toIndex) return;
+    if (toIndex === 0 && tableData[fromIndex].rowType === 'exercise') return;
 
-    // We have a single array (tableData). We'll reorder rows depending on rowType
+    // Creamos una copia del array de datos
     const newData = Array.from(tableData);
     const [movedRow] = newData.splice(fromIndex, 1);
 
-    // If rowType === 'group', we want to move it plus all its exercise rows as a block
+    // Si es un grupo, necesitamos mover también todos sus ejercicios
     if (movedRow.rowType === 'group') {
-      // find all exercise rows that follow it until the next group or end
-      const block = [movedRow];
-      // We already removed movedRow from newData
-      // now let's remove the exercises that belong to that groupNumber
-      for (let i = 0; i < newData.length; ) {
-        if (newData[i].rowType === 'exercise' && newData[i].groupNumber === movedRow.groupNumber) {
-          block.push(newData[i]);
-          newData.splice(i, 1);
-        } else {
-          i++;
+      // Encontramos todos los ejercicios que pertenecen a este grupo
+      const groupExercises = [];
+      let i = fromIndex;
+
+      // Buscamos ejercicios que pertenecen al grupo en las filas siguientes
+      while (
+        i < newData.length &&
+        newData[i].rowType === 'exercise' &&
+        newData[i].groupNumber === movedRow.groupNumber
+      ) {
+        groupExercises.push(newData[i]);
+        newData.splice(i, 1); // Eliminamos el ejercicio de su posición actual
+      }
+
+      // Calculamos la posición correcta para insertar el grupo
+      // Debemos encontrar el grupo anterior o siguiente más cercano
+      let insertIndex = toIndex;
+
+      // Si estamos intentando insertar entre ejercicios, ajustamos la posición
+      if (insertIndex < newData.length && newData[insertIndex].rowType === 'exercise') {
+        // Buscamos hacia atrás para encontrar el grupo al que pertenecen estos ejercicios
+        let groupIndex = insertIndex;
+        while (groupIndex > 0 && newData[groupIndex - 1].rowType === 'exercise') {
+          groupIndex--;
+        }
+
+        // Si encontramos un grupo, insertamos después de todos sus ejercicios
+        if (groupIndex > 0 && newData[groupIndex - 1].rowType === 'group') {
+          const prevGroupNumber = newData[groupIndex - 1].groupNumber;
+          // Avanzamos hasta el final de los ejercicios de este grupo
+          while (
+            insertIndex < newData.length &&
+            newData[insertIndex].rowType === 'exercise' &&
+            newData[insertIndex].groupNumber === prevGroupNumber
+          ) {
+            insertIndex++;
+          }
         }
       }
-      // Now block = [ groupRow, exerciseRow(s) ]
-      // We'll insert them at toIndex. But if user is dragging the group to index "X",
-      // we have to see if there's an existing group row at toIndex. We'll do a direct insert.
-      let insertPos = toIndex;
-      // If user dragged group below exercise rows, we might need to check if that exercise belongs to a group
-      newData.splice(insertPos, 0, ...block);
+
+      // Insertamos el grupo y todos sus ejercicios en la nueva posición
+      newData.splice(insertIndex, 0, movedRow, ...groupExercises);
+
       setTableData(newData);
     } else if (movedRow.rowType === 'exercise') {
-      // single row reorder
+      // Para ejercicios individuales, simplemente los movemos
       newData.splice(toIndex, 0, movedRow);
 
-      // If we want to allow changing groupNumber when an exercise is placed after a different group row, check that
-      // We'll scan the final array from the top to find the group row for each exercise
+      // Actualizamos el groupNumber si es necesario
       let currentGroupNumber = null;
       newData.forEach((row) => {
         if (row.rowType === 'group') {
           currentGroupNumber = row.groupNumber;
-        } else {
+        } else if (row.rowType === 'exercise') {
           row.groupNumber = currentGroupNumber;
         }
       });
 
-      // Reassign rowIndex
+      // Reasignamos rowIndex para mantener el orden correcto
+      let currentGroup = null;
       let rowIdx = 0;
       newData.forEach((r) => {
-        if (r.rowType === 'exercise') {
+        if (r.rowType === 'group') {
+          currentGroup = r.groupNumber;
+          rowIdx = 0;
+        } else if (r.rowType === 'exercise' && r.groupNumber === currentGroup) {
           r.rowIndex = rowIdx++;
         }
       });
+
       setTableData(newData);
     }
   };
@@ -654,6 +748,108 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     return result;
   }
 
+  function renderTableHeader() {
+    const { headerGroup, usedProps } = buildHeaderGroup() || {};
+    // If there's no data, bail out
+    if (!headerGroup || !usedProps) return null;
+
+    // First row: "Exercise" + one column group per week
+    // second row: the actual properties in each week
+    return (
+      <thead>
+        <tr>
+          <th rowSpan={2} style={{ width: '10rem', padding: '0.5rem' }}>
+            {intl.formatMessage({ id: 'workoutTable.exercise' })}
+          </th>
+          {usedProps.map((propsList, i) => (
+            <th
+              key={`week${i}`}
+              colSpan={propsList.length}
+              style={{
+                borderRight: '1px solid #ccc',
+                borderLeft: '1px solid #ccc'
+              }}
+              textOverflow={'ellipsis'}
+              whiteSpace={'nowrap'}
+              overflow={'hidden'}
+            >
+              {intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}
+            </th>
+          ))}
+        </tr>
+        <tr>
+          {usedProps.map((propsList, i) =>
+            propsList.map((prop, index) => (
+              <th
+                style={{
+                  padding: '0.5rem',
+                  borderRight: index === propsList.length - 1 ? '1px solid #ccc' : 'none',
+                  borderLeft: index === 0 ? '1px solid #ccc' : 'none',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden'
+                }}
+                key={`${prop}-header-${i}`}
+              >
+                {propertyLabels[prop] || prop}
+              </th>
+            ))
+          )}
+        </tr>
+      </thead>
+    );
+  }
+
+  function renderDataCells(rowData) {
+    // Si es un grupo, devolvemos celdas vacías
+    if (rowData.rowType === 'group') {
+      const totalColumns = propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
+      return Array.from({ length: totalColumns }).map((_, idx) => (
+        <td
+          key={`group-${rowData.groupNumber}-${idx}`}
+          style={{ padding: '.5rem' }} // Ancho fijo para mantener consistencia
+        />
+      ));
+    }
+
+    // Para filas de ejercicios
+    return propertiesUsedByWeek.map((propsList, weekIndex) => {
+      const realWeek = weekIndex + 1;
+      return propsList.map((prop, index) => {
+        const cellKey = `ex-${rowData.name}-w${realWeek}-${prop}`;
+        const cellValue =
+          rowData.weeksData[realWeek] && rowData.weeksData[realWeek][prop] ? rowData.weeksData[realWeek][prop] : '';
+
+        return (
+          <td
+            style={{
+              padding: '.5rem',
+              //width: '100px', // Ancho fijo para cada celda
+              //minWidth: '100px', // Ancho mínimo para evitar que se comprima
+              borderRight: index === propsList.length - 1 ? '1px solid #ccc' : 'none',
+              borderLeft: index === 0 ? '1px solid #ccc' : 'none',
+              // Evitar que el contenido se desborde
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              width: '200px'
+            }}
+            key={cellKey}
+          >
+            {cellValue}
+          </td>
+        );
+      });
+    });
+  }
+
+  const tableStyles = {
+    //width: '100%',
+    borderCollapse: 'collapse',
+    tableLayout: 'fixed', // Esto es importante para mantener los anchos de columna
+    marginBottom: '2rem'
+  };
+
   return (
     <div style={{ padding: '0.5rem' }}>
       {/* 1) Cycle & Day selection */}
@@ -712,61 +908,95 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
 
       {isLoading ? (
         <p style={{ margin: '0.5rem' }}>{intl.formatMessage({ id: 'exercise.properties.loading' })}</p>
+      ) : tableData.length === 0 ? (
+        <div style={{ margin: '0.5rem' }}>
+          <FormattedMessage id="common.noData" />
+        </div>
       ) : (
-        // 3) Single Draggable list for the entire table
-        <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
           <Droppable droppableId="full-table" type="ROW">
             {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps}>
-                {/* We manually render each row as Draggable, then pass a custom rowRenderer to DataTable 
-                    or we can do a "virtual" approach. 
-                    Easiest: We'll create a custom table row for each item, 
-                    but since we want to preserve your DataTable approach, we do a trick:
-                */}
-                <DataTable
-                  value={tableData}
-                  editMode="cell"
-                  className="p-datatable-sm"
-                  rowClassName={rowClassName}
-                  responsiveLayout="stack"
-                  style={{ marginBottom: '2rem' }}
-                  // We'll replicate buildHeaderGroup here, or just skip it for brevity
-                  headerColumnGroup={buildHeaderGroup()?.headerGroup}
-                  rowKey={(r) =>
-                    r.rowType === 'group' ? `group-${r.groupNumber}` : `ex-${r.groupNumber}-${r.rowIndex}`
-                  }
-                  // We'll override the rowRenderer to wrap each row in Draggable
-                  body={(rowData, rowIndex) => {
-                    // This is an advanced approach where we manually place Draggable around the row
-                  }}
-                >
-                  {/* For the "name" or "group" column: */}
-                  <Column
-                    header={intl.formatMessage({ id: 'workoutTable.exercise' })}
-                    body={(rowData) => (
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {isEditing && <FaGripVertical style={{ marginRight: '0.3rem', cursor: 'grab' }} />}
-                        {rowData.rowType === 'group' ? rowData.label : rowData.name}
-                      </div>
-                    )}
-                    editor={nameColumnEditor}
-                    onCellEditComplete={(options) => {
-                      if (!isEditing) return;
-                      const { rowData, newValue } = options;
-                      if (rowData.rowType === 'group') {
-                        rowData.label = newValue;
-                      } else {
-                        rowData.name = newValue;
-                      }
-                      setTableData((prev) => prev.map((ex) => (ex === rowData ? { ...rowData } : ex)));
-                    }}
-                    style={{ minWidth: '150px' }}
-                  />
-                  {/* Then the dynamic property columns (like in your approach) */}
-                  {buildDataColumns(buildHeaderGroup()?.usedProps || []).map((col) => col)}
-                </DataTable>
-                {provided.placeholder}
-              </div>
+              <table className="p-datatable p-datatable-sm" style={tableStyles}>
+                {/* Build the multi-row header using your existing logic */}
+                {renderTableHeader()}
+                <tbody ref={provided.innerRef} {...provided.droppableProps}>
+                  {tableData.map((rowData, index) => {
+                    const rowKey =
+                      rowData.rowType === 'group'
+                        ? `group-${rowData.groupNumber}`
+                        : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
+
+                    // Solo hacemos draggable los grupos y los ejercicios que no están siendo arrastrados como parte de un grupo
+                    const isDraggable =
+                      isEditing &&
+                      (rowData.rowType === 'group' || (rowData.rowType === 'exercise' && !isDraggingGroup));
+
+                    return (
+                      <Draggable key={rowKey} draggableId={rowKey} index={index} isDragDisabled={!isDraggable}>
+                        {(draggableProvided, snapshot) => {
+                          const isBeingDragged = snapshot.isDragging;
+
+                          return (
+                            <tr
+                              ref={draggableProvided.innerRef}
+                              {...draggableProvided.draggableProps}
+                              style={{
+                                ...draggableProvided.draggableProps.style,
+                                // Determinar si está siendo arrastrado usando tanto el snapshot como el estado
+                                ...(isBeingDragged
+                                  ? {
+                                      background: isDarkMode ? '#2c3e50' : '#f8f9fa',
+                                      boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+                                      // Mantener el ancho de la fila
+                                      width: '100%',
+                                      // Asegurar que todas las celdas mantengan su ancho
+                                      tableLayout: 'fixed',
+                                      // Añadir un borde para destacar mejor
+                                      border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
+                                      // Añadir un poco de espacio para que se vea mejor
+                                      margin: '2px 0',
+                                      // Aumentar la opacidad para mejor visibilidad
+                                      opacity: '0.9',
+                                      display: 'flex',
+                                      flexDirection: 'row',
+                                      alignItems: 'center'
+                                    }
+                                  : {})
+                              }}
+                              className={rowClassName(rowData)}
+                            >
+                              <td
+                                {...(isEditing ? draggableProvided.dragHandleProps : {})}
+                                style={{
+                                  minWidth: '150px',
+                                  width: '150px', // Ancho fijo para la primera columna
+                                  display: 'flex',
+
+                                  alignItems: 'center',
+                                  padding: '0.5rem',
+                                  // Evitar que el contenido se desborde
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                {isEditing && (
+                                  <FaGripVertical style={{ marginRight: '0.3rem', cursor: 'grab', flexShrink: 0 }} />
+                                )}
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {renderNameColumn(rowData)}
+                                </span>
+                              </td>
+                              {renderDataCells(rowData)}
+                            </tr>
+                          );
+                        }}
+                      </Draggable>
+                    );
+                  })}
+                  {provided.placeholder}
+                </tbody>
+              </table>
             )}
           </Droppable>
         </DragDropContext>
@@ -794,10 +1024,10 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
    If rowType = 'group', that icon is used to reorder the entire block. 
    If rowType = 'exercise', it reorders that single row.
 
-Because we’re using one DataTable, we rely on a custom approach to wrap each row in a <Draggable>, 
+Because we're using one DataTable, we rely on a custom approach to wrap each row in a <Draggable>, 
 which can be done by overriding the rowRenderer or body. 
 Alternatively, you can generate the table yourself in a .map with the Draggable wrappers. 
-However, PrimeReact DataTable doesn’t natively support DnD row by row, so we do an advanced approach.
+However, PrimeReact DataTable doesn't natively support DnD row by row, so we do an advanced approach.
 
 This snippet is primarily to show how to keep it a single table, 
 with group-level + exercise-level drag and minimal logic changes in your existing code. 
