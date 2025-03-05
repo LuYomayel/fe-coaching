@@ -1008,6 +1008,7 @@ const messages = {
   'common.selectDay': 'Select day',
   'workoutTable.changesDetected': '{count} changes detected',
   'workoutTable.changesSaved': 'Changes saved successfully',
-  'workoutTable.exerciseAlreadyExists': 'Exercise already exists on the group'
+  'workoutTable.exerciseAlreadyExists': 'Exercise already exists on the group',
+  'exercise.properties.loading': 'Loading properties...'
 };
 export default messages;

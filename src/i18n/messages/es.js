@@ -752,6 +752,7 @@ const messages = {
   'workoutTable.newCycle': 'Nuevo Ciclo',
   'workoutTable.restDuration': 'Duración de Descanso',
   'workoutTable.exerciseAlreadyExists': 'El ejercicio ya existe en el grupo',
+  'exercise.properties.loading': 'Cargando propiedades...',
 
   // Header
   'header.home': 'Inicio',
