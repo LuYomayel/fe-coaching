@@ -492,6 +492,7 @@ const messages = {
   'exercise.properties.completedNotAsPlanned': 'Completed Not as Planned',
   'exercise.properties.comments': 'Comments',
   'exercise.properties.setLogs': 'Set Logs',
+  'exercise.properties.restDuration': 'Rest Duration (seconds)',
   // Confirmation messages
   'confirm.delete': 'Are you sure you want to delete this?',
   'confirm.deleteGroup': 'Are you sure you want to delete this group?',
@@ -741,7 +742,7 @@ const messages = {
   'workoutTable.distance': 'Distance',
   'workoutTable.newExercise': 'New Exercise',
   'workoutTable.selectGroup': 'Select Group',
-  'workoutTable.addNewGroup': 'Group',
+  'workoutTable.addNewGroup': 'Add Group',
   'workoutTable.enterTrainingName': 'Enter the name of the training',
   'workoutTable.enterName': 'Enter the name of the training',
   'workoutTable.trainingName': 'Training Name',
@@ -1001,6 +1002,11 @@ const messages = {
   'editCycle.durationPlaceholder': 'Duration',
   'success.cycleUpdated': 'Cycle updated successfully!',
   'success.cycleDeleted': 'Cycle deleted successfully!',
-  'confirm.deleteCycle': 'Are you sure you want to delete this cycle?'
+  'confirm.deleteCycle': 'Are you sure you want to delete this cycle?',
+
+  'workoutTable.addGroup': 'Add Group',
+  'common.selectDay': 'Select day',
+  'workoutTable.changesDetected': '{count} changes detected',
+  'workoutTable.changesSaved': 'Changes saved successfully'
 };
 export default messages;

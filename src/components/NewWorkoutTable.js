@@ -6,17 +6,13 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { Row } from 'primereact/row';
-
+import { InputText } from 'primereact/inputtext'; // For editing
 import { fetchExcelViewByCycleAndDay } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useTheme } from '../utils/ThemeContext';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { InputNumber } from 'primereact/inputnumber';
 
-/**
- * Stub definitions – replace or remove as needed:
- */
-const numWeeks = 4; // e.g. if your cycle has 4 weeks
 const properties = [
   'sets',
   'repetitions',
@@ -29,46 +25,24 @@ const properties = [
   'duration',
   'distance',
   'restDuration'
-]; // which props to show
-
-const isEditing = false; // or from your parent state
-const exercises = []; // from your old snippet if you're combining data
-const daysOfWeek = [
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
-  { value: 7, label: 'Sunday' }
 ];
-
-function renderProperty(rowData, prop, weekIndex) {
-  // e.g. fetch from rowData or do something else
-  const data = rowData.weeksData[weekIndex];
-  if (!data) return '-';
-  // convert the object to a string or some JSX
-  return `${data[prop] || '-'}`;
-}
-function cellEditor(options, prop, weekIndex) {
-  // e.g. return some input or editor
-  return <span>Edit</span>;
-}
-function exerciseEditor(options) {
-  return <span>Edit Exercise</span>;
-}
 
 export default function NewWorkoutTable({ cycleOptions, clientId }) {
   const { user, coach } = useContext(UserContext);
   const showToast = useToast();
   const intl = useIntl();
-
+  const { isDarkMode } = useTheme();
+  const [isEditing, setIsEditing] = useState(false);
   const [cycleId, setCycleId] = useState(null);
   const [dayNumber, setDayNumber] = useState(null);
   const [excelData, setExcelData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { isDarkMode } = useTheme();
-  // Day selection
+  const [numWeeks, setNumWeeks] = useState(0);
+  // Local table data that we can edit
+  const [tableData, setTableData] = useState([]);
+  const [editedData, setEditedData] = useState({});
+
+  // For day selection
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
     { label: intl.formatMessage({ id: 'workoutTable.tuesday' }), value: 2 },
@@ -101,14 +75,32 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     }
   };
 
-  // Fetch the excelView from backend
+  function renderProperty(rowData, prop, weekIndex) {
+    // e.g. fetch from rowData or do something else
+    const data = rowData.weeksData[weekIndex];
+    if (!data) return '-';
+    // convert the object to a string or some JSX
+    return `${data[prop] || '-'}`;
+  }
+
+  useEffect(() => {
+    console.log(editedData);
+  }, [editedData]);
+  // On mount or when excelData changes, rebuild the tableData
+  useEffect(() => {
+    if (!excelData?.weeks) return;
+    const arr = buildExercisesArray(excelData);
+    setTableData(arr);
+  }, [excelData]);
+
+  // Fetch from backend
   useEffect(() => {
     if (!cycleId || !dayNumber) return;
-
     const fetchExcelView = async () => {
       try {
         setIsLoading(true);
         const response = await fetchExcelViewByCycleAndDay(cycleId, dayNumber);
+        setNumWeeks(response.data.weeks.length);
         setExcelData(response.data);
       } catch (error) {
         showToast('error', 'Error', error.message || 'Error al obtener datos');
@@ -119,12 +111,10 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     fetchExcelView();
   }, [cycleId, dayNumber, showToast]);
 
-  // Build an array of exercises from excelData (similar to your old approach)
-  function buildExercisesArray() {
-    if (!excelData?.weeks) return [];
+  // Build an array of exercises from the response
+  function buildExercisesArray(data) {
     const allExercises = new Map();
-
-    excelData.weeks.forEach((week) => {
+    data.weeks.forEach((week) => {
       week.sessions.forEach((session) => {
         session.workoutInstances.forEach((instance) => {
           instance.groups.forEach((group) => {
@@ -133,48 +123,74 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
               if (!allExercises.has(exKey)) {
                 allExercises.set(exKey, {
                   name: exKey,
-                  groupNumber: group.groupNumber, // Añadimos el número de grupo
+                  groupNumber: group.groupNumber,
                   weeksData: {}
                 });
               }
               const exerciseObj = allExercises.get(exKey);
-
-              const weekData = {};
-              if (ex.sets) weekData.sets = ex.sets;
-              if (ex.weight) weekData.weight = ex.weight;
-              if (ex.time) weekData.time = ex.time;
-              if (ex.tempo) weekData.tempo = ex.tempo;
-              if (ex.repetitions) weekData.repetitions = ex.repetitions;
-              if (ex.restInterval) weekData.restInterval = ex.restInterval;
-              if (ex.notes) weekData.notes = ex.notes;
-              if (ex.difficulty) weekData.difficulty = ex.difficulty;
-              if (ex.duration) weekData.duration = ex.duration;
-              if (ex.distance) weekData.distance = ex.distance;
-              if (ex.restDuration) weekData.restDuration = ex.restDuration;
-
-              if (Object.keys(weekData).length > 0) {
-                exerciseObj.weeksData[week.weekNumber] = weekData;
+              if (!exerciseObj.weeksData[week.weekNumber]) {
+                exerciseObj.weeksData[week.weekNumber] = {
+                  exerciseInstanceId: ex.exerciseInstanceId
+                };
               }
+              // For each property, set the value if it exists
+              properties.forEach((prop) => {
+                if (ex[prop]) {
+                  exerciseObj.weeksData[week.weekNumber][prop] = ex[prop];
+                }
+              });
             });
           });
         });
       });
     });
-
     return Array.from(allExercises.values());
   }
 
-  /**
-   * Build the multi-row header with a first row for "Exercise" plus "Week 1..n"
-   * Then a second row with each property repeated per week.
-   */
+  // onCellEditComplete – update tableData with the new value
+  const onCellEditComplete = (options, prop, weekNum) => {
+    const { rowData, newValue } = options;
+
+    // Update the property in rowData
+    if (!rowData.weeksData[weekNum]) {
+      rowData.weeksData[weekNum] = {};
+    }
+    rowData.weeksData[weekNum][prop] = newValue;
+    setEditedData((prev) => ({ ...prev, [rowData.name]: { ...rowData } }));
+    // Force a new state so DataTable re-renders
+    setTableData((prev) => {
+      return prev.map((ex) => (ex.name === rowData.name ? { ...rowData } : ex));
+    });
+  };
+
+  // A cell editor returning an <InputText>
+  const cellEditor = (options, prop, weekNum) => {
+    const { rowData } = options;
+
+    // Current value
+    const value = rowData.weeksData[weekNum]?.[prop] || '';
+    // Return an <InputText> that updates the newValue on input
+    return (
+      <InputText
+        type="text"
+        value={value}
+        onChange={(e) => {
+          rowData.weeksData[weekNum][prop] = e.target.value;
+          return options.editorCallback(e.target.value);
+        }}
+        style={{ width: '100%' }}
+      />
+    );
+  };
+
+  // Build the multi-row header (similar to your logic above)
   const buildHeaderGroup = () => {
     // Return null if we don't have the needed data
     if (!numWeeks || !properties) return null;
 
     // Get used properties per week from exercises array
     const usedPropertiesByWeek = [];
-    const exercises = buildExercisesArray();
+    const exercises = buildExercisesArray(excelData);
     for (let weekNum = 1; weekNum <= numWeeks; weekNum++) {
       const usedProps = new Set();
       exercises.forEach((exercise) => {
@@ -225,9 +241,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     };
   };
 
-  /**
-   * Build the property columns for each week, e.g. sets/weight/time/etc.
-   */
+  // Build dynamic columns – each cell has a field like "sets-1"
   const buildDataColumns = (usedPropertiesByWeek) => {
     const cols = [];
     for (let i = 1; i <= numWeeks; i++) {
@@ -238,9 +252,9 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
           <Column
             key={colKey}
             header={headerLabel}
-            rowClassName={rowClassName}
             body={(rowData) => renderProperty(rowData, prop, i)}
             editor={(options) => cellEditor(options, prop, i)}
+            onCellEditComplete={(options) => onCellEditComplete(options, prop, i)}
             editorOptions={{ disabled: !isEditing }}
             style={{ minWidth: '100px' }}
           />
@@ -250,74 +264,39 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     return cols;
   };
 
-  /**
-   * Render the entire set of tables by dayNumber (like your old approach).
-   * If you only have one table, you can simplify. This snippet
-   * is for multiple dayNumbers (like Monday / Tuesday).
-   */
-  const renderTablesByDayNumber = () => {
-    // Suppose "exercises" is the array we want to show,
-    // or we can use buildExercisesArray() if you're just using the new approach
-    // For now, let's combine them if you want:
-    const newApproachExercises = buildExercisesArray();
-    // If you prefer your custom "exercises" array, just use that. Or merge them.
-
-    if (!newApproachExercises || newApproachExercises.length === 0) {
+  // Render the single table (or multiple if you prefer) with cell editing
+  function renderTable() {
+    if (!tableData.length) {
       return (
-        <div>
+        <div style={{ margin: '0.5rem' }}>
           <FormattedMessage id="common.noData" />
         </div>
       );
     }
 
-    // We'll build the global header once
     const { headerGroup, usedPropertiesByWeek } = buildHeaderGroup();
-    const dataColumns = buildDataColumns(usedPropertiesByWeek);
+    const dynamicCols = buildDataColumns(usedPropertiesByWeek);
 
-    // If you only need one table for the dayNumber, skip grouping by dayNumber
-    // For demonstration, let's assume dayNumber is enough to just show one table:
     return (
       <DataTable
-        value={newApproachExercises}
-        headerColumnGroup={headerGroup}
+        value={tableData}
         editMode="cell"
-        loading={isLoading}
-        rowClassName={rowClassName}
+        headerColumnGroup={headerGroup}
         className="p-datatable-sm"
+        rowClassName={rowClassName}
+        responsiveLayout="stack"
         style={{ marginBottom: '2rem' }}
       >
-        {/* If editing is allowed, maybe a "delete" column here */}
-        {isEditing && (
-          <Column
-            header={intl.formatMessage({ id: 'workoutTable.deleteExercise' })}
-            body={(rowData, options) => {
-              // your logic for delete button
-            }}
-            style={{ padding: '0.15rem' }}
-          />
-        )}
-
-        {/* "Exercise" column */}
-        <Column
-          header={intl.formatMessage({ id: 'workoutTable.exercise' })}
-          style={{ padding: '0.15rem', minWidth: '15rem' }}
-          body={(rowData, options) => {
-            // your logic for Draggable or add new exercise
-            return rowData.name;
-          }}
-          editor={(options) => exerciseEditor(options)}
-          editorOptions={{ disabled: !isEditing }}
-        />
-
-        {/* Spread the dynamic columns */}
-        {dataColumns}
+        <Column header="Exercise" field="name" style={{ minWidth: '150px' }} />
+        {/* Insert dynamic columns */}
+        {dynamicCols}
       </DataTable>
     );
-  };
+  }
 
   return (
     <div style={{ padding: '0.5rem' }}>
-      {/* Filtros de Selección */}
+      {/* Dropdown filters */}
       <div className="grid" style={{ marginBottom: '0.5rem' }}>
         <div className="col-12 md:col-3">
           <label htmlFor="cycle" style={{ marginBottom: '0.3rem', display: 'block' }}>
@@ -354,8 +333,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       {isLoading ? (
         <p style={{ margin: '0.5rem' }}>{intl.formatMessage({ id: 'exercise.properties.loading' })}</p>
       ) : (
-        // If you just want ONE table for the selected dayNumber:
-        renderTablesByDayNumber()
+        renderTable()
       )}
     </div>
   );

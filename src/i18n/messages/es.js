@@ -502,7 +502,7 @@ const messages = {
   'exercise.properties.completedNotAsPlanned': 'No Completado Según lo Planeado',
   'exercise.properties.comments': 'Comentarios',
   'exercise.properties.setLogs': 'Registro de Series',
-
+  'exercise.properties.restDuration': 'Duración del Descanso (segundos)',
   // Mensajes de confirmación
   'confirm.delete': '¿Estás seguro que deseas eliminar esto?',
   'confirm.deleteGroup': '¿Estás seguro que deseas eliminar este grupo?',
@@ -1009,6 +1009,10 @@ const messages = {
   'confirm.deleteCycle': '¿Estás seguro de que deseas eliminar este ciclo?',
 
   'coach.exercise.success.created': 'Ejercicio creado exitosamente',
-  'coach.exercise.success.updated': 'Ejercicio actualizado exitosamente'
+  'coach.exercise.success.updated': 'Ejercicio actualizado exitosamente',
+  'workoutTable.addGroup': 'Agregar Grupo',
+  'common.selectDay': 'Seleccionar día',
+  'workoutTable.changesDetected': '{count} cambios detectados',
+  'workoutTable.changesSaved': 'Cambios guardados exitosamente'
 };
 export default messages;
