@@ -624,7 +624,7 @@ export default function ClientDashboard() {
             setRefreshKey={setRefreshKey}
             clientId={clientId}
             clientData={clientData}
-          /> */}
+            /> */}
         </TabPanel>
       </TabView>
     );

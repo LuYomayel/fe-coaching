@@ -7,6 +7,7 @@ import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { Row } from 'primereact/row';
 import { InputText } from 'primereact/inputtext';
+import { InputNumber } from 'primereact/inputnumber';
 
 import { fetchExcelViewByCycleAndDay } from '../services/workoutService';
 import { fetchCoachExercises } from '../services/exercisesService';
@@ -33,7 +34,8 @@ import {
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { FaGripVertical } from 'react-icons/fa';
-
+import { FaSave } from 'react-icons/fa';
+import { saveWorkoutChanges } from '../services/workoutService';
 import '../styles/WorkoutTable.css';
 // Our known exercise properties
 const properties = [
@@ -89,6 +91,15 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     })
   );
 
+  // Añadir estos estados para seguimiento de cambios
+  const [originalData, setOriginalData] = useState(null);
+  const [changes, setChanges] = useState({
+    newExercises: [],
+    movedExercises: [],
+    movedGroups: [],
+    updatedProperties: []
+  });
+
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
     { label: intl.formatMessage({ id: 'workoutTable.tuesday' }), value: 2 },
@@ -110,6 +121,13 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     difficulty: intl.formatMessage({ id: 'exercise.properties.difficulty' }),
     duration: intl.formatMessage({ id: 'exercise.properties.duration' }),
     distance: intl.formatMessage({ id: 'exercise.properties.distance' })
+  };
+
+  const tableStyles = {
+    //width: '100%',
+    borderCollapse: 'collapse',
+    tableLayout: 'fixed', // Esto es importante para mantener los anchos de columna
+    marginBottom: '2rem'
   };
 
   const rowClassName = (rowData) => {
@@ -167,36 +185,30 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     if (excelData?.weeks) {
       const built = buildRowsWithGroups(excelData);
       setTableData(built);
+      setOriginalData(JSON.parse(JSON.stringify(built))); // Copia profunda
     }
   }, [excelData]);
 
   useEffect(() => {
-    // Calculate propertiesUsedByWeek when tableData changes
-    if (tableData.length === 0 || numWeeks === 0) return;
+    // If needed, you can re-check which properties are used in each week
+    if (!tableData || !tableData.length || !numWeeks) return;
+    const usedProps = {};
+    for (let i = 1; i <= numWeeks; i++) usedProps[i] = [];
 
-    // Calcular las propiedades usadas por semana
-    const usedPropertiesByWeek = {};
-
-    // Inicializar el objeto para cada semana
-    for (let i = 1; i <= numWeeks; i++) {
-      usedPropertiesByWeek[i] = [];
-    }
-
-    // Recorrer todos los ejercicios y semanas para determinar qué propiedades se usan
-    tableData.forEach((exercise) => {
-      for (let weekNum = 1; weekNum <= numWeeks; weekNum++) {
-        const weekData = exercise.weeksData[weekNum];
-        if (weekData) {
-          properties.forEach((prop) => {
-            if (weekData[prop] !== null) {
-              usedPropertiesByWeek[weekNum].push(prop);
-            }
-          });
+    tableData.forEach((row) => {
+      if (row.rowType === 'exercise') {
+        for (let w = 1; w <= numWeeks; w++) {
+          if (row.weeksData[w]) {
+            Object.keys(row.weeksData[w]).forEach((prop) => {
+              if (properties.includes(prop) && !usedProps[w].includes(prop)) {
+                usedProps[w].push(prop);
+              }
+            });
+          }
         }
       }
     });
-
-    setPropertiesUsedByWeek(usedPropertiesByWeek);
+    setPropertiesUsedByWeek(Object.values(usedProps));
   }, [tableData, numWeeks]);
   /**
    * We now produce an array of row objects. Each group is a row with rowType="group", then all exercises for that group with rowType="exercise".
@@ -238,6 +250,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
                   isNew: false,
                   name: ex.exerciseName,
                   groupNumber: groupNumber,
+                  exerciseInstanceId: ex.exerciseInstanceId,
                   // If you have ex.rowIndex, use it, else default to 0
                   rowIndex: typeof ex.rowIndex === 'number' ? ex.rowIndex : 0,
                   weeksData: {}
@@ -309,125 +322,39 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   /****************************************
    * 4) Compute usedPropertiesByWeek if needed
    ****************************************/
-  useEffect(() => {
-    // If needed, you can re-check which properties are used in each week
-    if (!tableData || !tableData.length || !numWeeks) return;
-    const usedProps = {};
-    for (let i = 1; i <= numWeeks; i++) usedProps[i] = [];
-
-    tableData.forEach((row) => {
-      if (row.rowType === 'exercise') {
-        for (let w = 1; w <= numWeeks; w++) {
-          if (row.weeksData[w]) {
-            Object.keys(row.weeksData[w]).forEach((prop) => {
-              if (properties.includes(prop) && !usedProps[w].includes(prop)) {
-                usedProps[w].push(prop);
-              }
-            });
-          }
-        }
-      }
-    });
-    setPropertiesUsedByWeek(Object.values(usedProps));
-  }, [tableData, numWeeks]);
-
-  /****************************************
-   * 5) Cell editing logic
-   ****************************************/
-  const onCellEditComplete = (options, prop, weekNum) => {
-    if (!isEditing) return;
-    const { rowData, newValue } = options;
-    if (!rowData.weeksData[weekNum]) rowData.weeksData[weekNum] = {};
-    rowData.weeksData[weekNum][prop] = newValue;
-
-    // Mark changes in editedData
-    if (rowData.rowType === 'exercise') {
-      setEditedData((prev) => {
-        const updated = { ...prev };
-        if (!updated[rowData.name]) {
-          updated[rowData.name] = { isNew: rowData.isNew, weeksData: {} };
-        }
-        if (!updated[rowData.name].weeksData[weekNum]) {
-          updated[rowData.name].weeksData[weekNum] = {
-            exerciseInstanceId: rowData.weeksData[weekNum].exerciseInstanceId || null
-          };
-        }
-        updated[rowData.name].weeksData[weekNum][prop] = newValue;
-        return updated;
-      });
-    } // if group row => do nothing or track differently if you want
-
-    // Re-render
-    setTableData((prev) => prev.map((r) => (r === rowData ? { ...rowData } : r)));
-  };
-
-  const cellEditor = (options, prop, weekNum) => {
-    const { rowData } = options;
-    if (rowData.rowType === 'group') {
-      // Groups might not be editable here
-      return <div>{rowData.label}</div>;
-    }
-    const currentValue = rowData.weeksData[weekNum]?.[prop] || '';
-    if (!isEditing) return <div>{currentValue}</div>;
-
-    return (
-      <InputText
-        value={currentValue}
-        onChange={(e) => options.editorCallback(e.target.value)}
-        style={{ width: '100%' }}
-      />
-    );
-  };
-
-  function renderProperty(rowData, prop, weekIndex) {
-    if (rowData.rowType === 'group') {
-      // groups have no property data
-      return '';
-    }
-    const data = rowData.weeksData[weekIndex];
-    if (!data) return '-';
-    return data[prop] || '-';
-  }
 
   // "Exercise" or "Group" name column
   function renderNameColumn(rowData) {
     if (rowData.rowType === 'group') {
-      return rowData.label;
+      return isEditing ? (
+        <InputText
+          value={rowData.label || `Group ${rowData.groupNumber}`}
+          onChange={(e) => handleGroupLabelChange(rowData, e.target.value)}
+          style={{ width: '100%' }}
+        />
+      ) : (
+        rowData.label || `Group ${rowData.groupNumber}`
+      );
     }
+
+    // Para ejercicios
+    if (isEditing) {
+      return (
+        <Dropdown
+          value={rowData.name}
+          options={coachExercises.map((ex) => ({ label: ex.name, value: ex.name }))}
+          onChange={(e) => handleExerciseNameChange(rowData, e.value)}
+          filter
+          showClear={false}
+          className="w-full"
+          style={{ width: '100%' }}
+          placeholder={intl.formatMessage({ id: 'exercise.selectExercise' })}
+        />
+      );
+    }
+
     return rowData.name || '-';
   }
-
-  const nameColumnEditor = (options) => {
-    const { rowData } = options;
-    if (rowData.rowType === 'group') {
-      // If you want to rename groups, do it here
-      return <div>{rowData.label}</div>;
-    }
-
-    // If it's an exercise row, pick from coachExercises
-    if (!isEditing) return <div>{rowData.name}</div>;
-
-    return (
-      <Dropdown
-        value={rowData.name}
-        options={coachExercises.map((ex) => ({ label: ex.name, value: ex.name }))}
-        filter
-        resetFilterOnHide
-        onChange={(e) => {
-          if (tableData.find((ex) => ex.name === e.value && ex.groupNumber === rowData.groupNumber)) {
-            showToast('error', 'Error', intl.formatMessage({ id: 'workoutTable.exerciseAlreadyExists' }));
-          } else {
-            if (e.value) {
-              rowData.name = e.value;
-              options.editorCallback(e.value);
-            }
-          }
-        }}
-        placeholder="Select Exercise"
-        style={{ width: '100%' }}
-      />
-    );
-  };
 
   /****************************************
    * 6) Table layout
@@ -488,107 +415,36 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     };
   }
 
-  function buildDataColumns(usedProps) {
-    const cols = [];
-    if (!usedProps || usedProps.length === 0) return cols;
-    for (let i = 1; i <= numWeeks; i++) {
-      usedProps[i - 1].forEach((prop) => {
-        const colKey = `${prop}-col-${i}`;
-        cols.push(
-          <Column
-            key={colKey}
-            header={propertyLabels[prop] || prop}
-            body={(rowData) => renderProperty(rowData, prop, i)}
-            editor={(options) => cellEditor(options, prop, i)}
-            onCellEditComplete={(options) => onCellEditComplete(options, prop, i)}
-            editorOptions={{ disabled: !isEditing }}
-            style={{ minWidth: '100px' }}
-          />
-        );
-      });
-    }
-    return cols;
-  }
-
-  function renderDataTable() {
-    const { headerGroup, usedProps } = buildHeaderGroup() || {};
-    if (!headerGroup) {
-      return (
-        <div style={{ margin: '0.5rem' }}>
-          <FormattedMessage id="common.noData" />
-        </div>
-      );
-    }
-    const dynamicCols = buildDataColumns(usedProps);
-
-    return (
-      <DataTable
-        value={tableData}
-        editMode="cell"
-        headerColumnGroup={headerGroup}
-        className="p-datatable-sm"
-        rowClassName={rowClassName}
-        responsiveLayout="stack"
-        style={{ marginBottom: '2rem' }}
-      >
-        <Column
-          header={intl.formatMessage({ id: 'workoutTable.exercise' })}
-          body={(rowData) => {
-            // Show a grip handle if we're editing
-            return (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                {isEditing && (
-                  <FaGripVertical
-                    style={{ cursor: 'grab', marginRight: '0.3rem' }}
-                    // The actual drag handle props come from the Draggable below
-                  />
-                )}
-                {rowData.rowType === 'group' ? rowData.label : rowData.name}
-              </div>
-            );
-          }}
-          editor={nameColumnEditor}
-          onCellEditComplete={(options) => {
-            if (!isEditing) return;
-            const { rowData, newValue } = options;
-            // If group => rowData.label = newValue, else rowData.name = newValue
-            if (rowData.rowType === 'group') {
-              rowData.label = newValue;
-            } else {
-              rowData.name = newValue;
-            }
-            setTableData((prev) => prev.map((ex) => (ex === rowData ? { ...rowData } : ex)));
-          }}
-          style={{ minWidth: '150px' }}
-        />
-        {dynamicCols}
-      </DataTable>
-    );
-  }
-
   /****************************************
    * DRAG & DROP: Single Table
    ****************************************/
-  // Reemplazar handleDragStart
+  // Corregir la función handleDragStart para que funcione con los nuevos IDs
   const handleDragStart = (event) => {
     const { active } = event;
     setActiveId(active.id);
 
-    // Determinar si estamos arrastrando un grupo
-    if (active.id.toString().startsWith('group-')) {
-      const groupNumber = parseInt(active.id.toString().split('-')[1], 10);
-      setIsDraggingGroup(true);
-      setActiveGroup(groupNumber);
+    // Verificar si es un grupo por el formato del ID
+    if (typeof active.id === 'string' && active.id.startsWith('group-')) {
+      const groupNumberStr = active.id.split('-')[1];
+      const groupNumber = parseInt(groupNumberStr, 10);
 
-      // Marcar todos los elementos del grupo
-      const updatedData = tableData.map((row) => {
-        if (row.groupNumber === groupNumber) {
-          return { ...row, isBeingDragged: true };
-        }
-        return row;
-      });
+      // Verificar que realmente existe este grupo en los datos
+      const groupExists = tableData.some((row) => row.rowType === 'group' && row.groupNumber === groupNumber);
 
-      setTableData(updatedData);
+      if (groupExists) {
+        setIsDraggingGroup(true);
+        setActiveGroup(groupNumber);
+
+        // Marcar todos los elementos del grupo
+        const updatedData = tableData.map((row) => {
+          if (row.groupNumber === groupNumber) {
+            return { ...row, isBeingDragged: true };
+          }
+          return row;
+        });
+
+        setTableData(updatedData);
+      }
     }
   };
 
@@ -613,100 +469,244 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       return;
     }
 
-    // Obtener índices
-    const activeIndex = tableData.findIndex((item) =>
-      item.rowType === 'group'
-        ? `group-${item.groupNumber}` === active.id
-        : `ex-${item.groupNumber}-${item.rowIndex}` === active.id
-    );
+    // Obtener información sobre las filas activa y destino
+    const activeItem = tableData.find((item) => {
+      if (item.rowType === 'group') {
+        return `group-${item.groupNumber}` === active.id;
+      } else {
+        return `ex-${item.groupNumber}-${item.rowIndex}` === active.id;
+      }
+    });
 
-    const overIndex = tableData.findIndex((item) =>
-      item.rowType === 'group'
-        ? `group-${item.groupNumber}` === over.id
-        : `ex-${item.groupNumber}-${item.rowIndex}` === over.id
-    );
+    const overItem = tableData.find((item) => {
+      if (item.rowType === 'group') {
+        return `group-${item.groupNumber}` === over.id;
+      } else {
+        return `ex-${item.groupNumber}-${item.rowIndex}` === over.id;
+      }
+    });
+
+    // Si no encontramos alguno de los elementos, salimos
+    if (!activeItem || !overItem) {
+      setTableData(resetDragState);
+      return;
+    }
+
+    console.log('Active Item', activeItem);
+    // Obtener índices
+    const activeIndex = tableData.findIndex((item) => {
+      if (item.rowType === 'group') {
+        return `group-${item.groupNumber}` === active.id;
+      } else {
+        return `ex-${item.groupNumber}-${item.rowIndex}` === active.id;
+      }
+    });
+
+    const overIndex = tableData.findIndex((item) => {
+      if (item.rowType === 'group') {
+        return `group-${item.groupNumber}` === over.id;
+      } else {
+        return `ex-${item.groupNumber}-${item.rowIndex}` === over.id;
+      }
+    });
 
     if (activeIndex === overIndex) {
       setTableData(resetDragState);
       return;
     }
 
-    // Lógica para mover elementos
-    const newData = [...resetDragState];
-    const movedRow = newData[activeIndex];
+    // Verificar si el ejercicio movido dejaría su grupo vacío
+    if (activeItem.rowType === 'exercise') {
+      const exercisesInSameGroup = tableData.filter(
+        (item) => item.rowType === 'exercise' && item.groupNumber === activeItem.groupNumber && item !== activeItem
+      );
 
-    // Si es un grupo, mover todo el grupo
-    if (movedRow.rowType === 'group') {
-      // Encontrar todos los ejercicios del grupo
-      const groupExercises = [];
-      newData.splice(activeIndex, 1); // Quitar el grupo
-
-      let i = activeIndex;
-      while (
-        i < newData.length &&
-        newData[i].rowType === 'exercise' &&
-        newData[i].groupNumber === movedRow.groupNumber
-      ) {
-        groupExercises.push(newData[i]);
-        newData.splice(i, 1);
+      if (exercisesInSameGroup.length === 0) {
+        setTableData(resetDragState);
+        return;
       }
-
-      // Calcular posición de inserción
-      let insertIndex = overIndex > activeIndex ? overIndex - 1 : overIndex;
-
-      // Ajustar si estamos insertando entre ejercicios
-      if (insertIndex < newData.length && newData[insertIndex].rowType === 'exercise') {
-        let groupIndex = insertIndex;
-        while (groupIndex > 0 && newData[groupIndex - 1].rowType === 'exercise') {
-          groupIndex--;
-        }
-
-        if (groupIndex > 0 && newData[groupIndex - 1].rowType === 'group') {
-          const prevGroupNumber = newData[groupIndex - 1].groupNumber;
-          while (
-            insertIndex < newData.length &&
-            newData[insertIndex].rowType === 'exercise' &&
-            newData[insertIndex].groupNumber === prevGroupNumber
-          ) {
-            insertIndex++;
-          }
-        }
-      }
-
-      // Insertar grupo y ejercicios
-      newData.splice(insertIndex, 0, movedRow, ...groupExercises);
-    } else {
-      // Mover ejercicio individual
-      newData.splice(activeIndex, 1);
-
-      // Calcular posición de inserción
-      let insertIndex = overIndex > activeIndex ? overIndex - 1 : overIndex;
-      newData.splice(insertIndex, 0, movedRow);
-
-      // Actualizar groupNumber si es necesario
-      let currentGroupNumber = null;
-      newData.forEach((row) => {
-        if (row.rowType === 'group') {
-          currentGroupNumber = row.groupNumber;
-        } else if (row.rowType === 'exercise') {
-          row.groupNumber = currentGroupNumber;
-        }
-      });
-
-      // Reasignar rowIndex
-      let currentGroup = null;
-      let rowIdx = 0;
-      newData.forEach((r) => {
-        if (r.rowType === 'group') {
-          currentGroup = r.groupNumber;
-          rowIdx = 0;
-        } else if (r.rowType === 'exercise' && r.groupNumber === currentGroup) {
-          r.rowIndex = rowIdx++;
-        }
-      });
     }
 
-    setTableData(newData);
+    // Crear una copia de los datos para trabajar
+    let newData = [...resetDragState];
+
+    // Si es un grupo, mover todo el grupo
+    if (activeItem.rowType === 'group') {
+      // Encontrar todos los ejercicios del grupo
+      const groupExercises = [];
+      const groupNumber = activeItem.groupNumber;
+
+      // Crear una copia del grupo
+      const groupRow = { ...activeItem };
+
+      // Encontrar todos los ejercicios que pertenecen a este grupo
+      const exercisesOfGroup = newData.filter(
+        (item) => item.rowType === 'exercise' && item.groupNumber === groupNumber
+      );
+
+      // Eliminar el grupo y sus ejercicios del array original
+      newData = newData.filter(
+        (item) =>
+          !(item.rowType === 'group' && item.groupNumber === groupNumber) &&
+          !(item.rowType === 'exercise' && item.groupNumber === groupNumber)
+      );
+
+      // Determinar la posición de inserción
+      let insertIndex;
+
+      if (overItem.rowType === 'group') {
+        // Si el destino es otro grupo
+        insertIndex = newData.findIndex(
+          (item) => item.rowType === 'group' && item.groupNumber === overItem.groupNumber
+        );
+
+        // Si estamos moviendo hacia abajo, insertar después del grupo destino y sus ejercicios
+        if (activeIndex < overIndex) {
+          // Contar cuántos ejercicios tiene el grupo destino
+          const exercisesInTargetGroup = newData.filter(
+            (item) => item.rowType === 'exercise' && item.groupNumber === overItem.groupNumber
+          ).length;
+
+          // Ajustar la posición de inserción
+          insertIndex += exercisesInTargetGroup + 1;
+        }
+      } else {
+        // Si el destino es un ejercicio
+        const targetGroupNumber = overItem.groupNumber;
+
+        // Encontrar el grupo al que pertenece el ejercicio destino
+        insertIndex = newData.findIndex((item) => item.rowType === 'group' && item.groupNumber === targetGroupNumber);
+
+        // Si estamos moviendo hacia abajo, insertar después del grupo destino y sus ejercicios
+        if (activeIndex < overIndex) {
+          // Contar cuántos ejercicios tiene el grupo destino
+          const exercisesInTargetGroup = newData.filter(
+            (item) => item.rowType === 'exercise' && item.groupNumber === targetGroupNumber
+          ).length;
+
+          // Ajustar la posición de inserción
+          insertIndex += exercisesInTargetGroup + 1;
+        }
+      }
+
+      // Insertar el grupo y sus ejercicios en la nueva posición
+      if (insertIndex !== -1) {
+        newData.splice(insertIndex, 0, groupRow, ...exercisesOfGroup);
+      }
+    } else {
+      // CASO: Mover ejercicio individual
+
+      // 1. Crear una copia del ejercicio que estamos moviendo
+      const movedExercise = { ...activeItem };
+
+      // 2. Determinar el grupo destino y la posición
+      const targetGroupNumber = overItem.rowType === 'group' ? overItem.groupNumber : overItem.groupNumber;
+      const targetRowIndex = overItem.rowType === 'group' ? 0 : overItem.rowIndex;
+
+      // 3. Eliminar el ejercicio de su posición original
+      newData = newData.filter(
+        (item) =>
+          !(
+            item.rowType === 'exercise' &&
+            item.groupNumber === activeItem.groupNumber &&
+            item.rowIndex === activeItem.rowIndex
+          )
+      );
+
+      // 4. Preparar el ejercicio para su nueva posición
+      movedExercise.groupNumber = targetGroupNumber;
+
+      // 5. Insertar el ejercicio en la nueva posición
+      if (overItem.rowType === 'group') {
+        // Si el destino es un grupo, insertar al principio del grupo
+        const groupIndex = newData.findIndex(
+          (item) => item.rowType === 'group' && item.groupNumber === targetGroupNumber
+        );
+
+        if (groupIndex !== -1) {
+          newData.splice(groupIndex + 1, 0, movedExercise);
+        }
+      } else {
+        // Si el destino es otro ejercicio
+
+        // Encontrar todos los ejercicios del grupo destino
+        const groupExercises = newData.filter(
+          (item) => item.rowType === 'exercise' && item.groupNumber === targetGroupNumber
+        );
+
+        // Ordenar los ejercicios por rowIndex
+        groupExercises.sort((a, b) => a.rowIndex - b.rowIndex);
+
+        // Crear un nuevo array con los ejercicios reordenados
+        const newGroupExercises = [];
+
+        // Determinar si estamos moviendo hacia arriba o hacia abajo
+        const isMovingDown = activeIndex < overIndex;
+
+        if (isMovingDown) {
+          // Si movemos hacia abajo, insertar después del ejercicio destino
+          for (let i = 0; i < groupExercises.length; i++) {
+            newGroupExercises.push(groupExercises[i]);
+            if (groupExercises[i].rowIndex === targetRowIndex) {
+              newGroupExercises.push(movedExercise);
+            }
+          }
+        } else {
+          // Si movemos hacia arriba, insertar antes del ejercicio destino
+          for (let i = 0; i < groupExercises.length; i++) {
+            if (groupExercises[i].rowIndex === targetRowIndex) {
+              newGroupExercises.push(movedExercise);
+            }
+            newGroupExercises.push(groupExercises[i]);
+          }
+        }
+
+        // Eliminar los ejercicios antiguos del grupo
+        newData = newData.filter((item) => !(item.rowType === 'exercise' && item.groupNumber === targetGroupNumber));
+
+        // Encontrar el grupo en newData
+        const groupIndex = newData.findIndex(
+          (item) => item.rowType === 'group' && item.groupNumber === targetGroupNumber
+        );
+
+        // Insertar los ejercicios reordenados después del grupo
+        if (groupIndex !== -1) {
+          newData.splice(groupIndex + 1, 0, ...newGroupExercises);
+        }
+      }
+    }
+
+    // Actualizar los índices de fila dentro de cada grupo
+    const groupNumbers = [
+      ...new Set(newData.filter((item) => item.rowType === 'group').map((item) => item.groupNumber))
+    ];
+
+    groupNumbers.forEach((groupNum) => {
+      let rowIdx = 0;
+      newData.forEach((row) => {
+        if (row.rowType === 'exercise' && row.groupNumber === groupNum) {
+          row.rowIndex = rowIdx++;
+        }
+      });
+    });
+
+    // Verificar que no haya duplicados
+    const uniqueIds = new Set();
+    const cleanedData = newData.filter((row) => {
+      const rowId =
+        row.rowType === 'group'
+          ? `group-${row.groupNumber}`
+          : `ex-${row.groupNumber}-${row.rowIndex}-${row.name || 'unnamed'}`;
+
+      if (uniqueIds.has(rowId)) {
+        return false;
+      }
+
+      uniqueIds.add(rowId);
+      return true;
+    });
+
+    setTableData(cleanedData);
   };
 
   /****************************************
@@ -715,87 +715,394 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   const handleAddExercise = () => {
     if (!isEditing) return;
 
-    // find last group. If none, create group 1
-    let lastGroup = tableData.filter((r) => r.rowType === 'group').pop();
-    let groupNumber;
+    // Encontrar el último grupo
+    const lastGroup = tableData
+      .filter((row) => row.rowType === 'group')
+      .sort((a, b) => b.groupNumber - a.groupNumber)[0];
+
     if (!lastGroup) {
-      // create a group row
-      groupNumber = 1;
-      const newGroup = {
-        rowType: 'group',
-        groupNumber,
-        rowIndex: groupNumber * 100,
-        label: `Group ${groupNumber}`,
-        isNew: false,
-        weeksData: {}
-      };
-      setTableData((prev) => [...prev, newGroup]);
-      lastGroup = newGroup;
-    } else {
-      groupNumber = lastGroup.groupNumber;
+      showToast('error', 'Error', intl.formatMessage({ id: 'workoutTable.noGroupsAvailable' }));
+      return;
     }
 
-    // create exercise row
-    const existingExercisesInGroup = tableData.filter((r) => r.rowType === 'exercise' && r.groupNumber === groupNumber);
-    const maxRowIndex = existingExercisesInGroup.length
-      ? Math.max(...existingExercisesInGroup.map((ex) => ex.rowIndex))
-      : 0;
+    // Contar cuántos ejercicios hay en el último grupo
+    const exercisesInGroup = tableData.filter(
+      (row) => row.rowType === 'exercise' && row.groupNumber === lastGroup.groupNumber
+    ).length;
 
+    // Crear un nuevo ejercicio vacío
     const newExercise = {
       rowType: 'exercise',
-      isNew: true,
       name: '',
-      groupNumber,
-      rowIndex: maxRowIndex + 1,
-      weeksData: {}
+      exerciseId: null, // Añadimos esta propiedad para nuevos ejercicios
+      groupNumber: lastGroup.groupNumber,
+      rowIndex: exercisesInGroup,
+      weeksData: {},
+      isNew: true
     };
-    // For each week, add placeholders
-    for (let w = 1; w <= numWeeks; w++) {
-      newExercise.weeksData[w] = { exerciseInstanceId: null };
+
+    // Añadir el ejercicio al final del último grupo
+    const newTableData = [...tableData];
+
+    // Encontrar la posición donde insertar el nuevo ejercicio
+    let insertIndex = tableData.findIndex(
+      (row) => row.rowType === 'group' && row.groupNumber === lastGroup.groupNumber
+    );
+
+    // Avanzar hasta el final de los ejercicios de este grupo
+    while (
+      insertIndex + 1 < newTableData.length &&
+      newTableData[insertIndex + 1].rowType === 'exercise' &&
+      newTableData[insertIndex + 1].groupNumber === lastGroup.groupNumber
+    ) {
+      insertIndex++;
     }
 
-    setTableData((prev) => [...prev, newExercise]);
+    // Insertar el nuevo ejercicio
+    newTableData.splice(insertIndex + 1, 0, newExercise);
+    setTableData(newTableData);
   };
 
   /****************************************
    * Save changes
    ****************************************/
-  const handleSaveChanges = async () => {
-    const payload = buildUpdatePayload(editedData);
-    console.log('Saving changes with payload:', payload);
-    // call your service
-    showToast('success', 'Saved', 'Your changes have been saved!');
-    setEditedData({});
-  };
+  const detectChanges = () => {
+    if (!originalData || !tableData) return;
 
-  function buildUpdatePayload(edited) {
-    const result = [];
-    Object.keys(edited).forEach((exerciseName) => {
-      const exObj = edited[exerciseName];
-      const isNew = exObj.isNew;
-      Object.keys(exObj.weeksData).forEach((weekNumStr) => {
-        const weekNum = parseInt(weekNumStr, 10);
-        const data = exObj.weeksData[weekNum];
-        const exerciseInstanceId = data.exerciseInstanceId || null;
+    const newChanges = {
+      newExercises: [],
+      movedExercises: [],
+      movedGroups: [],
+      updatedProperties: []
+    };
 
-        const updates = {};
-        Object.keys(data).forEach((prop) => {
-          if (prop !== 'exerciseInstanceId') {
-            updates[prop] = data[prop];
+    // 1. Detectar ejercicios nuevos y asignar exerciseId si es necesario
+    tableData.forEach((row) => {
+      if (row.rowType === 'exercise' && row.isNew) {
+        // Asegurarse de que el ejercicio tenga un exerciseId válido
+        if (!row.exerciseId && row.name) {
+          const selectedExercise = coachExercises.find((ex) => ex.name === row.name);
+          if (selectedExercise) {
+            row.exerciseId = selectedExercise.id;
           }
-        });
+        }
 
-        result.push({
-          exerciseName,
-          isNew,
-          exerciseInstanceId,
-          weekNumber: weekNum,
-          updates
+        // Solo añadir a newExercises si tiene un nombre
+        if (row.name) {
+          newChanges.newExercises.push({
+            name: row.name,
+            exerciseId: row.exerciseId,
+            groupNumber: row.groupNumber,
+            rowIndex: row.rowIndex,
+            weeksData: row.weeksData
+          });
+        }
+      }
+    });
+
+    // 2. Detectar ejercicios movidos
+    const originalExercises = originalData.filter((row) => row.rowType === 'exercise');
+    const currentExercises = tableData.filter((row) => row.rowType === 'exercise' && !row.isNew);
+
+    // Crear un mapa de exerciseInstanceId para búsqueda más eficiente
+    const originalExercisesMap = new Map();
+    originalExercises.forEach((ex) => {
+      originalExercisesMap.set(ex.exerciseInstanceId, ex);
+    });
+
+    currentExercises.forEach((currentEx) => {
+      // Buscar por exerciseInstanceId usando el mapa
+      const originalEx = originalExercisesMap.get(currentEx.exerciseInstanceId);
+
+      if (originalEx) {
+        // Verificar si cambió de posición o grupo
+        if (originalEx.rowIndex !== currentEx.rowIndex || originalEx.groupNumber !== currentEx.groupNumber) {
+          newChanges.movedExercises.push({
+            name: currentEx.name,
+            exerciseInstanceId: currentEx.exerciseInstanceId,
+            oldGroupNumber: originalEx.groupNumber,
+            newGroupNumber: currentEx.groupNumber,
+            oldRowIndex: originalEx.rowIndex,
+            newRowIndex: currentEx.rowIndex
+          });
+        }
+
+        // Verificar cambio de ejercicio (nombre o id) - SOLO si realmente cambió
+        if (
+          originalEx.name !== currentEx.name ||
+          (originalEx.exerciseId !== currentEx.exerciseId &&
+            currentEx.exerciseId !== undefined &&
+            currentEx.exerciseId !== null)
+        ) {
+          // Buscar el exerciseId correcto basado en el nombre
+          let newExerciseId = currentEx.exerciseId;
+          if (!newExerciseId && currentEx.name) {
+            const matchingExercise = coachExercises.find((ex) => ex.name === currentEx.name);
+            if (matchingExercise) {
+              newExerciseId = matchingExercise.id;
+            }
+          }
+
+          newChanges.updatedProperties.push({
+            name: currentEx.name,
+            exerciseInstanceId: currentEx.exerciseInstanceId,
+            weekNumber: 0, // Cambio global
+            property: 'exerciseId',
+            oldValue: originalEx.exerciseId,
+            newValue: newExerciseId
+          });
+        }
+      }
+    });
+
+    // 3. Detectar grupos movidos
+    const originalGroups = originalData.filter((row) => row.rowType === 'group');
+    const currentGroups = tableData.filter((row) => row.rowType === 'group');
+
+    const originalGroupPositions = {};
+    originalGroups.forEach((group, index) => {
+      originalGroupPositions[group.groupNumber] = index;
+    });
+
+    let groupOrderChanged = false;
+    currentGroups.forEach((group, currentIndex) => {
+      const originalIndex = originalGroupPositions[group.groupNumber];
+      if (originalIndex !== undefined && originalIndex !== currentIndex) {
+        groupOrderChanged = true;
+      }
+    });
+
+    if (originalGroups.length !== currentGroups.length) {
+      groupOrderChanged = true;
+    }
+
+    if (groupOrderChanged) {
+      newChanges.movedGroups = currentGroups.map((group, index) => ({
+        groupNumber: group.groupNumber,
+        newOrder: index + 1
+      }));
+    }
+
+    // 4. Detectar propiedades actualizadas
+    // Creamos un mapa para rastrear qué propiedades ya hemos procesado
+    const processedChanges = new Set();
+
+    // Crear un mapa de exerciseInstanceId por semana para búsqueda más eficiente
+    const weekExerciseMap = new Map();
+
+    // Primero, construir el mapa de exerciseInstanceId por semana
+    originalExercises.forEach((ex) => {
+      Object.keys(ex.weeksData).forEach((weekNum) => {
+        const weekData = ex.weeksData[weekNum];
+        if (weekData && weekData.exerciseInstanceId) {
+          const key = `${weekData.exerciseInstanceId}-${weekNum}`;
+          weekExerciseMap.set(key, {
+            exercise: ex,
+            weekData: weekData
+          });
+        }
+      });
+
+      currentExercises.forEach((currentEx) => {
+        // Para cada semana en el ejercicio actual
+        Object.keys(currentEx.weeksData).forEach((weekNum) => {
+          const weekNumber = parseInt(weekNum);
+          const currentWeekData = currentEx.weeksData[weekNum];
+
+          if (!currentWeekData) return;
+
+          // Buscar datos originales para esta combinación de exerciseInstanceId y semana
+          const key = `${currentEx.exerciseInstanceId}-${weekNum}`;
+          const originalData = weekExerciseMap.get(key);
+          const originalWeekData = originalData ? originalData.weekData : null;
+
+          // Si no hay datos originales para esta semana, podría ser un nuevo dato para esa semana
+          if (!originalWeekData) return;
+
+          // Solo procesamos las propiedades que nos interesan
+          properties.forEach((prop) => {
+            // Crear una clave única para esta combinación de ejercicio/semana/propiedad
+            const changeKey = `${currentEx.exerciseInstanceId}-${weekNumber}-${prop}`;
+
+            // Si ya procesamos este cambio, saltamos
+            if (processedChanges.has(changeKey)) return;
+
+            // Marcar como procesado
+            processedChanges.add(changeKey);
+
+            // Obtener valores actuales y originales
+            const currentValue = currentWeekData?.[prop];
+            const originalValue = originalWeekData?.[prop];
+
+            // Si ambos son undefined/null, no hay cambio
+            if (currentValue === undefined && originalValue === undefined) return;
+            if (currentValue === null && originalValue === null) return;
+
+            // Comparar valores (convertir a string para comparación consistente)
+            const currentStr = currentValue !== undefined && currentValue !== null ? String(currentValue) : '';
+            const originalStr = originalValue !== undefined && originalValue !== null ? String(originalValue) : '';
+
+            // Solo registrar si hay un cambio real
+            if (currentStr !== originalStr) {
+              newChanges.updatedProperties.push({
+                name: currentEx.name,
+                exerciseInstanceId: currentWeekData?.exerciseInstanceId || originalWeekData?.exerciseInstanceId,
+                weekNumber: weekNumber,
+                property: prop,
+                oldValue: originalValue,
+                newValue: currentValue
+              });
+            }
+          });
         });
       });
+
+      setChanges(newChanges);
     });
-    return result;
-  }
+    return newChanges;
+  };
+
+  const buildSavePayload = (changesObj) => {
+    return {
+      cycleId,
+      dayNumber,
+      changes: {
+        newExercises: changesObj.newExercises.map((ex) => ({
+          name: ex.name,
+          exerciseId: ex.exerciseId, // Asegurarse de incluir exerciseId
+          groupNumber: ex.groupNumber,
+          rowIndex: ex.rowIndex,
+          weeksData: Object.keys(ex.weeksData).reduce((acc, weekNum) => {
+            acc[weekNum] = {};
+            const weekData = ex.weeksData[weekNum];
+            properties.forEach((prop) => {
+              if (weekData && weekData[prop] !== undefined && weekData[prop] !== null) {
+                acc[weekNum][prop] = weekData[prop];
+              }
+            });
+            return acc;
+          }, {})
+        })),
+
+        movedExercises: changesObj.movedExercises.map((ex) => ({
+          name: ex.name,
+          exerciseInstanceId: ex.exerciseInstanceId,
+          oldGroupNumber: ex.oldGroupNumber,
+          newGroupNumber: ex.newGroupNumber,
+          oldRowIndex: ex.oldRowIndex,
+          newRowIndex: ex.newRowIndex
+        })),
+
+        movedGroups: changesObj.movedGroups,
+
+        updatedProperties: changesObj.updatedProperties.map((update) => ({
+          name: update.name,
+          exerciseInstanceId: update.exerciseInstanceId,
+          weekNumber: update.weekNumber,
+          property: update.property,
+          value: update.newValue
+        }))
+      }
+    };
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      setIsLoading(true);
+
+      // Asegurarse de que todos los ejercicios tengan exerciseId antes de detectar cambios
+      const updatedTableData = [...tableData];
+      let exerciseIdsUpdated = false;
+
+      updatedTableData.forEach((row) => {
+        if (row.rowType === 'exercise' && row.name && !row.exerciseId) {
+          const selectedExercise = coachExercises.find((ex) => ex.name === row.name);
+          if (selectedExercise) {
+            row.exerciseId = selectedExercise.id;
+            exerciseIdsUpdated = true;
+          }
+        }
+      });
+
+      // Si se actualizaron IDs, actualizar el estado antes de continuar
+      if (exerciseIdsUpdated) {
+        setTableData(updatedTableData);
+      }
+
+      // Detectar cambios
+      const changesObj = detectChanges();
+      // Validar que todos los ejercicios nuevos con nombre tengan exerciseId
+      const missingExerciseIds = changesObj.newExercises.filter((ex) => ex.name && !ex.exerciseId);
+      if (missingExerciseIds.length > 0) {
+        const missingNames = missingExerciseIds.map((ex) => ex.name).join(', ');
+        showToast(
+          'error',
+          intl.formatMessage({ id: 'common.error' }),
+          `${intl.formatMessage({ id: 'workoutTable.missingExerciseIds' })}: ${missingNames}`
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // Filtrar ejercicios sin nombre antes de guardar
+      changesObj.newExercises = changesObj.newExercises.filter((ex) => ex.name);
+
+      // Si no hay cambios, mostrar mensaje y salir
+      if (
+        !changesObj ||
+        (changesObj.newExercises.length === 0 &&
+          changesObj.movedExercises.length === 0 &&
+          changesObj.movedGroups.length === 0 &&
+          changesObj.updatedProperties.length === 0)
+      ) {
+        showToast(
+          'info',
+          intl.formatMessage({ id: 'common.noChanges' }),
+          intl.formatMessage({ id: 'common.noChangesToSave' })
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // Construir payload
+      const payload = buildSavePayload(changesObj);
+      console.log('Payload para API:', payload);
+
+      // Llamar a la API
+      //const response = await saveWorkoutChanges(payload);
+      //console.log('Respuesta de la API:', response);
+
+      // Actualizar originalData con los nuevos datos
+      setOriginalData(JSON.parse(JSON.stringify(tableData)));
+
+      // Resetear cambios
+      setChanges({
+        newExercises: [],
+        movedExercises: [],
+        movedGroups: [],
+        updatedProperties: []
+      });
+
+      // Mostrar mensaje de éxito
+      showToast(
+        'success',
+        intl.formatMessage({ id: 'common.success' }),
+        intl.formatMessage({ id: 'workoutTable.changesSaved' })
+      );
+
+      // Salir del modo edición
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error guardando cambios:', error);
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'common.error' }),
+        error.message || intl.formatMessage({ id: 'common.errorSaving' })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   function renderTableHeader() {
     const { headerGroup, usedProps } = buildHeaderGroup() || {};
@@ -807,7 +1114,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     return (
       <thead>
         <tr>
-          <th rowSpan={2} style={{ width: '10rem', padding: '0.5rem' }}>
+          <th rowSpan={2} style={{ width: '50rem', padding: '0.5rem' }}>
             {intl.formatMessage({ id: 'workoutTable.exercise' })}
           </th>
           {usedProps.map((propsList, i) => (
@@ -819,7 +1126,6 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
                 borderLeft: '1px solid #ccc'
               }}
               textOverflow={'ellipsis'}
-              whiteSpace={'nowrap'}
               overflow={'hidden'}
             >
               {intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}
@@ -834,8 +1140,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
                   padding: '0.5rem',
                   borderRight: index === propsList.length - 1 ? '1px solid #ccc' : 'none',
                   borderLeft: index === 0 ? '1px solid #ccc' : 'none',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+
                   overflow: 'hidden'
                 }}
                 key={`${prop}-header-${i}`}
@@ -854,10 +1159,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     if (rowData.rowType === 'group') {
       const totalColumns = propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
       return Array.from({ length: totalColumns }).map((_, idx) => (
-        <td
-          key={`group-${rowData.groupNumber}-${idx}`}
-          style={{ padding: '.5rem' }} // Ancho fijo para mantener consistencia
-        />
+        <td key={`group-${rowData.groupNumber}-${idx}`} style={{ padding: '.5rem' }} />
       ));
     }
 
@@ -867,44 +1169,111 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       return propsList.map((prop, index) => {
         const cellKey = `ex-${rowData.name}-w${realWeek}-${prop}`;
         const cellValue =
-          rowData.weeksData[realWeek] && rowData.weeksData[realWeek][prop] ? rowData.weeksData[realWeek][prop] : '';
+          rowData.weeksData[realWeek] && rowData.weeksData[realWeek][prop] !== undefined
+            ? rowData.weeksData[realWeek][prop]
+            : '';
 
         return (
           <td
             style={{
               padding: '.5rem',
-              //width: '100px', // Ancho fijo para cada celda
-              //minWidth: '100px', // Ancho mínimo para evitar que se comprima
               borderRight: index === propsList.length - 1 ? '1px solid #ccc' : 'none',
               borderLeft: index === 0 ? '1px solid #ccc' : 'none',
-              // Evitar que el contenido se desborde
               overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              width: '200px'
+
+              width: '100px'
             }}
             key={cellKey}
           >
-            {cellValue}
+            {isEditing ? renderEditableCell(rowData, prop, realWeek, cellValue) : cellValue}
           </td>
         );
       });
     });
   }
 
-  const tableStyles = {
-    //width: '100%',
-    borderCollapse: 'collapse',
-    tableLayout: 'fixed', // Esto es importante para mantener los anchos de columna
-    marginBottom: '2rem'
-  };
+  function renderEditableCell(rowData, prop, weekNum, currentValue) {
+    // Si no existe la estructura de datos para esta semana, crearla
+    if (!rowData.weeksData[weekNum]) {
+      rowData.weeksData[weekNum] = { exerciseInstanceId: null };
+    }
 
-  // Componente para renderizar filas arrastrables
+    // Determinar el tipo de editor según la propiedad
+    switch (prop) {
+      case 'sets':
+      case 'repetitions':
+      case 'weight':
+      case 'time':
+      case 'restInterval':
+      case 'duration':
+      case 'distance':
+      case 'tempo':
+      case 'difficulty':
+        return (
+          <InputNumber
+            value={currentValue}
+            onValueChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.value)}
+            size="small"
+            style={{ width: '100%' }}
+            min={0}
+            showButtons={false}
+          />
+        );
+      case 'notes':
+        return (
+          <InputText
+            value={currentValue || ''}
+            onChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.target.value)}
+            style={{ width: '100%' }}
+            size="small"
+          />
+        );
+      default:
+        return currentValue;
+    }
+  }
+
+  function handlePropertyChange(rowData, prop, weekNum, newValue) {
+    // Actualizar el valor en el objeto de datos
+    if (!rowData.weeksData[weekNum]) {
+      rowData.weeksData[weekNum] = { exerciseInstanceId: null };
+    }
+    rowData.weeksData[weekNum][prop] = newValue;
+
+    // Actualizar el estado de la tabla
+    setTableData([...tableData]);
+  }
+
+  function handleExerciseNameChange(rowData, newName) {
+    // Actualizar el nombre en el objeto de datos
+    rowData.name = newName;
+
+    // Actualizar el exerciseId siempre que cambie el nombre del ejercicio
+    // independientemente de si es nuevo o existente
+    const selectedExercise = coachExercises.find((ex) => ex.name === newName);
+    if (selectedExercise) {
+      rowData.exerciseId = selectedExercise.id; // Asumiendo que cada ejercicio en coachExercises tiene un id
+    } else {
+      // Si no se encuentra el ejercicio, establecer exerciseId a null para evitar referencias incorrectas
+      rowData.exerciseId = null;
+    }
+
+    // Actualizar el estado de la tabla
+    setTableData([...tableData]);
+  }
+
+  function handleGroupLabelChange(rowData, newLabel) {
+    // Actualizar la etiqueta en el objeto de datos
+    rowData.label = newLabel;
+
+    // Actualizar el estado de la tabla
+    setTableData([...tableData]);
+  }
+
   function SortableRow({ rowData, index }) {
     const rowKey =
       rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
 
-    // Un ejercicio no debería ser arrastrable si su grupo está siendo arrastrado
     const isDraggable =
       isEditing && (rowData.rowType === 'group' || (rowData.rowType === 'exercise' && !isDraggingGroup));
 
@@ -913,57 +1282,37 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       disabled: !isDraggable
     });
 
-    // Determinar si esta fila debe mostrarse como arrastrada
-    const isPartOfDraggedGroup = isDraggingGroup && activeGroup === rowData.groupNumber;
-
-    // Estilo para filas arrastradas
     const style = {
       transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
       transition,
-      ...(isDragging || isPartOfDraggedGroup
+      ...(isDragging || (isDraggingGroup && rowData.isBeingDragged)
         ? {
             background: isDarkMode ? '#2c3e50' : '#f8f9fa',
-            boxShadow: isDragging ? '0 0 10px rgba(0,0,0,0.2)' : 'none',
+            boxShadow: '0 0 10px rgba(0,0,0,0.2)',
             width: '100%',
             tableLayout: 'fixed',
             border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
             margin: '2px 0',
-            opacity: isDragging ? '0.9' : isPartOfDraggedGroup ? '0.8' : '1',
-            zIndex: isDragging ? '1000' : isPartOfDraggedGroup ? '999' : 'auto'
+            opacity: '0.9'
           }
         : {})
     };
 
     return (
-      <tr
-        ref={setNodeRef}
-        style={style}
-        className={`${rowClassName(rowData)} ${isPartOfDraggedGroup ? 'group-being-dragged' : ''}`}
-      >
+      <tr ref={setNodeRef} style={style} className={rowClassName(rowData)}>
         <td
           style={{
             minWidth: '150px',
-            width: '150px',
+            width: '100%',
             display: 'flex',
             alignItems: 'center',
             padding: '0.5rem',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            overflow: 'hidden'
           }}
           {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
         >
-          {isEditing && (
-            <FaGripVertical
-              style={{
-                marginRight: '0.3rem',
-                cursor: isDraggable ? 'grab' : 'default',
-                flexShrink: 0,
-                opacity: isDraggable ? 1 : 0.5
-              }}
-            />
-          )}
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{renderNameColumn(rowData)}</span>
+          {isEditing && <FaGripVertical style={{ marginRight: '0.3rem', cursor: 'grab', flexShrink: 0 }} />}
+          <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
         </td>
         {renderDataCells(rowData)}
       </tr>
@@ -1054,7 +1403,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
                     key={
                       rowData.rowType === 'group'
                         ? `group-${rowData.groupNumber}`
-                        : `ex-${rowData.groupNumber}-${rowData.rowIndex}`
+                        : `ex-${rowData.groupNumber}-${rowData.rowIndex}-${rowData.name || 'unnamed'}-${rowData.exerciseInstanceId || Math.random().toString(36).substr(2, 9)}`
                     }
                     rowData={rowData}
                     index={index}
@@ -1064,70 +1413,59 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
             </tbody>
           </table>
 
-          {/* Opcional: Overlay para mostrar una vista previa del grupo completo */}
-          {isDraggingGroup && activeGroup && (
-            <DragOverlay>
-              <div
-                className="group-drag-preview"
-                style={{
-                  background: isDarkMode ? '#1e2a38' : '#ffffff',
-                  border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
-                  borderRadius: '4px',
-                  padding: '8px',
-                  boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
-                  maxWidth: '300px',
-                  overflow: 'hidden',
-                  opacity: 0.6,
-                  marginLeft: '40px'
-                }}
-              >
-                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                  {tableData.find((row) => row.rowType === 'group' && row.groupNumber === activeGroup)?.label ||
-                    `Group ${activeGroup}`}
-                </div>
-                <div style={{ fontSize: '0.9em', color: isDarkMode ? '#aaa' : '#666' }}>
+          {/* Añadir el DragOverlay para mostrar el elemento arrastrado */}
+          <DragOverlay>
+            {activeId ? (
+              <table className="p-datatable p-datatable-sm" style={tableStyles}>
+                <tbody>
                   {tableData
-                    .filter((row) => row.rowType === 'exercise' && row.groupNumber === activeGroup)
-                    .map((exercise, idx) => (
-                      <div key={idx} style={{ marginBottom: '2px' }}>
-                        {exercise.name || exercise.exerciseName}
-                      </div>
+                    .filter((row) => {
+                      if (isDraggingGroup) {
+                        return row.isBeingDragged;
+                      } else {
+                        if (row.rowType === 'group') {
+                          return `group-${row.groupNumber}` === activeId;
+                        } else {
+                          return `ex-${row.groupNumber}-${row.rowIndex}` === activeId;
+                        }
+                      }
+                    })
+                    .map((rowData, index) => (
+                      <tr
+                        key={`overlay-${index}`}
+                        className={rowClassName(rowData)}
+                        style={{
+                          background: isDarkMode ? '#2c3e50' : '#f8f9fa',
+                          boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+                          width: '100%',
+                          tableLayout: 'fixed',
+                          border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
+                          margin: '2px 0',
+                          opacity: '0.9'
+                        }}
+                      >
+                        <td
+                          style={{
+                            minWidth: '150px',
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0.5rem',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          <FaGripVertical style={{ marginRight: '0.3rem', cursor: 'grab', flexShrink: 0 }} />
+                          <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
+                        </td>
+                        {renderDataCells(rowData)}
+                      </tr>
                     ))}
-                </div>
-              </div>
-            </DragOverlay>
-          )}
+                </tbody>
+              </table>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       )}
     </div>
   );
 }
-
-/****************************************
- * Explanation of Key Drag/Drop Steps
- ****************************************
-1) We store group rows + exercise rows in a single array (tableData).
-   Each row has rowType = 'group' or 'exercise'. The 'group' row has a label property, 
-   and 'exercise' row has name, sets, etc.
-
-2) In onDragEnd, we check if the moved row is rowType = 'group' or rowType = 'exercise' 
-   and reorder the data accordingly.
-
-3) For group rows, we move the entire block of the group (the group row + all exercise rows that follow) 
-   to the new position. 
-   For exercise rows, we just move that single row, updating groupNumber if needed, 
-   or leaving it the same if you want to keep it in the same group.
-
-4) We add a <FaGripVertical> icon next to each row in the first column. 
-   If rowType = 'group', that icon is used to reorder the entire block. 
-   If rowType = 'exercise', it reorders that single row.
-
-Because we're using one DataTable, we rely on a custom approach to wrap each row in a <Draggable>, 
-which can be done by overriding the rowRenderer or body. 
-Alternatively, you can generate the table yourself in a .map with the Draggable wrappers. 
-However, PrimeReact DataTable doesn't natively support DnD row by row, so we do an advanced approach.
-
-This snippet is primarily to show how to keep it a single table, 
-with group-level + exercise-level drag and minimal logic changes in your existing code. 
-You may refine or adapt it to your specific requirements.
-****************************************/

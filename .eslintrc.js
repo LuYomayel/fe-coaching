@@ -22,7 +22,8 @@ module.exports = {
     'comma-dangle': ['warn', 'never'],
     'react/prop-types': 'off',
     'no-prototype-builtins': 'off',
-    'react/no-unknown-property': 'off'
+    'react/no-unknown-property': 'off',
+    'no-unreachable': 'off'
     // Agregá o ajustá tus reglas personalizadas
   },
   settings: {

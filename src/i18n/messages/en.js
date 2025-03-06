@@ -1009,6 +1009,7 @@ const messages = {
   'workoutTable.changesDetected': '{count} changes detected',
   'workoutTable.changesSaved': 'Changes saved successfully',
   'workoutTable.exerciseAlreadyExists': 'Exercise already exists on the group',
-  'exercise.properties.loading': 'Loading properties...'
+  'exercise.properties.loading': 'Loading properties...',
+  'exercise.selectExercise': 'Select Exercise'
 };
 export default messages;

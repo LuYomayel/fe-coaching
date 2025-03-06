@@ -1012,6 +1012,7 @@ const messages = {
 
   'coach.exercise.success.created': 'Ejercicio creado exitosamente',
   'coach.exercise.success.updated': 'Ejercicio actualizado exitosamente',
+  'exercise.selectExercise': 'Seleccionar Ejercicio',
   'workoutTable.addGroup': 'Agregar Grupo',
   'common.selectDay': 'Seleccionar día',
   'workoutTable.changesDetected': '{count} cambios detectados',

@@ -592,6 +592,26 @@ const fetchTrainingFrequency = async (coachId) => {
   return data;
 };
 
+const saveWorkoutChanges = async (payload) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/save-changes-from-excel-view`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error in saveWorkoutChanges:', error);
+    throw error;
+  }
+};
+
 export {
   fetchTrainingCyclesByCoachId,
   findAllWorkoutTemplatesByCoachId,
@@ -634,5 +654,6 @@ export {
   fetchLastTimeTrained,
   fetchHowLongToFinishCycle,
   fetchTrainingFrequency,
-  fetchExcelViewByCycleAndDay
+  fetchExcelViewByCycleAndDay,
+  saveWorkoutChanges
 };
