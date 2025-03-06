@@ -38,7 +38,7 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
 
   const assingSubscription = () => {
     const body = {
-      coach: coach.id,
+      coachId: coach.id,
       clientId: studentId,
       startDate,
       endDate,
