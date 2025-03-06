@@ -12,7 +12,7 @@ import { useIntl, FormattedMessage } from 'react-intl';
 
 const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
   const intl = useIntl();
-  const { user } = useContext(UserContext);
+  const { user, coach } = useContext(UserContext);
   const showToast = useToast();
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -38,7 +38,7 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
 
   const assingSubscription = () => {
     const body = {
-      coachId,
+      coach: coach.id,
       clientId: studentId,
       startDate,
       endDate,
