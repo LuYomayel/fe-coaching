@@ -152,7 +152,7 @@ export default function PlansPage() {
   const fetchTrainingCyclesT = async () => {
     setLoading(true);
     try {
-      const response = await fetchTrainingCyclesTemplates(user.userId);
+      const response = await fetchTrainingCyclesTemplates(coach.id);
       if (response.message === 'success') {
         setTrainingCycleTemplates(response.data);
       } else {
