@@ -617,7 +617,7 @@ export default function ClientDashboard() {
         </TabPanel>
 
         <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.excelView' })}>
-          <NewWorkoutTable cycleOptions={cycleDropdownOptions} clientId={clientId} />
+          <NewWorkoutTable cycleOptions={cycleDropdownOptions} clientData={clientData} />
           {/* <WorkoutTable
             trainingCycles={cycleOptions}
             cycleOptions={cycleDropdownOptions}

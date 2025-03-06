@@ -37,6 +37,7 @@ import { FaGripVertical } from 'react-icons/fa';
 import { FaSave } from 'react-icons/fa';
 import { saveWorkoutChanges } from '../services/workoutService';
 import '../styles/WorkoutTable.css';
+import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 // Our known exercise properties
 const properties = [
   'sets',
@@ -51,7 +52,7 @@ const properties = [
   'distance'
 ];
 
-export default function NewWorkoutTable({ cycleOptions, clientId }) {
+export default function NewWorkoutTable({ cycleOptions, clientData }) {
   const { user } = useContext(UserContext);
   const showToast = useToast();
   const intl = useIntl();
@@ -79,6 +80,8 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   const [activeId, setActiveId] = useState(null);
   const [activeGroup, setActiveGroup] = useState(null);
 
+  const [newCycleDialogVisible, setNewCycleDialogVisible] = useState(false);
+
   // Configurar sensores para el arrastre
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -99,6 +102,8 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     movedGroups: [],
     updatedProperties: []
   });
+
+  const [daysUsed, setDaysUsed] = useState([]);
 
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -175,8 +180,54 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
         setIsLoading(false);
       }
     };
-    doFetch();
+    if (cycleId !== -1) doFetch();
   }, [cycleId, dayNumber, showToast, refreshTable]);
+
+  /****************************************
+   * 2.1) Detectar días con entrenamientos
+   ****************************************/
+  useEffect(() => {
+    if (!cycleId) return;
+    else if (cycleId === -1) {
+      if (clientData.user.subscription.status === 'Active') setNewCycleDialogVisible(true);
+      else
+        showToast(
+          'error',
+          'Error',
+          intl.formatMessage({
+            id: 'student.error.noSubscription'
+          })
+        );
+      return;
+    }
+    const fetchDaysWithWorkouts = async () => {
+      try {
+        // Podemos usar la misma función pero verificar todos los días
+        const usedDays = [];
+        for (let day = 1; day <= 7; day++) {
+          try {
+            const response = await fetchExcelViewByCycleAndDay(cycleId, day);
+            // Si hay datos en las semanas y hay grupos/ejercicios, consideramos que el día está en uso
+            if (
+              response.data?.weeks?.length > 0 &&
+              response.data.weeks.some((week) =>
+                week.sessions.some((session) => session.workoutInstances.some((instance) => instance.groups.length > 0))
+              )
+            ) {
+              usedDays.push(day);
+            }
+          } catch (error) {
+            // Si hay error, asumimos que no hay datos para ese día
+          }
+        }
+        setDaysUsed(usedDays);
+      } catch (error) {
+        console.error('Error fetching days with workouts:', error);
+      }
+    };
+
+    fetchDaysWithWorkouts();
+  }, [cycleId]);
 
   /****************************************
    * 3) Build table data (group rows + exercise rows)
@@ -233,16 +284,20 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
                 groupNumber: groupNumber,
                 rowIndex: groupNumber * 100, // or other ordering
                 isNew: false,
-                label: group.name || `${intl.formatMessage({ id: 'common.group' })} ${groupNumber}`,
+                isRestPeriod: group.isRestPeriod,
+                label: group.isRestPeriod
+                  ? `${group.name} - ${group.restDuration}`
+                  : group.name
+                    ? group.name
+                    : `${intl.formatMessage({ id: 'common.group' })} ${groupNumber}`,
                 weeksData: {} // (not really used for group row)
               });
             }
-            console.log('Group: ', group);
             // 2) For each exercise in this group
             group.exercises.forEach((ex) => {
               // Build a key that combines groupNumber and exerciseName
               const exKey = `${groupNumber}--${ex.exerciseName}`;
-              if (group.name) console.log('Exercise: ', ex);
+
               // If we haven't yet created an "exercise row" for this (group, exerciseName):
               if (!groupMap.has(exKey)) {
                 groupMap.set(exKey, {
@@ -1073,7 +1128,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       console.log('Payload para API:', payload);
 
       // Llamar a la API
-      const response = await saveWorkoutChanges(payload);
+      await saveWorkoutChanges(payload);
       //console.log('Respuesta de la API:', response);
 
       // Actualizar originalData con los nuevos datos
@@ -1323,6 +1378,12 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     );
   }
 
+  // Modificar el itemTemplate para el dropdown de días
+  const dayItemTemplate = (option) => {
+    const isUsed = daysUsed.includes(option.value);
+    return <div className={`day-option ${isUsed ? 'highlighted-option' : ''}`}>{option.label}</div>;
+  };
+
   return (
     <div style={{ padding: '0.5rem' }}>
       {/* 1) Cycle & Day selection */}
@@ -1340,6 +1401,9 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
             optionLabel="label"
             optionValue="value"
             className="w-full"
+            itemTemplate={(option) => (
+              <div className={option.value === -1 ? 'highlighted-option' : ''}>{option.label}</div>
+            )}
           />
         </div>
         <div className="col-12 md:col-3">
@@ -1351,10 +1415,12 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
             value={dayNumber}
             options={dayOptions}
             onChange={(e) => setDayNumber(e.value)}
-            placeholder="-- Select day --"
+            placeholder={intl.formatMessage({ id: 'common.selectDay' })}
             optionLabel="label"
             optionValue="value"
             className="w-full"
+            itemTemplate={dayItemTemplate}
+            disabled={!cycleId}
           />
         </div>
       </div>
@@ -1470,6 +1536,17 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
           </DragOverlay>
         </DndContext>
       )}
+      <CreateTrainingCycleDialog
+        clientId={clientData?.id}
+        draggable={false}
+        resizable={false}
+        dismissableMask
+        className="responsive-dialog"
+        header={intl.formatMessage({ id: 'workoutTable.newCycle' })}
+        visible={newCycleDialogVisible}
+        onHide={() => setNewCycleDialogVisible(false)}
+        setRefreshKey={refreshTable}
+      />
     </div>
   );
 }
