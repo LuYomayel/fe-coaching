@@ -53,7 +53,7 @@ const properties = [
 ];
 
 export default function NewWorkoutTable({ cycleOptions, clientData }) {
-  const { user } = useContext(UserContext);
+  const { user, coach } = useContext(UserContext);
   const showToast = useToast();
   const intl = useIntl();
   const { isDarkMode } = useTheme();
@@ -154,7 +154,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     if (!user?.userId) return;
     const fetchData = async () => {
       try {
-        const response = await fetchCoachExercises(user.userId);
+        const response = await fetchCoachExercises(coach.id);
         setCoachExercises(response.data || []);
       } catch (err) {
         console.error('Error fetching coach exercises:', err);
