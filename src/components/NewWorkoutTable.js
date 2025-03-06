@@ -67,7 +67,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
   // Single array for both group rows and exercise rows
   const [tableData, setTableData] = useState([]);
   const [editedData, setEditedData] = useState({});
-
+  const [refreshTable, setRefreshTable] = useState(0);
   // We'll store the used properties per week if needed
   const [propertiesUsedByWeek, setPropertiesUsedByWeek] = useState([]);
 
@@ -176,7 +176,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       }
     };
     doFetch();
-  }, [cycleId, dayNumber, showToast]);
+  }, [cycleId, dayNumber, showToast, refreshTable]);
 
   /****************************************
    * 3) Build table data (group rows + exercise rows)
@@ -233,16 +233,16 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
                 groupNumber: groupNumber,
                 rowIndex: groupNumber * 100, // or other ordering
                 isNew: false,
-                label: `Group ${groupNumber}`,
+                label: group.name || `${intl.formatMessage({ id: 'common.group' })} ${groupNumber}`,
                 weeksData: {} // (not really used for group row)
               });
             }
-
+            console.log('Group: ', group);
             // 2) For each exercise in this group
             group.exercises.forEach((ex) => {
               // Build a key that combines groupNumber and exerciseName
               const exKey = `${groupNumber}--${ex.exerciseName}`;
-
+              if (group.name) console.log('Exercise: ', ex);
               // If we haven't yet created an "exercise row" for this (group, exerciseName):
               if (!groupMap.has(exKey)) {
                 groupMap.set(exKey, {
@@ -252,7 +252,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
                   groupNumber: groupNumber,
                   exerciseInstanceId: ex.exerciseInstanceId,
                   // If you have ex.rowIndex, use it, else default to 0
-                  rowIndex: typeof ex.rowIndex === 'number' ? ex.rowIndex : 0,
+                  rowIndex: ex.rowIndex,
                   weeksData: {}
                 });
               }
@@ -492,7 +492,6 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       return;
     }
 
-    console.log('Active Item', activeItem);
     // Obtener índices
     const activeIndex = tableData.findIndex((item) => {
       if (item.rowType === 'group') {
@@ -709,6 +708,11 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     setTableData(cleanedData);
   };
 
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setTableData(originalData);
+  };
+
   /****************************************
    * Adding a new row
    ****************************************/
@@ -813,7 +817,6 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
     currentExercises.forEach((currentEx) => {
       // Buscar por exerciseInstanceId usando el mapa
       const originalEx = originalExercisesMap.get(currentEx.exerciseInstanceId);
-
       if (originalEx) {
         // Verificar si cambió de posición o grupo
         if (originalEx.rowIndex !== currentEx.rowIndex || originalEx.groupNumber !== currentEx.groupNumber) {
@@ -828,12 +831,8 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
         }
 
         // Verificar cambio de ejercicio (nombre o id) - SOLO si realmente cambió
-        if (
-          originalEx.name !== currentEx.name ||
-          (originalEx.exerciseId !== currentEx.exerciseId &&
-            currentEx.exerciseId !== undefined &&
-            currentEx.exerciseId !== null)
-        ) {
+        // Solo registrar cambios si realmente hubo un cambio en el nombre o en el exerciseId
+        if (originalEx.name !== currentEx.name) {
           // Buscar el exerciseId correcto basado en el nombre
           let newExerciseId = currentEx.exerciseId;
           if (!newExerciseId && currentEx.name) {
@@ -843,14 +842,17 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
             }
           }
 
-          newChanges.updatedProperties.push({
-            name: currentEx.name,
-            exerciseInstanceId: currentEx.exerciseInstanceId,
-            weekNumber: 0, // Cambio global
-            property: 'exerciseId',
-            oldValue: originalEx.exerciseId,
-            newValue: newExerciseId
-          });
+          // Solo añadir a updatedProperties si el exerciseId realmente cambió
+          if (originalEx.exerciseId !== newExerciseId) {
+            newChanges.updatedProperties.push({
+              name: currentEx.name,
+              exerciseInstanceId: currentEx.exerciseInstanceId,
+              weekNumber: 0, // Cambio global
+              property: 'exerciseId',
+              oldValue: originalEx.exerciseId,
+              newValue: newExerciseId
+            });
+          }
         }
       }
     });
@@ -912,7 +914,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
           if (!currentWeekData) return;
 
           // Buscar datos originales para esta combinación de exerciseInstanceId y semana
-          const key = `${currentEx.exerciseInstanceId}-${weekNum}`;
+          const key = `${currentWeekData.exerciseInstanceId}-${weekNum}`;
           const originalData = weekExerciseMap.get(key);
           const originalWeekData = originalData ? originalData.weekData : null;
 
@@ -920,39 +922,41 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
           if (!originalWeekData) return;
 
           // Solo procesamos las propiedades que nos interesan
-          properties.forEach((prop) => {
-            // Crear una clave única para esta combinación de ejercicio/semana/propiedad
-            const changeKey = `${currentEx.exerciseInstanceId}-${weekNumber}-${prop}`;
+          propertiesUsedByWeek.forEach((propList) => {
+            propList.forEach((prop) => {
+              // Crear una clave única para esta combinación de ejercicio/semana/propiedad
+              const changeKey = `${currentEx.exerciseInstanceId}-${weekNumber}-${prop}`;
 
-            // Si ya procesamos este cambio, saltamos
-            if (processedChanges.has(changeKey)) return;
+              // Si ya procesamos este cambio, saltamos
+              if (processedChanges.has(changeKey)) return;
 
-            // Marcar como procesado
-            processedChanges.add(changeKey);
+              // Marcar como procesado
+              processedChanges.add(changeKey);
 
-            // Obtener valores actuales y originales
-            const currentValue = currentWeekData?.[prop];
-            const originalValue = originalWeekData?.[prop];
+              // Obtener valores actuales y originales
+              const currentValue = currentWeekData?.[prop];
+              const originalValue = originalWeekData?.[prop];
 
-            // Si ambos son undefined/null, no hay cambio
-            if (currentValue === undefined && originalValue === undefined) return;
-            if (currentValue === null && originalValue === null) return;
+              // Si ambos son undefined/null, no hay cambio
+              if (currentValue === undefined && originalValue === undefined) return;
+              if (currentValue === null && originalValue === null) return;
 
-            // Comparar valores (convertir a string para comparación consistente)
-            const currentStr = currentValue !== undefined && currentValue !== null ? String(currentValue) : '';
-            const originalStr = originalValue !== undefined && originalValue !== null ? String(originalValue) : '';
+              // Comparar valores (convertir a string para comparación consistente)
+              const currentStr = currentValue !== undefined && currentValue !== null ? String(currentValue) : '';
+              const originalStr = originalValue !== undefined && originalValue !== null ? String(originalValue) : '';
 
-            // Solo registrar si hay un cambio real
-            if (currentStr !== originalStr) {
-              newChanges.updatedProperties.push({
-                name: currentEx.name,
-                exerciseInstanceId: currentWeekData?.exerciseInstanceId || originalWeekData?.exerciseInstanceId,
-                weekNumber: weekNumber,
-                property: prop,
-                oldValue: originalValue,
-                newValue: currentValue
-              });
-            }
+              // Solo registrar si hay un cambio real
+              if (currentStr !== originalStr) {
+                newChanges.updatedProperties.push({
+                  name: currentEx.name,
+                  exerciseInstanceId: currentWeekData?.exerciseInstanceId || originalWeekData?.exerciseInstanceId,
+                  weekNumber: weekNumber,
+                  property: prop,
+                  oldValue: originalValue,
+                  newValue: currentValue
+                });
+              }
+            });
           });
         });
       });
@@ -1069,11 +1073,11 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       console.log('Payload para API:', payload);
 
       // Llamar a la API
-      //const response = await saveWorkoutChanges(payload);
+      const response = await saveWorkoutChanges(payload);
       //console.log('Respuesta de la API:', response);
 
       // Actualizar originalData con los nuevos datos
-      setOriginalData(JSON.parse(JSON.stringify(tableData)));
+      //setOriginalData(JSON.parse(JSON.stringify(tableData)));
 
       // Resetear cambios
       setChanges({
@@ -1101,6 +1105,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
       );
     } finally {
       setIsLoading(false);
+      setRefreshTable((prev) => prev + 1);
     }
   };
 
@@ -1125,7 +1130,6 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
                 borderRight: '1px solid #ccc',
                 borderLeft: '1px solid #ccc'
               }}
-              textOverflow={'ellipsis'}
               overflow={'hidden'}
             >
               {intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}
@@ -1360,7 +1364,7 @@ export default function NewWorkoutTable({ cycleOptions, clientId }) {
         {!isEditing ? (
           <button onClick={() => setIsEditing(true)}>{intl.formatMessage({ id: 'common.edit' })}</button>
         ) : (
-          <button onClick={() => setIsEditing(false)}>{intl.formatMessage({ id: 'common.cancel' })}</button>
+          <button onClick={handleCancelEdit}>{intl.formatMessage({ id: 'common.cancel' })}</button>
         )}
 
         {isEditing && (
