@@ -376,7 +376,7 @@ export default function PlansPage() {
       name: templateName,
       duration: templateDuration,
       isDurationInMonths: !isDurationInWeeks,
-      coachId: user.userId,
+      coachId: coach.id,
       trainingWeeks: templateWeeks.map((week) => ({
         weekNumber: week.weekNumber,
         trainingSessions: week.trainingSessions.map((session) => ({

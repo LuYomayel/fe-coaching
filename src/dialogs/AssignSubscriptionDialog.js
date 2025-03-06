@@ -5,7 +5,7 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { Dropdown } from 'primereact/dropdown';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
-import { validateDates } from '../utils/UtilFunctions';
+import { formatDateToApi, validateDates } from '../utils/UtilFunctions';
 import { fetchCoachPlans } from '../services/usersService';
 import { assignSubscription } from '../services/subscriptionService';
 import { useIntl, FormattedMessage } from 'react-intl';
@@ -40,8 +40,8 @@ const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
     const body = {
       coachId: coach.id,
       clientId: studentId,
-      startDate,
-      endDate,
+      startDate: formatDateToApi(startDate),
+      endDate: formatDateToApi(endDate),
       coachPlanId: selectedCoachPlan,
       userId: user.userId
     };
