@@ -36,6 +36,7 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { FaGripVertical } from 'react-icons/fa';
 import { FaSave } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import { saveWorkoutChanges } from '../services/workoutService';
 import '../styles/WorkoutTable.css';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
@@ -103,6 +104,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     movedGroups: [],
     updatedProperties: []
   });
+
+  const [deletedExercises, setDeletedExercises] = useState([]);
 
   const [daysUsed, setDaysUsed] = useState([]);
 
@@ -772,6 +775,16 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setTableData(originalData);
+    setDeletedExercises([]);
+    setHoverRowIndex(null);
+    setShowInsertButton(false);
+    setChanges({
+      newExercises: [],
+      movedExercises: [],
+      movedGroups: [],
+      updatedProperties: [],
+      deletedExercises: []
+    });
   };
 
   /****************************************
@@ -1004,7 +1017,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         newExercises: [],
         movedExercises: [],
         movedGroups: [],
-        updatedProperties: []
+        updatedProperties: [],
+        deletedExercises: []
       };
     }
 
@@ -1012,7 +1026,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       newExercises: [],
       movedExercises: [],
       movedGroups: [],
-      updatedProperties: []
+      updatedProperties: [],
+      deletedExercises: deletedExercises
     };
 
     // 1. Detectar ejercicios nuevos y asignar exerciseId si es necesario
@@ -1270,7 +1285,9 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           weekNumber: update.weekNumber,
           property: update.property,
           value: update.value
-        }))
+        })),
+
+        deletedExercises: changesObj.deletedExercises
       }
     };
 
@@ -1318,98 +1335,14 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       const changesObj = detectChanges();
       console.log('Objeto de cambios:', changesObj);
 
-      // Verificar que ningún grupo quede sin ejercicios después de los cambios
-      if (changesObj.movedExercises && changesObj.movedExercises.length > 0) {
-        // Crear una copia de los datos para simular los cambios
-        const simulatedData = [...tableData];
-
-        // Crear un mapa para contar cuántos ejercicios hay en cada grupo
-        const exercisesPerGroup = {};
-        simulatedData.forEach((row) => {
-          if (row.rowType === 'exercise') {
-            exercisesPerGroup[row.groupNumber] = (exercisesPerGroup[row.groupNumber] || 0) + 1;
-          }
-        });
-
-        // Simular el movimiento de cada ejercicio
-        /*
-        for (const movedEx of changesObj.movedExercises) {
-          // Restar 1 del grupo original
-          exercisesPerGroup[movedEx.oldGroupNumber] = (exercisesPerGroup[movedEx.oldGroupNumber] || 1) - 1;
-
-          // Si un grupo queda sin ejercicios, mostrar error y cancelar
-          if (exercisesPerGroup[movedEx.oldGroupNumber] === 0) {
-            showToast(
-              'error',
-              intl.formatMessage({ id: 'common.error' }),
-              intl.formatMessage({ id: 'workoutTable.groupCannotBeEmpty' }) ||
-                `El grupo ${movedEx.oldGroupNumber} quedaría sin ejercicios después de los cambios`
-            );
-            setIsLoading(false);
-            return;
-          }
-
-          // Sumar 1 al nuevo grupo
-          exercisesPerGroup[movedEx.newGroupNumber] = (exercisesPerGroup[movedEx.newGroupNumber] || 0) + 1;
-        }
-        */
-      }
-
-      // Validar y ajustar grupos movidos si es necesario
-      if (changesObj.movedGroups && changesObj.movedGroups.length > 0) {
-        // Verificar que todos los grupos tengan valores válidos
-        changesObj.movedGroups.forEach((group) => {
-          console.log(`Validando grupo movido: groupNumber=${group.groupNumber}, newOrder=${group.newOrder}`);
-
-          // Asegurarse de que newOrder sea un número
-          if (typeof group.newOrder !== 'number') {
-            console.warn(
-              `Grupo ${group.groupNumber} tiene newOrder inválido: ${group.newOrder}, convirtiendo a número`
-            );
-            group.newOrder = parseInt(group.newOrder) || 1;
-          }
-
-          // Garantizar que groupNumber es un número
-          if (typeof group.groupNumber !== 'number') {
-            console.warn(
-              `Grupo con newOrder=${group.newOrder} tiene groupNumber inválido: ${group.groupNumber}, convirtiendo a número`
-            );
-            group.groupNumber = parseInt(group.groupNumber) || 1;
-          }
-        });
-      }
-
-      // Resumen de los cambios encontrados
-      console.log(`Resumen de cambios:
-        - Ejercicios nuevos: ${changesObj.newExercises.length}
-        - Ejercicios movidos: ${changesObj.movedExercises.length}
-        - Grupos movidos: ${changesObj.movedGroups.length}
-        - Propiedades actualizadas: ${changesObj.updatedProperties.length}
-      `);
-
-      // Validar que todos los ejercicios nuevos con nombre tengan exerciseId
-      const missingExerciseIds = changesObj.newExercises.filter((ex) => ex.name && !ex.exerciseId);
-      if (missingExerciseIds.length > 0) {
-        const missingNames = missingExerciseIds.map((ex) => ex.name).join(', ');
-        showToast(
-          'error',
-          intl.formatMessage({ id: 'common.error' }),
-          `${intl.formatMessage({ id: 'workoutTable.missingExerciseIds' })}: ${missingNames}`
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      // Filtrar ejercicios sin nombre antes de guardar
-      changesObj.newExercises = changesObj.newExercises.filter((ex) => ex.name);
-
-      // Si no hay cambios, mostrar mensaje y salir
+      // Si no hay cambios y no hay ejercicios eliminados, mostrar mensaje y salir
       if (
         !changesObj ||
         (changesObj.newExercises.length === 0 &&
           changesObj.movedExercises.length === 0 &&
           changesObj.movedGroups.length === 0 &&
-          changesObj.updatedProperties.length === 0)
+          changesObj.updatedProperties.length === 0 &&
+          changesObj.deletedExercises.length === 0)
       ) {
         showToast(
           'info',
@@ -1434,13 +1367,14 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       // Actualizar originalData con los nuevos datos
       setOriginalData(JSON.parse(JSON.stringify(tableData)));
 
-      // Resetear cambios
+      // Resetear todos los estados de cambios
       setChanges({
         newExercises: [],
         movedExercises: [],
         movedGroups: [],
         updatedProperties: []
       });
+      setDeletedExercises([]); // Limpiar el estado de ejercicios eliminados
 
       // Mostrar mensaje de éxito
       showToast(
@@ -1770,16 +1704,33 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
             }}
             {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
           >
-            {isEditing && isDraggable && (
-              <FaGripVertical
-                style={{
-                  marginRight: '0.3rem',
-                  cursor: isDragging ? 'grabbing' : 'grab',
-                  flexShrink: 0,
-                  opacity: isDragging ? 0.5 : 1
-                }}
-              />
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {isEditing && isDraggable && (
+                <FaGripVertical
+                  style={{
+                    cursor: isDragging ? 'grabbing' : 'grab',
+                    flexShrink: 0,
+                    opacity: isDragging ? 0.5 : 1
+                  }}
+                />
+              )}
+              {isEditing && rowData.rowType === 'exercise' && (
+                <FaTrash
+                  style={{
+                    cursor: 'pointer',
+                    color: isDarkMode ? '#ff6b6b' : '#dc3545',
+                    opacity: 0.7,
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.7')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteExercise(rowData);
+                  }}
+                />
+              )}
+            </div>
             <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
           </td>
           {renderDataCells(rowData)}
@@ -1792,6 +1743,33 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   const dayItemTemplate = (option) => {
     const isUsed = daysUsed.includes(option.value);
     return <div className={`day-option ${isUsed ? 'highlighted-option' : ''}`}>{option.label}</div>;
+  };
+
+  const handleDeleteExercise = (rowData) => {
+    if (!isEditing) return;
+
+    // Si el ejercicio tiene exerciseInstanceId, agregarlo a la lista de eliminados
+    if (rowData.exerciseInstanceId) {
+      setDeletedExercises((prev) => [...prev, rowData.exerciseInstanceId]);
+    }
+
+    const newTableData = tableData.filter((row) => {
+      if (row.rowType === 'exercise') {
+        return row.groupNumber !== rowData.groupNumber || row.rowIndex !== rowData.rowIndex;
+      }
+      return true;
+    });
+
+    // Ajustar los índices de los ejercicios restantes en el mismo grupo
+    let currentIndex = 0;
+    newTableData.forEach((row) => {
+      if (row.rowType === 'exercise' && row.groupNumber === rowData.groupNumber) {
+        row.rowIndex = currentIndex++;
+      }
+    });
+
+    setTableData(newTableData);
+    showToast('success', 'Éxito', 'Ejercicio eliminado correctamente');
   };
 
   return (
