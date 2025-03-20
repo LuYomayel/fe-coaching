@@ -37,6 +37,30 @@ import { useLanguage } from '../i18n/LanguageContext';
 import NewStudentDialog from '../dialogs/NewStudentDialog';
 import { Tooltip } from 'primereact/tooltip';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
+import { fetchTrainingCyclesTemplates, assignCycleTemplateToClient } from '../services/workoutService';
+import { Calendar } from 'primereact/calendar';
+
+// Estilos para el botón de agregar sesión en el calendario
+const addButtonStyle = `
+  .add-session-btn {
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+  }
+  .fc-daygrid-day:hover .add-session-btn {
+    opacity: 1;
+  }
+  .fc-daygrid-day-frame {
+    min-height: 80px;
+  }
+  .fc-daygrid-day-top {
+    justify-content: center;
+  }
+  .day-number {
+    font-weight: bold;
+    margin-bottom: 0.2rem;
+  }
+`;
+
 export default function ClientDashboard() {
   const { clientId } = useParams();
   const [clientData, setClientData] = useState(null);
@@ -78,6 +102,13 @@ export default function ClientDashboard() {
   const [refreshKey, setRefreshKey] = useState(1);
   const [cycleOptions, setCycleOptions] = useState([]);
   const [cycleDropdownOptions, setCycleDropdownOptions] = useState([]);
+
+  // Estados para asignar ciclos de entrenamiento
+  const [isAssignCycleTemplateDialogVisible, setAssignCycleTemplateDialogVisible] = useState(false);
+  const [trainingCycleTemplates, setTrainingCycleTemplates] = useState([]);
+  const [selectedCycleTemplate, setSelectedCycleTemplate] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   // Fetch data when the component mounts or refreshKey changes
   useEffect(() => {
@@ -160,6 +191,17 @@ export default function ClientDashboard() {
       })
       .catch((error) => {
         showToast('error', 'Error fetching client data', error.message);
+      });
+
+    // Cargar plantillas de ciclos de entrenamiento
+    fetchTrainingCyclesTemplates(clientData?.coach?.id || null)
+      .then((response) => {
+        if (response.message === 'success') {
+          setTrainingCycleTemplates(response.data);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching training cycle templates:', error);
       });
     // eslint-disable-next-line
   }, [clientId, refreshKey]);
@@ -348,6 +390,37 @@ export default function ClientDashboard() {
     );
   };
 
+  // Renderizar el botón + en cada celda del día
+  const renderDayCellContent = (cellInfo) => {
+    const date = cellInfo.date;
+    const dayNumberText = cellInfo.dayNumberText;
+
+    return (
+      <div className="flex flex-column align-items-center">
+        <div className="day-number">{dayNumberText}</div>
+        <Button
+          icon="pi pi-plus"
+          aria-label="Agregar sesión"
+          text
+          rounded
+          raised
+          size="small"
+          tooltip={intl.formatMessage({ id: 'clientDashboard.addSession' }, { defaultMessage: 'Agregar sesión' })}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const clickedDate = new Date(date);
+            clickedDate.setHours(0, 0, 0, 0);
+            setSelectedDate(clickedDate);
+            setSelectedClient(clientId);
+            setSelectedSessionId(null);
+            setAssignSessionVisible(true);
+          }}
+        />
+      </div>
+    );
+  };
+
   const handleAssignDayWorkout = (sessionId) => {
     setSelectedClient(clientId);
     setSelectedSessionId(sessionId);
@@ -514,6 +587,17 @@ export default function ClientDashboard() {
               className="p-button-secondary"
               onClick={showCreateCycleDialog}
             />
+            <Button
+              label={intl.formatMessage(
+                {
+                  id: 'clientDashboard.buttons.assignCycleTemplate'
+                },
+                { defaultMessage: 'Asignar Plantilla de Ciclo' }
+              )}
+              icon="pi pi-clone"
+              className="p-button-info"
+              onClick={openAssignCycleTemplateDialog}
+            />
           </div>
           <Card>
             <FullCalendar
@@ -529,6 +613,7 @@ export default function ClientDashboard() {
               locale={locale}
               firstDay={1}
               dateClick={handleDateClick}
+              dayCellContent={renderDayCellContent}
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
                 if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
@@ -545,7 +630,6 @@ export default function ClientDashboard() {
             cycleId={selectedCycleId}
             clientId={selectedClient}
             setRefreshKey={setRefreshKey}
-            // cycleOptions={cycleOptions}
             cycleOptions={cycleDropdownOptions}
             actionType={actionType}
           />
@@ -572,7 +656,6 @@ export default function ClientDashboard() {
             style={{ width: '80vw' }}
             onHide={hidePlanDetails}
           >
-            {/*selectedPlan && <NewPlanDetail planId={selectedPlan} setPlanDetailsVisible={setPlanDetailsVisible} setRefreshKey={setRefreshKey} setLoading={setLoading} isTemplate={false} />*/}
             {selectedPlan && (
               <NewPlanDetailHorizontal
                 planId={selectedPlan}
@@ -585,50 +668,92 @@ export default function ClientDashboard() {
           </Dialog>
         </TabPanel>
 
-        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.details' })}>
-          <div className="grid">
-            <div className="col-12">
-              <Dropdown
-                value={selectedWorkout}
-                options={workoutOptions}
-                onChange={(e) => setSelectedWorkout(e.value)}
-                placeholder={intl.formatMessage({
-                  id: 'clientDashboard.dropdown.selectWorkout'
-                })}
-                className="w-full mb-2"
-                style={{ maxWidth: '300px' }}
-              />
-              <DataTable value={filteredWorkouts} className="improved-table" rowClassName="improved-row">
-                <Column
-                  body={renderPlanName}
-                  header={intl.formatMessage({
-                    id: 'clientDashboard.table.workoutName'
-                  })}
-                  style={{ width: '30%' }}
-                />
-                <Column
-                  header={intl.formatMessage({
-                    id: 'clientDashboard.table.details'
-                  })}
-                  body={renderWorkoutDetails}
-                />
-              </DataTable>
-            </div>
+        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.excelView' })}>
+          <NewWorkoutTable cycleOptions={cycleDropdownOptions} clientData={clientData} />
+        </TabPanel>
+
+        <TabPanel
+          header={intl.formatMessage({ id: 'clientDashboard.tabs.dashboard' }, { defaultMessage: 'Dashboard' })}
+        >
+          <div className="flex justify-content-center align-items-center" style={{ height: '300px' }}>
+            <Card className="w-full">
+              <div className="text-center">
+                <i className="pi pi-clock text-5xl mb-3"></i>
+                <h2>
+                  <FormattedMessage id="common.comingSoon" defaultMessage="Próximamente" />
+                </h2>
+                <p className="text-lg">
+                  <FormattedMessage
+                    id="clientDashboard.comingSoon.dashboard"
+                    defaultMessage="Estamos trabajando en un dashboard con estadísticas y métricas de progreso."
+                  />
+                </p>
+              </div>
+            </Card>
           </div>
         </TabPanel>
 
-        <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.excelView' })}>
-          <NewWorkoutTable cycleOptions={cycleDropdownOptions} clientData={clientData} />
-          {/* <WorkoutTable
-            trainingCycles={cycleOptions}
-            cycleOptions={cycleDropdownOptions}
-            setRefreshKey={setRefreshKey}
-            clientId={clientId}
-            clientData={clientData}
-            /> */}
+        <TabPanel
+          header={intl.formatMessage(
+            { id: 'clientDashboard.tabs.medicalHistory' },
+            { defaultMessage: 'Historia Clínica' }
+          )}
+        >
+          <div className="flex justify-content-center align-items-center" style={{ height: '300px' }}>
+            <Card className="w-full">
+              <div className="text-center">
+                <i className="pi pi-heart text-5xl mb-3"></i>
+                <h2>
+                  <FormattedMessage id="common.comingSoon" defaultMessage="Próximamente" />
+                </h2>
+                <p className="text-lg">
+                  <FormattedMessage
+                    id="clientDashboard.comingSoon.medicalHistory"
+                    defaultMessage="Próximamente podrás gestionar la historia clínica de tus clientes."
+                  />
+                </p>
+              </div>
+            </Card>
+          </div>
+        </TabPanel>
+
+        <TabPanel
+          header={intl.formatMessage({ id: 'clientDashboard.tabs.userData' }, { defaultMessage: 'Datos del Usuario' })}
+        >
+          <div className="flex justify-content-center align-items-center" style={{ height: '300px' }}>
+            <Card className="w-full">
+              <div className="text-center">
+                <i className="pi pi-user text-5xl mb-3"></i>
+                <h2>
+                  <FormattedMessage id="common.comingSoon" defaultMessage="Próximamente" />
+                </h2>
+                <p className="text-lg">
+                  <FormattedMessage
+                    id="clientDashboard.comingSoon.userData"
+                    defaultMessage="Próximamente podrás ver y editar todos los datos del usuario desde aquí."
+                  />
+                </p>
+              </div>
+            </Card>
+          </div>
         </TabPanel>
       </TabView>
     );
+  };
+
+  const calculateAge = (birthdate) => {
+    if (!birthdate) return null;
+
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
   };
 
   const headerTemplate = (options) => {
@@ -637,7 +762,16 @@ export default function ClientDashboard() {
       <div className={className}>
         <div className="flex align-items-center gap-2">
           <Avatar image={clientData?.profilePicture || '/image.webp'} shape="circle" />
-          <span className="font-bold">{clientData?.name}</span>
+          <div className="flex flex-column">
+            <span className="font-bold">{clientData?.name}</span>
+            {clientData?.birthdate && (
+              <small className="text-gray-600">
+                {intl.formatMessage({ id: 'common.age' }, { defaultMessage: 'Edad' })}:&nbsp;
+                {calculateAge(clientData.birthdate)}&nbsp;
+                {intl.formatMessage({ id: 'common.years' }, { defaultMessage: 'años' })}
+              </small>
+            )}
+          </div>
           <div className="flex align-items-center">
             <Button
               icon="pi pi-pencil"
@@ -671,8 +805,67 @@ export default function ClientDashboard() {
     );
   };
 
+  // Función para abrir el diálogo de asignación de ciclos
+  const openAssignCycleTemplateDialog = () => {
+    setAssignCycleTemplateDialogVisible(true);
+    setSelectedCycleTemplate(null);
+    setStartDate(null);
+    setEndDate(null);
+  };
+
+  // Función para asignar un ciclo de entrenamiento al cliente
+  const handleAssignCycleTemplateToClient = async () => {
+    if (!selectedCycleTemplate || !startDate || !endDate) {
+      showToast(
+        'error',
+        'Error',
+        intl.formatMessage({
+          id: 'clientDashboard.error.selectCycleAndDates',
+          defaultMessage: 'Por favor seleccione un ciclo de entrenamiento y fechas de inicio/fin.'
+        })
+      );
+      return;
+    }
+
+    setLoading(true);
+    const startDateNewDate = new Date(startDate);
+    const endDateNewDate = new Date(endDate);
+
+    try {
+      const payload = {
+        cycleTemplateId: selectedCycleTemplate.id,
+        clientId: parseInt(clientId),
+        startDate: formatDateToApi(startDateNewDate),
+        endDate: formatDateToApi(endDateNewDate)
+      };
+
+      await assignCycleTemplateToClient(payload);
+      showToast(
+        'success',
+        intl.formatMessage({
+          id: 'clientDashboard.success',
+          defaultMessage: 'Éxito'
+        }),
+        intl.formatMessage({
+          id: 'clientDashboard.success.cycleAssigned',
+          defaultMessage: 'Ciclo de entrenamiento asignado correctamente.'
+        })
+      );
+      setAssignCycleTemplateDialogVisible(false);
+      setRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      showToast('error', 'Error', error.message || 'Ocurrió un error al asignar el ciclo de entrenamiento.');
+    } finally {
+      setLoading(false);
+      setSelectedCycleTemplate(null);
+      setStartDate(null);
+      setEndDate(null);
+    }
+  };
+
   return (
     <div className="client-dashboard p-1">
+      <style>{addButtonStyle}</style>
       <Panel headerTemplate={headerTemplate} className="panel-client-dashboard">
         {renderTabView()}
       </Panel>
@@ -688,6 +881,109 @@ export default function ClientDashboard() {
         style={{ width: '50vw' }}
       >
         <NewStudentDialog onClose={handleNewStudentDialogHide} setRefreshKey={setRefreshKey} studentData={clientData} />
+      </Dialog>
+
+      {/* Diálogo para asignar plantillas de ciclos de entrenamiento */}
+      <Dialog
+        dismissableMask
+        modal
+        draggable={false}
+        resizable={false}
+        className="responsive-dialog"
+        header={intl.formatMessage(
+          { id: 'clientDashboard.assignCycleTemplate.dialog.header' },
+          { defaultMessage: 'Asignar Plantilla de Ciclo de Entrenamiento' }
+        )}
+        visible={isAssignCycleTemplateDialogVisible}
+        style={{ width: '50vw' }}
+        onHide={() => setAssignCycleTemplateDialogVisible(false)}
+      >
+        <div className="flex flex-column gap-3 p-3">
+          <div className="field">
+            <label className="block mb-2">
+              {intl.formatMessage(
+                { id: 'clientDashboard.assignCycleTemplate.selectCycle' },
+                { defaultMessage: 'Seleccionar Ciclo de Entrenamiento' }
+              )}
+            </label>
+            <Dropdown
+              value={selectedCycleTemplate}
+              options={trainingCycleTemplates}
+              onChange={(e) => {
+                setSelectedCycleTemplate(e.value);
+                // Calcular fecha de fin basada en la duración del ciclo si hay fecha de inicio
+                if (startDate && e.value) {
+                  const endDate = new Date(startDate);
+                  if (e.value.isDurationInMonths) {
+                    endDate.setMonth(endDate.getMonth() + e.value.duration);
+                  } else {
+                    endDate.setDate(endDate.getDate() + e.value.duration * 7);
+                  }
+                  setEndDate(endDate);
+                }
+              }}
+              optionLabel="name"
+              placeholder={intl.formatMessage(
+                { id: 'clientDashboard.assignCycleTemplate.selectCyclePlaceholder' },
+                { defaultMessage: 'Seleccione un ciclo de entrenamiento' }
+              )}
+              className="w-full"
+            />
+            {selectedCycleTemplate && (
+              <p className="mt-2 text-sm">
+                {selectedCycleTemplate.duration}{' '}
+                {selectedCycleTemplate.isDurationInMonths
+                  ? intl.formatMessage({ id: 'common.months', defaultMessage: 'meses' })
+                  : intl.formatMessage({ id: 'common.weeks', defaultMessage: 'semanas' })}{' '}
+                (
+                {selectedCycleTemplate.isDurationInMonths
+                  ? selectedCycleTemplate.duration * 4
+                  : selectedCycleTemplate.duration}{' '}
+                {intl.formatMessage({ id: 'common.weeks', defaultMessage: 'semanas' })})
+              </p>
+            )}
+          </div>
+
+          <div className="field grid">
+            <div className="col-6">
+              <label className="block mb-2">
+                {intl.formatMessage({ id: 'common.startDate', defaultMessage: 'Fecha de Inicio' })}
+              </label>
+              <Calendar
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.value);
+                  // Calcular fecha de fin si hay un ciclo seleccionado
+                  if (e.value && selectedCycleTemplate) {
+                    const endDate = new Date(e.value);
+                    if (selectedCycleTemplate.isDurationInMonths) {
+                      endDate.setMonth(endDate.getMonth() + selectedCycleTemplate.duration);
+                    } else {
+                      endDate.setDate(endDate.getDate() + selectedCycleTemplate.duration * 7);
+                    }
+                    setEndDate(endDate);
+                  }
+                }}
+                showIcon
+                className="w-full"
+                locale={intl.locale}
+              />
+            </div>
+            <div className="col-6">
+              <label className="block mb-2">
+                {intl.formatMessage({ id: 'common.endDate', defaultMessage: 'Fecha de Fin' })}
+              </label>
+              <Calendar value={endDate} disabled showIcon className="w-full" locale={intl.locale} />
+            </div>
+          </div>
+
+          <Button
+            label={intl.formatMessage({ id: 'common.assign', defaultMessage: 'Asignar' })}
+            icon="pi pi-check"
+            className="p-button-success mt-3"
+            onClick={handleAssignCycleTemplateToClient}
+          />
+        </div>
       </Dialog>
     </div>
   );
