@@ -53,6 +53,13 @@ const messages = {
   'common.extraNotes': 'Extra notes',
   'common.group': 'Group',
   'common.days': 'Days',
+  'common.age': 'Age',
+  'common.years': 'years',
+  'common.months': 'months',
+  'common.weeks': 'weeks',
+  'common.startDate': 'Start Date',
+  'common.endDate': 'End Date',
+  'common.comingSoon': 'Coming Soon',
 
   'common.day': 'Day',
   'common.week': 'Week',
@@ -118,6 +125,14 @@ const messages = {
   'clientDashboard.buttons.assign': 'Assign Workouts',
   'clientDashboard.buttons.unassign': 'Unassign Workouts',
   'clientDashboard.buttons.createCycle': 'Create Training Cycle',
+  'clientDashboard.buttons.assignCycleTemplate': 'Assign Cycle Template',
+  'clientDashboard.addSession': 'Add session',
+  'clientDashboard.success': 'Success',
+  'clientDashboard.success.cycleAssigned': 'Training cycle successfully assigned.',
+  'clientDashboard.error.selectCycleAndDates': 'Please select a training cycle and start/end dates.',
+  'clientDashboard.assignCycleTemplate.dialog.header': 'Assign Training Cycle Template',
+  'clientDashboard.assignCycleTemplate.selectCycle': 'Select Training Cycle',
+  'clientDashboard.assignCycleTemplate.selectCyclePlaceholder': 'Select a training cycle',
 
   'clientDashboard.workout.completedOn': 'Completed on',
   'clientDashboard.workout.sessionTime': 'Session time',
@@ -933,6 +948,7 @@ const messages = {
   'createCycle.button.create': 'Create Empty Cycle',
   'createCycle.button.create.confirm':
     'Are you sure you want to create this cycle without any workout assignments? You can add workout assignments later.',
+  'createCycle.fromTemplate': 'From Template',
   'error.fetchingStudents': 'Error fetching students',
   'success.cycleCreated': 'Training cycle created successfully!',
   'error.allFieldsRequired': 'All fields are required',
@@ -1017,6 +1033,19 @@ const messages = {
   'students.status': 'Status',
   'students.viewProfile': 'View Profile',
   'students.registerPayment': 'Register Payment',
-  'students.assignSubscription': 'Assign Subscription'
+  'students.assignSubscription': 'Assign Subscription',
+
+  'clientDashboard.tabs.dashboard': 'Dashboard',
+  'clientDashboard.tabs.workouts': 'Workouts',
+  'clientDashboard.tabs.progress': 'Progress',
+  'clientDashboard.tabs.settings': 'Settings',
+  'clientDashboard.tabs.profile': 'Profile',
+  'clientDashboard.tabs.clients': 'Clients',
+  'clientDashboard.tabs.payments': 'Payments',
+  'clientDashboard.tabs.medicalHistory': 'Medical History',
+  'clientDashboard.tabs.userData': 'User Data',
+  'clientDashboard.comingSoon.dashboard': 'We are working on a dashboard with statistics and progress metrics.',
+  'clientDashboard.comingSoon.medicalHistory': "Soon you will be able to manage your clients' medical history.",
+  'clientDashboard.comingSoon.userData': 'Soon you will be able to view and edit all user data from here.'
 };
 export default messages;

@@ -57,6 +57,13 @@ const messages = {
   'common.week': 'Semana',
   'common.cycle': 'Ciclo',
   'common.selectCycle': 'Seleccionar Ciclo',
+  'common.age': 'Edad',
+  'common.years': 'años',
+  'common.months': 'meses',
+  'common.weeks': 'semanas',
+  'common.startDate': 'Fecha de Inicio',
+  'common.endDate': 'Fecha de Fin',
+  'common.comingSoon': 'Próximamente',
 
   'home.success.checkEmail': '¡Revisa tu correo para continuar!',
   // Mensajes de confirmacion
@@ -118,7 +125,18 @@ const messages = {
 
   'clientDashboard.buttons.assign': 'Asignar Entrenamientos',
   'clientDashboard.buttons.unassign': 'Desasignar Entrenamientos',
-  'clientDashboard.buttons.createCycle': 'Crear Ciclo de Entrenamiento',
+  'clientDashboard.buttons.createCycle': 'Crear Ciclo',
+  'clientDashboard.buttons.assignCycleTemplate': 'Asignar Plantilla de Ciclo',
+  'clientDashboard.addSession': 'Agregar sesión',
+  'clientDashboard.success': 'Éxito',
+  'clientDashboard.success.cycleAssigned': 'Ciclo de entrenamiento asignado correctamente.',
+  'clientDashboard.error.selectCycleAndDates': 'Por favor seleccione un ciclo de entrenamiento y fechas de inicio/fin.',
+  'clientDashboard.assignCycleTemplate.dialog.header': 'Asignar Plantilla de Ciclo de Entrenamiento',
+  'clientDashboard.assignCycleTemplate.selectCycle': 'Seleccionar Ciclo de Entrenamiento',
+  'clientDashboard.assignCycleTemplate.selectCyclePlaceholder': 'Seleccione un ciclo de entrenamiento',
+  'clientDashboard.comingSoon.dashboard': 'Estamos trabajando en un dashboard con estadísticas y métricas de progreso.',
+  'clientDashboard.comingSoon.medicalHistory': 'Próximamente podrás gestionar la historia clínica de tus clientes.',
+  'clientDashboard.comingSoon.userData': 'Próximamente podrás ver y editar todos los datos del usuario desde aquí.',
 
   'clientDashboard.workout.completedOn': 'Completado el',
   'clientDashboard.workout.sessionTime': 'Tiempo de sesión',
@@ -938,6 +956,7 @@ const messages = {
   'createCycle.button.create': 'Crear Ciclo Vacío',
   'createCycle.button.create.confirm':
     '¿Estás seguro de que deseas crear este ciclo sin ningún entrenamiento asignado? Puedes agregar entrenamientos asignados más tarde.',
+  'createCycle.fromTemplate': 'Desde Plantilla',
   'error.fetchingStudents': 'Error al obtener estudiantes',
   'success.cycleCreated': '¡Ciclo de entrenamiento creado exitosamente!',
   'error.allFieldsRequired': 'Todos los campos son obligatorios',
@@ -1024,6 +1043,16 @@ const messages = {
 
   'students.viewProfile': 'Ver Perfil',
   'students.registerPayment': 'Registrar Pago',
-  'students.assignSubscription': 'Asignar Suscripción'
+  'students.assignSubscription': 'Asignar Suscripción',
+
+  'clientDashboard.tabs.dashboard': 'Dashboard',
+  'clientDashboard.tabs.medicalHistory': 'Historial Médico',
+  'clientDashboard.tabs.userData': 'Datos del Usuario',
+  'clientDashboard.tabs.workouts': 'Entrenamientos',
+  'clientDashboard.tabs.progress': 'Progreso',
+  'clientDashboard.tabs.settings': 'Configuraciones',
+  'clientDashboard.tabs.profile': 'Perfil',
+  'clientDashboard.tabs.clients': 'Clientes',
+  'clientDashboard.tabs.payments': 'Pagos'
 };
 export default messages;

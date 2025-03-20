@@ -12,7 +12,9 @@ import { InputNumber } from 'primereact/inputnumber';
 import {
   createTrainingCycle,
   createCycleAndAssignWorkouts,
-  findAllWorkoutTemplatesByCoachId
+  findAllWorkoutTemplatesByCoachId,
+  fetchTrainingCyclesTemplates,
+  assignCycleTemplateToClient
 } from '../services/workoutService';
 import { fetchCoachStudents } from '../services/usersService';
 import { useIntl, FormattedMessage } from 'react-intl';
@@ -40,6 +42,13 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
   // eslint-disable-next-line
   const [assignedWorkouts, setAssignedWorkouts] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Nuevos estados para la asignación de plantillas de ciclos
+  const [trainingCycleTemplates, setTrainingCycleTemplates] = useState([]);
+  const [selectedCycleTemplate, setSelectedCycleTemplate] = useState(null);
+  const [templateStartDate, setTemplateStartDate] = useState(null);
+  const [templateEndDate, setTemplateEndDate] = useState(null);
+
   const daysOfWeek = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
     { label: intl.formatMessage({ id: 'workoutTable.tuesday' }), value: 2 },
@@ -54,6 +63,9 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
     setAssignments([{ workoutId: null, dayOfWeek: null }]);
     setSelectedDay(null);
     setAssignedWorkouts([]);
+    setTemplateStartDate(null);
+    setTemplateEndDate(null);
+    setSelectedCycleTemplate(null);
   }, []);
 
   useEffect(() => {
@@ -82,10 +94,25 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
       }
     };
 
+    const loadCycleTemplates = async () => {
+      try {
+        const response = await fetchTrainingCyclesTemplates(coach.id);
+        if (response.message === 'success') {
+          setTrainingCycleTemplates(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching training cycle templates:', error);
+        showToast('error', 'Error', intl.formatMessage({ id: 'error' }));
+      }
+    };
+
     if (user && user.userId && visible) {
       loadCoachStudents();
     }
-    if (visible) loadWorkouts();
+    if (visible) {
+      loadWorkouts();
+      loadCycleTemplates();
+    }
   }, [showToast, user.userId, visible, coach]);
 
   const handleCreateCycle = async (body) => {
@@ -235,6 +262,60 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
     }
   };
 
+  // Función para manejar la asignación de una plantilla de ciclo
+  const handleAssignCycleTemplate = async () => {
+    if (!selectedCycleTemplate || !templateStartDate || !templateEndDate) {
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'error' }),
+        intl.formatMessage({
+          id: 'clientDashboard.error.selectCycleAndDates',
+          defaultMessage: 'Por favor seleccione un ciclo de entrenamiento y fechas de inicio/fin.'
+        })
+      );
+      return;
+    }
+
+    setLoading(true);
+    const startDateNewDate = new Date(templateStartDate);
+    const endDateNewDate = new Date(templateEndDate);
+
+    try {
+      const payload = {
+        cycleTemplateId: selectedCycleTemplate.id,
+        clientId: parseInt(clientId),
+        startDate: formatDateToApi(startDateNewDate),
+        endDate: formatDateToApi(endDateNewDate)
+      };
+
+      await assignCycleTemplateToClient(payload);
+      showToast(
+        'success',
+        intl.formatMessage({
+          id: 'clientDashboard.success',
+          defaultMessage: 'Éxito'
+        }),
+        intl.formatMessage({
+          id: 'clientDashboard.success.cycleAssigned',
+          defaultMessage: 'Ciclo de entrenamiento asignado correctamente.'
+        })
+      );
+      onHide();
+      setRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'error' }),
+        error.message || 'Ocurrió un error al asignar el ciclo de entrenamiento.'
+      );
+    } finally {
+      setLoading(false);
+      setSelectedCycleTemplate(null);
+      setTemplateStartDate(null);
+      setTemplateEndDate(null);
+    }
+  };
+
   const renderTabPanelCycle = () => {
     return (
       <TabPanel header={intl.formatMessage({ id: 'createCycle.dialog.header' })}>
@@ -375,6 +456,113 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
     );
   };
 
+  const renderTabPanelTemplates = () => {
+    return (
+      <TabPanel
+        header={intl.formatMessage({
+          id: 'createCycle.fromTemplate',
+          defaultMessage: 'Desde Plantilla'
+        })}
+      >
+        <div className="flex flex-column gap-3 p-3">
+          <div className="field">
+            <label className="block mb-2">
+              {intl.formatMessage(
+                { id: 'clientDashboard.assignCycleTemplate.selectCycle' },
+                { defaultMessage: 'Seleccionar Ciclo de Entrenamiento' }
+              )}
+            </label>
+            <Dropdown
+              value={selectedCycleTemplate}
+              options={trainingCycleTemplates}
+              onChange={(e) => {
+                setSelectedCycleTemplate(e.value);
+                // Calcular fecha de fin basada en la duración del ciclo si hay fecha de inicio
+                if (templateStartDate && e.value) {
+                  const endDate = new Date(templateStartDate);
+                  if (e.value.isDurationInMonths) {
+                    endDate.setMonth(endDate.getMonth() + e.value.duration);
+                  } else {
+                    endDate.setDate(endDate.getDate() + e.value.duration * 7);
+                  }
+                  setTemplateEndDate(endDate);
+                }
+              }}
+              optionLabel="name"
+              placeholder={intl.formatMessage(
+                { id: 'clientDashboard.assignCycleTemplate.selectCyclePlaceholder' },
+                { defaultMessage: 'Seleccione un ciclo de entrenamiento' }
+              )}
+              className="w-full"
+            />
+            {selectedCycleTemplate && (
+              <p className="mt-2 text-sm">
+                {selectedCycleTemplate.duration}{' '}
+                {selectedCycleTemplate.isDurationInMonths
+                  ? intl.formatMessage({ id: 'common.months', defaultMessage: 'meses' })
+                  : intl.formatMessage({ id: 'common.weeks', defaultMessage: 'semanas' })}{' '}
+                (
+                {selectedCycleTemplate.isDurationInMonths
+                  ? selectedCycleTemplate.duration * 4
+                  : selectedCycleTemplate.duration}{' '}
+                {intl.formatMessage({ id: 'common.weeks', defaultMessage: 'semanas' })})
+              </p>
+            )}
+          </div>
+
+          <div className="field grid">
+            <div className="col-6">
+              <label className="block mb-2">
+                {intl.formatMessage({ id: 'common.startDate', defaultMessage: 'Fecha de Inicio' })}
+              </label>
+              <Calendar
+                value={templateStartDate}
+                onChange={(e) => {
+                  setTemplateStartDate(e.value);
+                  // Calcular fecha de fin si hay un ciclo seleccionado
+                  if (e.value && selectedCycleTemplate) {
+                    const endDate = new Date(e.value);
+                    if (selectedCycleTemplate.isDurationInMonths) {
+                      endDate.setMonth(endDate.getMonth() + selectedCycleTemplate.duration);
+                    } else {
+                      endDate.setDate(endDate.getDate() + selectedCycleTemplate.duration * 7);
+                    }
+                    setTemplateEndDate(endDate);
+                  }
+                }}
+                showIcon
+                className="w-full"
+                locale={intl.locale}
+                dateFormat="dd/mm/yy"
+              />
+            </div>
+            <div className="col-6">
+              <label className="block mb-2">
+                {intl.formatMessage({ id: 'common.endDate', defaultMessage: 'Fecha de Fin' })}
+              </label>
+              <Calendar
+                value={templateEndDate}
+                disabled
+                showIcon
+                className="w-full"
+                locale={intl.locale}
+                dateFormat="dd/mm/yy"
+              />
+            </div>
+          </div>
+
+          <Button
+            label={intl.formatMessage({ id: 'common.assign', defaultMessage: 'Asignar' })}
+            icon="pi pi-check"
+            className="p-button-success mt-3"
+            onClick={handleAssignCycleTemplate}
+            loading={loading}
+          />
+        </div>
+      </TabPanel>
+    );
+  };
+
   return (
     <Dialog
       draggable={false}
@@ -389,6 +577,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
       <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         {renderTabPanelCycle()}
         {renderTabPanelWorkouts()}
+        {renderTabPanelTemplates()}
       </TabView>
     </Dialog>
   );
