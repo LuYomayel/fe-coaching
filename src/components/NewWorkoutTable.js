@@ -870,11 +870,12 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     );
   };
 
-  const handleAddGroup = (index) => {
+  const handleAddGroup = (index, isNew = false) => {
     if (!isEditing) return;
 
     // Encontrar el máximo número de grupo existente
     const maxGroupNumber = tableData.reduce((max, row) => {
+      console.log('row', row);
       if (row.rowType === 'group' && row.groupNumber > max) {
         return row.groupNumber;
       }
@@ -904,7 +905,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
     // Determinar dónde insertar el nuevo grupo
     // Vamos a insertarlo después del grupo actual o del grupo al que pertenece el ejercicio actual
-    const currentRow = tableData[index];
+    console.log('index', index);
+    const currentRow = tableData[index] || tableData[tableData.length - 1];
     let insertAfterIndex;
 
     if (currentRow.rowType === 'group') {
@@ -1659,6 +1661,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
                   <FaPlus style={{ marginRight: '5px' }} />
                   {intl.formatMessage({ id: 'workoutTable.insertExercise' })}
                 </div>
+                {/*}
                 <div
                   className="insert-button"
                   onClick={() => handleAddGroup(index)}
@@ -1677,6 +1680,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
                   <FaPlus style={{ marginRight: '5px' }} />
                   {intl.formatMessage({ id: 'plan.group.addGroup' })}
                 </div>
+                */}
               </div>
             </td>
           </tr>
@@ -1823,10 +1827,10 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
         {isEditing && (
           <>
-            <button style={{ marginLeft: '1rem' }} onClick={handleAddExercise}>
+            <button style={{ marginLeft: '1rem' }} onClick={() => handleAddExercise(tableData.length)}>
               {intl.formatMessage({ id: 'plan.group.addExercise' })}
             </button>
-            <button style={{ marginLeft: '1rem' }} onClick={() => handleAddGroup()}>
+            <button style={{ marginLeft: '1rem' }} onClick={() => handleAddGroup(tableData.length)}>
               {intl.formatMessage({ id: 'plan.group.addGroup' })}
             </button>
             <button style={{ marginLeft: '1rem' }} onClick={handleSaveChanges}>
