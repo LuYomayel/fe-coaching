@@ -85,6 +85,7 @@ export default function ClientDashboard() {
     setCalendarEvents([]);
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleOptions }) => {
+        console.log(events);
         setCycleOptions(cycleOptions);
         setCalendarEvents((e) => [...events, ...e]);
         const options = cycleOptions.map((cycle) => ({
