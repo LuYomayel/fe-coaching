@@ -268,7 +268,7 @@ const messages = {
   'coach.exercise.error.video.invalid.header': 'Error',
 
   // NewManageStudents
-  'students.title': 'Manage Students',
+  'students.title': 'Your students {count}/{total}',
   'students.subtitle': "View and manage your students' progress",
   'students.description':
     "Use this page to track your students' progress, assign training plans, and communicate with them directly.",
@@ -1010,6 +1010,13 @@ const messages = {
   'workoutTable.changesSaved': 'Changes saved successfully',
   'workoutTable.exerciseAlreadyExists': 'Exercise already exists on the group',
   'exercise.properties.loading': 'Loading properties...',
-  'exercise.selectExercise': 'Select Exercise'
+  'exercise.selectExercise': 'Select Exercise',
+
+  'students.remainingDays': 'Remaining Days',
+  'students.fitnessGoal': 'Fitness Goal',
+  'students.status': 'Status',
+  'students.viewProfile': 'View Profile',
+  'students.registerPayment': 'Register Payment',
+  'students.assignSubscription': 'Assign Subscription'
 };
 export default messages;

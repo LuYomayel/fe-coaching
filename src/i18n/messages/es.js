@@ -259,7 +259,7 @@ const messages = {
   'coach.exercise.error.video.invalid.header': 'Error',
 
   // NewManageStudents
-  'students.title': 'Gestionar Estudiantes',
+  'students.title': 'Tus entrenados {count}/{total}',
   'students.subtitle': 'Ver y gestionar el progreso de tus estudiantes',
   'students.description':
     'Usa esta página para seguir el progreso de tus estudiantes, asignar sesiones de entrenamiento y comunicarte directamente con ellos.',
@@ -1016,6 +1016,14 @@ const messages = {
   'workoutTable.addGroup': 'Agregar Grupo',
   'common.selectDay': 'Seleccionar día',
   'workoutTable.changesDetected': '{count} cambios detectados',
-  'workoutTable.changesSaved': 'Cambios guardados exitosamente'
+  'workoutTable.changesSaved': 'Cambios guardados exitosamente',
+
+  'students.remainingDays': 'Días restantes',
+  'students.fitnessGoal': 'Objetivo Fitness',
+  'students.status': 'Estado',
+
+  'students.viewProfile': 'Ver Perfil',
+  'students.registerPayment': 'Registrar Pago',
+  'students.assignSubscription': 'Asignar Suscripción'
 };
 export default messages;

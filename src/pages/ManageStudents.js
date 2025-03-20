@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Card } from 'primereact/card';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import { deleteClient, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
+import { deleteClient, fetchClientsSubscribed, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
@@ -24,10 +21,12 @@ import { InputIcon } from 'primereact/inputicon';
 import { IconField } from 'primereact/iconfield';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { Tooltip } from 'primereact/tooltip';
+import { Tag } from 'primereact/tag';
 
 const apiUrl = process.env.REACT_APP_API_URL;
+
 export default function ManageStudentsPage() {
-  const { user } = useContext(UserContext);
+  const { user, coach } = useContext(UserContext);
   const [students, setStudents] = useState([]);
   const showToast = useToast();
 
@@ -39,7 +38,7 @@ export default function ManageStudentsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [coachPlans, setCoachPlans] = useState([]);
   const { showConfirmationDialog } = useConfirmationDialog();
-
+  const [totalClientsSubscribed, setTotalClientsSubscribed] = useState(0);
   const [globalFilter, setGlobalFilter] = useState('');
   const toast = useRef(null);
 
@@ -49,18 +48,32 @@ export default function ManageStudentsPage() {
 
   const intl = useIntl();
 
+  // Función para calcular los días restantes de suscripción
+  const calculateRemainingDays = (nextPaymentDate) => {
+    if (!nextPaymentDate) return 0;
+
+    const today = new Date();
+    const paymentDate = new Date(nextPaymentDate);
+    const timeDifference = paymentDate.getTime() - today.getTime();
+    const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+
+    return daysDifference > 0 ? daysDifference : 0;
+  };
+
   useEffect(() => {
     setLoading(true);
-    const loadAllStudents = async () => {
+    const loadClientsSubscribed = async () => {
       try {
-        const { data } = await fetchCoachStudents(user.userId);
-        setStudents(data);
+        const { data } = await fetchClientsSubscribed(coach.id);
+        setTotalClientsSubscribed(data.total);
+        setStudents(data.clients);
       } catch (error) {
-        showToast('error', 'Error fetching students', error.message);
+        showToast('error', 'Error fetching clients subscribed', error.message);
       } finally {
         setLoading(false);
       }
     };
+
     const loadCoachPlans = async () => {
       try {
         const { data } = await fetchCoachPlans(user.userId);
@@ -69,22 +82,13 @@ export default function ManageStudentsPage() {
         showToast('error', 'Error fetching coach plans', error.message);
       }
     };
-    loadAllStudents();
-    loadCoachPlans();
-  }, [refreshKey, user.userId, showToast, setLoading]);
 
-  const statusBodyTemplate = (rowData) => {
-    const status = rowData.user.subscription.status.toLowerCase();
-    const statusColor = {
-      active: 'bg-green-500',
-      inactive: 'bg-red-500'
-    };
-    return (
-      <span className={`${statusColor[status]} text-white p-2 rounded-md`}>
-        <FormattedMessage id={`students.status.${status}`} />
-      </span>
-    );
-  };
+    loadClientsSubscribed();
+
+    setTimeout(() => {
+      loadCoachPlans();
+    }, 100);
+  }, [refreshKey, user.userId, showToast, setLoading, coach.id]);
 
   const handleResendVerification = async (email) => {
     try {
@@ -113,99 +117,6 @@ export default function ManageStudentsPage() {
       showToast('error', 'Error', error.message);
     } finally {
       setIsSendingVerification(false);
-    }
-  };
-
-  const actionBodyTemplate = (rowData) => {
-    if (rowData.user.subscription.status === 'Active') {
-      return (
-        <div className="flex gap-2">
-          <Button
-            icon="pi pi-user"
-            className="p-button-rounded p-button-info"
-            onClick={() => viewProfile(rowData.id)}
-            tooltip={intl.formatMessage({ id: 'students.actions.viewProfile' })}
-          />
-          <Button
-            icon="pi pi-dollar"
-            className="p-button-rounded p-button-success"
-            onClick={() => openRegisterPaymentDialog(rowData)}
-            tooltip={intl.formatMessage({
-              id: 'students.actions.registerPayment'
-            })}
-          />
-          <Button
-            icon="pi pi-times"
-            className="p-button-rounded p-button-danger"
-            onClick={() => deleteCancelSubscription(rowData.user.subscription.clientSubscription.id)}
-            tooltip={intl.formatMessage({
-              id: 'students.actions.deleteSubscription'
-            })}
-          />
-          {/*
-            <Button
-            icon="pi pi-comments"
-            className="p-button-rounded p-button-warning"
-            onClick={() => sendMessage(rowData)}
-            tooltip={intl.formatMessage({ id: 'students.actions.sendMessage' })}
-          />
-          */}
-          <Button
-            icon="pi pi-trash"
-            className="p-button-rounded p-button-danger"
-            onClick={() => deleteClientConfirm(rowData.id)}
-            tooltip={intl.formatMessage({
-              id: 'students.actions.deleteClient'
-            })}
-          />
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex gap-2">
-          <Button
-            icon="pi pi-user"
-            className="p-button-rounded p-button-info"
-            onClick={() => viewProfile(rowData.id)}
-            tooltip={intl.formatMessage({ id: 'students.actions.viewProfile' })}
-          />
-          {!rowData.user.isVerified && (
-            <Button
-              icon="pi pi-envelope"
-              className="p-button-rounded p-button-success"
-              onClick={() => handleResendVerification(rowData.user.email)}
-              tooltip={intl.formatMessage({
-                id: 'students.actions.resendVerification'
-              })}
-              loading={isSendingVerification}
-            />
-          )}
-          <Button
-            icon="pi pi-calendar-plus"
-            className="p-button-rounded p-button-success"
-            onClick={() => openSubscriptionDialog(rowData)}
-            tooltip={intl.formatMessage({
-              id: 'students.actions.assignSubscription'
-            })}
-          />
-          {/*
-          <Button
-            icon="pi pi-comments"
-            className="p-button-rounded p-button-warning"
-            onClick={() => sendMessage(rowData)}
-            tooltip={intl.formatMessage({ id: 'students.actions.sendMessage' })}
-          />
-          */}
-          <Button
-            icon="pi pi-trash"
-            className="p-button-rounded p-button-danger"
-            onClick={() => deleteClientConfirm(rowData.id)}
-            tooltip={intl.formatMessage({
-              id: 'students.actions.deleteClient'
-            })}
-          />
-        </div>
-      );
     }
   };
 
@@ -302,23 +213,29 @@ export default function ManageStudentsPage() {
     });
   };
 
+  // Filtrar estudiantes basados en la búsqueda global
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name?.toLowerCase().includes(globalFilter.toLowerCase()) ||
+      student.user?.email?.toLowerCase().includes(globalFilter.toLowerCase()) ||
+      student.fitnessGoal?.toLowerCase().includes(globalFilter.toLowerCase())
+  );
+
   return (
     <div className="manage-students-page p-4">
       <Toast ref={toast} />
       <ConfirmDialog />
-
       <Card className="mb-4">
         <h1 className="text-3xl font-bold">
-          <FormattedMessage id="students.title" />
+          <FormattedMessage
+            id="students.title"
+            values={{ count: filteredStudents.length, total: totalClientsSubscribed }}
+          />
         </h1>
-        <h2 className="text-xl text-gray-600">
-          <FormattedMessage id="students.subtitle" />
-        </h2>
-        <p>
-          <FormattedMessage id="students.description" />
-        </p>
       </Card>
+      {/*
 
+      */}
       <div className="flex justify-content-between align-items-center mb-4">
         <IconField iconPosition="left">
           <InputIcon className="pi pi-search" />
@@ -335,82 +252,91 @@ export default function ManageStudentsPage() {
           onClick={openNewStudentDialog}
         />
       </div>
+      {/* Grid de tarjetas de estudiantes */}
+      <div className="grid">
+        {filteredStudents.length > 0 ? (
+          filteredStudents.map((student) => {
+            const remainingDays = calculateRemainingDays(student.user?.subscription?.nextPaymentDate);
+            const isActive = student.user?.subscription?.status === 'Active';
 
-      <DataTable
-        value={students}
-        paginator
-        rows={10}
-        globalFilter={globalFilter}
-        emptyMessage={intl.formatMessage({ id: 'students.noStudents' })}
-        responsiveLayout="scroll"
-      >
-        <Column
-          field="name"
-          header={intl.formatMessage({ id: 'students.table.name' })}
-          body={(rowData) => (
-            <div className="flex align-items-center">
-              <Avatar label={rowData.name.charAt(0)} shape="circle" className="mr-2" />
-              <span>{rowData.name}</span>
-              {['fitnessGoal', 'activityLevel', 'gender', 'weight', 'height', 'birthdate'].some(
-                (field) => !rowData[field]
-              ) && (
-                <>
-                  <Tooltip target=".missing-data-icon" position="right" />
-                  <i
-                    className="missing-data-icon pi pi-exclamation-triangle text-red-500 ml-2"
-                    data-pr-tooltip={intl.formatMessage({
-                      id: 'common.missingData'
-                    })}
-                    data-pr-position="right"
-                    style={{ cursor: 'help' }}
-                  />
-                </>
-              )}
-            </div>
-          )}
-        />
-        <Column field="user.email" header={intl.formatMessage({ id: 'students.table.email' })} />
-        <Column
-          field="user.subscription.status"
-          header={intl.formatMessage({ id: 'students.table.status' })}
-          body={statusBodyTemplate}
-        />
-        <Column
-          body={(e) => (
-            <span
-              data-label={intl.formatMessage({
-                id: 'students.table.lastPayment'
-              })}
-            >
-              {formatDate(e.user.subscription.lastPaymentDate)}
-            </span>
-          )}
-          header={intl.formatMessage({ id: 'students.table.lastPayment' })}
-          className="last-payment-column"
-        />
-        <Column
-          body={(e) => (
-            <span
-              data-label={intl.formatMessage({
-                id: 'students.table.nextPayment'
-              })}
-            >
-              {formatDate(e.user.subscription.nextPaymentDate)}
-            </span>
-          )}
-          header={intl.formatMessage({ id: 'students.table.nextPayment' })}
-          className="next-payment-column"
-        />
-        <Column
-          field={(rowData) =>
-            rowData.user.subscription.status !== 'Inactive'
-              ? `${rowData.user.subscription.clientSubscription.coachPlan.name}`
-              : ''
-          }
-          header={intl.formatMessage({ id: 'students.table.plan' })}
-        />
-        <Column body={actionBodyTemplate} header={intl.formatMessage({ id: 'students.table.actions' })} />
-      </DataTable>
+            return (
+              <div key={student.id} className="col-12 sm:col-6 lg:col-4 xl:col-3 p-2">
+                <Card className="h-full">
+                  <div className="flex flex-column align-items-center">
+                    {/* Imagen del usuario */}
+                    <img src="/image.webp" alt={student.name} className="w-10rem h-10rem border-circle shadow-4 mb-3" />
+
+                    {/* Nombre del estudiante */}
+                    <h3 className="m-2 text-center">{student.name}</h3>
+
+                    {/* Objetivo fitness */}
+                    {student.fitnessGoal && (
+                      <div className="mb-3 text-center">
+                        <strong>
+                          <FormattedMessage id="students.fitnessGoal" />:
+                        </strong>{' '}
+                        {student.fitnessGoal}
+                      </div>
+                    )}
+
+                    {/* Estado de la suscripción */}
+                    <div className="mb-3">
+                      <Tag
+                        severity={isActive ? 'success' : 'danger'}
+                        value={
+                          isActive
+                            ? intl.formatMessage({ id: 'students.status.active' })
+                            : intl.formatMessage({ id: 'students.status.inactive' })
+                        }
+                      />
+                    </div>
+
+                    {/* Días restantes (solo si está activo) */}
+                    {isActive && (
+                      <div className="mb-3 text-center">
+                        <strong>
+                          <FormattedMessage id="students.remainingDays" />:
+                        </strong>{' '}
+                        {remainingDays}
+                      </div>
+                    )}
+
+                    {/* Botones de acción */}
+                    <div className="flex flex-wrap justify-content-center gap-2 mt-3">
+                      <Button
+                        icon="pi pi-user"
+                        label={intl.formatMessage({ id: 'students.viewProfile' })}
+                        className="p-button-info"
+                        onClick={() => viewProfile(student.id)}
+                      />
+
+                      {isActive ? (
+                        <Button
+                          icon="pi pi-dollar"
+                          label={intl.formatMessage({ id: 'students.registerPayment' })}
+                          className="p-button-success"
+                          onClick={() => openRegisterPaymentDialog(student)}
+                        />
+                      ) : (
+                        <Button
+                          icon="pi pi-calendar-plus"
+                          label={intl.formatMessage({ id: 'students.assignSubscription' })}
+                          className="p-button-success"
+                          onClick={() => openSubscriptionDialog(student)}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            );
+          })
+        ) : (
+          <div className="col-12 text-center p-5">
+            <p>{intl.formatMessage({ id: 'students.noStudents' })}</p>
+          </div>
+        )}
+      </div>
 
       <Dialog
         header={intl.formatMessage({ id: 'students.dialog.newStudent' })}

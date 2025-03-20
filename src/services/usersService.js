@@ -125,6 +125,21 @@ const markMessagesAsRead = async (senderId, receiverId) => {
     throw error;
   }
 };
+const fetchClientsSubscribed = async (coachId) => {
+  try {
+    const response = await fetch(`${apiUrl}/users/coach/clients-subscribed/${coachId}`);
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error || 'Failed to fetch clients subscribed');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching clients subscribed:', error);
+    throw error;
+  }
+};
 
 const fetchClientActivitiesByUserId = async (userId) => {
   const response = await fetch(`${apiUrl}/users/userId/activities/${userId}`, {
@@ -293,5 +308,6 @@ export {
   deleteClient, // checked
   markMessagesAsRead, // checked
   fetchUnreadMessages, // checked
-  updateClient // checked
+  updateClient, // checked
+  fetchClientsSubscribed // checked
 };
