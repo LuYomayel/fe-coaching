@@ -22,6 +22,7 @@ import { IconField } from 'primereact/iconfield';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { Tooltip } from 'primereact/tooltip';
 import { Tag } from 'primereact/tag';
+import { ButtonGroup } from 'primereact/buttongroup';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -39,6 +40,7 @@ export default function ManageStudentsPage() {
   const [coachPlans, setCoachPlans] = useState([]);
   const { showConfirmationDialog } = useConfirmationDialog();
   const [totalClientsSubscribed, setTotalClientsSubscribed] = useState(0);
+  const [maxClients, setMaxClients] = useState(0);
   const [globalFilter, setGlobalFilter] = useState('');
   const toast = useRef(null);
 
@@ -65,7 +67,8 @@ export default function ManageStudentsPage() {
     const loadClientsSubscribed = async () => {
       try {
         const { data } = await fetchClientsSubscribed(coach.id);
-        setTotalClientsSubscribed(data.total);
+        setMaxClients(data.total);
+        setTotalClientsSubscribed(data.clients.filter((client) => client.user.subscription.status === 'Active').length);
         setStudents(data.clients);
       } catch (error) {
         showToast('error', 'Error fetching clients subscribed', error.message);
@@ -227,10 +230,7 @@ export default function ManageStudentsPage() {
       <ConfirmDialog />
       <Card className="mb-4">
         <h1 className="text-3xl font-bold">
-          <FormattedMessage
-            id="students.title"
-            values={{ count: filteredStudents.length, total: totalClientsSubscribed }}
-          />
+          <FormattedMessage id="students.title" values={{ count: totalClientsSubscribed, total: maxClients }} />
         </h1>
       </Card>
       {/*
@@ -303,28 +303,38 @@ export default function ManageStudentsPage() {
 
                     {/* Botones de acción */}
                     <div className="flex flex-wrap justify-content-center gap-2 mt-3">
-                      <Button
-                        icon="pi pi-user"
-                        label={intl.formatMessage({ id: 'students.viewProfile' })}
-                        className="p-button-info"
-                        onClick={() => viewProfile(student.id)}
-                      />
+                      <ButtonGroup>
+                        <Button
+                          icon="pi pi-user"
+                          label={intl.formatMessage({ id: 'students.viewProfile' })}
+                          className="p-button-info"
+                          onClick={() => viewProfile(student.id)}
+                        />
 
-                      {isActive ? (
-                        <Button
-                          icon="pi pi-dollar"
-                          label={intl.formatMessage({ id: 'students.registerPayment' })}
-                          className="p-button-success"
-                          onClick={() => openRegisterPaymentDialog(student)}
-                        />
-                      ) : (
-                        <Button
-                          icon="pi pi-calendar-plus"
-                          label={intl.formatMessage({ id: 'students.assignSubscription' })}
-                          className="p-button-success"
-                          onClick={() => openSubscriptionDialog(student)}
-                        />
-                      )}
+                        {isActive ? (
+                          <>
+                            <Button
+                              icon="pi pi-dollar"
+                              label={intl.formatMessage({ id: 'students.registerPayment' })}
+                              className="p-button-success"
+                              onClick={() => openRegisterPaymentDialog(student)}
+                            />
+                            <Button
+                              icon="pi pi-times"
+                              label={intl.formatMessage({ id: 'students.cancelSubscription' })}
+                              className="p-button-danger"
+                              onClick={() => deleteCancelSubscription(student.user.subscription.id)}
+                            />
+                          </>
+                        ) : (
+                          <Button
+                            icon="pi pi-calendar-plus"
+                            label={intl.formatMessage({ id: 'students.assignSubscription' })}
+                            className="p-button-success"
+                            onClick={() => openSubscriptionDialog(student)}
+                          />
+                        )}
+                      </ButtonGroup>
                     </div>
                   </div>
                 </Card>

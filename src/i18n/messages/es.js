@@ -1036,6 +1036,10 @@ const messages = {
   'common.selectDay': 'Seleccionar día',
   'workoutTable.changesDetected': '{count} cambios detectados',
   'workoutTable.changesSaved': 'Cambios guardados exitosamente',
+  'workoutTable.missingExerciseIds': 'Los siguientes ejercicios no tienen ID asignado',
+  'workoutTable.cannotMoveLastExercise': 'No se puede mover el último ejercicio de un grupo',
+  'workoutTable.groupCannotBeEmpty': 'Un grupo no puede quedar sin ejercicios',
+  'workoutTable.noGroupsAvailable': 'No hay grupos disponibles',
 
   'students.remainingDays': 'Días restantes',
   'students.fitnessGoal': 'Objetivo Fitness',
