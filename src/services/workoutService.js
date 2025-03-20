@@ -1,3 +1,5 @@
+import { formatDateToApi } from '../utils/UtilFunctions';
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const findAllWorkoutTemplatesByCoachId = async (coachId) => {
@@ -53,11 +55,11 @@ const fetchTrainingCyclesByClient = async (clientId) => {
           session.workoutInstances.length > 0
             ? session.workoutInstances.map((workoutInstance) => {
                 workoutInstance.status = updateStatusLocal(workoutInstance, session);
-                if (session.id === 776) console.log(session);
+                const start = formatDateToApi(session.sessionDate);
                 return {
                   title: workoutInstance.instanceName ? workoutInstance.instanceName : workoutInstance.workout.planName,
                   //start: getDayMonthYear(session).toISOString().split('T')[0],
-                  start: session.sessionDate,
+                  start: start,
                   extendedProps: {
                     status: workoutInstance.status,
                     workoutInstanceId: workoutInstance.id,
@@ -69,7 +71,7 @@ const fetchTrainingCyclesByClient = async (clientId) => {
                 {
                   title: 'no title',
                   //start: getDayMonthYear(session).toISOString().split('T')[0],
-                  start: session.sessionDate,
+                  start: formatDateToApi(session.sessionDate),
                   extendedProps: {
                     sessionId: session.id,
                     cycle: cycle.name
