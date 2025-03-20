@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useIntl, FormattedMessage } from 'react-intl';
 
 import { Dropdown } from 'primereact/dropdown';
@@ -35,6 +35,8 @@ import {
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { FaGripVertical } from 'react-icons/fa';
 import { FaSave } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import { saveWorkoutChanges } from '../services/workoutService';
 import '../styles/WorkoutTable.css';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
@@ -103,7 +105,13 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     updatedProperties: []
   });
 
+  const [deletedExercises, setDeletedExercises] = useState([]);
+
   const [daysUsed, setDaysUsed] = useState([]);
+
+  // Estados para manejar el botón de inserción dinámica
+  const [hoverRowIndex, setHoverRowIndex] = useState(null);
+  const [showInsertButton, setShowInsertButton] = useState(false);
 
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -473,7 +481,6 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   /****************************************
    * DRAG & DROP: Single Table
    ****************************************/
-  // Corregir la función handleDragStart para que funcione con los nuevos IDs
   const handleDragStart = (event) => {
     const { active } = event;
     setActiveId(active.id);
@@ -490,20 +497,26 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         setIsDraggingGroup(true);
         setActiveGroup(groupNumber);
 
-        // Marcar todos los elementos del grupo
+        // Marcar todos los elementos del grupo y deshabilitar el drag de ejercicios
         const updatedData = tableData.map((row) => {
           if (row.groupNumber === groupNumber) {
             return { ...row, isBeingDragged: true };
+          }
+          if (row.rowType === 'exercise') {
+            return { ...row, isDragDisabled: true };
           }
           return row;
         });
 
         setTableData(updatedData);
       }
+    } else {
+      // Es un ejercicio individual
+      setIsDraggingGroup(false);
+      setActiveGroup(null);
     }
   };
 
-  // Reemplazar handleDragEnd
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
@@ -512,10 +525,11 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     setIsDraggingGroup(false);
     setActiveGroup(null);
 
-    // Limpiar marcas de arrastre
+    // Limpiar marcas de arrastre y restablecer drag de ejercicios
     const resetDragState = tableData.map((row) => ({
       ...row,
-      isBeingDragged: false
+      isBeingDragged: false,
+      isDragDisabled: false
     }));
 
     // Si no hay destino, solo restablecemos el estado
@@ -524,21 +538,45 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       return;
     }
 
+    // Verificar si estamos arrastrando un grupo
+    if (typeof active.id === 'string' && active.id.startsWith('group-')) {
+      // Extraer el número de grupo del ID
+      const activeGroupNumberStr = active.id.split('-')[1];
+      const activeGroupNumber = parseInt(activeGroupNumberStr, 10);
+
+      // Verificar si el destino también es un grupo
+      if (typeof over.id === 'string' && over.id.startsWith('group-')) {
+        const overGroupNumberStr = over.id.split('-')[1];
+        const overGroupNumber = parseInt(overGroupNumberStr, 10);
+
+        if (activeGroupNumber !== overGroupNumber) {
+          handleGroupDrag(activeGroupNumber, overGroupNumber, resetDragState);
+          return;
+        }
+      }
+
+      // Si llegamos aquí, no fue un arrastre de grupo a grupo válido
+      setTableData(resetDragState);
+      return;
+    }
+
     // Obtener información sobre las filas activa y destino
     const activeItem = tableData.find((item) => {
       if (item.rowType === 'group') {
         return `group-${item.groupNumber}` === active.id;
-      } else {
+      } else if (item.rowType === 'exercise') {
         return `ex-${item.groupNumber}-${item.rowIndex}` === active.id;
       }
+      return false;
     });
 
     const overItem = tableData.find((item) => {
       if (item.rowType === 'group') {
         return `group-${item.groupNumber}` === over.id;
-      } else {
+      } else if (item.rowType === 'exercise') {
         return `ex-${item.groupNumber}-${item.rowIndex}` === over.id;
       }
+      return false;
     });
 
     // Si no encontramos alguno de los elementos, salimos
@@ -547,225 +585,374 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       return;
     }
 
-    // Obtener índices
-    const activeIndex = tableData.findIndex((item) => {
-      if (item.rowType === 'group') {
-        return `group-${item.groupNumber}` === active.id;
-      } else {
-        return `ex-${item.groupNumber}-${item.rowIndex}` === active.id;
-      }
-    });
+    // Manejar drag de ejercicios
+    if (activeItem.rowType === 'exercise') {
+      handleExerciseDrag(activeItem, overItem, resetDragState);
+    } else {
+      // Otro caso no soportado
+      setTableData(resetDragState);
+    }
+  };
 
-    const overIndex = tableData.findIndex((item) => {
-      if (item.rowType === 'group') {
-        return `group-${item.groupNumber}` === over.id;
-      } else {
-        return `ex-${item.groupNumber}-${item.rowIndex}` === over.id;
+  // Función para manejar el arrastre de grupos
+  const handleGroupDrag = (activeGroupNumber, overGroupNumber, resetDragState) => {
+    console.log(`Moviendo grupo ${activeGroupNumber} a la posición del grupo ${overGroupNumber}`);
+
+    // Encontrar todos los elementos del grupo activo
+    const activeGroupIndex = resetDragState.findIndex(
+      (row) => row.rowType === 'group' && row.groupNumber === activeGroupNumber
+    );
+
+    if (activeGroupIndex === -1) {
+      console.error(`No se encontró el grupo ${activeGroupNumber}`);
+      setTableData(resetDragState);
+      return;
+    }
+
+    // Obtener el grupo activo y sus ejercicios
+    const activeGroup = resetDragState[activeGroupIndex];
+
+    // Encontrar todos los ejercicios del grupo activo
+    let currentIndex = activeGroupIndex + 1;
+    const activeGroupExercises = [];
+
+    while (
+      currentIndex < resetDragState.length &&
+      resetDragState[currentIndex].rowType === 'exercise' &&
+      resetDragState[currentIndex].groupNumber === activeGroupNumber
+    ) {
+      activeGroupExercises.push(resetDragState[currentIndex]);
+      currentIndex++;
+    }
+
+    // Eliminar el grupo activo y sus ejercicios del array
+    const newData = resetDragState.filter(
+      (row) =>
+        !(row.rowType === 'group' && row.groupNumber === activeGroupNumber) &&
+        !(row.rowType === 'exercise' && row.groupNumber === activeGroupNumber)
+    );
+
+    // Encontrar el índice del grupo destino
+    const overGroupIndex = newData.findIndex((row) => row.rowType === 'group' && row.groupNumber === overGroupNumber);
+
+    if (overGroupIndex === -1) {
+      console.error(`No se encontró el grupo destino ${overGroupNumber}`);
+      setTableData(resetDragState);
+      return;
+    }
+
+    // Calcular el índice de inserción basado en si el grupo activo estaba
+    // originalmente antes o después del grupo destino
+    let insertIndex = overGroupIndex;
+
+    // Si el grupo activo estaba originalmente antes que el destino,
+    // necesitamos encontrar el final del grupo destino para insertar después
+    if (activeGroupIndex < overGroupIndex) {
+      // Contar cuántos ejercicios hay en el grupo destino
+      let i = overGroupIndex + 1;
+      while (i < newData.length && newData[i].rowType === 'exercise' && newData[i].groupNumber === overGroupNumber) {
+        i++;
       }
-    });
+      insertIndex = i;
+    }
+
+    // Insertar el grupo activo y sus ejercicios en la nueva posición
+    newData.splice(insertIndex, 0, activeGroup, ...activeGroupExercises);
+
+    // Actualizar índices para mantener la consistencia
+    updateRowIndices(newData);
+
+    // Actualizar el estado
+    setTableData(newData);
+  };
+
+  // Función para manejar el arrastre de ejercicios
+  const handleExerciseDrag = (activeItem, overItem, resetDragState) => {
+    // Verificar si el ejercicio que se está moviendo es el único en su grupo
+    if (activeItem.groupNumber !== overItem.groupNumber || overItem.rowType === 'group') {
+      // Contar cuántos ejercicios hay en el grupo del ejercicio activo
+      const exercisesInActiveGroup = resetDragState.filter(
+        (item) => item.rowType === 'exercise' && item.groupNumber === activeItem.groupNumber
+      );
+
+      // Si es el único ejercicio en el grupo, mostrar mensaje y cancelar
+      if (exercisesInActiveGroup.length === 1) {
+        showToast(
+          'error',
+          intl.formatMessage({ id: 'common.error' }),
+          intl.formatMessage({ id: 'workoutTable.cannotMoveLastExercise' }) ||
+            'No se puede mover el último ejercicio de un grupo'
+        );
+        setTableData(resetDragState);
+        return;
+      }
+    }
+
+    // Obtener índices
+    const activeIndex = tableData.findIndex(
+      (item) =>
+        item.rowType === 'exercise' &&
+        item.groupNumber === activeItem.groupNumber &&
+        item.rowIndex === activeItem.rowIndex
+    );
+
+    const overIndex = tableData.findIndex(
+      (item) =>
+        (item.rowType === 'exercise' &&
+          item.groupNumber === overItem.groupNumber &&
+          item.rowIndex === overItem.rowIndex) ||
+        (item.rowType === 'group' && item.groupNumber === overItem.groupNumber)
+    );
 
     if (activeIndex === overIndex) {
       setTableData(resetDragState);
       return;
     }
 
-    // Verificar si el ejercicio movido dejaría su grupo vacío
-    if (activeItem.rowType === 'exercise') {
-      const exercisesInSameGroup = tableData.filter(
-        (item) => item.rowType === 'exercise' && item.groupNumber === activeItem.groupNumber && item !== activeItem
-      );
-
-      if (exercisesInSameGroup.length === 0) {
-        setTableData(resetDragState);
-        return;
-      }
-    }
-
     // Crear una copia de los datos para trabajar
     let newData = [...resetDragState];
 
-    // Si es un grupo, mover todo el grupo
-    if (activeItem.rowType === 'group') {
-      // Encontrar todos los ejercicios del grupo
-      const groupExercises = [];
-      const groupNumber = activeItem.groupNumber;
+    // Obtener el ejercicio que estamos moviendo
+    const movingExercise = { ...newData[activeIndex] };
 
-      // Crear una copia del grupo
-      const groupRow = { ...activeItem };
-
-      // Encontrar todos los ejercicios que pertenecen a este grupo
-      const exercisesOfGroup = newData.filter(
-        (item) => item.rowType === 'exercise' && item.groupNumber === groupNumber
-      );
-
-      // Eliminar el grupo y sus ejercicios del array original
-      newData = newData.filter(
-        (item) =>
-          !(item.rowType === 'group' && item.groupNumber === groupNumber) &&
-          !(item.rowType === 'exercise' && item.groupNumber === groupNumber)
-      );
-
-      // Determinar la posición de inserción
-      let insertIndex;
-
-      if (overItem.rowType === 'group') {
-        // Si el destino es otro grupo
-        insertIndex = newData.findIndex(
-          (item) => item.rowType === 'group' && item.groupNumber === overItem.groupNumber
-        );
-
-        // Si estamos moviendo hacia abajo, insertar después del grupo destino y sus ejercicios
-        if (activeIndex < overIndex) {
-          // Contar cuántos ejercicios tiene el grupo destino
-          const exercisesInTargetGroup = newData.filter(
-            (item) => item.rowType === 'exercise' && item.groupNumber === overItem.groupNumber
-          ).length;
-
-          // Ajustar la posición de inserción
-          insertIndex += exercisesInTargetGroup + 1;
-        }
-      } else {
-        // Si el destino es un ejercicio
-        const targetGroupNumber = overItem.groupNumber;
-
-        // Encontrar el grupo al que pertenece el ejercicio destino
-        insertIndex = newData.findIndex((item) => item.rowType === 'group' && item.groupNumber === targetGroupNumber);
-
-        // Si estamos moviendo hacia abajo, insertar después del grupo destino y sus ejercicios
-        if (activeIndex < overIndex) {
-          // Contar cuántos ejercicios tiene el grupo destino
-          const exercisesInTargetGroup = newData.filter(
-            (item) => item.rowType === 'exercise' && item.groupNumber === targetGroupNumber
-          ).length;
-
-          // Ajustar la posición de inserción
-          insertIndex += exercisesInTargetGroup + 1;
-        }
-      }
-
-      // Insertar el grupo y sus ejercicios en la nueva posición
-      if (insertIndex !== -1) {
-        newData.splice(insertIndex, 0, groupRow, ...exercisesOfGroup);
-      }
-    } else {
-      // CASO: Mover ejercicio individual
-
-      // 1. Crear una copia del ejercicio que estamos moviendo
-      const movedExercise = { ...activeItem };
-
-      // 2. Determinar el grupo destino y la posición
-      const targetGroupNumber = overItem.rowType === 'group' ? overItem.groupNumber : overItem.groupNumber;
-      const targetRowIndex = overItem.rowType === 'group' ? 0 : overItem.rowIndex;
-
-      // 3. Eliminar el ejercicio de su posición original
-      newData = newData.filter(
-        (item) =>
-          !(
-            item.rowType === 'exercise' &&
-            item.groupNumber === activeItem.groupNumber &&
-            item.rowIndex === activeItem.rowIndex
-          )
-      );
-
-      // 4. Preparar el ejercicio para su nueva posición
-      movedExercise.groupNumber = targetGroupNumber;
-
-      // 5. Insertar el ejercicio en la nueva posición
-      if (overItem.rowType === 'group') {
-        // Si el destino es un grupo, insertar al principio del grupo
-        const groupIndex = newData.findIndex(
-          (item) => item.rowType === 'group' && item.groupNumber === targetGroupNumber
-        );
-
-        if (groupIndex !== -1) {
-          newData.splice(groupIndex + 1, 0, movedExercise);
-        }
-      } else {
-        // Si el destino es otro ejercicio
-
-        // Encontrar todos los ejercicios del grupo destino
-        const groupExercises = newData.filter(
-          (item) => item.rowType === 'exercise' && item.groupNumber === targetGroupNumber
-        );
-
-        // Ordenar los ejercicios por rowIndex
-        groupExercises.sort((a, b) => a.rowIndex - b.rowIndex);
-
-        // Crear un nuevo array con los ejercicios reordenados
-        const newGroupExercises = [];
-
-        // Determinar si estamos moviendo hacia arriba o hacia abajo
-        const isMovingDown = activeIndex < overIndex;
-
-        if (isMovingDown) {
-          // Si movemos hacia abajo, insertar después del ejercicio destino
-          for (let i = 0; i < groupExercises.length; i++) {
-            newGroupExercises.push(groupExercises[i]);
-            if (groupExercises[i].rowIndex === targetRowIndex) {
-              newGroupExercises.push(movedExercise);
-            }
-          }
-        } else {
-          // Si movemos hacia arriba, insertar antes del ejercicio destino
-          for (let i = 0; i < groupExercises.length; i++) {
-            if (groupExercises[i].rowIndex === targetRowIndex) {
-              newGroupExercises.push(movedExercise);
-            }
-            newGroupExercises.push(groupExercises[i]);
-          }
-        }
-
-        // Eliminar los ejercicios antiguos del grupo
-        newData = newData.filter((item) => !(item.rowType === 'exercise' && item.groupNumber === targetGroupNumber));
-
-        // Encontrar el grupo en newData
-        const groupIndex = newData.findIndex(
-          (item) => item.rowType === 'group' && item.groupNumber === targetGroupNumber
-        );
-
-        // Insertar los ejercicios reordenados después del grupo
-        if (groupIndex !== -1) {
-          newData.splice(groupIndex + 1, 0, ...newGroupExercises);
-        }
-      }
+    // Si estamos moviendo a un grupo diferente, actualizar el groupNumber
+    if (overItem.rowType === 'group') {
+      movingExercise.groupNumber = overItem.groupNumber;
+      // Ponerlo como primer ejercicio del grupo
+      movingExercise.rowIndex = 0;
+    } else if (overItem.groupNumber !== movingExercise.groupNumber) {
+      // Mover a otro grupo
+      movingExercise.groupNumber = overItem.groupNumber;
+      movingExercise.rowIndex = overItem.rowIndex + 1; // Ponerlo después del ejercicio destino
     }
 
+    // Eliminar el ejercicio original
+    newData.splice(activeIndex, 1);
+
+    // Determinar la posición de inserción
+    let insertIndex;
+
+    if (overItem.rowType === 'group') {
+      // Insertar justo después del grupo
+      insertIndex =
+        newData.findIndex((item) => item.rowType === 'group' && item.groupNumber === overItem.groupNumber) + 1;
+    } else {
+      // Insertar después del ejercicio de destino
+      insertIndex =
+        newData.findIndex(
+          (item) =>
+            item.rowType === 'exercise' &&
+            item.groupNumber === overItem.groupNumber &&
+            item.rowIndex === overItem.rowIndex
+        ) + 1;
+    }
+
+    // Insertar el ejercicio en la nueva posición
+    newData.splice(insertIndex, 0, movingExercise);
+
     // Actualizar los índices de fila dentro de cada grupo
+    updateRowIndices(newData);
+
+    setTableData(newData);
+  };
+
+  // Función para actualizar los índices de fila de los ejercicios
+  const updateRowIndices = (dataArray) => {
     const groupNumbers = [
-      ...new Set(newData.filter((item) => item.rowType === 'group').map((item) => item.groupNumber))
+      ...new Set(dataArray.filter((item) => item.rowType === 'group').map((item) => item.groupNumber))
     ];
 
     groupNumbers.forEach((groupNum) => {
       let rowIdx = 0;
-      newData.forEach((row) => {
+      dataArray.forEach((row) => {
         if (row.rowType === 'exercise' && row.groupNumber === groupNum) {
           row.rowIndex = rowIdx++;
         }
       });
     });
-
-    // Verificar que no haya duplicados
-    const uniqueIds = new Set();
-    const cleanedData = newData.filter((row) => {
-      const rowId =
-        row.rowType === 'group'
-          ? `group-${row.groupNumber}`
-          : `ex-${row.groupNumber}-${row.rowIndex}-${row.name || 'unnamed'}`;
-
-      if (uniqueIds.has(rowId)) {
-        return false;
-      }
-
-      uniqueIds.add(rowId);
-      return true;
-    });
-
-    setTableData(cleanedData);
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
     setTableData(originalData);
+    setDeletedExercises([]);
+    setHoverRowIndex(null);
+    setShowInsertButton(false);
+    setChanges({
+      newExercises: [],
+      movedExercises: [],
+      movedGroups: [],
+      updatedProperties: [],
+      deletedExercises: []
+    });
+  };
+
+  /****************************************
+   * Adding exercises and groups at specific positions
+   ****************************************/
+  const handleAddExerciseAtPosition = (index) => {
+    if (!isEditing) return;
+
+    // Determinar en qué grupo insertar el nuevo ejercicio
+    const currentRow = tableData[index];
+    let targetGroupNumber;
+
+    if (currentRow.rowType === 'group') {
+      // Si se está insertando en una fila de grupo, usar ese número de grupo
+      targetGroupNumber = currentRow.groupNumber;
+    } else {
+      // Si se está insertando en una fila de ejercicio, usar su número de grupo
+      targetGroupNumber = currentRow.groupNumber;
+    }
+
+    // Contar cuántos ejercicios hay en el grupo destino para el índice
+    const exercisesInGroup = tableData.filter(
+      (row) => row.rowType === 'exercise' && row.groupNumber === targetGroupNumber
+    ).length;
+
+    // Crear un nuevo ejercicio vacío
+    const newExercise = {
+      rowType: 'exercise',
+      name: '',
+      exerciseId: null,
+      groupNumber: targetGroupNumber,
+      rowIndex: 0, // Inicialmente en 0, luego actualizaremos los índices
+      weeksData: {},
+      isNew: true
+    };
+
+    // Crear una copia de los datos de la tabla
+    const newTableData = [...tableData];
+
+    // Determinar dónde insertar el nuevo ejercicio
+    let insertIndex;
+
+    if (currentRow.rowType === 'group') {
+      // Si es una fila de grupo, insertar justo después del grupo
+      insertIndex = index + 1;
+    } else {
+      // Si es un ejercicio, insertar después de este ejercicio
+      insertIndex = index + 1;
+
+      // Asignar el rowIndex correcto relativo al ejercicio actual
+      newExercise.rowIndex = currentRow.rowIndex + 1;
+    }
+
+    // Insertar el nuevo ejercicio
+    newTableData.splice(insertIndex, 0, newExercise);
+
+    // Ajustar los índices de los ejercicios en el mismo grupo que vienen después
+    for (let i = insertIndex + 1; i < newTableData.length; i++) {
+      const row = newTableData[i];
+      if (row.rowType === 'exercise' && row.groupNumber === targetGroupNumber) {
+        if (row.rowIndex >= newExercise.rowIndex) {
+          row.rowIndex++;
+        }
+      } else if (row.rowType === 'group') {
+        // Cuando encontramos el siguiente grupo, terminamos
+        break;
+      }
+    }
+
+    // Actualizar el estado
+    setTableData(newTableData);
+
+    // Resetear los estados de inserción
+    setHoverRowIndex(null);
+    setShowInsertButton(false);
+
+    // Mostrar toast de confirmación
+    showToast(
+      'success',
+      intl.formatMessage({ id: 'common.success' }),
+      intl.formatMessage({ id: 'workoutTable.exerciseInserted' }),
+      { life: 3000 }
+    );
+  };
+
+  const handleAddGroup = (index, isNew = false) => {
+    if (!isEditing) return;
+
+    // Encontrar el máximo número de grupo existente
+    const maxGroupNumber = tableData.reduce((max, row) => {
+      console.log('row', row);
+      if (row.rowType === 'group' && row.groupNumber > max) {
+        return row.groupNumber;
+      }
+      return max;
+    }, 0);
+
+    // Crear un nuevo grupo con número siguiente
+    const newGroupNumber = maxGroupNumber + 1;
+    const newGroup = {
+      rowType: 'group',
+      groupNumber: newGroupNumber,
+      rowIndex: newGroupNumber * 100, // Para mantener el ordenamiento
+      isNew: true,
+      label: `${intl.formatMessage({ id: 'common.group' })} ${newGroupNumber}`
+    };
+
+    // Crear un ejercicio vacío para este grupo
+    const newExercise = {
+      rowType: 'exercise',
+      name: '',
+      exerciseId: null,
+      groupNumber: newGroupNumber,
+      rowIndex: 0,
+      weeksData: {},
+      isNew: true
+    };
+
+    // Determinar dónde insertar el nuevo grupo
+    // Vamos a insertarlo después del grupo actual o del grupo al que pertenece el ejercicio actual
+    console.log('index', index);
+    const currentRow = tableData[index] || tableData[tableData.length - 1];
+    let insertAfterIndex;
+
+    if (currentRow.rowType === 'group') {
+      // Si es un grupo, necesitamos encontrar el último ejercicio de este grupo
+      let i = index + 1;
+      while (
+        i < tableData.length &&
+        tableData[i].rowType === 'exercise' &&
+        tableData[i].groupNumber === currentRow.groupNumber
+      ) {
+        i++;
+      }
+      insertAfterIndex = i - 1;
+    } else {
+      // Si es un ejercicio, necesitamos encontrar el último ejercicio de su grupo
+      const groupNumber = currentRow.groupNumber;
+      let i = index;
+      while (
+        i < tableData.length &&
+        (tableData[i].rowType !== 'group' ||
+          i === index ||
+          (tableData[i].rowType === 'exercise' && tableData[i].groupNumber === groupNumber))
+      ) {
+        i++;
+      }
+      insertAfterIndex = i - 1;
+    }
+
+    // Crear una copia de los datos e insertar el nuevo grupo y ejercicio
+    const newTableData = [...tableData];
+    newTableData.splice(insertAfterIndex + 1, 0, newGroup, newExercise);
+
+    // Actualizar el estado
+    setTableData(newTableData);
+
+    // Resetear los estados de inserción
+    setHoverRowIndex(null);
+    setShowInsertButton(false);
+
+    // Mostrar toast de confirmación
+    showToast(
+      'success',
+      intl.formatMessage({ id: 'common.success' }),
+      intl.formatMessage({ id: 'workoutTable.groupInserted' }),
+      { life: 3000 }
+    );
   };
 
   /****************************************
@@ -826,18 +1013,28 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
    * Save changes
    ****************************************/
   const detectChanges = () => {
-    if (!originalData || !tableData) return;
+    if (!originalData || !tableData) {
+      console.log('No hay datos originales o de tabla');
+      return {
+        newExercises: [],
+        movedExercises: [],
+        movedGroups: [],
+        updatedProperties: [],
+        deletedExercises: []
+      };
+    }
 
     const newChanges = {
       newExercises: [],
       movedExercises: [],
       movedGroups: [],
-      updatedProperties: []
+      updatedProperties: [],
+      deletedExercises: deletedExercises
     };
 
     // 1. Detectar ejercicios nuevos y asignar exerciseId si es necesario
     tableData.forEach((row) => {
-      if (row.rowType === 'exercise' && row.isNew) {
+      if (row.rowType === 'exercise' && (row.isNew || !row.exerciseInstanceId)) {
         // Asegurarse de que el ejercicio tenga un exerciseId válido
         if (!row.exerciseId && row.name) {
           const selectedExercise = coachExercises.find((ex) => ex.name === row.name);
@@ -848,6 +1045,12 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
         // Solo añadir a newExercises si tiene un nombre
         if (row.name) {
+          console.log('Detectado ejercicio nuevo:', {
+            nombre: row.name,
+            exerciseId: row.exerciseId,
+            groupNumber: row.groupNumber
+          });
+
           newChanges.newExercises.push({
             name: row.name,
             exerciseId: row.exerciseId,
@@ -859,9 +1062,54 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       }
     });
 
-    // 2. Detectar ejercicios movidos
+    // 2. Detectar grupos movidos
+    const originalGroups = originalData.filter((row) => row.rowType === 'group');
+    const currentGroups = tableData.filter((row) => row.rowType === 'group');
+
+    console.log(
+      'Grupos originales:',
+      originalGroups.map((g) => ({ groupNumber: g.groupNumber, index: originalGroups.indexOf(g) }))
+    );
+    console.log(
+      'Grupos actuales:',
+      currentGroups.map((g) => ({ groupNumber: g.groupNumber, index: currentGroups.indexOf(g) }))
+    );
+
+    // Crear un mapa de groupNumber para búsqueda más eficiente
+    const originalGroupsMap = new Map();
+    originalGroups.forEach((group, index) => {
+      originalGroupsMap.set(group.groupNumber, { ...group, originalIndex: index });
+    });
+
+    // Comparar posiciones de grupos
+    currentGroups.forEach((currentGroup, currentIndex) => {
+      const originalGroupInfo = originalGroupsMap.get(currentGroup.groupNumber);
+      if (originalGroupInfo) {
+        // Verificar si el grupo ha cambiado de posición
+        if (originalGroupInfo.originalIndex !== currentIndex) {
+          // El grupo se ha movido
+          console.log(
+            `Grupo ${currentGroup.groupNumber} movido: ${originalGroupInfo.originalIndex} -> ${currentIndex}`
+          );
+
+          newChanges.movedGroups.push({
+            groupNumber: currentGroup.groupNumber,
+            newOrder: currentIndex + 1, // Convertir a 1-indexed para el backend
+            oldIndex: originalGroupInfo.originalIndex
+          });
+        }
+      } else {
+        console.log(`Grupo ${currentGroup.groupNumber} no encontrado en datos originales`);
+      }
+    });
+
+    if (newChanges.movedGroups.length > 0) {
+      console.log('Grupos movidos detectados:', newChanges.movedGroups);
+    }
+
+    // 3. Detectar ejercicios movidos (solo si no son parte de un grupo movido)
     const originalExercises = originalData.filter((row) => row.rowType === 'exercise');
-    const currentExercises = tableData.filter((row) => row.rowType === 'exercise' && !row.isNew);
+    const currentExercises = tableData.filter((row) => row.rowType === 'exercise' && row.exerciseInstanceId);
 
     // Crear un mapa de exerciseInstanceId para búsqueda más eficiente
     const originalExercisesMap = new Map();
@@ -869,166 +1117,142 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       originalExercisesMap.set(ex.exerciseInstanceId, ex);
     });
 
-    currentExercises.forEach((currentEx) => {
-      // Buscar por exerciseInstanceId usando el mapa
-      const originalEx = originalExercisesMap.get(currentEx.exerciseInstanceId);
-      if (originalEx) {
-        // Verificar si cambió de posición o grupo
-        if (originalEx.rowIndex !== currentEx.rowIndex || originalEx.groupNumber !== currentEx.groupNumber) {
-          newChanges.movedExercises.push({
-            name: currentEx.name,
-            exerciseInstanceId: currentEx.exerciseInstanceId,
-            oldGroupNumber: originalEx.groupNumber,
-            newGroupNumber: currentEx.groupNumber,
-            oldRowIndex: originalEx.rowIndex,
-            newRowIndex: currentEx.rowIndex
-          });
-        }
+    // Comparar posiciones de ejercicios
+    currentExercises.forEach((currentExercise) => {
+      const originalExercise = originalExercisesMap.get(currentExercise.exerciseInstanceId);
+      if (originalExercise) {
+        // Verificar si el ejercicio es parte de un grupo movido
+        const isPartOfMovedGroup = newChanges.movedGroups.some(
+          (movedGroup) => movedGroup.groupNumber === currentExercise.groupNumber
+        );
 
-        // Verificar cambio de ejercicio (nombre o id) - SOLO si realmente cambió
-        // Solo registrar cambios si realmente hubo un cambio en el nombre o en el exerciseId
-        if (originalEx.name !== currentEx.name) {
-          // Buscar el exerciseId correcto basado en el nombre
-          let newExerciseId = currentEx.exerciseId;
-          if (!newExerciseId && currentEx.name) {
-            const matchingExercise = coachExercises.find((ex) => ex.name === currentEx.name);
-            if (matchingExercise) {
-              newExerciseId = matchingExercise.id;
+        if (!isPartOfMovedGroup) {
+          // Si el ejercicio no es parte de un grupo movido, verificar si se movió individualmente
+          if (
+            currentExercise.groupNumber !== originalExercise.groupNumber ||
+            currentExercise.rowIndex !== originalExercise.rowIndex
+          ) {
+            newChanges.movedExercises.push({
+              exerciseInstanceId: currentExercise.exerciseInstanceId,
+              name: currentExercise.name, // Añadido el nombre del ejercicio
+              oldGroupNumber: originalExercise.groupNumber,
+              newGroupNumber: currentExercise.groupNumber,
+              oldRowIndex: originalExercise.rowIndex,
+              newRowIndex: currentExercise.rowIndex
+            });
+          }
+        }
+      }
+    });
+
+    // 4. Detectar cambios en propiedades
+    currentExercises.forEach((currentExercise) => {
+      const originalExercise = originalExercisesMap.get(currentExercise.exerciseInstanceId);
+      if (originalExercise) {
+        // Detectar cambios en el nombre/ejercicio mismo
+        if (currentExercise.name !== originalExercise.name) {
+          // Obtener el ID del ejercicio seleccionado
+          let exerciseId = currentExercise.exerciseId;
+          if (!exerciseId && currentExercise.name) {
+            const selectedExercise = coachExercises.find((ex) => ex.name === currentExercise.name);
+            if (selectedExercise) {
+              exerciseId = selectedExercise.id;
             }
           }
 
-          // Solo añadir a updatedProperties si el exerciseId realmente cambió
-          if (originalEx.exerciseId !== newExerciseId) {
+          console.log('Cambio detectado en nombre de ejercicio:', {
+            de: originalExercise.name,
+            a: currentExercise.name,
+            exerciseId: exerciseId,
+            exerciseInstanceId: currentExercise.exerciseInstanceId
+          });
+
+          if (exerciseId) {
             newChanges.updatedProperties.push({
-              name: currentEx.name,
-              exerciseInstanceId: currentEx.exerciseInstanceId,
-              weekNumber: 0, // Cambio global
+              exerciseInstanceId: currentExercise.exerciseInstanceId,
+              name: currentExercise.name,
+              weekNumber: 1, // No importa el número de semana para el cambio de ejercicio
               property: 'exerciseId',
-              oldValue: originalEx.exerciseId,
-              newValue: newExerciseId
+              value: exerciseId
             });
+          } else {
+            console.warn(`No se pudo encontrar exerciseId para "${currentExercise.name}". Este cambio no se aplicará.`);
           }
         }
-      }
-    });
 
-    // 3. Detectar grupos movidos
-    const originalGroups = originalData.filter((row) => row.rowType === 'group');
-    const currentGroups = tableData.filter((row) => row.rowType === 'group');
+        // Verificar cambios en las propiedades por semana
+        Object.keys(currentExercise.weeksData).forEach((weekNumber) => {
+          const currentWeekData = currentExercise.weeksData[weekNumber];
+          const originalWeekData = originalExercise.weeksData[weekNumber] || {};
 
-    const originalGroupPositions = {};
-    originalGroups.forEach((group, index) => {
-      originalGroupPositions[group.groupNumber] = index;
-    });
+          if (currentWeekData) {
+            properties.forEach((prop) => {
+              // Comparación estricta para evitar falsos positivos (undefined vs null, 0 vs null, etc.)
+              const currentValue = currentWeekData[prop];
+              const originalValue = originalWeekData[prop];
 
-    let groupOrderChanged = false;
-    currentGroups.forEach((group, currentIndex) => {
-      const originalIndex = originalGroupPositions[group.groupNumber];
-      if (originalIndex !== undefined && originalIndex !== currentIndex) {
-        groupOrderChanged = true;
-      }
-    });
+              // Usar comparación estricta con === null porque 0 es un valor válido para algunas propiedades
+              const isCurrentValueNull = currentValue === null || currentValue === undefined;
+              const isOriginalValueNull = originalValue === null || originalValue === undefined;
 
-    if (originalGroups.length !== currentGroups.length) {
-      groupOrderChanged = true;
-    }
+              // Solo registrar cambios cuando los valores son realmente diferentes
+              const hasChanged =
+                // Caso 1: Uno es null/undefined y el otro no
+                isCurrentValueNull !== isOriginalValueNull ||
+                // Caso 2: Ninguno es null/undefined y son diferentes
+                (!isCurrentValueNull && !isOriginalValueNull && currentValue !== originalValue);
 
-    if (groupOrderChanged) {
-      newChanges.movedGroups = currentGroups.map((group, index) => ({
-        groupNumber: group.groupNumber,
-        newOrder: index + 1
-      }));
-    }
+              if (hasChanged) {
+                console.log(`Cambio detectado en propiedad ${prop} para ${currentExercise.name}:`, {
+                  ejercicio: currentExercise.name,
+                  semana: weekNumber,
+                  propiedad: prop,
+                  valorAnterior: originalValue,
+                  valorNuevo: currentValue
+                });
 
-    // 4. Detectar propiedades actualizadas
-    // Creamos un mapa para rastrear qué propiedades ya hemos procesado
-    const processedChanges = new Set();
-
-    // Crear un mapa de exerciseInstanceId por semana para búsqueda más eficiente
-    const weekExerciseMap = new Map();
-
-    // Primero, construir el mapa de exerciseInstanceId por semana
-    originalExercises.forEach((ex) => {
-      Object.keys(ex.weeksData).forEach((weekNum) => {
-        const weekData = ex.weeksData[weekNum];
-        if (weekData && weekData.exerciseInstanceId) {
-          const key = `${weekData.exerciseInstanceId}-${weekNum}`;
-          weekExerciseMap.set(key, {
-            exercise: ex,
-            weekData: weekData
-          });
-        }
-      });
-
-      currentExercises.forEach((currentEx) => {
-        // Para cada semana en el ejercicio actual
-        Object.keys(currentEx.weeksData).forEach((weekNum) => {
-          const weekNumber = parseInt(weekNum);
-          const currentWeekData = currentEx.weeksData[weekNum];
-
-          if (!currentWeekData) return;
-
-          // Buscar datos originales para esta combinación de exerciseInstanceId y semana
-          const key = `${currentWeekData.exerciseInstanceId}-${weekNum}`;
-          const originalData = weekExerciseMap.get(key);
-          const originalWeekData = originalData ? originalData.weekData : null;
-
-          // Si no hay datos originales para esta semana, podría ser un nuevo dato para esa semana
-          if (!originalWeekData) return;
-
-          // Solo procesamos las propiedades que nos interesan
-          propertiesUsedByWeek.forEach((propList) => {
-            propList.forEach((prop) => {
-              // Crear una clave única para esta combinación de ejercicio/semana/propiedad
-              const changeKey = `${currentEx.exerciseInstanceId}-${weekNumber}-${prop}`;
-
-              // Si ya procesamos este cambio, saltamos
-              if (processedChanges.has(changeKey)) return;
-
-              // Marcar como procesado
-              processedChanges.add(changeKey);
-
-              // Obtener valores actuales y originales
-              const currentValue = currentWeekData?.[prop];
-              const originalValue = originalWeekData?.[prop];
-
-              // Si ambos son undefined/null, no hay cambio
-              if (currentValue === undefined && originalValue === undefined) return;
-              if (currentValue === null && originalValue === null) return;
-
-              // Comparar valores (convertir a string para comparación consistente)
-              const currentStr = currentValue !== undefined && currentValue !== null ? String(currentValue) : '';
-              const originalStr = originalValue !== undefined && originalValue !== null ? String(originalValue) : '';
-
-              // Solo registrar si hay un cambio real
-              if (currentStr !== originalStr) {
                 newChanges.updatedProperties.push({
-                  name: currentEx.name,
-                  exerciseInstanceId: currentWeekData?.exerciseInstanceId || originalWeekData?.exerciseInstanceId,
-                  weekNumber: weekNumber,
+                  exerciseInstanceId: currentExercise.exerciseInstanceId,
+                  name: currentExercise.name,
+                  weekNumber: parseInt(weekNumber),
                   property: prop,
-                  oldValue: originalValue,
-                  newValue: currentValue
+                  value: currentValue
                 });
               }
             });
-          });
+          }
         });
-      });
-
-      setChanges(newChanges);
+      }
     });
+
+    console.log('Cambios detectados:', newChanges);
     return newChanges;
   };
 
   const buildSavePayload = (changesObj) => {
-    return {
+    if (!changesObj) {
+      console.error('No se recibieron cambios para construir el payload');
+      return null;
+    }
+
+    // Mostrar un resumen del payload antes de enviarlo
+    if (changesObj.movedGroups && changesObj.movedGroups.length > 0) {
+      console.log(
+        'Payload de grupos movidos:',
+        changesObj.movedGroups.map((g) => ({
+          groupNumber: g.groupNumber,
+          newOrder: g.newOrder
+        }))
+      );
+    }
+
+    const payload = {
       cycleId,
       dayNumber,
       changes: {
         newExercises: changesObj.newExercises.map((ex) => ({
           name: ex.name,
-          exerciseId: ex.exerciseId, // Asegurarse de incluir exerciseId
+          exerciseId: ex.exerciseId,
           groupNumber: ex.groupNumber,
           rowIndex: ex.rowIndex,
           weeksData: Object.keys(ex.weeksData).reduce((acc, weekNum) => {
@@ -1052,17 +1276,25 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           newRowIndex: ex.newRowIndex
         })),
 
-        movedGroups: changesObj.movedGroups,
+        movedGroups: changesObj.movedGroups.map((group) => ({
+          groupNumber: group.groupNumber,
+          newOrder: group.newOrder
+        })),
 
         updatedProperties: changesObj.updatedProperties.map((update) => ({
-          name: update.name,
           exerciseInstanceId: update.exerciseInstanceId,
+          name: update.name,
           weekNumber: update.weekNumber,
           property: update.property,
-          value: update.newValue
-        }))
+          value: update.value
+        })),
+
+        deletedExercises: changesObj.deletedExercises
       }
     };
+
+    console.log('Payload completo:', JSON.stringify(payload, null, 2));
+    return payload;
   };
 
   const handleSaveChanges = async () => {
@@ -1073,46 +1305,46 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       const updatedTableData = [...tableData];
       let exerciseIdsUpdated = false;
 
+      // 1. Verificar que los ejercicios tengan exerciseId
       updatedTableData.forEach((row) => {
         if (row.rowType === 'exercise' && row.name && !row.exerciseId) {
           const selectedExercise = coachExercises.find((ex) => ex.name === row.name);
           if (selectedExercise) {
             row.exerciseId = selectedExercise.id;
             exerciseIdsUpdated = true;
+            console.log(`Asignado exerciseId ${selectedExercise.id} a ejercicio ${row.name}`);
+          } else {
+            console.warn(`No se pudo encontrar exerciseId para "${row.name}"`);
           }
         }
       });
 
-      // Si se actualizaron IDs, actualizar el estado antes de continuar
+      // 2. Verificar que los ejercicios nuevos estén marcados como isNew
+      updatedTableData.forEach((row) => {
+        if (row.rowType === 'exercise' && !row.exerciseInstanceId && !row.isNew) {
+          row.isNew = true;
+          exerciseIdsUpdated = true;
+          console.log(`Marcando ejercicio ${row.name} como nuevo porque no tiene exerciseInstanceId`);
+        }
+      });
+
+      // Si se actualizaron IDs o flags, actualizar el estado antes de continuar
       if (exerciseIdsUpdated) {
         setTableData(updatedTableData);
       }
 
       // Detectar cambios
       const changesObj = detectChanges();
-      // Validar que todos los ejercicios nuevos con nombre tengan exerciseId
-      const missingExerciseIds = changesObj.newExercises.filter((ex) => ex.name && !ex.exerciseId);
-      if (missingExerciseIds.length > 0) {
-        const missingNames = missingExerciseIds.map((ex) => ex.name).join(', ');
-        showToast(
-          'error',
-          intl.formatMessage({ id: 'common.error' }),
-          `${intl.formatMessage({ id: 'workoutTable.missingExerciseIds' })}: ${missingNames}`
-        );
-        setIsLoading(false);
-        return;
-      }
+      console.log('Objeto de cambios:', changesObj);
 
-      // Filtrar ejercicios sin nombre antes de guardar
-      changesObj.newExercises = changesObj.newExercises.filter((ex) => ex.name);
-
-      // Si no hay cambios, mostrar mensaje y salir
+      // Si no hay cambios y no hay ejercicios eliminados, mostrar mensaje y salir
       if (
         !changesObj ||
         (changesObj.newExercises.length === 0 &&
           changesObj.movedExercises.length === 0 &&
           changesObj.movedGroups.length === 0 &&
-          changesObj.updatedProperties.length === 0)
+          changesObj.updatedProperties.length === 0 &&
+          changesObj.deletedExercises.length === 0)
       ) {
         showToast(
           'info',
@@ -1125,22 +1357,26 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
       // Construir payload
       const payload = buildSavePayload(changesObj);
-      console.log('Payload para API:', payload);
+      if (!payload) {
+        throw new Error('No se pudo construir el payload para guardar los cambios');
+      }
+
+      console.log('Enviando payload a la API:', JSON.stringify(payload, null, 2));
 
       // Llamar a la API
       await saveWorkoutChanges(payload);
-      //console.log('Respuesta de la API:', response);
 
       // Actualizar originalData con los nuevos datos
-      //setOriginalData(JSON.parse(JSON.stringify(tableData)));
+      setOriginalData(JSON.parse(JSON.stringify(tableData)));
 
-      // Resetear cambios
+      // Resetear todos los estados de cambios
       setChanges({
         newExercises: [],
         movedExercises: [],
         movedGroups: [],
         updatedProperties: []
       });
+      setDeletedExercises([]); // Limpiar el estado de ejercicios eliminados
 
       // Mostrar mensaje de éxito
       showToast(
@@ -1239,7 +1475,6 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
               borderRight: index === propsList.length - 1 ? '1px solid #ccc' : 'none',
               borderLeft: index === 0 ? '1px solid #ccc' : 'none',
               overflow: 'hidden',
-
               width: '100px'
             }}
             key={cellKey}
@@ -1305,15 +1540,33 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
   function handleExerciseNameChange(rowData, newName) {
     // Actualizar el nombre en el objeto de datos
+    const oldName = rowData.name;
     rowData.name = newName;
 
     // Actualizar el exerciseId siempre que cambie el nombre del ejercicio
     // independientemente de si es nuevo o existente
     const selectedExercise = coachExercises.find((ex) => ex.name === newName);
     if (selectedExercise) {
+      const oldExerciseId = rowData.exerciseId;
       rowData.exerciseId = selectedExercise.id; // Asumiendo que cada ejercicio en coachExercises tiene un id
+
+      console.log('Ejercicio cambiado:', {
+        de: oldName,
+        a: newName,
+        deId: oldExerciseId,
+        aId: selectedExercise.id,
+        exerciseInstanceId: rowData.exerciseInstanceId
+      });
+
+      // Si es un ejercicio que no existía previamente (sin exerciseInstanceId),
+      // asegurarnos de marcarlo como nuevo para que se cree correctamente
+      if (!rowData.exerciseInstanceId && !rowData.isNew) {
+        rowData.isNew = true;
+        console.log('Marcando ejercicio como nuevo:', rowData.name);
+      }
     } else {
       // Si no se encuentra el ejercicio, establecer exerciseId a null para evitar referencias incorrectas
+      console.warn(`No se encontró el ejercicio "${newName}" en la lista de ejercicios del entrenador.`);
       rowData.exerciseId = null;
     }
 
@@ -1329,12 +1582,36 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     setTableData([...tableData]);
   }
 
+  // Referencia para la primera columna
+  const firstColumnRef = useRef(null);
+  // Estado para controlar si el mouse está sobre la primera columna
+  const [isHoveringFirstColumn, setIsHoveringFirstColumn] = useState(false);
+
+  // Efecto para manejar el botón de inserción cuando el mouse está sobre la primera columna
+  useEffect(() => {
+    console.log('isHoveringFirstColumn', isHoveringFirstColumn);
+    if (isEditing && isHoveringFirstColumn) {
+      setShowInsertButton(true);
+    }
+
+    return () => {
+      // No eliminamos el estado al desmontar para evitar parpadeos
+    };
+  }, [isHoveringFirstColumn, isEditing]);
+
+  useEffect(() => {
+    //console.log('hoverRowIndex', hoverRowIndex);
+    //console.log('isHoveringFirstColumn', isHoveringFirstColumn);
+    //console.log('showInsertButton', showInsertButton);
+  }, [hoverRowIndex, isHoveringFirstColumn, showInsertButton]);
+
   function SortableRow({ rowData, index }) {
     const rowKey =
       rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
 
     const isDraggable =
-      isEditing && (rowData.rowType === 'group' || (rowData.rowType === 'exercise' && !isDraggingGroup));
+      isEditing &&
+      (rowData.rowType === 'group' || (rowData.rowType === 'exercise' && !isDraggingGroup && !rowData.isDragDisabled));
 
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
       id: rowKey,
@@ -1352,29 +1629,117 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
             tableLayout: 'fixed',
             border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
             margin: '2px 0',
-            opacity: '0.9'
+            opacity: '0.9',
+            cursor: 'grabbing',
+            zIndex: 1000
           }
         : {})
     };
 
     return (
-      <tr ref={setNodeRef} style={style} className={rowClassName(rowData)}>
-        <td
-          style={{
-            minWidth: '150px',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0.5rem',
-            overflow: 'hidden'
-          }}
-          {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
-        >
-          {isEditing && <FaGripVertical style={{ marginRight: '0.3rem', cursor: 'grab', flexShrink: 0 }} />}
-          <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
-        </td>
-        {renderDataCells(rowData)}
-      </tr>
+      <>
+        {isEditing && showInsertButton && isHoveringFirstColumn && index === hoverRowIndex && (
+          <tr className="insert-row">
+            {/*<td colSpan={1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0)}> */}
+            <td colSpan={1}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', padding: '2px 10px' }}>
+                <div
+                  className="insert-button"
+                  onClick={() => handleAddExerciseAtPosition(index)}
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    background: isDarkMode ? '#4a5568' : '#e2e8f0',
+                    color: isDarkMode ? 'white' : 'black',
+                    alignItems: 'center',
+                    flex: 1
+                  }}
+                >
+                  <FaPlus style={{ marginRight: '5px' }} />
+                  {intl.formatMessage({ id: 'workoutTable.insertExercise' })}
+                </div>
+                {/*}
+                <div
+                  className="insert-button"
+                  onClick={() => handleAddGroup(index)}
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    background: isDarkMode ? '#4a5568' : '#e2e8f0',
+                    color: isDarkMode ? 'white' : 'black',
+                    alignItems: 'center',
+                    flex: 1
+                  }}
+                >
+                  <FaPlus style={{ marginRight: '5px' }} />
+                  {intl.formatMessage({ id: 'plan.group.addGroup' })}
+                </div>
+                */}
+              </div>
+            </td>
+          </tr>
+        )}
+        <tr ref={setNodeRef} style={style} className={rowClassName(rowData)}>
+          <td
+            ref={firstColumnRef}
+            className={`${isEditing ? 'hover-column' : ''} ${isDarkMode ? 'dark-mode' : ''}`}
+            style={{
+              minWidth: '150px',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0.5rem',
+              overflow: 'hidden',
+              position: 'relative',
+              cursor: isEditing ? 'pointer' : 'default',
+              backgroundColor: isHoveringFirstColumn && isEditing ? (isDarkMode ? '#3a4252' : '#f0f4f8') : 'transparent'
+            }}
+            onMouseEnter={() => {
+              if (isEditing) {
+                setHoverRowIndex(index + 1);
+                setIsHoveringFirstColumn(true);
+              }
+            }}
+            {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {isEditing && isDraggable && (
+                <FaGripVertical
+                  style={{
+                    cursor: isDragging ? 'grabbing' : 'grab',
+                    flexShrink: 0,
+                    opacity: isDragging ? 0.5 : 1
+                  }}
+                />
+              )}
+              {isEditing && rowData.rowType === 'exercise' && (
+                <FaTrash
+                  style={{
+                    cursor: 'pointer',
+                    color: isDarkMode ? '#ff6b6b' : '#dc3545',
+                    opacity: 0.7,
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.7')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteExercise(rowData);
+                  }}
+                />
+              )}
+            </div>
+            <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
+          </td>
+          {renderDataCells(rowData)}
+        </tr>
+      </>
     );
   }
 
@@ -1382,6 +1747,33 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   const dayItemTemplate = (option) => {
     const isUsed = daysUsed.includes(option.value);
     return <div className={`day-option ${isUsed ? 'highlighted-option' : ''}`}>{option.label}</div>;
+  };
+
+  const handleDeleteExercise = (rowData) => {
+    if (!isEditing) return;
+
+    // Si el ejercicio tiene exerciseInstanceId, agregarlo a la lista de eliminados
+    if (rowData.exerciseInstanceId) {
+      setDeletedExercises((prev) => [...prev, rowData.exerciseInstanceId]);
+    }
+
+    const newTableData = tableData.filter((row) => {
+      if (row.rowType === 'exercise') {
+        return row.groupNumber !== rowData.groupNumber || row.rowIndex !== rowData.rowIndex;
+      }
+      return true;
+    });
+
+    // Ajustar los índices de los ejercicios restantes en el mismo grupo
+    let currentIndex = 0;
+    newTableData.forEach((row) => {
+      if (row.rowType === 'exercise' && row.groupNumber === rowData.groupNumber) {
+        row.rowIndex = currentIndex++;
+      }
+    });
+
+    setTableData(newTableData);
+    showToast('success', 'Éxito', 'Ejercicio eliminado correctamente');
   };
 
   return (
@@ -1435,8 +1827,11 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
         {isEditing && (
           <>
-            <button style={{ marginLeft: '1rem' }} onClick={handleAddExercise}>
+            <button style={{ marginLeft: '1rem' }} onClick={() => handleAddExercise(tableData.length)}>
               {intl.formatMessage({ id: 'plan.group.addExercise' })}
+            </button>
+            <button style={{ marginLeft: '1rem' }} onClick={() => handleAddGroup(tableData.length)}>
+              {intl.formatMessage({ id: 'plan.group.addGroup' })}
             </button>
             <button style={{ marginLeft: '1rem' }} onClick={handleSaveChanges}>
               {intl.formatMessage({ id: 'common.save' })}
@@ -1444,6 +1839,36 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           </>
         )}
       </div>
+
+      {/* Guía visual para el modo de edición */}
+      {isEditing && (
+        <div
+          style={{
+            padding: '10px 15px',
+            marginBottom: '1rem',
+            borderRadius: '5px',
+            backgroundColor: isDarkMode ? 'rgba(66, 153, 225, 0.15)' : 'rgba(66, 153, 225, 0.1)',
+            border: '1px solid rgba(66, 153, 225, 0.3)',
+            fontSize: '0.9rem'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+            <FaGripVertical style={{ marginRight: '8px', opacity: 0.7 }} />
+            <span>
+              <FormattedMessage id="tooltip.dragGroup" defaultMessage="Arrastra para reordenar grupos y ejercicios" />
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaPlus style={{ marginRight: '8px', opacity: 0.7 }} />
+            <span>
+              <FormattedMessage
+                id="tooltip.hoverForOptions"
+                defaultMessage="Pasa el cursor sobre una fila para ver opciones de inserción"
+              />
+            </span>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <p style={{ margin: '0.5rem' }}>{intl.formatMessage({ id: 'exercise.properties.loading' })}</p>

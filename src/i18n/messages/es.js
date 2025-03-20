@@ -539,6 +539,7 @@ const messages = {
   'tooltip.addProperty': 'Agregar propiedad',
   'tooltip.removeProperty': 'Eliminar propiedad',
   'tooltip.dragGroup': 'Arrastrar para reordenar',
+  'tooltip.hoverForOptions': 'Opciones disponibles',
 
   // Filtros y ordenamiento
   'filter.byName': 'Filtrar por nombre',
@@ -1036,6 +1037,13 @@ const messages = {
   'common.selectDay': 'Seleccionar día',
   'workoutTable.changesDetected': '{count} cambios detectados',
   'workoutTable.changesSaved': 'Cambios guardados exitosamente',
+  'workoutTable.missingExerciseIds': 'Los siguientes ejercicios no tienen ID asignado',
+  'workoutTable.cannotMoveLastExercise': 'No se puede mover el último ejercicio de un grupo',
+  'workoutTable.groupCannotBeEmpty': 'Un grupo no puede quedar sin ejercicios',
+  'workoutTable.noGroupsAvailable': 'No hay grupos disponibles',
+  'workoutTable.insertExercise': 'Insertar ejercicio aquí',
+  'workoutTable.exerciseInserted': 'Ejercicio insertado correctamente',
+  'workoutTable.groupInserted': 'Grupo insertado correctamente',
 
   'students.remainingDays': 'Días restantes',
   'students.fitnessGoal': 'Objetivo Fitness',
