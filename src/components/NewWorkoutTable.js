@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useIntl, FormattedMessage } from 'react-intl';
 
 import { Dropdown } from 'primereact/dropdown';
@@ -35,6 +35,7 @@ import {
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { FaGripVertical } from 'react-icons/fa';
 import { FaSave } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 import { saveWorkoutChanges } from '../services/workoutService';
 import '../styles/WorkoutTable.css';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
@@ -104,6 +105,10 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   });
 
   const [daysUsed, setDaysUsed] = useState([]);
+
+  // Estados para manejar el botón de inserción dinámica
+  const [hoverRowIndex, setHoverRowIndex] = useState(null);
+  const [showInsertButton, setShowInsertButton] = useState(false);
 
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -770,6 +775,172 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   };
 
   /****************************************
+   * Adding exercises and groups at specific positions
+   ****************************************/
+  const handleAddExerciseAtPosition = (index) => {
+    if (!isEditing) return;
+
+    // Determinar en qué grupo insertar el nuevo ejercicio
+    const currentRow = tableData[index];
+    let targetGroupNumber;
+
+    if (currentRow.rowType === 'group') {
+      // Si se está insertando en una fila de grupo, usar ese número de grupo
+      targetGroupNumber = currentRow.groupNumber;
+    } else {
+      // Si se está insertando en una fila de ejercicio, usar su número de grupo
+      targetGroupNumber = currentRow.groupNumber;
+    }
+
+    // Contar cuántos ejercicios hay en el grupo destino para el índice
+    const exercisesInGroup = tableData.filter(
+      (row) => row.rowType === 'exercise' && row.groupNumber === targetGroupNumber
+    ).length;
+
+    // Crear un nuevo ejercicio vacío
+    const newExercise = {
+      rowType: 'exercise',
+      name: '',
+      exerciseId: null,
+      groupNumber: targetGroupNumber,
+      rowIndex: 0, // Inicialmente en 0, luego actualizaremos los índices
+      weeksData: {},
+      isNew: true
+    };
+
+    // Crear una copia de los datos de la tabla
+    const newTableData = [...tableData];
+
+    // Determinar dónde insertar el nuevo ejercicio
+    let insertIndex;
+
+    if (currentRow.rowType === 'group') {
+      // Si es una fila de grupo, insertar justo después del grupo
+      insertIndex = index + 1;
+    } else {
+      // Si es un ejercicio, insertar después de este ejercicio
+      insertIndex = index + 1;
+
+      // Asignar el rowIndex correcto relativo al ejercicio actual
+      newExercise.rowIndex = currentRow.rowIndex + 1;
+    }
+
+    // Insertar el nuevo ejercicio
+    newTableData.splice(insertIndex, 0, newExercise);
+
+    // Ajustar los índices de los ejercicios en el mismo grupo que vienen después
+    for (let i = insertIndex + 1; i < newTableData.length; i++) {
+      const row = newTableData[i];
+      if (row.rowType === 'exercise' && row.groupNumber === targetGroupNumber) {
+        if (row.rowIndex >= newExercise.rowIndex) {
+          row.rowIndex++;
+        }
+      } else if (row.rowType === 'group') {
+        // Cuando encontramos el siguiente grupo, terminamos
+        break;
+      }
+    }
+
+    // Actualizar el estado
+    setTableData(newTableData);
+
+    // Resetear los estados de inserción
+    setHoverRowIndex(null);
+    setShowInsertButton(false);
+
+    // Mostrar toast de confirmación
+    showToast(
+      'success',
+      intl.formatMessage({ id: 'common.success' }),
+      intl.formatMessage({ id: 'workoutTable.exerciseInserted' }),
+      { life: 3000 }
+    );
+  };
+
+  const handleAddGroup = (index) => {
+    if (!isEditing) return;
+
+    // Encontrar el máximo número de grupo existente
+    const maxGroupNumber = tableData.reduce((max, row) => {
+      if (row.rowType === 'group' && row.groupNumber > max) {
+        return row.groupNumber;
+      }
+      return max;
+    }, 0);
+
+    // Crear un nuevo grupo con número siguiente
+    const newGroupNumber = maxGroupNumber + 1;
+    const newGroup = {
+      rowType: 'group',
+      groupNumber: newGroupNumber,
+      rowIndex: newGroupNumber * 100, // Para mantener el ordenamiento
+      isNew: true,
+      label: `${intl.formatMessage({ id: 'common.group' })} ${newGroupNumber}`
+    };
+
+    // Crear un ejercicio vacío para este grupo
+    const newExercise = {
+      rowType: 'exercise',
+      name: '',
+      exerciseId: null,
+      groupNumber: newGroupNumber,
+      rowIndex: 0,
+      weeksData: {},
+      isNew: true
+    };
+
+    // Determinar dónde insertar el nuevo grupo
+    // Vamos a insertarlo después del grupo actual o del grupo al que pertenece el ejercicio actual
+    const currentRow = tableData[index];
+    let insertAfterIndex;
+
+    if (currentRow.rowType === 'group') {
+      // Si es un grupo, necesitamos encontrar el último ejercicio de este grupo
+      let i = index + 1;
+      while (
+        i < tableData.length &&
+        tableData[i].rowType === 'exercise' &&
+        tableData[i].groupNumber === currentRow.groupNumber
+      ) {
+        i++;
+      }
+      insertAfterIndex = i - 1;
+    } else {
+      // Si es un ejercicio, necesitamos encontrar el último ejercicio de su grupo
+      const groupNumber = currentRow.groupNumber;
+      let i = index;
+      while (
+        i < tableData.length &&
+        (tableData[i].rowType !== 'group' ||
+          i === index ||
+          (tableData[i].rowType === 'exercise' && tableData[i].groupNumber === groupNumber))
+      ) {
+        i++;
+      }
+      insertAfterIndex = i - 1;
+    }
+
+    // Crear una copia de los datos e insertar el nuevo grupo y ejercicio
+    const newTableData = [...tableData];
+    newTableData.splice(insertAfterIndex + 1, 0, newGroup, newExercise);
+
+    // Actualizar el estado
+    setTableData(newTableData);
+
+    // Resetear los estados de inserción
+    setHoverRowIndex(null);
+    setShowInsertButton(false);
+
+    // Mostrar toast de confirmación
+    showToast(
+      'success',
+      intl.formatMessage({ id: 'common.success' }),
+      intl.formatMessage({ id: 'workoutTable.groupInserted' }),
+      { life: 3000 }
+    );
+  };
+
+  /****************************************
    * Adding a new row
    ****************************************/
   const handleAddExercise = () => {
@@ -1368,7 +1539,6 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
               borderRight: index === propsList.length - 1 ? '1px solid #ccc' : 'none',
               borderLeft: index === 0 ? '1px solid #ccc' : 'none',
               overflow: 'hidden',
-
               width: '100px'
             }}
             key={cellKey}
@@ -1476,6 +1646,29 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     setTableData([...tableData]);
   }
 
+  // Referencia para la primera columna
+  const firstColumnRef = useRef(null);
+  // Estado para controlar si el mouse está sobre la primera columna
+  const [isHoveringFirstColumn, setIsHoveringFirstColumn] = useState(false);
+
+  // Efecto para manejar el botón de inserción cuando el mouse está sobre la primera columna
+  useEffect(() => {
+    console.log('isHoveringFirstColumn', isHoveringFirstColumn);
+    if (isEditing && isHoveringFirstColumn) {
+      setShowInsertButton(true);
+    }
+
+    return () => {
+      // No eliminamos el estado al desmontar para evitar parpadeos
+    };
+  }, [isHoveringFirstColumn, isEditing]);
+
+  useEffect(() => {
+    //console.log('hoverRowIndex', hoverRowIndex);
+    //console.log('isHoveringFirstColumn', isHoveringFirstColumn);
+    //console.log('showInsertButton', showInsertButton);
+  }, [hoverRowIndex, isHoveringFirstColumn, showInsertButton]);
+
   function SortableRow({ rowData, index }) {
     const rowKey =
       rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
@@ -1508,32 +1701,90 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     };
 
     return (
-      <tr ref={setNodeRef} style={style} className={rowClassName(rowData)}>
-        <td
-          style={{
-            minWidth: '150px',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0.5rem',
-            overflow: 'hidden'
-          }}
-          {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
-        >
-          {isEditing && isDraggable && (
-            <FaGripVertical
-              style={{
-                marginRight: '0.3rem',
-                cursor: isDragging ? 'grabbing' : 'grab',
-                flexShrink: 0,
-                opacity: isDragging ? 0.5 : 1
-              }}
-            />
-          )}
-          <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
-        </td>
-        {renderDataCells(rowData)}
-      </tr>
+      <>
+        {isEditing && showInsertButton && isHoveringFirstColumn && index === hoverRowIndex && (
+          <tr className="insert-row">
+            {/*<td colSpan={1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0)}> */}
+            <td colSpan={1}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', padding: '2px 10px' }}>
+                <div
+                  className="insert-button"
+                  onClick={() => handleAddExerciseAtPosition(index)}
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    background: isDarkMode ? '#4a5568' : '#e2e8f0',
+                    color: isDarkMode ? 'white' : 'black',
+                    alignItems: 'center',
+                    flex: 1
+                  }}
+                >
+                  <FaPlus style={{ marginRight: '5px' }} />
+                  {intl.formatMessage({ id: 'workoutTable.insertExercise' })}
+                </div>
+                <div
+                  className="insert-button"
+                  onClick={() => handleAddGroup(index)}
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    background: isDarkMode ? '#4a5568' : '#e2e8f0',
+                    color: isDarkMode ? 'white' : 'black',
+                    alignItems: 'center',
+                    flex: 1
+                  }}
+                >
+                  <FaPlus style={{ marginRight: '5px' }} />
+                  {intl.formatMessage({ id: 'plan.group.addGroup' })}
+                </div>
+              </div>
+            </td>
+          </tr>
+        )}
+        <tr ref={setNodeRef} style={style} className={rowClassName(rowData)}>
+          <td
+            ref={firstColumnRef}
+            className={`${isEditing ? 'hover-column' : ''} ${isDarkMode ? 'dark-mode' : ''}`}
+            style={{
+              minWidth: '150px',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0.5rem',
+              overflow: 'hidden',
+              position: 'relative',
+              cursor: isEditing ? 'pointer' : 'default',
+              backgroundColor: isHoveringFirstColumn && isEditing ? (isDarkMode ? '#3a4252' : '#f0f4f8') : 'transparent'
+            }}
+            onMouseEnter={() => {
+              if (isEditing) {
+                setHoverRowIndex(index + 1);
+                setIsHoveringFirstColumn(true);
+              }
+            }}
+            {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
+          >
+            {isEditing && isDraggable && (
+              <FaGripVertical
+                style={{
+                  marginRight: '0.3rem',
+                  cursor: isDragging ? 'grabbing' : 'grab',
+                  flexShrink: 0,
+                  opacity: isDragging ? 0.5 : 1
+                }}
+              />
+            )}
+            <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
+          </td>
+          {renderDataCells(rowData)}
+        </tr>
+      </>
     );
   }
 
@@ -1597,12 +1848,45 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
             <button style={{ marginLeft: '1rem' }} onClick={handleAddExercise}>
               {intl.formatMessage({ id: 'plan.group.addExercise' })}
             </button>
+            <button style={{ marginLeft: '1rem' }} onClick={() => handleAddGroup()}>
+              {intl.formatMessage({ id: 'plan.group.addGroup' })}
+            </button>
             <button style={{ marginLeft: '1rem' }} onClick={handleSaveChanges}>
               {intl.formatMessage({ id: 'common.save' })}
             </button>
           </>
         )}
       </div>
+
+      {/* Guía visual para el modo de edición */}
+      {isEditing && (
+        <div
+          style={{
+            padding: '10px 15px',
+            marginBottom: '1rem',
+            borderRadius: '5px',
+            backgroundColor: isDarkMode ? 'rgba(66, 153, 225, 0.15)' : 'rgba(66, 153, 225, 0.1)',
+            border: '1px solid rgba(66, 153, 225, 0.3)',
+            fontSize: '0.9rem'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+            <FaGripVertical style={{ marginRight: '8px', opacity: 0.7 }} />
+            <span>
+              <FormattedMessage id="tooltip.dragGroup" defaultMessage="Arrastra para reordenar grupos y ejercicios" />
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaPlus style={{ marginRight: '8px', opacity: 0.7 }} />
+            <span>
+              <FormattedMessage
+                id="tooltip.hoverForOptions"
+                defaultMessage="Pasa el cursor sobre una fila para ver opciones de inserción"
+              />
+            </span>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <p style={{ margin: '0.5rem' }}>{intl.formatMessage({ id: 'exercise.properties.loading' })}</p>

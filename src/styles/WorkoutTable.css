@@ -56,3 +56,127 @@
 .font-medium .p-card-title {
   font-size: 1.2rem;
 }
+
+/* Estilos para el botón de inserción */
+.insert-row {
+  height: auto;
+  opacity: 1;
+  z-index: 100;
+  position: relative;
+  background-color: rgba(66, 153, 225, 0.15);
+  border-left: 3px solid #4299e1;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dark-mode .insert-row {
+  background-color: rgba(100, 120, 140, 0.3);
+  border-left: 3px solid #63b3ed;
+}
+
+.insert-button {
+  margin: 8px 4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
+  padding: 8px 16px !important;
+  border-radius: 6px;
+  background-color: #e2e8f0;
+  color: #1a202c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+.dark-mode .insert-button {
+  background-color: #4a5568;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.insert-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  opacity: 1;
+  background-color: #4299e1;
+  color: white;
+  font-weight: bold;
+}
+
+.dark-mode .insert-button:hover {
+  background-color: #63b3ed;
+}
+
+/* Nuevos estilos para mejorar la visibilidad del área de inserción */
+.hover-column {
+  transition: all 0.3s ease;
+  border-left: none;
+  position: relative;
+}
+
+.hover-column.hovered,
+.hover-column:hover {
+  background-color: rgba(66, 153, 225, 0.2) !important;
+  border-left: 3px solid #4299e1 !important;
+}
+
+.dark-mode.hover-column.hovered,
+.dark-mode.hover-column:hover {
+  background-color: #3a4252 !important;
+  border-left: 3px solid #63b3ed !important;
+}
+
+tr:hover td:first-child {
+  background-color: rgba(66, 153, 225, 0.1);
+}
+
+.dark-mode tr:hover td:first-child {
+  background-color: rgba(99, 179, 237, 0.1);
+}
+
+/* Mejorar la visibilidad de las filas con hover */
+tr.improved-row:hover {
+  background-color: rgba(66, 153, 225, 0.05);
+}
+
+.dark-mode tr.improved-row:hover {
+  background-color: rgba(66, 153, 225, 0.1);
+}
+
+/* Mejorar la visibilidad del tooltip */
+.hover-tooltip {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #3182ce;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  background-color: rgba(235, 245, 255, 0.95);
+  border-radius: 4px;
+  font-weight: bold;
+  opacity: 0.95;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  animation: fadeIn 0.2s ease-in-out;
+  border: 1px solid rgba(66, 153, 225, 0.3);
+}
+
+.dark-mode .hover-tooltip {
+  color: #90cdf4;
+  background-color: rgba(45, 55, 72, 0.95);
+  border: 1px solid rgba(99, 179, 237, 0.3);
+}
