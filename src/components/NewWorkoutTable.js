@@ -51,7 +51,8 @@ const properties = [
   'notes',
   'difficulty',
   'duration',
-  'distance'
+  'distance',
+  'rpe'
 ];
 
 export default function NewWorkoutTable({ cycleOptions, clientData }) {

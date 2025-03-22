@@ -35,16 +35,16 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
   const [finishDialogVisible, setFinishDialogVisible] = useState(false);
   const [completedGroups, setCompletedGroups] = useState([]);
   const [isClientTraining, setIsClientTraining] = useState(isTraining);
-
+  const [currentCycle, setCurrentCycle] = useState(null);
   useEffect(() => {
     const fetchPlan = async () => {
       try {
         setLoading(true);
         const { data } = await fetchWorkoutInstance(planId);
         if (data.status === 'completed') setIsClientTraining(false);
-        console.log('Plan data: ', data);
         data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber);
         setPlan(data);
+        setCurrentCycle(data.trainingSession.trainingWeek.trainingCycle);
       } catch (error) {
         console.log(error);
         //showToast('error', 'Error fetching plan details', error.message);
@@ -133,7 +133,6 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
           sets: !currentValue ? sets : []
         };
       }
-      console.log('New progress: ', newProgress);
       // Verifica si todos los ejercicios del grupo están completados o completados parcialmente
       const allExercisesCompleted = group.exercises.every(
         (ex) => newProgress[ex.id]?.completed || newProgress[ex.id]?.completedNotAsPlanned
@@ -226,7 +225,6 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
       additionalNotes
     };
 
-    console.log(body);
     setLoading(true);
     submitFeedback(planId, body)
       .then(() => {
@@ -416,6 +414,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                                     selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
                                     onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
                                     planId={planId}
+                                    cycleId={currentCycle.id}
                                   />
                                 </div>
                                 <div className="p-field">
@@ -456,13 +455,11 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                                   </label>
                                 </div>
                                 <div className="p-field">
-                                  <label htmlFor={`rating-${exercise.id}`} className="block mb-1">
-                                    RPE:{' '}
-                                  </label>
                                   <RpeDropdownComponent
                                     selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
                                     onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
                                     planId={planId}
+                                    cycleId={currentCycle.id}
                                   />
                                 </div>
                                 <div className="p-field">
@@ -595,13 +592,11 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               </label>
                             </div>
                             <div className="p-field">
-                              <label htmlFor={`rating-${exercise.id}`} className="block mb-1">
-                                RPE:{' '}
-                              </label>
                               <RpeDropdownComponent
                                 selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
                                 onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
                                 planId={planId}
+                                cycleId={currentCycle.id}
                               />
                             </div>
                             <div className="p-field">
@@ -640,13 +635,11 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               </label>
                             </div>
                             <div className="p-field">
-                              <label htmlFor={`rating-${exercise.id}`} className="block mb-1">
-                                RPE:{' '}
-                              </label>
                               <RpeDropdownComponent
                                 selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
                                 onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
                                 planId={planId}
+                                cycleId={currentCycle.id}
                               />
                             </div>
                             <div className="p-field">

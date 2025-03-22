@@ -612,7 +612,6 @@ export default function ClientDashboard() {
               locales={allLocales}
               locale={locale}
               firstDay={1}
-              dateClick={handleDateClick}
               dayCellContent={renderDayCellContent}
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();

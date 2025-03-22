@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import { deleteClient, fetchClientsSubscribed, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
+import { deleteClient, fetchClientsSubscribed, fetchCoachPlans } from '../services/usersService';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
@@ -16,13 +16,14 @@ import AssignSubscriptionDialog from '../dialogs/AssignSubscriptionDialog';
 import RegisterPaymentDialog from '../dialogs/RegisterPaymentDialog';
 import StudentDetailDialog from '../dialogs/StudentDetailDialog';
 import { cancelSubscription } from '../services/subscriptionService';
-import { formatDate } from '../utils/UtilFunctions';
+
 import { InputIcon } from 'primereact/inputicon';
 import { IconField } from 'primereact/iconfield';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { Tooltip } from 'primereact/tooltip';
 import { Tag } from 'primereact/tag';
 import { ButtonGroup } from 'primereact/buttongroup';
+import '../styles/Students.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -69,6 +70,7 @@ export default function ManageStudentsPage() {
         const { data } = await fetchClientsSubscribed(coach.id);
         setMaxClients(data.total);
         setTotalClientsSubscribed(data.clients.filter((client) => client.user.subscription.status === 'Active').length);
+
         setStudents(data.clients);
       } catch (error) {
         showToast('error', 'Error fetching clients subscribed', error.message);
@@ -95,7 +97,7 @@ export default function ManageStudentsPage() {
 
   const handleResendVerification = async (email) => {
     try {
-      setIsSendingVerification(true);
+      setLoading(true);
 
       const response = await fetch(`${apiUrl}/auth/send-verification-email`, {
         method: 'POST',
@@ -119,7 +121,7 @@ export default function ManageStudentsPage() {
     } catch (error) {
       showToast('error', 'Error', error.message);
     } finally {
-      setIsSendingVerification(false);
+      setLoading(false);
     }
   };
 
@@ -206,7 +208,7 @@ export default function ManageStudentsPage() {
     }
   };
 
-  const deleteClientConfirm = (clientId) => {
+  const deleteStudentDialog = (clientId) => {
     showConfirmationDialog({
       message: intl.formatMessage({ id: 'deleteStudent.confirmation.message' }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
@@ -258,86 +260,137 @@ export default function ManageStudentsPage() {
           filteredStudents.map((student) => {
             const remainingDays = calculateRemainingDays(student.user?.subscription?.nextPaymentDate);
             const isActive = student.user?.subscription?.status === 'Active';
-
+            const isVerified = student.user?.isVerified;
             return (
-              <div key={student.id} className="col-12 sm:col-6 lg:col-4 xl:col-3 p-2">
-                <Card className="h-full">
-                  <div className="flex flex-column align-items-center">
-                    {/* Imagen del usuario */}
-                    <img src="/image.webp" alt={student.name} className="w-10rem h-10rem border-circle shadow-4 mb-3" />
-
-                    {/* Nombre del estudiante */}
-                    <h3 className="m-2 text-center">{student.name}</h3>
-
-                    {/* Objetivo fitness */}
-                    {student.fitnessGoal && (
-                      <div className="mb-3 text-center">
-                        <strong>
-                          <FormattedMessage id="students.fitnessGoal" />:
-                        </strong>{' '}
-                        {student.fitnessGoal}
-                      </div>
-                    )}
-
-                    {/* Estado de la suscripción */}
-                    <div className="mb-3">
-                      <Tag
-                        severity={isActive ? 'success' : 'danger'}
-                        value={
-                          isActive
-                            ? intl.formatMessage({ id: 'students.status.active' })
-                            : intl.formatMessage({ id: 'students.status.inactive' })
-                        }
+              <div key={student.id} className="col-12 md:col-6 lg:col-4">
+                <div className="student-card border-1 border-round surface-card shadow-2 p-0 h-full">
+                  {/* Header de la tarjeta */}
+                  <div className="student-card-header p-3 border-bottom-1 surface-border flex align-items-center">
+                    <div className="profile-image border-circle overflow-hidden flex-shrink-0 mr-3">
+                      <img
+                        src={student.avatar || 'defaultAvatar.png'}
+                        alt={student.name}
+                        onError={(e) => {
+                          e.target.src =
+                            'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg';
+                        }}
+                        className="w-4rem h-4rem"
                       />
                     </div>
-
-                    {/* Días restantes (solo si está activo) */}
-                    {isActive && (
-                      <div className="mb-3 text-center">
-                        <strong>
-                          <FormattedMessage id="students.remainingDays" />:
-                        </strong>{' '}
-                        {remainingDays}
-                      </div>
-                    )}
-
-                    {/* Botones de acción */}
-                    <div className="flex flex-wrap justify-content-center gap-2 mt-3">
-                      <ButtonGroup>
-                        <Button
-                          icon="pi pi-user"
-                          label={intl.formatMessage({ id: 'students.viewProfile' })}
-                          className="p-button-info"
-                          onClick={() => viewProfile(student.id)}
-                        />
-
-                        {isActive ? (
-                          <>
-                            <Button
-                              icon="pi pi-dollar"
-                              label={intl.formatMessage({ id: 'students.registerPayment' })}
-                              className="p-button-success"
-                              onClick={() => openRegisterPaymentDialog(student)}
-                            />
-                            <Button
-                              icon="pi pi-times"
-                              label={intl.formatMessage({ id: 'students.cancelSubscription' })}
-                              className="p-button-danger"
-                              onClick={() => deleteCancelSubscription(student.user.subscription.id)}
-                            />
-                          </>
-                        ) : (
-                          <Button
-                            icon="pi pi-calendar-plus"
-                            label={intl.formatMessage({ id: 'students.assignSubscription' })}
-                            className="p-button-success"
-                            onClick={() => openSubscriptionDialog(student)}
-                          />
-                        )}
-                      </ButtonGroup>
+                    <div className="flex-grow-1">
+                      <h3 className="text-lg font-semibold m-0">{student.name}</h3>
+                      <p className="text-color-secondary mb-0">{student.user?.email}</p>
                     </div>
+                    {student.user?.subscription && (
+                      <span className="status-badge border-round-2xl py-1 px-2 text-sm font-medium bg-green-100 text-green-800">
+                        <i className="pi pi-check-circle mr-1"></i>
+                        {intl.formatMessage({ id: 'students.status.active' })}
+                      </span>
+                    )}
+                    {!isVerified && (
+                      <>
+                        <span className="status-badge border-round-2xl py-1 px-2 text-sm font-medium bg-red-100 text-red-800 resend-verification cursor-pointer text-wrap">
+                          <i className="pi pi-exclamation-circle mr-1"></i>
+                          {intl.formatMessage({ id: 'students.status.unverified' })}
+                        </span>
+                        <Tooltip
+                          target=".resend-verification"
+                          content={intl.formatMessage({ id: 'students.status.unverified.tooltip' })}
+                        />
+                      </>
+                    )}
                   </div>
-                </Card>
+
+                  {/* Cuerpo de la tarjeta con información clave */}
+                  <div className="student-card-body p-3">
+                    <div className="mb-2 flex align-items-center">
+                      <i className="pi pi-flag text-primary mr-2"></i>
+                      <span className="font-medium mr-1">{intl.formatMessage({ id: 'students.fitnessGoal' })}:</span>
+                      <span className="text-sm">{student.fitnessGoal}</span>
+                    </div>
+
+                    {student.user?.subscription && (
+                      <>
+                        <div className="mb-2 flex align-items-center">
+                          <i className="pi pi-calendar text-primary mr-2"></i>
+                          <span className="font-medium mr-1">
+                            {intl.formatMessage({ id: 'students.remainingDays' })}:
+                          </span>
+                          <span
+                            className={`text-sm font-bold ${
+                              remainingDays <= 3
+                                ? 'text-red-500'
+                                : remainingDays <= 7
+                                  ? 'text-orange-500'
+                                  : 'text-green-500'
+                            }`}
+                          >
+                            {remainingDays}
+                          </span>
+                        </div>
+                        <div className="mb-2 flex align-items-center">
+                          <i className="pi pi-credit-card text-primary mr-2"></i>
+                          <span className="font-medium mr-1">{intl.formatMessage({ id: 'students.table.plan' })}:</span>
+                          <span className="text-sm">
+                            {student.user.subscription.clientSubscription
+                              ? student.user.subscription.clientSubscription.coachPlan.name
+                              : 'N/A'}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Footer con botones de acción */}
+                  <div className="student-card-footer p-3 pt-0 flex flex-wrap gap-2">
+                    <Button
+                      icon="pi pi-user"
+                      tooltip={intl.formatMessage({ id: 'students.viewProfile' })}
+                      className="p-button-rounded p-button-info p-button-outlined flex-shrink-0"
+                      onClick={() => viewProfile(student.id)}
+                    />
+
+                    {isActive ? (
+                      <>
+                        <Button
+                          icon="pi pi-dollar"
+                          tooltip={intl.formatMessage({ id: 'students.registerPayment' })}
+                          className="p-button-rounded p-button-success p-button-outlined flex-shrink-0"
+                          onClick={() => openRegisterPaymentDialog(student)}
+                        />
+                        <Button
+                          icon="pi pi-times"
+                          tooltip={intl.formatMessage({ id: 'students.cancelSubscription' })}
+                          className="p-button-rounded p-button-danger p-button-outlined flex-shrink-0"
+                          onClick={() => deleteCancelSubscription(student.user.subscription.id)}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          icon="pi pi-calendar-plus"
+                          tooltip={intl.formatMessage({ id: 'students.assignSubscription' })}
+                          className="p-button-rounded p-button-success p-button-outlined flex-shrink-0"
+                          onClick={() => openSubscriptionDialog(student)}
+                        />
+                      </>
+                    )}
+                    {!isVerified && (
+                      <Button
+                        icon="pi pi-envelope"
+                        tooltip={intl.formatMessage({ id: 'students.resendVerification' })}
+                        className="p-button-rounded p-button-warning p-button-outlined flex-shrink-0"
+                        onClick={() => handleResendVerification(student.user?.email)}
+                      />
+                    )}
+                    <Button
+                      icon="pi pi-trash"
+                      tooltip={intl.formatMessage({ id: 'students.actions.deleteClient' })}
+                      className="p-button-rounded p-button-danger p-button-text flex-shrink-0 ml-auto"
+                      onClick={() => deleteStudentDialog(student.id)}
+                    />
+                  </div>
+                </div>
               </div>
             );
           })

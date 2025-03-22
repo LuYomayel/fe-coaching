@@ -10,13 +10,16 @@ import {
   findAllWorkoutTemplatesByCoachId
 } from '../services/workoutService';
 import { formatDateToApi } from '../utils/UtilFunctions';
+import { useIntl } from 'react-intl';
+import { useNavigate } from 'react-router-dom';
 const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey, selectedDate }) => {
   const showToast = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [loading, setLoading] = useState(false);
   const { coach } = useContext(UserContext);
-
+  const intl = useIntl();
+  const navigate = useNavigate();
   useEffect(() => {
     setSelectedWorkout([null]);
   }, []);
@@ -46,7 +49,6 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       clientId,
       sessionDate: sessionDate
     };
-    console.log('Body', body);
 
     try {
       setLoading(true);
@@ -63,6 +65,10 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateNew = () => {
+    navigate(`/plans/create-and-assign`, { state: { clientId, sessionDate: selectedDate } });
   };
 
   return (
@@ -90,7 +96,15 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
           />
         </div>
       </div>
-      <Button label="Assign" icon="pi pi-check" onClick={handleAssign} loading={loading} />
+      <div className="flex justify-content-end gap-2">
+        <Button
+          label={intl.formatMessage({ id: 'common.assign' })}
+          icon="pi pi-check"
+          onClick={handleAssign}
+          loading={loading}
+        />
+        <Button label={intl.formatMessage({ id: 'common.createNew' })} icon="pi pi-plus" onClick={handleCreateNew} />
+      </div>
     </Dialog>
   );
 };

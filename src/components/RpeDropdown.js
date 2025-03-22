@@ -4,33 +4,34 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
 import { useParams } from 'react-router-dom';
 import { useToast } from '../utils/ToastContext';
-import { fetchWorkoutInstance, getRpeMethods } from '../services/workoutService';
+import { fetchWorkoutInstance, getRpeMethods, getRpeMethodAssigned } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 const RpeOption = ({ color, value, emoji }) => (
   <div className="rpe-option">
-    <span
-      className="rpe-color-indicator"
-      style={{
-        backgroundColor: color,
-        width: 20,
-        height: 20,
-        display: 'inline-block',
-        marginRight: 5,
-        borderRadius: '4px'
-      }}
-    />
-    <span>
-      {value} {emoji}
-    </span>
+    {color && (
+      <span
+        className="rpe-color-indicator"
+        style={{
+          backgroundColor: `#${color}`,
+          width: 20,
+          height: 20,
+          display: 'inline-block',
+          marginRight: 5,
+          borderRadius: '4px'
+        }}
+      />
+    )}
+    <span className="rpe-value">{value}</span>
+    {emoji && <span className="rpe-emoji ml-2">{emoji}</span>}
   </div>
 );
 
-export default function RpeDropdownComponent({ selectedRpe, onChange }) {
+export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId }) {
   const showToast = useToast();
   const { planId } = useParams();
-  const { client } = useContext(UserContext);
+  const { client, user } = useContext(UserContext);
   const [rpeMethods, setRpeMethods] = useState([]);
   // eslint-disable-next-line
   const [workout, setWorkout] = useState(null);
@@ -43,7 +44,9 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
       setLoading(true);
       setError(null);
       const { data } = await getRpeMethods(client.coach.user.id);
-      // console.log(data)
+      const response = await getRpeMethodAssigned(user.userId, planId, cycleId);
+      setSelectedRpeMethod(response.data.rpeMethod);
+      //const rpeMethod = response.data.rpeMethod.find;
       const methods = data;
       setRpeMethods(methods);
     } catch (error) {
@@ -52,7 +55,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
     } finally {
       setLoading(false);
     }
-  }, [client.coach.user.id, showToast]);
+  }, [client.coach.user.id, showToast, planId, user.userId]);
 
   const fetchWorkoutData = useCallback(async () => {
     if (!rpeMethods.length) return;
@@ -62,15 +65,6 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
       setError(null);
       const { data } = await fetchWorkoutInstance(planId);
       setWorkout(data);
-
-      let assignedRpeMethod = rpeMethods.find((method) => method.name === data.assignedRpe);
-
-      // Si no hay método RPE asignado, usar el primero disponible
-      if (!assignedRpeMethod) {
-        assignedRpeMethod = rpeMethods[0];
-      }
-
-      setSelectedRpeMethod(assignedRpeMethod);
     } catch (error) {
       setError('Error al cargar el entrenamiento');
       showToast('error', 'Error', error.message);
@@ -101,15 +95,19 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
           const value = selectedRpeMethod.minValue + index * selectedRpeMethod.step;
           return {
             label: value.toString(),
-            value: value
+            value: value,
+            color: null,
+            emoji: null
           };
         }
       );
     }
 
     return selectedRpeMethod.valuesMeta.map((meta) => ({
-      label: <RpeOption {...meta} />,
-      value: meta.value
+      label: meta.value.toString(),
+      value: meta.value,
+      color: meta.color,
+      emoji: meta.emoji
     }));
   }, [selectedRpeMethod]);
 
@@ -120,6 +118,19 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
     },
     [onChange]
   );
+
+  // Plantilla personalizada para cada ítem del dropdown
+  const itemTemplate = (option) => {
+    return <RpeOption color={option.color} value={option.value} emoji={option.emoji} />;
+  };
+
+  // Plantilla para la opción seleccionada
+  const selectedItemTemplate = (option) => {
+    if (!option) {
+      return <span>Seleccione valor RPE</span>;
+    }
+    return <RpeOption color={option.color} value={option.value} emoji={option.emoji} />;
+  };
 
   if (loading) {
     return <ProgressSpinner style={{ width: '50px', height: '50px' }} />;
@@ -165,6 +176,8 @@ export default function RpeDropdownComponent({ selectedRpe, onChange }) {
             placeholder="Seleccione valor RPE"
             optionLabel="label"
             className="w-full"
+            itemTemplate={itemTemplate}
+            valueTemplate={selectedItemTemplate}
           />
         )}
       </div>

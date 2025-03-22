@@ -10,7 +10,12 @@ import { Toast } from 'primereact/toast';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Card } from 'primereact/card';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { fetchWorkoutInstance, fetchWorkoutInstanceTemplate, submitPlan } from '../services/workoutService';
+import {
+  createAndAssignWorkout,
+  fetchWorkoutInstance,
+  fetchWorkoutInstanceTemplate,
+  submitPlan
+} from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
@@ -29,7 +34,8 @@ const CreatePlan = ({ isEdit }) => {
   const { state, pathname } = useLocation();
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const changeToTemplate = state?.changeToTemplate;
+  const { changeToTemplate, clientId, sessionDate } = state;
+  console.log('state', state);
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
   const propertyList = [
     {
@@ -578,10 +584,22 @@ const CreatePlan = ({ isEdit }) => {
           showToast('error', 'Error', response.message);
         }
       } else {
-        console.log(cleanPlan, planId, changeToTemplate, isEdit);
-        const { data } = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit, isTemplate);
-        if (data.error) {
-          showToast('error', 'Error', data.message);
+        if (clientId && sessionDate) {
+          const { data } = await createAndAssignWorkout({
+            assignSessionToClientDTO: {
+              clientId,
+              sessionDate
+            },
+            createWorkoutDTO: cleanPlan
+          });
+          if (data.error) {
+            showToast('error', 'Error', data.message);
+          }
+        } else {
+          const { data } = await submitPlan(cleanPlan, planId, changeToTemplate ? false : isEdit, isTemplate);
+          if (data.error) {
+            showToast('error', 'Error', data.message);
+          }
         }
       }
       if (isEdit) {

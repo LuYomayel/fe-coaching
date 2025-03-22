@@ -253,11 +253,17 @@ const messages = {
   'coach.rpe.minValue': 'Valor Mínimo',
   'coach.rpe.maxValue': 'Valor Máximo',
   'coach.rpe.step': 'Paso',
-  'coach.rpe.values': 'Valores Meta',
+  'coach.rpe.valuesMeta': 'Valores Meta',
   'coach.rpe.addValue': 'Agregar Valor',
   'coach.rpe.selectType': 'Seleccionar Tipo de Asignación',
   'coach.rpe.create': 'Crear Método RPE',
   'coach.rpe.update': 'Actualizar Método RPE',
+  'coach.rpe.methods': 'Métodos RPE',
+  'coach.rpe.assignments': 'Asignaciones de RPE',
+  'coach.rpe.method': 'Método RPE',
+  'coach.rpe.targetType': 'Tipo de destino',
+  'coach.rpe.targetName': 'Nombre del destino',
+  'coach.rpe.confirm.removeAssignment': '¿Estás seguro de que deseas eliminar esta asignación de RPE?',
 
   'coach.subscription.currentPlan': 'Plan Actual',
   'coach.subscription.maxClients': 'Clientes Máximos: {max}',
@@ -278,9 +284,9 @@ const messages = {
 
   // NewManageStudents
   'students.title': 'Tus entrenados {count}/{total}',
-  'students.subtitle': 'Ver y gestionar el progreso de tus estudiantes',
+  'students.subtitle': 'Ver y gestionar el progreso de tus entrenados',
   'students.description':
-    'Usa esta página para seguir el progreso de tus estudiantes, asignar sesiones de entrenamiento y comunicarte directamente con ellos.',
+    'Usa esta página para seguir el progreso de tus entrenados, asignar sesiones de entrenamiento y comunicarte directamente con ellos.',
 
   'students.search': 'Buscar estudiantes',
   'students.addNew': 'Agregar Nuevo Estudiante',
@@ -724,7 +730,7 @@ const messages = {
   'workoutTable.exercise': 'Ejercicio',
   'workoutTable.day': '{day} - {plan}',
   'workoutTable.selectCycleDay': 'Selecciona un ciclo y un día de la semana',
-  'workoutTable.cycle': 'Ciclo:',
+  'workoutTable.cycle': 'Ciclo',
   'workoutTable.dayOfWeek': 'Día de la semana:',
   'workoutTable.selectCycle': 'Seleccionar Ciclo',
   'workoutTable.selectDay': 'Seleccionar Día',
@@ -919,10 +925,10 @@ const messages = {
   // RPE Method
 
   'coach.rpe.edit': 'Editar Método RPE',
-  'coach.rpe.valuesMeta': 'Valores Meta',
+
   'coach.rpe.value': 'Valor',
-  'coach.rpe.color': 'Color (e.g., #FF0000)',
-  'coach.rpe.emoji': 'Emoji (e.g., 🔥)',
+  'coach.rpe.color': 'Color (ej., #FF0000)',
+  'coach.rpe.emoji': 'Emoji (ej., 🔥)',
 
   // AssignWorkoutToCycleDialog
   'assignWorkoutToCycleDialog.cycle': 'Ciclo',
@@ -1048,7 +1054,11 @@ const messages = {
   'students.remainingDays': 'Días restantes',
   'students.fitnessGoal': 'Objetivo Fitness',
   'students.status': 'Estado',
-
+  'students.status.verified': 'Verificado',
+  'students.status.unverified': 'No Verificado',
+  'students.status.unverified.tooltip': 'El correo electrónico no ha sido verificado',
+  'students.resendVerification': 'Reenviar Verificación',
+  'students.cancelSubscription': 'Cancelar Suscripción',
   'students.viewProfile': 'Ver Perfil',
   'students.registerPayment': 'Registrar Pago',
   'students.assignSubscription': 'Asignar Suscripción',
@@ -1061,6 +1071,20 @@ const messages = {
   'clientDashboard.tabs.settings': 'Configuraciones',
   'clientDashboard.tabs.profile': 'Perfil',
   'clientDashboard.tabs.clients': 'Clientes',
-  'clientDashboard.tabs.payments': 'Pagos'
+  'clientDashboard.tabs.payments': 'Pagos',
+  'workoutTable.removeWorkout': 'Eliminar Entrenamiento',
+  'coach.rpe.basicInfo': 'Información Básica',
+  'coach.rpe.name.tooltip': 'Nombre del método RPE',
+  'coach.rpe.step.tooltip': 'Incremento entre valores',
+  'coach.rpe.minValue.tooltip': 'Valor mínimo del rango',
+  'coach.rpe.maxValue.tooltip': 'Valor máximo del rango',
+  'coach.rpe.value.tooltip': 'Valor numérico',
+  'coach.rpe.color.tooltip': 'Color en formato hexadecimal (ej: #FF0000)',
+  'coach.rpe.emoji.tooltip': 'Emoji representativo',
+  'coach.rpe.generateValues': 'Generar Valores',
+  'coach.rpe.generateValues.tooltip': 'Genera automáticamente valores basados en el rango y paso definidos',
+  'coach.rpe.error.invalidRange': 'El rango y paso especificados no son válidos',
+  'common.client': 'Cliente',
+  'common.assignedOn': 'Asignado el'
 };
 export default messages;

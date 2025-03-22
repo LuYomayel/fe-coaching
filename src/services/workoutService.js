@@ -235,7 +235,6 @@ const submitPlan = async (plan, planId, isEdit, isTemplate) => {
   const requestMethod = isEdit ? 'PUT' : 'POST';
   const endpoint = isEdit ? `${apiUrl}/workout/${isTemplate ? 'template' : 'instance'}/${planId}` : `${apiUrl}/workout`;
 
-  console.log('OK: ', endpoint);
   const response = await fetch(endpoint, {
     method: requestMethod,
     headers: {
@@ -367,7 +366,6 @@ const assignWorkoutsToCycle = async (cycleId, clientId, body) => {
 
   const data = await response.json();
   if (data.error) {
-    console.log(data);
     throw new Error(data.error);
   }
   return data;
@@ -382,7 +380,6 @@ const createTrainingCycleTemplate = async (body) => {
 
   const data = await response.json();
   if (data.error) {
-    console.log(data);
     throw new Error(data.error);
   }
   return data;
@@ -428,6 +425,21 @@ const assignTrainingSessionToClient = async (body) => {
     body: JSON.stringify(body)
   });
 
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
+
+const createAndAssignWorkout = async (body) => {
+  const response = await fetch(`${apiUrl}/workout/create-workout-and-assign`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
   const data = await response.json();
   if (data.error) {
     throw new Error(data.error);
@@ -492,6 +504,24 @@ const getRpeMethods = async (userId) => {
   return data;
 };
 
+const getRpeMethodAssigned = async (clientId, planId, cycleId) => {
+  const response = await fetch(`${apiUrl}/workout/rpe/get-by-client-id/${clientId}/${planId}/${cycleId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
+
+const getRpeAssignments = async (userId) => {
+  const response = await fetch(`${apiUrl}/workout/rpe/get-all-assignments/${userId}`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
+
 const createOrUpdateRpeMethod = async (dialogMode, newRpe, userId) => {
   const url =
     dialogMode === 'create'
@@ -518,6 +548,18 @@ const assignRpeToTarget = async (rpeMethodId, targetType, targetId, userId) => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.message);
+  }
+  return true;
+};
+
+const removeRpeAssignment = async (assignmentId, userId) => {
+  const response = await fetch(`${apiUrl}/workout/rpe/remove-assignment/${assignmentId}/${userId}`, {
+    method: 'DELETE'
   });
 
   const data = await response.json();
@@ -636,6 +678,7 @@ export {
   getRpeMethods,
   createOrUpdateRpeMethod,
   assignRpeToTarget,
+  removeRpeAssignment,
   deleteRpe,
   createNewTrainingFromExcelView,
   verifyExerciseChanges,
@@ -656,5 +699,8 @@ export {
   fetchHowLongToFinishCycle,
   fetchTrainingFrequency,
   fetchExcelViewByCycleAndDay,
-  saveWorkoutChanges
+  saveWorkoutChanges,
+  createAndAssignWorkout,
+  getRpeMethodAssigned,
+  getRpeAssignments
 };

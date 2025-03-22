@@ -68,6 +68,10 @@ const App = () => {
                               element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={false} />}
                             />
                             <Route
+                              path="/plans/create-and-assign"
+                              element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
+                            />
+                            <Route
                               path="/plans/edit-template/:planId"
                               element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
                             />

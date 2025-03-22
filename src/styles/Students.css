@@ -1,0 +1,70 @@
+/* Estilos para las tarjetas de estudiantes */
+.student-card {
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.student-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.student-card-header {
+  background-color: var(--surface-0);
+}
+
+.student-card-body {
+  flex-grow: 1;
+}
+
+.student-card-footer {
+  margin-top: auto;
+}
+
+.profile-image img {
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.student-card:hover .profile-image img {
+  transform: scale(1.05);
+}
+
+/* Estilos para las badges de estado */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.student-card:hover .status-badge {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Efectos para los botones */
+.student-card-footer .p-button {
+  transition: all 0.2s ease;
+}
+
+.student-card-footer .p-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Ajustes responsive */
+@media screen and (max-width: 768px) {
+  .student-card-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-image {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .student-card-footer {
+    justify-content: center;
+  }
+}

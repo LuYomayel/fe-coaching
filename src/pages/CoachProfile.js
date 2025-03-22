@@ -23,7 +23,9 @@ import {
   fetchTrainingCyclesByCoachId,
   getRpeMethods,
   deleteWorkoutPlan,
-  findAllWorkoutTemplatesByCoachId
+  findAllWorkoutTemplatesByCoachId,
+  getRpeAssignments,
+  removeRpeAssignment
 } from '../services/workoutService';
 import { fetchCoach, fetchCoachPlans, fetchCoachStudents } from '../services/usersService';
 import {
@@ -32,7 +34,7 @@ import {
   fetchCoachSubscriptionPlans
 } from '../services/subscriptionService';
 import { useSpinner } from '../utils/GlobalSpinner'; // <- spinner context
-import { extractYouTubeVideoId, getYouTubeThumbnail, isValidYouTubeUrl } from '../utils/UtilFunctions';
+import { extractYouTubeVideoId, formatDate, getYouTubeThumbnail, isValidYouTubeUrl } from '../utils/UtilFunctions';
 import { MultiSelect } from 'primereact/multiselect';
 import { FilterMatchMode } from 'primereact/api';
 import * as XLSX from 'xlsx';
@@ -49,7 +51,193 @@ import {
 import { ProgressBar } from 'primereact/progressbar';
 import { Tooltip } from 'primereact/tooltip';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
+import { ColorPicker } from 'primereact/colorpicker';
+import { OverlayPanel } from 'primereact/overlaypanel';
 const apiUrl = process.env.REACT_APP_API_URL;
+
+// Conjunto de emojis comunes para usar en el selector
+const commonEmojis = [
+  '😀',
+  '😁',
+  '😂',
+  '🤣',
+  '😃',
+  '😄',
+  '😅',
+  '😆',
+  '😉',
+  '😊',
+  '😋',
+  '😎',
+  '😍',
+  '😘',
+  '🥰',
+  '😗',
+  '😙',
+  '😚',
+  '🙂',
+  '🤗',
+  '🤩',
+  '🤔',
+  '🤨',
+  '😐',
+  '😑',
+  '😶',
+  '🙄',
+  '😏',
+  '😣',
+  '😥',
+  '😮',
+  '🤐',
+  '😯',
+  '😪',
+  '😫',
+  '🥱',
+  '😴',
+  '😌',
+  '😛',
+  '😜',
+  '😝',
+  '🤤',
+  '😒',
+  '😓',
+  '😔',
+  '😕',
+  '🙃',
+  '🤑',
+  '😲',
+  '☹️',
+  '🙁',
+  '😖',
+  '😞',
+  '😟',
+  '😤',
+  '😢',
+  '😭',
+  '😦',
+  '😧',
+  '😨',
+  '😩',
+  '🤯',
+  '😬',
+  '😰',
+  '😱',
+  '🥵',
+  '🥶',
+  '😳',
+  '🤪',
+  '😵',
+  '🥴',
+  '😠',
+  '😡',
+  '🤬',
+  '😷',
+  '🤒',
+  '🤕',
+  '🤢',
+  '🤮',
+  '🤧',
+  '😇',
+  '🥳',
+  '🥺',
+  '🤠',
+  '🤡',
+  '🤥',
+  '🤫',
+  '🤭',
+  '🧐',
+  '🤓',
+  '😈',
+  '👹',
+  '👺',
+  '💀',
+  '👻',
+  '👽',
+  '🤖',
+  '💩',
+  '😺',
+  '😸',
+  '😹',
+  '😻',
+  '😼',
+  '��',
+  '🙀',
+  '😿',
+  '😾',
+  '🙈',
+  '🙉',
+  '🙊',
+  '💪',
+  '👍',
+  '👎',
+  '👏',
+  '🙌',
+  '👐',
+  '🤲',
+  '🤝',
+  '🙏',
+  '✌️',
+  '🤞',
+  '🤟',
+  '🤘',
+  '🤙',
+  '👈',
+  '👉',
+  '👆',
+  '🖕',
+  '👇',
+  '☝️',
+  '👋',
+  '🤚',
+  '🖐️',
+  '✋',
+  '🖖',
+  '👌',
+  '✊',
+  '👊',
+  '🤛',
+  '🤜',
+  '💅',
+  '🚶',
+  '🏃',
+  '💃',
+  '🕺',
+  '👨‍❤️‍👨',
+  '👩‍❤️‍👩',
+  '❤️',
+  '🧡',
+  '💛',
+  '💚',
+  '💙',
+  '💜',
+  '🤎',
+  '🖤',
+  '🤍',
+  '💔',
+  '❣️',
+  '💕',
+  '💞',
+  '💓',
+  '💗',
+  '💖',
+  '💘',
+  '💝',
+  '💟',
+  '💌',
+  '💤',
+  '💢',
+  '💣',
+  '💥',
+  '💦',
+  '💨',
+  '💫',
+  '🦠',
+  '🚨',
+  '🔥',
+  '👑',
+  '💯',
+  '🏆'
+];
 
 export default function CoachProfilePage() {
   const intl = useIntl();
@@ -129,8 +317,9 @@ export default function CoachProfilePage() {
   });
 
   // States for RPE methods
-  const [rpeMethods, setRpeMethods] = useState([{ id: 1, name: 'RPE', minValue: 0, maxValue: 10, step: 1 }]);
-  const [isRpeLoading, setIsRpeLoading] = useState(true);
+  const [rpeMethods, setRpeMethods] = useState([]);
+  const [rpeAssignments, setRpeAssignments] = useState([]);
+  const [isRpeLoading, setIsRpeLoading] = useState(false);
   const [rpeDialogVisible, setRpeDialogVisible] = useState(false);
   const [rpeAssignmentDialogVisible, setRpeAssignmentDialogVisible] = useState(false);
   const [newRpe, setNewRpe] = useState({
@@ -184,11 +373,16 @@ export default function CoachProfilePage() {
   const fetchRpeMethods = async () => {
     setIsRpeLoading(true);
     try {
-      const { data } = await getRpeMethods(user.userId);
-      setRpeMethods(data);
+      // Cargar los métodos RPE
+      const { data: rpeData } = await getRpeMethods(user.userId);
+      setRpeMethods(rpeData);
+
+      // Cargar las asignaciones de RPE
+      const { data: assignmentsData } = await getRpeAssignments(user.userId);
+      setRpeAssignments(assignmentsData);
     } catch (error) {
-      console.log('error', error);
-      showToast('error', 'Error', error.message);
+      console.error('Error fetching RPE methods', error);
+      showToast('error', 'Error', 'Failed to fetch RPE methods');
     } finally {
       setIsRpeLoading(false);
     }
@@ -451,7 +645,6 @@ export default function CoachProfilePage() {
   };
 
   const actionBodyTemplate = (rowData, type) => {
-    console.log('rowData', rowData);
     return (
       <React.Fragment>
         <Button
@@ -476,7 +669,6 @@ export default function CoachProfilePage() {
             } else if (type === 'workout') {
               navigate(`/plans/edit-template/${rowData.workoutInstanceTemplates[0].id}`);
             } else if (type === 'plan') {
-              console.log('rowData', rowData);
               openEditPlanDialog(rowData);
             }
           }}
@@ -497,10 +689,8 @@ export default function CoachProfilePage() {
                 reject: () => console.log('Rejected')
               });
             } else if (type === 'plan') {
-              console.log('rowData', rowData);
               confirmDeletePlan(rowData.id);
             } else if (type === 'workout') {
-              console.log('rowData', rowData);
               confirmDeleteWorkout(rowData.workoutInstanceTemplates[0].id);
             }
           }}
@@ -807,142 +997,307 @@ export default function CoachProfilePage() {
     );
   };
 
-  const renderRpeMethodDialog = () => (
-    <Dialog
-      draggable={false}
-      resizable={false}
-      dismissableMask
-      header={
-        dialogMode === 'create'
-          ? intl.formatMessage({ id: 'coach.rpe.create' })
-          : intl.formatMessage({ id: 'coach.rpe.edit' })
-      }
-      className="responsive-dialog"
-      visible={rpeDialogVisible}
-      style={{ width: '50vw' }}
-      onHide={() => setRpeDialogVisible(false)}
-    >
-      <div className="p-fluid">
-        <div className="p-field">
-          <label htmlFor="name">{intl.formatMessage({ id: 'coach.rpe.name' })}</label>
-          <InputText id="name" value={newRpe.name} onChange={(e) => setNewRpe({ ...newRpe, name: e.target.value })} />
-        </div>
-        <div className="p-field">
-          <label htmlFor="minValue">{intl.formatMessage({ id: 'coach.rpe.minValue' })}</label>
-          <InputNumber
-            id="minValue"
-            value={newRpe.minValue}
-            onChange={(e) => setNewRpe({ ...newRpe, minValue: e.value })}
-          />
-        </div>
-        <div className="p-field">
-          <label htmlFor="maxValue">{intl.formatMessage({ id: 'coach.rpe.maxValue' })}</label>
-          <InputNumber
-            id="maxValue"
-            value={newRpe.maxValue}
-            onChange={(e) => setNewRpe({ ...newRpe, maxValue: e.value })}
-          />
-        </div>
-        <div className="p-field">
-          <label htmlFor="step">{intl.formatMessage({ id: 'coach.rpe.step' })}</label>
-          <InputNumber id="step" value={newRpe.step} onChange={(e) => setNewRpe({ ...newRpe, step: e.value })} />
-        </div>
-
-        {/* Campo para agregar valoresMeta */}
-        <div className="p-field">
-          <label>{intl.formatMessage({ id: 'coach.rpe.valuesMeta' })}</label>
-          {newRpe.valuesMeta &&
-            Array.isArray(newRpe.valuesMeta) &&
-            newRpe.valuesMeta.map((valueMeta, index) => (
-              <div key={index} className="p-grid p-align-center p-mb-2">
-                <div className="p-col-3">
+  const renderRpeMethodDialog = () => {
+    return (
+      <Dialog
+        draggable={false}
+        resizable={false}
+        dismissableMask
+        header={
+          dialogMode === 'create'
+            ? intl.formatMessage({ id: 'coach.rpe.create' })
+            : intl.formatMessage({ id: 'coach.rpe.edit' })
+        }
+        className="responsive-dialog"
+        visible={rpeDialogVisible}
+        style={{ width: '50vw', height: '80vh' }}
+        onHide={() => setRpeDialogVisible(false)}
+      >
+        <div className="p-fluid">
+          <div className="grid">
+            {/* Información básica */}
+            <div className="col-12">
+              <h3 className="text-xl font-bold mb-3">
+                <i className="pi pi-info-circle mr-2" />
+                {intl.formatMessage({ id: 'coach.rpe.basicInfo' })}
+              </h3>
+              <div className="grid">
+                <div className="col-12 md:col-6 field">
+                  <label htmlFor="name" className="block mb-2">
+                    {intl.formatMessage({ id: 'coach.rpe.name' })}
+                  </label>
+                  <InputText
+                    id="name"
+                    value={newRpe?.name || ''}
+                    onChange={(e) => setNewRpe({ ...newRpe, name: e.target.value })}
+                    className="w-full"
+                    tooltip={intl.formatMessage({ id: 'coach.rpe.name.tooltip' })}
+                    tooltipOptions={{ position: 'top' }}
+                  />
+                </div>
+                <div className="col-12 md:col-6 field">
+                  <label htmlFor="step" className="block mb-2">
+                    {intl.formatMessage({ id: 'coach.rpe.step' })}
+                  </label>
                   <InputNumber
-                    value={valueMeta.value}
-                    onChange={(e) =>
-                      setNewRpe({
-                        ...newRpe,
-                        valuesMeta: newRpe.valuesMeta.map((meta, i) =>
-                          i === index ? { ...meta, value: e.value } : meta
-                        )
-                      })
-                    }
-                    placeholder={intl.formatMessage({ id: 'coach.rpe.value' })}
+                    id="step"
+                    value={newRpe?.step || 0}
+                    onValueChange={(e) => setNewRpe({ ...newRpe, step: e.value })}
+                    className="w-full"
+                    tooltip={intl.formatMessage({ id: 'coach.rpe.step.tooltip' })}
+                    tooltipOptions={{ position: 'top' }}
                   />
                 </div>
-                <div className="p-col-3">
-                  <InputText
-                    value={valueMeta.color}
-                    onChange={(e) =>
-                      setNewRpe({
-                        ...newRpe,
-                        valuesMeta: newRpe.valuesMeta.map((meta, i) =>
-                          i === index ? { ...meta, color: e.target.value } : meta
-                        )
-                      })
-                    }
-                    placeholder={intl.formatMessage({ id: 'coach.rpe.color' })}
+                <div className="col-12 md:col-6 field">
+                  <label htmlFor="minValue" className="block mb-2">
+                    {intl.formatMessage({ id: 'coach.rpe.minValue' })}
+                  </label>
+                  <InputNumber
+                    id="minValue"
+                    value={newRpe?.minValue || 0}
+                    onValueChange={(e) => setNewRpe({ ...newRpe, minValue: e.value })}
+                    className="w-full"
+                    tooltip={intl.formatMessage({ id: 'coach.rpe.minValue.tooltip' })}
+                    tooltipOptions={{ position: 'top' }}
                   />
                 </div>
-                <div className="p-col-3">
-                  <InputText
-                    value={valueMeta.emoji}
-                    onChange={(e) =>
-                      setNewRpe({
-                        ...newRpe,
-                        valuesMeta: newRpe.valuesMeta.map((meta, i) =>
-                          i === index ? { ...meta, emoji: e.target.value } : meta
-                        )
-                      })
-                    }
-                    placeholder={intl.formatMessage({ id: 'coach.rpe.emoji' })}
+                <div className="col-12 md:col-6 field">
+                  <label htmlFor="maxValue" className="block mb-2">
+                    {intl.formatMessage({ id: 'coach.rpe.maxValue' })}
+                  </label>
+                  <InputNumber
+                    id="maxValue"
+                    value={newRpe?.maxValue || 0}
+                    onValueChange={(e) => setNewRpe({ ...newRpe, maxValue: e.value })}
+                    className="w-full"
+                    tooltip={intl.formatMessage({ id: 'coach.rpe.maxValue.tooltip' })}
+                    tooltipOptions={{ position: 'top' }}
                   />
                 </div>
-                <div className="p-col-3">
+                <div className="col-12 flex justify-content-end">
                   <Button
-                    icon="pi pi-trash"
-                    className="p-button-danger"
+                    label={intl.formatMessage({ id: 'coach.rpe.generateValues' })}
+                    icon="pi pi-cog"
+                    className="p-button-secondary"
+                    onClick={() => {
+                      if (
+                        newRpe.minValue !== undefined &&
+                        newRpe.maxValue !== undefined &&
+                        newRpe.step !== undefined &&
+                        newRpe.step > 0
+                      ) {
+                        const min = newRpe.minValue;
+                        const max = newRpe.maxValue;
+                        const step = newRpe.step;
+
+                        // Generar valores basados en el rango y el paso
+                        const valuesMeta = [];
+                        for (let i = min; i <= max; i += step) {
+                          valuesMeta.push({
+                            value: i,
+                            color: '',
+                            emoji: ''
+                          });
+                        }
+
+                        setNewRpe({
+                          ...newRpe,
+                          valuesMeta: valuesMeta
+                        });
+                      } else {
+                        toast.current.show({
+                          severity: 'warn',
+                          summary: intl.formatMessage({ id: 'common.warning' }),
+                          detail: intl.formatMessage({ id: 'coach.rpe.error.invalidRange' }),
+                          life: 3000
+                        });
+                      }
+                    }}
+                    disabled={
+                      newRpe.minValue === undefined ||
+                      newRpe.maxValue === undefined ||
+                      newRpe.step === undefined ||
+                      newRpe.step <= 0 ||
+                      newRpe.minValue >= newRpe.maxValue
+                    }
+                    tooltip={intl.formatMessage({ id: 'coach.rpe.generateValues.tooltip' })}
+                    tooltipOptions={{ position: 'left' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Values Meta section */}
+            <div className="col-12 mt-4">
+              <h3 className="text-xl font-bold mb-3">
+                <i className="pi pi-list mr-2" />
+                {intl.formatMessage({ id: 'coach.rpe.valuesMeta' })}
+              </h3>
+              <div className="p-card">
+                {newRpe.valuesMeta &&
+                  Array.isArray(newRpe.valuesMeta) &&
+                  newRpe.valuesMeta.map((valueMeta, index) => (
+                    <div key={index} className="p-card mb-3">
+                      <div className="grid">
+                        <div className="col-12 md:col-3">
+                          <div className="p-field">
+                            <label className="block mb-2">{intl.formatMessage({ id: 'coach.rpe.value' })}</label>
+                            <InputNumber
+                              value={valueMeta.value}
+                              onChange={(e) =>
+                                setNewRpe({
+                                  ...newRpe,
+                                  valuesMeta: newRpe.valuesMeta.map((meta, i) =>
+                                    i === index ? { ...meta, value: e.value } : meta
+                                  )
+                                })
+                              }
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                        <div className="col-12 md:col-3">
+                          <div className="p-field">
+                            <label className="block mb-2">{intl.formatMessage({ id: 'coach.rpe.color' })}</label>
+                            <div className="flex align-items-center">
+                              <ColorPicker
+                                value={valueMeta.color}
+                                onChange={(e) =>
+                                  setNewRpe({
+                                    ...newRpe,
+                                    valuesMeta: newRpe.valuesMeta.map((meta, i) =>
+                                      i === index ? { ...meta, color: e.value } : meta
+                                    )
+                                  })
+                                }
+                                className="mr-2"
+                                tooltip={intl.formatMessage({ id: 'coach.rpe.color.tooltip' })}
+                                tooltipOptions={{ position: 'top' }}
+                              />
+                              {valueMeta.color && (
+                                <div
+                                  className="color-preview"
+                                  style={{
+                                    backgroundColor: `#${valueMeta.color}`,
+                                    width: '2rem',
+                                    height: '2rem',
+                                    borderRadius: '4px',
+                                    border: '1px solid #dee2e6'
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-12 md:col-3">
+                          <div className="p-field">
+                            <label className="block mb-2">{intl.formatMessage({ id: 'coach.rpe.emoji' })}</label>
+                            <div className="flex align-items-center">
+                              <Button
+                                icon="pi pi-smile"
+                                className="p-button-rounded p-button-outlined mr-2"
+                                onClick={(e) => {
+                                  emojiPanelRef.current.toggle(e);
+                                  // Guardar el índice actual para saber qué valor estamos editando
+                                  emojiPanelRef.current.currentEmojiIndex = index;
+                                }}
+                                tooltip={intl.formatMessage({ id: 'coach.rpe.emoji.tooltip' })}
+                                tooltipOptions={{ position: 'top' }}
+                              />
+                              <span className="emoji-preview text-2xl">{valueMeta.emoji}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-12 md:col-3 flex align-items-end">
+                          <Button
+                            icon="pi pi-trash"
+                            className="p-button-danger p-button-outlined w-full"
+                            onClick={() =>
+                              setNewRpe({
+                                ...newRpe,
+                                valuesMeta: newRpe.valuesMeta.filter((_, i) => i !== index)
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                <div className="flex justify-content-center mt-3">
+                  <Button
+                    label={intl.formatMessage({ id: 'coach.rpe.addValue' })}
+                    icon="pi pi-plus"
+                    className="p-button-outlined"
                     onClick={() =>
                       setNewRpe({
                         ...newRpe,
-                        valuesMeta: newRpe.valuesMeta.filter((_, i) => i !== index)
+                        valuesMeta: [...(newRpe.valuesMeta || []), { value: 0, color: '', emoji: '' }]
                       })
                     }
                   />
                 </div>
               </div>
-            ))}
-          {/* Botón para agregar nuevo valor */}
-          <Button
-            label={intl.formatMessage({ id: 'coach.rpe.addValue' })}
-            icon="pi pi-plus"
-            onClick={() =>
-              setNewRpe({
-                ...newRpe,
-                valuesMeta: [...newRpe.valuesMeta, { value: 0, color: '', emoji: '' }]
-              })
-            }
-          />
-        </div>
+            </div>
+          </div>
 
-        <div className="p-field">
-          <Button
-            label={
-              dialogMode === 'create'
-                ? intl.formatMessage({ id: 'coach.rpe.create' })
-                : intl.formatMessage({ id: 'coach.rpe.edit' })
-            }
-            icon="pi pi-check"
-            onClick={handleSaveRpeMethod}
-            loading={isRpeLoading}
-          />
+          {/* Botones de acción */}
+          <div className="flex justify-content-end mt-4">
+            <Button
+              label={intl.formatMessage({ id: 'common.cancel' })}
+              icon="pi pi-times"
+              className="p-button-text mr-2"
+              onClick={() => setRpeDialogVisible(false)}
+            />
+            <Button
+              label={
+                dialogMode === 'create'
+                  ? intl.formatMessage({ id: 'coach.rpe.create' })
+                  : intl.formatMessage({ id: 'coach.rpe.edit' })
+              }
+              icon="pi pi-check"
+              onClick={handleSaveRpeMethod}
+              loading={isRpeLoading}
+            />
+          </div>
         </div>
-      </div>
-    </Dialog>
-  );
+        <Tooltip target=".pi-info-circle" />
+
+        {/* Panel de emojis */}
+        <OverlayPanel ref={emojiPanelRef} showCloseIcon>
+          <div className="emoji-grid p-2" style={{ maxWidth: '300px' }}>
+            <div className="grid">
+              {commonEmojis.map((emoji, index) => (
+                <div key={index} className="col-2 text-center">
+                  <Button
+                    className="p-button-text p-button-rounded emoji-button"
+                    style={{ fontSize: '1.5rem' }}
+                    label={emoji}
+                    onClick={() => {
+                      // Obtener el índice actual del valor meta que se está editando
+                      const currentIndex = emojiPanelRef.current.currentEmojiIndex;
+                      if (currentIndex !== undefined) {
+                        setNewRpe({
+                          ...newRpe,
+                          valuesMeta: newRpe.valuesMeta.map((meta, i) =>
+                            i === currentIndex ? { ...meta, emoji: emoji } : meta
+                          )
+                        });
+                        emojiPanelRef.current.hide();
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </OverlayPanel>
+      </Dialog>
+    );
+  };
+
   const handleCreatePlan = async () => {
     try {
       const data = await createOrUpdateCoachPlan(newPlan, newPlan.id, user.userId, dialogMode);
-      console.log('data', data, newPlan.name);
       if (data === 'updated') {
         showToast(
           'success',
@@ -1007,7 +1362,6 @@ export default function CoachProfilePage() {
 
   const openEditPlanDialog = (plan) => {
     plan.price = Number(plan.price);
-    console.log('plan', plan);
     setDialogMode('edit');
     setNewPlan(plan);
     setCreatePlanDialogVisible(true);
@@ -1019,7 +1373,6 @@ export default function CoachProfilePage() {
         method: 'DELETE'
       });
       const data = await response.json();
-      console.log('data', data);
       if (data.error) {
         throw new Error(data.error || 'Something went wrong');
       }
@@ -1408,6 +1761,63 @@ export default function CoachProfilePage() {
     );
   };
 
+  const ConfirmDeleteCertificationRef = useRef(null);
+  const editCategoryDialogRef = useRef(null);
+  const toast = useRef(null);
+  const emojiPanelRef = useRef(null);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+
+  // Función para obtener el nombre del RPE a partir de su ID
+  const getRpeNameById = (rpeId) => {
+    const rpe = rpeMethods.find((r) => r.id === rpeId);
+    return rpe ? rpe.name : 'Desconocido';
+  };
+
+  // Función para formatear el tipo de objetivo en texto legible
+  const formatTargetType = (type) => {
+    switch (type) {
+      case 'user':
+        return intl.formatMessage({ id: 'common.client' });
+      case 'workout':
+        return intl.formatMessage({ id: 'coach.workouts.title' });
+      case 'trainingCycle':
+        return intl.formatMessage({ id: 'workoutTable.cycle' });
+      default:
+        return type;
+    }
+  };
+
+  // Función para confirmar y eliminar una asignación de RPE
+  const confirmRemoveRpeAssignment = (assignmentId) => {
+    showConfirmationDialog({
+      message: intl.formatMessage({
+        id: 'coach.rpe.confirm.removeAssignment',
+        defaultMessage: '¿Estás seguro de que deseas eliminar esta asignación de RPE?'
+      }),
+      header: intl.formatMessage({ id: 'common.confirmation' }),
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => handleRemoveRpeAssignment(assignmentId),
+      reject: () => console.log('Assignment removal cancelled.')
+    });
+  };
+
+  // Función para manejar la eliminación de asignaciones de RPE
+  const handleRemoveRpeAssignment = async (assignmentId) => {
+    try {
+      const response = await removeRpeAssignment(assignmentId, user.userId);
+      if (!response) {
+        showToast('error', 'Error', 'RPE Assignment could not be removed');
+        return;
+      }
+      showToast('success', 'Success', 'RPE Assignment removed successfully');
+      // Actualizar la lista de asignaciones
+      fetchRpeMethods();
+    } catch (error) {
+      console.error('Error removing RPE assignment', error);
+      showToast('error', 'Error', error.message || 'Error removing RPE assignment');
+    }
+  };
+
   return (
     <div className="coach-profile p-4">
       <Card className={isCoachInfoLoading ? 'flex justify-content-center' : 'mb-4'}>
@@ -1585,25 +1995,94 @@ export default function CoachProfilePage() {
         </TabPanel>
 
         <TabPanel header={intl.formatMessage({ id: 'coach.tabs.rpe' })}>
-          <div className="flex justify-content-end mb-3">
-            <Button
-              label={intl.formatMessage({ id: 'common.add' }, { item: 'RPE Method' })}
-              icon="pi pi-plus"
-              onClick={() => setRpeDialogVisible(true)}
-            />
-            <Button
-              label={intl.formatMessage({ id: 'common.assign' }, { item: 'RPE Method' })}
-              icon="pi pi-plus"
-              onClick={() => setRpeAssignmentDialogVisible(true)}
-            />
+          <div className="flex justify-content-between mb-3">
+            <h2 className="text-xl font-bold">
+              <FormattedMessage id="coach.tabs.rpe" />
+            </h2>
+            <div>
+              <Button
+                label={intl.formatMessage({ id: 'common.add' }, { item: 'RPE Method' })}
+                icon="pi pi-plus"
+                className="mr-2"
+                onClick={() => {
+                  setRpeDialogVisible(true);
+                  setNewRpe({
+                    name: '',
+                    minValue: 0,
+                    maxValue: 0,
+                    step: 0,
+                    valuesMeta: []
+                  });
+                }}
+              />
+              <Button
+                label={intl.formatMessage({ id: 'common.assign' }, { item: 'RPE Method' })}
+                icon="pi pi-link"
+                onClick={() => setRpeAssignmentDialogVisible(true)}
+              />
+            </div>
           </div>
-          <DataTable value={rpeMethods} className="mt-4" loading={isRpeLoading}>
-            <Column field="name" header={intl.formatMessage({ id: 'coach.rpe.name' })} />
-            <Column field="minValue" header={intl.formatMessage({ id: 'coach.rpe.minValue' })} />
-            <Column field="maxValue" header={intl.formatMessage({ id: 'coach.rpe.maxValue' })} />
-            <Column field="step" header={intl.formatMessage({ id: 'coach.rpe.step' })} />
-            <Column header={intl.formatMessage({ id: 'common.actions' })} body={rpeActionsBodyTemplate} />
-          </DataTable>
+
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">
+              <FormattedMessage id="coach.rpe.methods" defaultMessage="RPE Methods" />
+            </h3>
+            <DataTable
+              value={rpeMethods}
+              className="mt-2"
+              loading={isRpeLoading}
+              emptyMessage={intl.formatMessage({ id: 'common.noData' })}
+            >
+              <Column field="name" header={intl.formatMessage({ id: 'coach.rpe.name' })} />
+              <Column field="minValue" header={intl.formatMessage({ id: 'coach.rpe.minValue' })} />
+              <Column field="maxValue" header={intl.formatMessage({ id: 'coach.rpe.maxValue' })} />
+              <Column field="step" header={intl.formatMessage({ id: 'coach.rpe.step' })} />
+              <Column header={intl.formatMessage({ id: 'common.actions' })} body={rpeActionsBodyTemplate} />
+            </DataTable>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">
+              <FormattedMessage id="coach.rpe.assignments" defaultMessage="RPE Assignments" />
+            </h3>
+            <DataTable
+              value={rpeAssignments}
+              className="mt-2"
+              loading={isRpeLoading}
+              emptyMessage={intl.formatMessage({ id: 'common.noData' })}
+            >
+              <Column
+                header={intl.formatMessage({ id: 'coach.rpe.method' })}
+                // body={(rowData) => getRpeNameById(rowData.rpeMethodId)}
+                field="rpeMethod.name"
+              />
+              <Column
+                field="targetType"
+                header={intl.formatMessage({ id: 'coach.rpe.targetType' })}
+                body={(rowData) => formatTargetType(rowData.targetType)}
+              />
+              <Column field="targetName" header={intl.formatMessage({ id: 'coach.rpe.targetName' })} />
+              <Column
+                field="assignedAt"
+                header={intl.formatMessage({ id: 'common.assignedOn' })}
+                body={(rowData) => {
+                  const date = new Date(rowData.assignedAt);
+                  return formatDate(date);
+                }}
+              />
+              <Column
+                header={intl.formatMessage({ id: 'common.actions' })}
+                body={(rowData) => (
+                  <Button
+                    icon="pi pi-trash"
+                    className="p-button-rounded p-button-danger p-button-text"
+                    onClick={() => confirmRemoveRpeAssignment(rowData.id)}
+                    tooltip={intl.formatMessage({ id: 'common.delete' })}
+                  />
+                )}
+              />
+            </DataTable>
+          </div>
         </TabPanel>
       </TabView>
 
@@ -1643,14 +2122,6 @@ export default function CoachProfilePage() {
         style={{ width: '80vw' }}
         onHide={() => setPlanDetailsVisible(false)}
       >
-        {/*<NewPlanDetail
-          isCoach={true}
-          planId={selectedPlan}
-          setPlanDetailsIsVisible={setPlanDetailsVisible}
-          setRefreshKey={setRefreshKey}
-          isTemplate={true}
-          setLoading={setLoading}
-        />*/}
         <NewPlanDetailHorizontal
           planId={selectedPlan}
           setPlanDetailsVisible={setPlanDetailsVisible}

@@ -7,7 +7,9 @@ import {
   fetchWorkoutInstance,
   fetchWorkoutInstanceTemplate,
   deleteWorkoutPlan,
-  getRpeMethods
+  getRpeMethods,
+  getRpeAssignments,
+  getRpeMethodAssigned
 } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
 import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
@@ -33,7 +35,7 @@ export default function NewPlanDetailHorizontal({
   const [rpeMethods, setRpeMethods] = useState([]);
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState('');
-
+  const [currentCycle, setCurrentCycle] = useState(null);
   const [workoutPlan, setWorkoutPlan] = useState({
     groups: [],
     workout: {
@@ -52,6 +54,7 @@ export default function NewPlanDetailHorizontal({
       try {
         setLoading(true);
         const { data } = isTemplate ? await fetchWorkoutInstanceTemplate(planId) : await fetchWorkoutInstance(planId);
+        setCurrentCycle(data.trainingSession.trainingWeek.trainingCycle);
         // Sort groups by groupNumber
         data.groups.sort((a, b) => a.groupNumber - b.groupNumber);
         // Normalize empty exercise props
@@ -90,18 +93,18 @@ export default function NewPlanDetailHorizontal({
     const fetchRpeMethods = async () => {
       try {
         setLoading(true);
-        const { data } = await getRpeMethods(client?.coach?.user?.id || user.userId);
-        setRpeMethods(data);
+        const { data } = await getRpeMethodAssigned(client.id, planId, currentCycle.id);
+        setRpeMethods(data.rpeMethod);
       } catch (error) {
         showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
       } finally {
         setLoading(false);
       }
     };
-    if (!isTemplate) {
+    if (!isTemplate && currentCycle) {
       fetchRpeMethods();
     }
-  }, [isTemplate, client?.coach?.user?.id, user.userId, showToast, setLoading]);
+  }, [isTemplate, client?.coach?.user?.id, user.userId, showToast, setLoading, currentCycle]);
 
   const handleEdit = () => {
     navigate(`/plans/edit/${planId}`);
@@ -390,16 +393,9 @@ export default function NewPlanDetailHorizontal({
           ) : (
             <div className="p-col-3">{intl.formatMessage({ id: 'exercise.properties.notCompleted' })}</div>
           )}
-          {exercise.rpe && rpeMethods.length > 0 && (
+          {exercise.rpe && rpeMethods && (
             <div className="p-col-3">
-              {
-                (
-                  rpeMethods.find((method) => method.id === exercise.rpe) || {
-                    name: rpeMethods[0].name
-                  }
-                ).name
-              }
-              :{exercise.rpe}
+              {rpeMethods.name}: {exercise.rpe}
             </div>
           )}
           {exercise.comments && (
