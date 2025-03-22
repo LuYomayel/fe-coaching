@@ -17,8 +17,9 @@ import {
   fetchTrainingSessionWithNoWeekByClientId
 } from '../services/workoutService';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
-import { getDayMonthYear } from '../utils/UtilFunctions';
+import { getDayMonthYear, formatRelativeDate } from '../utils/UtilFunctions';
 import { useIntl, FormattedMessage } from 'react-intl';
+import '../styles/StudentHome.css';
 
 export default function StudentHome() {
   const intl = useIntl();
@@ -31,6 +32,7 @@ export default function StudentHome() {
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [today] = useState(new Date());
   const toast = useRef(null);
   const calendarRef = useRef(null);
 
@@ -138,7 +140,7 @@ export default function StudentHome() {
       <div className="custom-event-content p-2">
         {title !== 'no title' && (
           <>
-            <div className="event-title mb-2">{title}</div>
+            <div className="event-title">{title}</div>
             <div className="event-actions">
               <Button
                 icon="pi pi-eye"
@@ -194,19 +196,28 @@ export default function StudentHome() {
     calendarApi.gotoDate(new Date(new Date().getFullYear(), e.value, 1));
   };
 
+  const formatDate = (date) => {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString(intl.locale, options);
+  };
+
   return (
-    <div className="student-home p-4">
+    <div className="student-home">
       <Toast ref={toast} />
 
-      <Card className="mb-4">
-        <h1 className="text-4xl font-bold mb-4">
-          <FormattedMessage id="studentHome.welcome" values={{ name: client?.name || '' }} />
-        </h1>
-      </Card>
+      <div className="student-header">
+        <div className="student-header-content">
+          <h1 className="student-welcome">
+            <FormattedMessage id="studentHome.welcome" values={{ name: client?.name || '' }} />
+          </h1>
+          <p className="student-subheader">{formatDate(today)}</p>
+        </div>
+      </div>
 
-      <Card className="mb-4">
-        <div className="flex justify-content-between align-items-center mb-4">
-          <h2 className="text-2xl font-bold">
+      <Card className="student-card">
+        <div className="calendar-controls">
+          <h2 className="calendar-title">
+            <i className="pi pi-calendar text-primary mr-2"></i>
             <FormattedMessage id="studentHome.calendar.title" />
           </h2>
           <Dropdown
@@ -216,17 +227,19 @@ export default function StudentHome() {
             placeholder={intl.formatMessage({
               id: 'studentHome.calendar.filterMonth'
             })}
+            className="month-selector"
           />
         </div>
         {loading ? (
-          <div className="flex justify-content-center">
-            <ProgressSpinner />
-            <span className="ml-2">
+          <div className="loading-container">
+            <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
+            <span>
               <FormattedMessage id="common.loading" />
             </span>
           </div>
         ) : error ? (
-          <div className="text-red-500">
+          <div className="error-message">
+            <i className="pi pi-exclamation-triangle"></i>
             <FormattedMessage id="error.fetchTraining" />
           </div>
         ) : (
@@ -270,13 +283,8 @@ export default function StudentHome() {
         visible={planDetailsVisible}
         style={{ width: '80vw' }}
         onHide={() => setPlanDetailsVisible(false)}
+        className="plan-details-dialog"
       >
-        {/*<NewPlanDetail
-          planId={selectedPlan}
-          setLoading={setLoading}
-          setPlanDetailsVisible={setPlanDetailsVisible}
-          setRefreshKey={setRefreshKey}
-        />*/}
         {selectedPlan && (
           <NewPlanDetailHorizontal
             planId={selectedPlan}
@@ -286,25 +294,6 @@ export default function StudentHome() {
           />
         )}
       </Dialog>
-
-      <style jsx>{`
-        .custom-event-content {
-          width: 100%;
-          height: 100%;
-        }
-        .event-title {
-          font-weight: bold;
-        }
-        .event-actions {
-          display: flex;
-          justify-content: flex-end;
-        }
-        @media (max-width: 768px) {
-          .p-dialog {
-            width: 90vw !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

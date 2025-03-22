@@ -221,35 +221,35 @@ export default function HomePage() {
 
   const renderHeader = () => {
     return (
-      <div className="flex align-items-center justify-content-between">
+      <div className="flex align-items-center justify-content-between surface-card p-3 shadow-2 border-round">
         <div className="flex align-items-center">
-          <Dumbbell className="mr-2" size={24} />
+          <Dumbbell className="mr-2 text-primary" size={24} />
           <span className="font-bold text-xl">EaseTrain</span>
         </div>
-        <div>
+        <div className="flex flex-wrap">
           <Button
             label={intl.formatMessage({ id: 'home.header.features' })}
-            className="p-button-text mr-2"
+            className="p-button-text p-button-rounded mr-2"
             onClick={() => scrollToSection(featuresRef)}
           />
           <Button
             label={intl.formatMessage({ id: 'home.header.pricing' })}
-            className="p-button-text mr-2"
+            className="p-button-text p-button-rounded mr-2"
             onClick={() => scrollToSection(pricingRef)}
           />
           <Button
             label={intl.formatMessage({ id: 'home.header.about' })}
-            className="p-button-text mr-2"
+            className="p-button-text p-button-rounded mr-2"
             onClick={() => scrollToSection(aboutRef)}
           />
           <Button
             label={intl.formatMessage({ id: 'home.header.contact' })}
-            className="p-button-text"
+            className="p-button-text p-button-rounded mr-2"
             onClick={() => scrollToSection(contactRef)}
           />
           <Button
             label={intl.formatMessage({ id: 'home.header.login' })}
-            className="p-button-text mr-2"
+            className="p-button-rounded ml-2"
             onClick={() => setLoginVisible(true)}
           />
         </div>
@@ -259,7 +259,7 @@ export default function HomePage() {
 
   const renderHero = () => {
     return (
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(to right, #7e5bef, #5a9bd4)' }}>
+      <div className="relative overflow-hidden bg-primary">
         <div className="absolute inset-0">
           <svg
             className="absolute"
@@ -277,87 +277,44 @@ export default function HomePage() {
             <rect y="107.48" width="152" height="152" rx="8" transform="rotate(-45 0 107.48)" fill="white" />
           </svg>
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 bg-primary-600"
             style={{
-              background: 'linear-gradient(to right, #7e5bef, #3ea1db)',
-              opacity: 0.9
+              opacity: 0.4
             }}
           />
         </div>
         <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32" style={{ maxWidth: '1200px' }}>
-          <div className="grid align-items-center justify-content-between">
+          <div className="grid align-items-center">
             <div className="col-12 md:col-6 text-center md:text-left mb-6 md:mb-0">
-              <h1
-                style={{
-                  fontSize: '3.5rem',
-                  fontWeight: '800',
-                  lineHeight: '1.2',
-                  marginBottom: '1.5rem',
-                  color: 'white'
-                }}
-              >
+              <h1 className="text-0 font-extrabold mb-4 text-white text-6xl">
                 <FormattedMessage id="home.hero.title" />
               </h1>
-              <p
-                className="text-white"
-                style={{
-                  fontSize: '1.5rem',
-                  marginBottom: '2rem',
-                  color: '#E0BBE4'
-                }}
-              >
+              <p className="text-0 mb-5 text-white opacity-80 text-xl line-height-3">
                 <FormattedMessage id="home.hero.subtitle" />
               </p>
-              <div className="grid justify-content-center md:justify-content-start mb-4">
-                <div className="col-fixed mb-2 mr-2">
-                  <Button
-                    onClick={() => setSignUpVisible(true)}
-                    label={intl.formatMessage({ id: 'home.hero.getStarted' })}
-                    className="p-button-lg p-button-raised p-button-rounded"
-                    style={{
-                      color: '#7e5bef',
-                      backgroundColor: '#fff',
-                      borderColor: '#fff',
-                      padding: '1rem 2rem'
-                    }}
-                  />
-                </div>
-                <div className="col-fixed">
-                  <Button
-                    label={intl.formatMessage({ id: 'home.hero.learnMore' })}
-                    className="p-button-lg p-button-rounded p-button-outlined"
-                    style={{
-                      color: '#fff',
-                      borderColor: '#fff',
-                      padding: '1rem 2rem'
-                    }}
-                  />
-                </div>
+              <div className="flex flex-wrap justify-content-center md:justify-content-start gap-3 mb-4">
+                <Button
+                  onClick={() => setSignUpVisible(true)}
+                  label={intl.formatMessage({ id: 'home.hero.getStarted' })}
+                  className="p-button-lg p-button-rounded shadow-5"
+                />
+                <Button
+                  label={intl.formatMessage({ id: 'home.hero.learnMore' })}
+                  className="p-button-lg p-button-rounded p-button-outlined text-white border-white"
+                  onClick={() => scrollToSection(featuresRef)}
+                />
               </div>
             </div>
             <div className="col-12 md:col-6">
               <div className="relative">
-                <div
-                  style={{
-                    backgroundColor: '#fff',
-                    borderRadius: '1rem',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                    padding: '2rem'
-                  }}
-                >
-                  <div className="flex align-items-center justify-content-center w-4rem h-4rem bg-purple-600 border-circle mb-4">
-                    <Dumbbell style={{ width: '32px', height: '32px', color: '#fff' }} />
+                <div className="surface-card p-5 shadow-8 border-round-xl">
+                  <div className="flex align-items-center justify-content-center bg-primary border-circle w-4rem h-4rem mb-4">
+                    <Dumbbell className="text-white" size={32} />
                   </div>
-                  <h3
-                    style={{
-                      fontSize: '2rem',
-                      color: '#333',
-                      marginBottom: '1rem'
-                    }}
-                  >
+                  <h3 className="text-900 text-2xl font-medium mb-3">
                     <FormattedMessage id="home.features.customPlans" />
                   </h3>
-                  <p style={{ color: '#666' }}>
+                  <p className="text-700 line-height-3">
                     <FormattedMessage id="home.features.customPlansDesc" />
                   </p>
                 </div>
@@ -372,31 +329,31 @@ export default function HomePage() {
   const renderFeatures = () => {
     const features = [
       {
-        icon: <Users size={32} />,
+        icon: <Users size={32} className="text-primary" />,
         title: intl.formatMessage({ id: 'home.features.manageClients' }),
         description: intl.formatMessage({
           id: 'home.features.manageClientsDesc'
         })
       },
       {
-        icon: <Dumbbell size={32} />,
+        icon: <Dumbbell size={32} className="text-primary" />,
         title: intl.formatMessage({ id: 'home.features.customPlans' }),
         description: intl.formatMessage({ id: 'home.features.customPlansDesc' })
       },
       {
-        icon: <LineChart size={32} />,
+        icon: <LineChart size={32} className="text-primary" />,
         title: intl.formatMessage({ id: 'home.features.trackProgress' }),
         description: intl.formatMessage({
           id: 'home.features.trackProgressDesc'
         })
       },
       {
-        icon: <MessageCircle size={32} />,
+        icon: <MessageCircle size={32} className="text-primary" />,
         title: intl.formatMessage({ id: 'home.features.messaging' }),
         description: intl.formatMessage({ id: 'home.features.messagingDesc' })
       },
       {
-        icon: <Video size={32} />,
+        icon: <Video size={32} className="text-primary" />,
         title: intl.formatMessage({ id: 'home.features.videoTutorials' }),
         description: intl.formatMessage({
           id: 'home.features.videoTutorialsDesc'
@@ -405,19 +362,19 @@ export default function HomePage() {
     ];
 
     return (
-      <div className="bg-gray-100 py-8" ref={featuresRef}>
+      <div className="surface-ground py-8" ref={featuresRef}>
         <div className="max-w-screen-lg mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-8">
+          <h2 className="text-4xl font-bold text-center text-900 mb-8">
             <FormattedMessage id="home.features.title" />
           </h2>
           <div className="grid">
             {features.map((feature, index) => (
               <div key={index} className="col-12 md:col-6 lg:col-4">
-                <Card className="m-2">
+                <Card className="m-2 p-3 h-full shadow-3 border-round-2xl">
                   <div className="flex flex-column align-items-center">
-                    {feature.icon}
-                    <h3 className="text-xl font-bold mt-3 mb-2">{feature.title}</h3>
-                    <p className="text-center">{feature.description}</p>
+                    <div className="mb-3">{feature.icon}</div>
+                    <h3 className="text-xl font-bold mt-3 mb-2 text-900">{feature.title}</h3>
+                    <p className="text-center text-700 line-height-3">{feature.description}</p>
                   </div>
                 </Card>
               </div>
@@ -430,27 +387,33 @@ export default function HomePage() {
 
   const renderPricing = () => {
     return (
-      <div ref={pricingRef}>
-        <h2 className="text-4xl font-bold text-center mb-8">
+      <div className="surface-section py-8" ref={pricingRef}>
+        <h2 className="text-4xl font-bold text-center text-900 mb-8">
           <FormattedMessage id="home.pricing.title" />
         </h2>
-        <div className="grid">
+        <div className="grid max-w-screen-lg mx-auto px-4">
           {subscriptionPlans.map((plan) => (
-            <div key={plan.id} className="col-12 md:col-3 lg:col-3">
+            <div key={plan.id} className="col-12 md:col-3 lg:col-3 p-3">
               <Card
-                title={plan.name}
-                subTitle={`$${plan.price} / month`}
-                className={classNames('h-full h-20rem relative')}
-                style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}
+                title={<span className="text-900">{plan.name}</span>}
+                subTitle={<span className="text-primary font-bold">${plan.price} / month</span>}
+                className="h-20rem shadow-5 border-round-2xl"
+                header={<div className="bg-primary h-1rem"></div>}
               >
                 <ul className="list-none p-0 m-0">
                   <li className="flex align-items-center mb-2">
                     <i className="pi pi-check-circle mr-2 text-green-500"></i>
-                    <span>
+                    <span className="text-700">
                       <FormattedMessage id="home.pricing.maxClients" values={{ max: plan.max_clients }} />
                     </span>
                   </li>
                 </ul>
+                <div className="mt-5">
+                  <Button
+                    label={intl.formatMessage({ id: 'home.pricing.subscribe' })}
+                    className="p-button-rounded p-button-outlined w-full"
+                  />
+                </div>
               </Card>
             </div>
           ))}
@@ -476,17 +439,20 @@ export default function HomePage() {
     ];
 
     return (
-      <div ref={aboutRef} className="py-8">
+      <div ref={aboutRef} className="surface-card py-8">
         <div className="max-w-screen-lg mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-8">
+          <h2 className="text-4xl font-bold text-center text-900 mb-8">
             <FormattedMessage id="home.testimonials.title" />
           </h2>
           <div className="grid">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="col-12 md:col-4">
-                <Card className="m-2">
-                  <p className="text-center mb-3">{testimonial.text}</p>
-                  <p className="text-center font-bold">{testimonial.author}</p>
+              <div key={index} className="col-12 md:col-4 p-3">
+                <Card className="shadow-3 border-round-2xl p-4 h-full">
+                  <div className="flex flex-column h-full">
+                    <i className="pi pi-quote-left text-primary text-4xl mb-3"></i>
+                    <p className="text-700 line-height-3 flex-grow-1">{testimonial.text}</p>
+                    <p className="text-900 font-medium mt-3">{testimonial.author}</p>
+                  </div>
                 </Card>
               </div>
             ))}
@@ -498,19 +464,28 @@ export default function HomePage() {
 
   const renderFooter = () => {
     return (
-      <div ref={contactRef} className="bg-gray-200 py-4">
-        <div className="max-w-screen-lg mx-auto px-4 flex justify-content-between align-items-center">
-          <p className="text-sm">© 2023 EaseTrain. All rights reserved.</p>
-          <div>
+      <div ref={contactRef} className="surface-ground py-6">
+        <div className="max-w-screen-lg mx-auto px-4 flex justify-content-between align-items-center flex-wrap">
+          <div className="mb-3 md:mb-0">
+            <div className="flex align-items-center">
+              <Dumbbell className="mr-2 text-primary" size={20} />
+              <span className="font-medium text-lg text-900">EaseTrain</span>
+            </div>
+            <p className="text-sm text-600 mt-2">© 2023 EaseTrain. All rights reserved.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
             <Button
               label={intl.formatMessage({ id: 'home.footer.terms' })}
-              className="p-button-text p-button-sm mr-2"
+              className="p-button-text p-button-rounded"
             />
             <Button
               label={intl.formatMessage({ id: 'home.footer.privacy' })}
-              className="p-button-text p-button-sm mr-2"
+              className="p-button-text p-button-rounded"
             />
-            <Button label={intl.formatMessage({ id: 'home.footer.contact' })} className="p-button-text p-button-sm" />
+            <Button
+              label={intl.formatMessage({ id: 'home.footer.contact' })}
+              className="p-button-text p-button-rounded"
+            />
           </div>
         </div>
       </div>
@@ -526,12 +501,13 @@ export default function HomePage() {
         dismissableMask
         resizable={false}
         style={{ width: '90%', maxWidth: '400px' }}
+        className="border-round-2xl"
         modal
         onHide={() => setLoginVisible(false)}
       >
         <form onSubmit={handleLogin} className="p-fluid">
           <div className="field">
-            <label htmlFor="email" className="font-bold">
+            <label htmlFor="email" className="block text-900 font-medium mb-2">
               <FormattedMessage id="home.login.email" />
             </label>
             <InputText
@@ -539,12 +515,13 @@ export default function HomePage() {
               type="email"
               value={loginForm.email}
               onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-              className={classNames({ 'p-invalid': loginErrors.email })}
+              className={classNames('w-full p-inputtext-lg', { 'p-invalid': loginErrors.email })}
+              placeholder={intl.formatMessage({ id: 'home.login.emailPlaceholder' })}
             />
             {loginErrors.email && <small className="p-error">{loginErrors.email}</small>}
           </div>
-          <div className="field">
-            <label htmlFor="password" className="font-bold">
+          <div className="field mt-4">
+            <label htmlFor="password" className="block text-900 font-medium mb-2">
               <FormattedMessage id="home.login.password" />
             </label>
             <Password
@@ -552,19 +529,20 @@ export default function HomePage() {
               value={loginForm.password}
               onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
               toggleMask
-              className={classNames({ 'p-invalid': loginErrors.password })}
+              className={classNames('w-full p-inputtext-lg', { 'p-invalid': loginErrors.password })}
               feedback={false}
+              placeholder={intl.formatMessage({ id: 'home.login.passwordPlaceholder' })}
             />
             {loginErrors.password && <small className="p-error">{loginErrors.password}</small>}
           </div>
           <Button
             type="submit"
             label={intl.formatMessage({ id: 'home.header.login' })}
-            className="mt-2"
+            className="p-button-lg w-full mt-4"
             loading={loading}
           />
-          <div className="text-center mt-2">
-            <a href="/forgot-password" className="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
+          <div className="text-center mt-4">
+            <a href="/forgot-password" className="font-medium no-underline text-primary cursor-pointer hover:underline">
               <FormattedMessage id="home.login.forgotPassword" />
             </a>
           </div>
@@ -582,12 +560,13 @@ export default function HomePage() {
         dismissableMask
         resizable={false}
         style={{ width: '90%', maxWidth: '400px' }}
+        className="border-round-2xl"
         modal
         onHide={() => setSignUpVisible(false)}
       >
         <form onSubmit={handleSignUp} className="p-fluid">
           <div className="field">
-            <label htmlFor="signUpEmail" className="font-bold">
+            <label htmlFor="signUpEmail" className="block text-900 font-medium mb-2">
               <FormattedMessage id="home.signup.email" />
             </label>
             <InputText
@@ -595,12 +574,13 @@ export default function HomePage() {
               type="email"
               value={signUpForm.email}
               onChange={(e) => setSignUpForm({ ...signUpForm, email: e.target.value })}
-              className={classNames({ 'p-invalid': signUpErrors.email })}
+              className={classNames('w-full p-inputtext-lg', { 'p-invalid': signUpErrors.email })}
+              placeholder={intl.formatMessage({ id: 'home.signup.emailPlaceholder' })}
             />
             {signUpErrors.email && <small className="p-error">{signUpErrors.email}</small>}
           </div>
-          <div className="field">
-            <label htmlFor="signUpPassword" className="font-bold">
+          <div className="field mt-4">
+            <label htmlFor="signUpPassword" className="block text-900 font-medium mb-2">
               <FormattedMessage id="home.signup.password" />
             </label>
             <Password
@@ -608,12 +588,13 @@ export default function HomePage() {
               value={signUpForm.password}
               onChange={(e) => setSignUpForm({ ...signUpForm, password: e.target.value })}
               toggleMask
-              className={classNames({ 'p-invalid': signUpErrors.password })}
+              className={classNames('w-full p-inputtext-lg', { 'p-invalid': signUpErrors.password })}
+              placeholder={intl.formatMessage({ id: 'home.signup.passwordPlaceholder' })}
             />
             {signUpErrors.password && <small className="p-error">{signUpErrors.password}</small>}
           </div>
-          <div className="field">
-            <label htmlFor="confirmPassword" className="font-bold">
+          <div className="field mt-4">
+            <label htmlFor="confirmPassword" className="block text-900 font-medium mb-2">
               <FormattedMessage id="home.signup.confirmPassword" />
             </label>
             <Password
@@ -626,17 +607,18 @@ export default function HomePage() {
                 })
               }
               toggleMask
-              className={classNames({
+              className={classNames('w-full p-inputtext-lg', {
                 'p-invalid': signUpErrors.confirmPassword
               })}
               feedback={false}
+              placeholder={intl.formatMessage({ id: 'home.signup.confirmPasswordPlaceholder' })}
             />
             {signUpErrors.confirmPassword && <small className="p-error">{signUpErrors.confirmPassword}</small>}
           </div>
           <Button
             type="submit"
             label={intl.formatMessage({ id: 'home.signup.title' })}
-            className="mt-2"
+            className="p-button-lg w-full mt-4"
             loading={loading}
           />
         </form>

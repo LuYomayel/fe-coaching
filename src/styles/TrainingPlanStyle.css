@@ -1,0 +1,636 @@
+/* Estilos para Training Plan Details
+   Enfoque principal en experiencia móvil */
+
+.training-plan-details {
+  --card-border-radius: 12px;
+  --header-bg: var(--primary-gradient, linear-gradient(135deg, var(--primary-color), var(--primary-700)));
+  --card-shadow: var(--card-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+  --card-hover-shadow: var(--card-shadow-hover, 0 6px 16px rgba(0, 0, 0, 0.15));
+  --animation-duration: 0.3s;
+
+  padding: 1rem;
+  padding-bottom: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Cabecera del Plan */
+.training-plan-header {
+  border-radius: var(--card-border-radius);
+  background: var(
+    --primary-gradient,
+    linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-darker, #106cc8) 100%)
+  );
+  color: var(--text-color-inverse, white);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.training-plan-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z' fill='rgba(255,255,255,.07)' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 0.8;
+  z-index: 0;
+}
+
+.training-plan-header-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.training-plan-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.training-plan-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.training-plan-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.training-plan-status i {
+  margin-right: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .training-plan-title {
+    font-size: 2rem;
+  }
+
+  .training-plan-name {
+    font-size: 1.5rem;
+  }
+
+  .training-plan-status {
+    font-size: 1.25rem;
+  }
+}
+
+/* Estilo para los grupos */
+.exercise-group {
+  margin-bottom: 1rem;
+  animation: fadeIn var(--animation-duration) ease forwards;
+}
+
+.exercise-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
+  background-color: var(--surface-section);
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.exercise-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.exercise-group-details {
+  background-color: var(--surface-card);
+  padding: 1rem;
+  border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
+  margin-bottom: 0.5rem;
+}
+
+.exercise-group-info {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: var(--surface-section);
+  border-radius: var(--card-border-radius);
+}
+
+.exercise-group-info-item {
+  margin-bottom: 0.5rem;
+}
+
+.exercise-card {
+  border-radius: var(--card-border-radius);
+  background-color: var(--surface-card);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+.exercise-card:hover {
+  box-shadow: var(--card-shadow-hover, 0 8px 15px rgba(0, 0, 0, 0.1));
+  transform: translateY(-2px);
+}
+
+.exercise-card-header {
+  margin-bottom: 1rem;
+}
+
+.exercise-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.exercise-thumbnail {
+  position: relative;
+  cursor: pointer;
+  border-radius: var(--card-border-radius);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.exercise-thumbnail img {
+  width: 100%;
+  object-fit: cover;
+  transition: transform var(--animation-duration) ease;
+  max-height: 200px;
+  object-position: center;
+}
+
+.exercise-thumbnail img:active {
+  transform: scale(1.05);
+}
+
+.exercise-play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.exercise-thumbnail:hover .exercise-play-overlay {
+  opacity: 1;
+}
+
+.exercise-play-button {
+  width: 60px;
+  height: 60px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exercise-play-button i {
+  color: var(--primary-color-text);
+  font-size: 1.5rem;
+}
+
+/* Tabs de ejercicios */
+.exercise-tabs {
+  padding: 0;
+  background-color: var(--surface-card);
+  margin-bottom: 1rem;
+}
+
+.exercise-tabs .p-accordion-header {
+  border-radius: 0;
+}
+
+.exercise-tabs .p-accordion-header a {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  background-color: var(--surface-card);
+  transition: background-color var(--animation-duration) ease;
+}
+
+.exercise-tabs .p-accordion-header-active a {
+  background-color: var(--surface-hover);
+  color: var(--primary-color);
+}
+
+.exercise-tabs .p-accordion-content {
+  padding: 1rem;
+  border: none;
+  background-color: var(--surface-ground);
+}
+
+/* Campos de ejercicio */
+.exercise-field {
+  margin-bottom: 1rem;
+}
+
+.exercise-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.exercise-field p {
+  margin: 0;
+  color: var(--text-color-secondary);
+}
+
+/* Inputs del ejercicio */
+.exercise-inputs {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.exercise-inputs .p-field-checkbox {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.exercise-inputs .p-field-checkbox label {
+  margin-left: 0.5rem;
+  margin-bottom: 0;
+}
+
+.exercise-inputs .p-field {
+  margin-bottom: 1rem;
+}
+
+.exercise-set-header {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+/* Botones de acción */
+.training-action-buttons {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: var(--surface-card);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .training-action-buttons {
+    position: static;
+    padding: 1rem 0;
+    background-color: transparent;
+    box-shadow: none;
+    margin-top: 1rem;
+  }
+}
+
+/* Estado de carga */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  min-height: 50vh;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+}
+
+/* Estados y notificaciones de progreso */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-badge i {
+  margin-right: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.status-badge.completed {
+  background-color: var(--green-100);
+  color: var(--green-700);
+}
+
+.status-badge.pending {
+  background-color: var(--yellow-100);
+  color: var(--yellow-700);
+}
+
+.status-badge.partial {
+  background-color: var(--blue-100);
+  color: var(--blue-700);
+}
+
+/* Adaptaciones al RPE dropdown */
+.rpe-dropdown {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.rpe-dropdown-name {
+  margin-bottom: 0.25rem;
+}
+
+.rpe-dropdown-name label {
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+}
+
+/* Estilos para el diálogo de finalización */
+.finish-training-dialog .p-dialog-header {
+  background: var(--primary-gradient, linear-gradient(135deg, var(--primary-color) 0%, var(--primary-700) 100%));
+  color: var(--text-color-inverse, white);
+  border-bottom: none;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.finish-training-dialog .p-dialog-header .p-dialog-title {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.finish-training-dialog .p-dialog-header .p-dialog-header-icon {
+  color: var(--text-color-inverse, white);
+}
+
+.finish-training-dialog .p-dialog-content {
+  padding: 0;
+}
+
+.finish-dialog-body {
+  padding: 1.5rem;
+}
+
+.finish-dialog-section {
+  margin-bottom: 2rem;
+  animation: fadeIn 0.4s ease;
+}
+
+.finish-dialog-section:last-child {
+  margin-bottom: 0;
+}
+
+.finish-dialog-section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.finish-dialog-section-title i {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+}
+
+.feedback-field {
+  margin-bottom: 1.25rem;
+}
+
+.feedback-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color-secondary);
+}
+
+.feedback-field .p-inputtext,
+.feedback-field .p-inputtextarea {
+  width: 100%;
+}
+
+.feedback-field .p-calendar {
+  width: 100%;
+}
+
+.feedback-field .p-calendar .p-inputtext {
+  width: 100%;
+}
+
+.finish-dialog-rating {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.finish-dialog-rating-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finish-dialog-rating-header label {
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+
+.finish-dialog-rating-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.finish-dialog-rating-scale {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-color-secondary);
+  padding: 0 0.5rem;
+}
+
+.finish-dialog-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.finish-dialog-checkbox label {
+  margin-bottom: 0;
+}
+
+.finish-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--surface-section);
+  border-top: 1px solid var(--surface-border);
+}
+
+.session-time-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.session-time-display i {
+  color: var(--primary-color);
+}
+
+.session-time-display span {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.custom-calendar-icon {
+  color: var(--primary-color);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ajustes para móvil */
+@media screen and (max-width: 768px) {
+  .training-plan-details {
+    padding: 0.5rem;
+    padding-bottom: 4rem;
+  }
+
+  .training-plan-header {
+    padding: 1.25rem;
+  }
+
+  .training-plan-title {
+    font-size: 1.25rem;
+  }
+
+  .training-plan-name {
+    font-size: 1.1rem;
+  }
+
+  .exercise-card:active {
+    transform: none;
+  }
+
+  .exercise-thumbnail img {
+    max-height: 180px;
+  }
+
+  .exercise-play-overlay {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+
+  .exercise-play-button {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+
+  .exercise-inputs {
+    padding: 0.5rem 0;
+  }
+
+  .finish-training-dialog {
+    width: 95vw !important;
+    max-height: 95vh !important;
+  }
+
+  .finish-dialog-body {
+    padding: 1rem;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+
+  .finish-dialog-buttons {
+    padding: 1rem;
+  }
+
+  .finish-dialog-buttons .p-button {
+    flex: 1;
+  }
+}
+
+/* Estilos para dialogs */
+.p-dialog .p-dialog-header {
+  padding: 1rem 1.5rem;
+  background-color: var(--surface-section);
+}
+
+.p-dialog .p-dialog-content {
+  padding: 0;
+}
+
+.video-dialog iframe {
+  width: 100%;
+  height: 56.25vw; /* Proporción 16:9 */
+  max-height: 480px;
+  border: none;
+}
+
+/* Ajustes para tablet */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .training-plan-details {
+    padding: 1rem;
+    padding-bottom: 5rem;
+  }
+
+  .exercise-thumbnail img {
+    max-height: 240px;
+  }
+
+  .finish-training-dialog {
+    width: 80vw !important;
+  }
+}

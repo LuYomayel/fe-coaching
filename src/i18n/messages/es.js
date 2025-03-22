@@ -325,12 +325,17 @@ const messages = {
   'students.success.verificationSent': 'Email de verificación enviado exitosamente!',
 
   // NewStudentHome
-  'studentHome.welcome': '¡Bienvenido, {name}!',
-  'studentHome.calendar.title': 'Tu Calendario de Entrenamiento',
-  'studentHome.calendar.filterMonth': 'Filtrar por Mes',
-  'studentHome.calendar.viewDetails': 'Ver Detalles',
-  'studentHome.calendar.startTraining': 'Comenzar Entrenamiento',
-  'studentHome.dialog.planDetails': 'Detalles del Plan',
+  'studentHome.welcome': 'Hola, {name}',
+  'studentHome.calendar.title': 'Mi calendario de entrenamientos',
+  'studentHome.calendar.filterMonth': 'Filtrar por mes',
+  'studentHome.calendar.viewDetails': 'Ver detalles',
+  'studentHome.calendar.startTraining': 'Iniciar entrenamiento',
+  'studentHome.dialog.planDetails': 'Detalles del plan',
+  'studentHome.noEvents': 'No hay entrenamientos programados',
+  'studentHome.todayDate': 'Hoy es {date}',
+  'studentHome.upcomingSessions': 'Próximas sesiones',
+  'studentHome.loading.calendar': 'Cargando tu calendario...',
+  'studentHome.error.calendar': 'Error al cargar el calendario',
 
   // Meses (si no existen ya)
   'months.january': 'Enero',
@@ -689,15 +694,21 @@ const messages = {
   'home.footer.privacy': 'Privacidad',
   'home.footer.contact': 'Contacto',
 
-  'home.login.title': 'Iniciar Sesión',
-  'home.login.email': 'Correo Electrónico',
+  'home.login.title': 'Iniciar sesión',
+  'home.login.email': 'Correo electrónico',
+  'home.login.emailPlaceholder': 'Ingresa tu correo electrónico',
   'home.login.password': 'Contraseña',
+  'home.login.passwordPlaceholder': 'Ingresa tu contraseña',
   'home.login.forgotPassword': '¿Olvidaste tu contraseña?',
 
   'home.signup.title': 'Registrarse',
-  'home.signup.email': 'Correo Electrónico',
+  'home.signup.email': 'Correo electrónico',
+  'home.signup.emailPlaceholder': 'Ingresa tu correo electrónico',
   'home.signup.password': 'Contraseña',
-  'home.signup.confirmPassword': 'Confirmar Contraseña',
+  'home.signup.passwordPlaceholder': 'Crea una contraseña segura',
+  'home.signup.confirmPassword': 'Confirmar contraseña',
+  'home.signup.confirmPasswordPlaceholder': 'Confirma tu contraseña',
+  'home.pricing.subscribe': 'Suscribirse',
 
   'home.toast.verifyEmail': '¡Verifica tu correo antes de iniciar sesión!',
   'home.toast.checkEmail': '¡Revisa tu correo para continuar!',
@@ -1209,6 +1220,48 @@ const messages = {
   'plans.created': 'Creado',
 
   // Validation
-  'validation.required': 'Este campo es obligatorio'
+  'validation.required': 'Este campo es obligatorio',
+
+  // Añadir las siguientes traducciones en la sección de coach.home
+  'coach.home.welcome': 'Bienvenido, {name}',
+  'coach.home.today': 'Hoy',
+  'coach.home.yesterday': 'Ayer',
+  'coach.home.daysAgo': 'Hace {days} días',
+  'coach.home.sessions': 'sesiones',
+  'coach.home.quickActions': 'Acciones rápidas',
+  'coach.home.createWorkout': 'Crear rutina',
+  'coach.home.addExercise': 'Añadir ejercicio',
+  'coach.home.viewProfile': 'Ver mi perfil',
+  'coach.home.manageStudents': 'Gestionar alumnos',
+  'coach.home.viewAll': 'Ver todos',
+  'coach.home.noClientsData': 'No hay datos de clientes disponibles',
+  'coach.home.table.last7days': 'Últimos 7 días',
+
+  'common.inactive': 'Inactivo',
+
+  // New training finish dialog translations
+  'training.finish.title': 'Finalizar Entrenamiento',
+  'training.finish.sessionDetails': 'Detalles de la Sesión',
+  'training.finish.sessionTime': 'Tiempo de Sesión',
+  'training.finish.sessionTime.placeholder': 'Ingresa la duración de tu sesión',
+  'training.finish.generalFeedback': 'Comentarios Generales',
+  'training.finish.generalFeedback.placeholder': '¿Cómo estuvo tu sesión de entrenamiento?',
+  'training.finish.measurements': 'Mediciones',
+  'training.finish.energyLevel.enable': 'Registrar Nivel de Energía',
+  'training.finish.energyLevel': 'Nivel de Energía',
+  'training.finish.low': 'Bajo',
+  'training.finish.high': 'Alto',
+  'training.finish.mood.enable': 'Registrar Estado de Ánimo',
+  'training.finish.mood': 'Estado de Ánimo',
+  'training.finish.bad': 'Malo',
+  'training.finish.great': 'Excelente',
+  'training.finish.difficulty.enable': 'Registrar Dificultad',
+  'training.finish.difficulty': 'Dificultad Percibida',
+  'training.finish.easy': 'Fácil',
+  'training.finish.challenging': 'Desafiante',
+  'training.finish.additionalNotes': 'Notas Adicionales',
+  'training.finish.additionalNotes.placeholder': '¿Algo más que quieras anotar sobre esta sesión?',
+  cancel: 'Cancelar',
+  submit: 'Enviar'
 };
 export default messages;

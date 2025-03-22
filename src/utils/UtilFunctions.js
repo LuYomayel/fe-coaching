@@ -186,20 +186,41 @@ const getDayMonthYear = (session) => {
   const year = sessionDate.getFullYear();
   const month = sessionDate.getMonth(); // 0-based
   const day = sessionDate.getDate();
+  return new Date(year, month, day);
+};
 
-  return new Date(year, month, day); // Esto crea una fecha sin hora
+const formatRelativeDate = (date, intl) => {
+  if (!date) return '';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const inputDate = new Date(date);
+  inputDate.setHours(0, 0, 0, 0);
+
+  const diffTime = today.getTime() - inputDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return intl.formatMessage({ id: 'coach.home.today' });
+  } else if (diffDays === 1) {
+    return intl.formatMessage({ id: 'coach.home.yesterday' });
+  } else {
+    return intl.formatMessage({ id: 'coach.home.daysAgo' }, { days: diffDays });
+  }
 };
 
 export {
-  getDayMonthYear,
   formatDate,
   formatDateToApi,
   isValidYouTubeUrl,
   extractYouTubeVideoId,
+  getYouTubeThumbnail,
   sortBySessionDate,
   updateStatus,
   getSeverity,
   validateDates,
   validateStudentDetails,
-  getYouTubeThumbnail
+  getDayMonthYear,
+  formatRelativeDate
 };

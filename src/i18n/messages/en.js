@@ -324,11 +324,17 @@ const messages = {
   'students.success.verificationSent': 'Verification email sent successfully!',
   'students.success.updated': 'Profile updated successfully!',
   // NewStudentHome
-  'studentHome.welcome': 'Welcome, {name}!',
-  'studentHome.calendar.title': 'Your Training Calendar',
-  'studentHome.calendar.filterMonth': 'Filter by Month',
-  'studentHome.calendar.viewDetails': 'View Details',
-  'studentHome.dialog.planDetails': 'Plan Details',
+  'studentHome.welcome': 'Hello, {name}',
+  'studentHome.calendar.title': 'My training calendar',
+  'studentHome.calendar.filterMonth': 'Filter by month',
+  'studentHome.calendar.viewDetails': 'View details',
+  'studentHome.calendar.startTraining': 'Start training',
+  'studentHome.dialog.planDetails': 'Plan details',
+  'studentHome.noEvents': 'No training sessions scheduled',
+  'studentHome.todayDate': 'Today is {date}',
+  'studentHome.upcomingSessions': 'Upcoming sessions',
+  'studentHome.loading.calendar': 'Loading your calendar...',
+  'studentHome.error.calendar': 'Error loading calendar',
 
   // Months (if not existing)
   'months.january': 'January',
@@ -695,13 +701,19 @@ const messages = {
 
   'home.login.title': 'Log In',
   'home.login.email': 'Email',
+  'home.login.emailPlaceholder': 'Enter your email',
   'home.login.password': 'Password',
-  'home.login.forgotPassword': 'Forgot password?',
+  'home.login.passwordPlaceholder': 'Enter your password',
+  'home.login.forgotPassword': 'Forgot your password?',
 
   'home.signup.title': 'Sign Up',
   'home.signup.email': 'Email',
+  'home.signup.emailPlaceholder': 'Enter your email',
   'home.signup.password': 'Password',
+  'home.signup.passwordPlaceholder': 'Create a secure password',
   'home.signup.confirmPassword': 'Confirm Password',
+  'home.signup.confirmPasswordPlaceholder': 'Confirm your password',
+  'home.pricing.subscribe': 'Subscribe',
 
   'home.toast.verifyEmail': 'Verify your email prior to logging in!',
   'home.toast.checkEmail': 'Check your email to continue!',
@@ -944,6 +956,22 @@ const messages = {
   'plans.created': 'Created',
 
   // Validation
-  'validation.required': 'This field is required'
+  'validation.required': 'This field is required',
+
+  // NewCoachHome - Additional
+  'coach.home.welcome': 'Welcome, {name}',
+  'coach.home.today': 'Today',
+  'coach.home.yesterday': 'Yesterday',
+  'coach.home.daysAgo': '{days} days ago',
+  'coach.home.sessions': 'sessions',
+  'coach.home.quickActions': 'Quick Actions',
+  'coach.home.createWorkout': 'Create Workout',
+  'coach.home.addExercise': 'Add Exercise',
+  'coach.home.viewProfile': 'View My Profile',
+  'coach.home.manageStudents': 'Manage Students',
+  'coach.home.viewAll': 'View All',
+  'coach.home.noClientsData': 'No client data available',
+  'coach.home.table.last7days': 'Last 7 Days',
+  'common.inactive': 'Inactive'
 };
 export default messages;
