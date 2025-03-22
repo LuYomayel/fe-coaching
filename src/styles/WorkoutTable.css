@@ -180,3 +180,479 @@ tr.improved-row:hover {
   background-color: rgba(45, 55, 72, 0.95);
   border: 1px solid rgba(99, 179, 237, 0.3);
 }
+
+/* Estilos base mejorados para la tabla de ejercicios */
+.workout-table-container {
+  position: relative;
+  max-width: 100%;
+  margin: 1.5rem auto;
+  padding: 1.5rem;
+  background-color: var(--surface-card, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dark-mode.workout-table-container {
+  background-color: var(--surface-card, #1e1e1e);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.workout-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  background-color: var(--surface-ground, #f8f9fa);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+  padding: 0.5rem;
+}
+
+.dark-mode .workout-table-wrapper {
+  background-color: var(--surface-ground, #2d2d2d);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilos para el selector de ciclo y día */
+.cycle-day-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(to right, var(--primary-50, #f0f9ff), var(--primary-100, #e0f2fe));
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .cycle-day-selector {
+  background: linear-gradient(to right, rgba(25, 75, 130, 0.2), rgba(30, 90, 150, 0.2));
+}
+
+.cycle-day-selector .field {
+  flex: 1;
+  min-width: 220px;
+}
+
+.selector-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color-secondary, #64748b);
+  font-size: 0.95rem;
+}
+
+.dark-mode .selector-label {
+  color: var(--text-color-secondary, #94a3b8);
+}
+
+/* Botones de acción */
+.table-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.table-action-buttons .p-button {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.table-action-buttons .p-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Indicador de cambios */
+.changes-indicator {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1.2rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(to right, var(--blue-50, #eff6ff), var(--blue-100, #dbeafe));
+  border-left: 4px solid var(--blue-500, #3b82f6);
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.changes-indicator i {
+  font-size: 1.2rem;
+  margin-right: 1rem;
+  color: var(--blue-600, #2563eb);
+}
+
+.changes-indicator span {
+  color: var(--blue-800, #1e40af);
+  font-weight: 500;
+}
+
+.dark-mode .changes-indicator {
+  background: linear-gradient(to right, rgba(30, 64, 175, 0.2), rgba(37, 99, 235, 0.2));
+  border-left: 4px solid var(--blue-500, #3b82f6);
+}
+
+.dark-mode .changes-indicator i {
+  color: var(--blue-400, #60a5fa);
+}
+
+.dark-mode .changes-indicator span {
+  color: var(--blue-300, #93c5fd);
+}
+
+/* Estados de carga y sin datos */
+.workout-loading,
+.workout-no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--text-color-secondary, #64748b);
+  text-align: center;
+}
+
+.workout-loading i,
+.workout-no-data i {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--primary-400, #60a5fa);
+}
+
+.workout-loading p,
+.workout-no-data p {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Estilos de la tabla */
+.workout-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Encabezados de tabla */
+.workout-table thead {
+  background: linear-gradient(135deg, var(--primary-600, #2563eb), var(--primary-700, #1d4ed8));
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.workout-table .table-header-row th {
+  padding: 1rem 0.75rem;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.9rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+}
+
+.exercise-column {
+  text-align: left !important;
+  min-width: 200px;
+  width: 25%;
+}
+
+.week-header {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.property-header-row th {
+  padding: 0.75rem 0.5rem !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+  background-color: rgba(0, 0, 0, 0.15);
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.property-header {
+  min-width: 90px;
+}
+
+.dark-mode .workout-table thead {
+  background: linear-gradient(135deg, var(--primary-700, #1d4ed8), var(--primary-800, #1e40af));
+}
+
+/* Filas y celdas */
+.workout-table-row {
+  transition: background-color 0.2s ease;
+}
+
+.workout-table-row:hover {
+  background-color: var(--primary-50, #eff6ff) !important;
+}
+
+.dark-mode .workout-table-row:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+.workout-table .group-row {
+  background-color: var(--surface-200, #e2e8f0) !important;
+  border-top: 1px solid var(--surface-300, #cbd5e0);
+  border-bottom: 1px solid var(--surface-300, #cbd5e0);
+}
+
+.dark-mode .workout-table .group-row {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+  border-top: 1px solid rgba(51, 65, 85, 0.6);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+.workout-table .group-row:hover {
+  background-color: var(--surface-300, #cbd5e0) !important;
+}
+
+.dark-mode .workout-table .group-row:hover {
+  background-color: rgba(51, 65, 85, 0.4) !important;
+}
+
+.workout-table .group-even {
+  background-color: var(--surface-ground, #f8fafc);
+}
+
+.workout-table .group-odd {
+  background-color: white;
+}
+
+.dark-mode .workout-table .group-even-dark {
+  background-color: rgba(30, 41, 59, 0.3);
+}
+
+.dark-mode .workout-table .group-odd-dark {
+  background-color: rgba(30, 41, 59, 0.15);
+}
+
+.name-column {
+  padding: 0.6rem 0.5rem !important;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.name-column.editable-column:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.name-column-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.name-value {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-color-secondary, #64748b);
+  transition: color 0.2s ease;
+}
+
+.drag-handle:hover {
+  color: var(--primary-500, #3b82f6);
+}
+
+.delete-icon {
+  cursor: pointer;
+  color: var(--red-500, #ef4444);
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.delete-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.group-indicator {
+  width: 8px;
+  height: 24px;
+  border-radius: 4px;
+  margin-right: 10px;
+  transition: all 0.2s ease;
+}
+
+/* Celdas de datos */
+.data-cell {
+  padding: 0.6rem 0.4rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.first-prop {
+  border-left: 1px solid var(--surface-border, #e2e8f0);
+}
+
+.last-prop {
+  border-right: 1px solid var(--surface-border, #e2e8f0);
+}
+
+.dark-mode .first-prop {
+  border-left: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.dark-mode .last-prop {
+  border-right: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.group-empty-cell {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.dark-mode .group-empty-cell {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Fila de inserción */
+.insert-row {
+  background-color: rgba(59, 130, 246, 0.1);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.dark-mode .insert-row {
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+.insert-buttons-container {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  justify-content: center;
+}
+
+.insert-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  background-color: white;
+  color: var(--primary-700, #1d4ed8);
+  border: 1px solid var(--primary-300, #93c5fd);
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.insert-button:hover {
+  background-color: var(--primary-50, #eff6ff);
+  border-color: var(--primary-400, #60a5fa);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .insert-button {
+  background-color: rgba(30, 41, 59, 0.8);
+  color: var(--primary-300, #93c5fd);
+  border: 1px solid var(--primary-600, #2563eb);
+}
+
+.dark-mode .insert-button:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.insert-icon {
+  margin-right: 0.5rem;
+}
+
+/* Estilo de arrastre */
+.dragging {
+  opacity: 0.8;
+}
+
+.dragging-overlay {
+  background-color: var(--primary-50, #eff6ff) !important;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border: 2px dashed var(--primary-400, #60a5fa);
+}
+
+.dark-mode .dragging-overlay {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  border: 2px dashed var(--primary-500, #3b82f6);
+}
+
+.drag-overlay-table {
+  width: auto !important;
+  min-width: 350px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Botones flotantes */
+.floating-actions {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  z-index: 1000;
+}
+
+.floating-actions .p-button {
+  width: 3.5rem;
+  height: 3.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.floating-actions .p-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsivo */
+@media screen and (max-width: 768px) {
+  .workout-table-container {
+    padding: 1rem 0.5rem;
+    margin: 0.5rem auto;
+  }
+
+  .cycle-day-selector {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+
+  .table-action-buttons {
+    flex-direction: column;
+  }
+
+  .name-column {
+    max-width: 150px;
+  }
+
+  .floating-actions {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .floating-actions .p-button {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .insert-buttons-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

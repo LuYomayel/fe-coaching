@@ -138,21 +138,30 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   };
 
   const tableStyles = {
-    //width: '100%',
+    width: '100%',
     borderCollapse: 'collapse',
-    tableLayout: 'fixed', // Esto es importante para mantener los anchos de columna
-    marginBottom: '2rem'
+    tableLayout: 'fixed',
+    marginBottom: '2rem',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
   };
 
   const rowClassName = (rowData) => {
+    const baseClass = 'workout-table-row';
+
     if (rowData.rowType === 'group') {
-      // Maybe style group rows differently
-      return 'row-group-label';
+      return `${baseClass} group-row`;
     }
+
     if (isDarkMode) {
-      return rowData.groupNumber % 2 === 0 ? 'group-even-dark improved-row' : 'group-odd-dark improved-row';
+      return rowData.groupNumber % 2 === 0
+        ? `${baseClass} group-even-dark improved-row`
+        : `${baseClass} group-odd-dark improved-row`;
     } else {
-      return rowData.groupNumber % 2 === 0 ? 'group-even improved-row' : 'group-odd improved-row';
+      return rowData.groupNumber % 2 === 0
+        ? `${baseClass} group-even improved-row`
+        : `${baseClass} group-odd improved-row`;
     }
   };
 
@@ -1406,41 +1415,22 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     // If there's no data, bail out
     if (!headerGroup || !usedProps) return null;
 
-    // First row: "Exercise" + one column group per week
-    // second row: the actual properties in each week
     return (
       <thead>
-        <tr>
-          <th rowSpan={2} style={{ width: '50rem', padding: '0.5rem' }}>
+        <tr className="table-header-row">
+          <th rowSpan={2} className="exercise-column">
             {intl.formatMessage({ id: 'workoutTable.exercise' })}
           </th>
           {usedProps.map((propsList, i) => (
-            <th
-              key={`week${i}`}
-              colSpan={propsList.length}
-              style={{
-                borderRight: '1px solid #ccc',
-                borderLeft: '1px solid #ccc'
-              }}
-              overflow={'hidden'}
-            >
+            <th key={`week${i}`} colSpan={propsList.length} className="week-header">
               {intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}
             </th>
           ))}
         </tr>
-        <tr>
+        <tr className="property-header-row">
           {usedProps.map((propsList, i) =>
             propsList.map((prop, index) => (
-              <th
-                style={{
-                  padding: '0.5rem',
-                  borderRight: index === propsList.length - 1 ? '1px solid #ccc' : 'none',
-                  borderLeft: index === 0 ? '1px solid #ccc' : 'none',
-
-                  overflow: 'hidden'
-                }}
-                key={`${prop}-header-${i}`}
-              >
+              <th className="property-header" key={`${prop}-header-${i}`}>
                 {propertyLabels[prop] || prop}
               </th>
             ))
@@ -1455,7 +1445,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     if (rowData.rowType === 'group') {
       const totalColumns = propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
       return Array.from({ length: totalColumns }).map((_, idx) => (
-        <td key={`group-${rowData.groupNumber}-${idx}`} style={{ padding: '.5rem' }} />
+        <td key={`group-${rowData.groupNumber}-${idx}`} className="group-empty-cell" />
       ));
     }
 
@@ -1471,13 +1461,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
         return (
           <td
-            style={{
-              padding: '.5rem',
-              borderRight: index === propsList.length - 1 ? '1px solid #ccc' : 'none',
-              borderLeft: index === 0 ? '1px solid #ccc' : 'none',
-              overflow: 'hidden',
-              width: '100px'
-            }}
+            className={`data-cell ${index === 0 ? 'first-prop' : ''} ${index === propsList.length - 1 ? 'last-prop' : ''}`}
             key={cellKey}
           >
             {isEditing ? renderEditableCell(rowData, prop, realWeek, cellValue) : cellValue}
@@ -1509,7 +1493,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
             value={currentValue}
             onValueChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.value)}
             size="small"
-            style={{ width: '100%' }}
+            className="p-inputtext-sm w-full"
             min={0}
             showButtons={false}
           />
@@ -1519,8 +1503,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           <InputText
             value={currentValue || ''}
             onChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.target.value)}
-            style={{ width: '100%' }}
-            size="small"
+            className="p-inputtext-sm w-full"
           />
         );
       default:
@@ -1624,14 +1607,10 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       transition,
       ...(isDragging || (isDraggingGroup && rowData.isBeingDragged)
         ? {
-            background: isDarkMode ? '#2c3e50' : '#f8f9fa',
-            boxShadow: '0 0 10px rgba(0,0,0,0.2)',
-            width: '100%',
-            tableLayout: 'fixed',
-            border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
-            margin: '2px 0',
-            opacity: '0.9',
-            cursor: 'grabbing',
+            background: isDarkMode ? 'rgba(52, 73, 94, 0.95)' : 'rgba(248, 249, 250, 0.95)',
+            boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
+            borderRadius: '8px',
+            border: isDarkMode ? '2px solid #3498db' : '2px solid #4299e1',
             zIndex: 1000
           }
         : {})
@@ -1641,102 +1620,51 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       <>
         {isEditing && showInsertButton && isHoveringFirstColumn && index === hoverRowIndex && (
           <tr className="insert-row">
-            {/*<td colSpan={1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0)}> */}
-            <td colSpan={1}>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', padding: '2px 10px' }}>
-                <div
-                  className="insert-button"
-                  onClick={() => handleAddExerciseAtPosition(index)}
-                  style={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    background: isDarkMode ? '#4a5568' : '#e2e8f0',
-                    color: isDarkMode ? 'white' : 'black',
-                    alignItems: 'center',
-                    flex: 1
-                  }}
-                >
-                  <FaPlus style={{ marginRight: '5px' }} />
+            <td colSpan={1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0)}>
+              <div className="insert-buttons-container">
+                <button className="insert-button" onClick={() => handleAddExerciseAtPosition(index)}>
+                  <FaPlus className="insert-icon" />
                   {intl.formatMessage({ id: 'workoutTable.insertExercise' })}
-                </div>
-                {/*}
-                <div
-                  className="insert-button"
-                  onClick={() => handleAddGroup(index)}
-                  style={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    background: isDarkMode ? '#4a5568' : '#e2e8f0',
-                    color: isDarkMode ? 'white' : 'black',
-                    alignItems: 'center',
-                    flex: 1
-                  }}
-                >
-                  <FaPlus style={{ marginRight: '5px' }} />
+                </button>
+                <button className="insert-button" onClick={() => handleAddGroup(index)}>
+                  <FaPlus className="insert-icon" />
                   {intl.formatMessage({ id: 'plan.group.addGroup' })}
-                </div>
-                */}
+                </button>
               </div>
             </td>
           </tr>
         )}
-        <tr ref={setNodeRef} style={style} className={rowClassName(rowData)}>
-          <td
-            ref={firstColumnRef}
-            className={`${isEditing ? 'hover-column' : ''} ${isDarkMode ? 'dark-mode' : ''}`}
-            style={{
-              minWidth: '150px',
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0.5rem',
-              overflow: 'hidden',
-              position: 'relative',
-              cursor: isEditing ? 'pointer' : 'default',
-              backgroundColor: isHoveringFirstColumn && isEditing ? (isDarkMode ? '#3a4252' : '#f0f4f8') : 'transparent'
-            }}
-            onMouseEnter={() => {
-              if (isEditing) {
-                setHoverRowIndex(index + 1);
-                setIsHoveringFirstColumn(true);
-              }
-            }}
-            {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {isEditing && isDraggable && (
-                <FaGripVertical
-                  style={{
-                    cursor: isDragging ? 'grabbing' : 'grab',
-                    flexShrink: 0,
-                    opacity: isDragging ? 0.5 : 1
-                  }}
-                />
-              )}
+        <tr
+          ref={setNodeRef}
+          style={style}
+          className={`${rowClassName(rowData)} ${isDragging ? 'dragging' : ''}`}
+          onDoubleClick={() => isEditing && handleAddExerciseAtPosition(index)}
+          {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
+        >
+          <td className={`name-column ${isEditing ? 'editable-column' : ''}`} ref={firstColumnRef}>
+            <div className="name-column-content">
+              {isEditing && isDraggable && <FaGripVertical className="drag-handle" />}
               {isEditing && rowData.rowType === 'exercise' && (
                 <FaTrash
-                  style={{
-                    cursor: 'pointer',
-                    color: isDarkMode ? '#ff6b6b' : '#dc3545',
-                    opacity: 0.7,
-                    transition: 'opacity 0.2s'
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.7')}
+                  className="delete-icon"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeleteExercise(rowData);
                   }}
                 />
               )}
+              <div className="name-value">
+                {rowData.rowType === 'group' && (
+                  <div
+                    className="group-indicator"
+                    style={{
+                      backgroundColor: `hsl(${(rowData.groupNumber * 35) % 360}, 70%, ${isDarkMode ? '45%' : '60%'})`
+                    }}
+                  ></div>
+                )}
+                {renderNameColumn(rowData)}
+              </div>
             </div>
-            <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
           </td>
           {renderDataCells(rowData)}
         </tr>
@@ -1778,13 +1706,11 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   };
 
   return (
-    <div style={{ padding: '0.5rem' }}>
+    <div className={`workout-table-container ${isDarkMode ? 'dark-mode' : ''}`}>
       {/* 1) Cycle & Day selection */}
-      <div className="grid" style={{ marginBottom: '0.5rem' }}>
-        <div className="col-12 md:col-3">
-          <label htmlFor="cycle" style={{ marginBottom: '0.3rem', display: 'block' }}>
-            {intl.formatMessage({ id: 'common.cycle' })}
-          </label>
+      <div className="cycle-day-selector">
+        <div className="field">
+          <label className="selector-label">{intl.formatMessage({ id: 'common.cycle' })}</label>
           <Dropdown
             inputId="cycle"
             value={cycleId}
@@ -1793,16 +1719,14 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
             placeholder={intl.formatMessage({ id: 'common.selectCycle' })}
             optionLabel="label"
             optionValue="value"
-            className="w-full"
+            className="p-inputtext-sm w-full"
             itemTemplate={(option) => (
               <div className={option.value === -1 ? 'highlighted-option' : ''}>{option.label}</div>
             )}
           />
         </div>
-        <div className="col-12 md:col-3">
-          <label htmlFor="day" style={{ marginBottom: '0.3rem', display: 'block' }}>
-            {intl.formatMessage({ id: 'common.day' })}
-          </label>
+        <div className="field">
+          <label className="selector-label">{intl.formatMessage({ id: 'common.day' })}</label>
           <Dropdown
             inputId="day"
             value={dayNumber}
@@ -1811,7 +1735,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
             placeholder={intl.formatMessage({ id: 'common.selectDay' })}
             optionLabel="label"
             optionValue="value"
-            className="w-full"
+            className="p-inputtext-sm w-full"
             itemTemplate={dayItemTemplate}
             disabled={!cycleId}
           />
@@ -1819,63 +1743,68 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       </div>
 
       {/* 2) Editing Buttons */}
-      <div style={{ marginBottom: '1rem' }}>
+      <div className="table-action-buttons">
         {!isEditing ? (
-          <button onClick={() => setIsEditing(true)}>{intl.formatMessage({ id: 'common.edit' })}</button>
+          <button className="p-button p-component p-button-outlined" onClick={() => setIsEditing(true)}>
+            <i className="pi pi-pencil mr-2"></i>
+            {intl.formatMessage({ id: 'common.edit' })}
+          </button>
         ) : (
-          <button onClick={handleCancelEdit}>{intl.formatMessage({ id: 'common.cancel' })}</button>
-        )}
-
-        {isEditing && (
           <>
-            <button style={{ marginLeft: '1rem' }} onClick={() => handleAddExercise(tableData.length)}>
+            <button className="p-button p-component p-button-success" onClick={handleSaveChanges}>
+              <FaSave className="mr-2" />
+              {intl.formatMessage({ id: 'common.save' })}
+            </button>
+
+            <button
+              className="p-button p-component p-button-secondary"
+              onClick={() => handleAddExercise(tableData.length)}
+            >
+              <FaPlus className="mr-2" />
               {intl.formatMessage({ id: 'plan.group.addExercise' })}
             </button>
-            <button style={{ marginLeft: '1rem' }} onClick={() => handleAddGroup(tableData.length)}>
+
+            <button
+              className="p-button p-component p-button-secondary"
+              onClick={() => handleAddGroup(tableData.length)}
+            >
+              <FaPlus className="mr-2" />
               {intl.formatMessage({ id: 'plan.group.addGroup' })}
             </button>
-            <button style={{ marginLeft: '1rem' }} onClick={handleSaveChanges}>
-              {intl.formatMessage({ id: 'common.save' })}
+
+            <button className="p-button p-component p-button-outlined p-button-danger" onClick={handleCancelEdit}>
+              <i className="pi pi-times mr-2"></i>
+              {intl.formatMessage({ id: 'common.cancel' })}
             </button>
           </>
         )}
       </div>
 
-      {/* Guía visual para el modo de edición */}
+      {/* 3) Instructions for edit mode */}
       {isEditing && (
-        <div
-          style={{
-            padding: '10px 15px',
-            marginBottom: '1rem',
-            borderRadius: '5px',
-            backgroundColor: isDarkMode ? 'rgba(66, 153, 225, 0.15)' : 'rgba(66, 153, 225, 0.1)',
-            border: '1px solid rgba(66, 153, 225, 0.3)',
-            fontSize: '0.9rem'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-            <FaGripVertical style={{ marginRight: '8px', opacity: 0.7 }} />
-            <span>
-              <FormattedMessage id="tooltip.dragGroup" defaultMessage="Arrastra para reordenar grupos y ejercicios" />
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaPlus style={{ marginRight: '8px', opacity: 0.7 }} />
-            <span>
-              <FormattedMessage
-                id="tooltip.hoverForOptions"
-                defaultMessage="Pasa el cursor sobre una fila para ver opciones de inserción"
-              />
-            </span>
-          </div>
+        <div className="changes-indicator">
+          <i className="pi pi-info-circle"></i>
+          <span>
+            <FormattedMessage
+              id="workoutTable.editModeActive"
+              defaultMessage="Modo de edición activo. Arrastra para reorganizar y haz clic en Guardar cuando termines. Haz doble click en un ejercicio para agregar uno nuevo."
+            />
+          </span>
         </div>
       )}
 
+      {/* 4) Loading/Empty state */}
       {isLoading ? (
-        <p style={{ margin: '0.5rem' }}>{intl.formatMessage({ id: 'exercise.properties.loading' })}</p>
+        <div className="workout-loading">
+          <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
+          <p>{intl.formatMessage({ id: 'exercise.properties.loading' })}</p>
+        </div>
       ) : tableData.length === 0 ? (
-        <div style={{ margin: '0.5rem' }}>
-          <FormattedMessage id="common.noData" />
+        <div className="workout-no-data">
+          <i className="pi pi-info-circle" style={{ fontSize: '2rem', marginBottom: '1rem' }}></i>
+          <p>
+            <FormattedMessage id="common.noData" />
+          </p>
         </div>
       ) : (
         <DndContext
@@ -1885,73 +1814,65 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           onDragEnd={handleDragEnd}
           modifiers={[restrictToVerticalAxis]}
         >
-          <table className="p-datatable p-datatable-sm" style={tableStyles}>
-            {renderTableHeader()}
-            <tbody>
-              <SortableContext
-                items={tableData.map((row) =>
-                  row.rowType === 'group' ? `group-${row.groupNumber}` : `ex-${row.groupNumber}-${row.rowIndex}`
-                )}
-                strategy={verticalListSortingStrategy}
-              >
-                {tableData.map((rowData, index) => (
-                  <SortableRow
-                    key={
-                      rowData.rowType === 'group'
-                        ? `group-${rowData.groupNumber}`
-                        : `ex-${rowData.groupNumber}-${rowData.rowIndex}-${rowData.name || 'unnamed'}-${rowData.exerciseInstanceId || Math.random().toString(36).substr(2, 9)}`
-                    }
-                    rowData={rowData}
-                    index={index}
-                  />
-                ))}
-              </SortableContext>
-            </tbody>
-          </table>
+          <div className="workout-table-wrapper">
+            <table className="workout-table" style={tableStyles}>
+              {renderTableHeader()}
+              <tbody>
+                <SortableContext
+                  items={tableData.map((row) =>
+                    row.rowType === 'group' ? `group-${row.groupNumber}` : `ex-${row.groupNumber}-${row.rowIndex}`
+                  )}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {tableData.map((rowData, index) => (
+                    <SortableRow
+                      key={
+                        rowData.rowType === 'group'
+                          ? `group-${rowData.groupNumber}`
+                          : `ex-${rowData.groupNumber}-${rowData.rowIndex}-${
+                              rowData.name || 'unnamed'
+                            }-${rowData.exerciseInstanceId || Math.random().toString(36).substr(2, 9)}`
+                      }
+                      rowData={rowData}
+                      index={index}
+                    />
+                  ))}
+                </SortableContext>
+              </tbody>
+            </table>
+          </div>
 
-          {/* Añadir el DragOverlay para mostrar el elemento arrastrado */}
           <DragOverlay>
             {activeId ? (
-              <table className="p-datatable p-datatable-sm" style={tableStyles}>
+              <table className="workout-table drag-overlay-table">
                 <tbody>
                   {tableData
                     .filter((row) => {
                       if (isDraggingGroup) {
                         return row.isBeingDragged;
                       } else {
-                        if (row.rowType === 'group') {
-                          return `group-${row.groupNumber}` === activeId;
-                        } else {
-                          return `ex-${row.groupNumber}-${row.rowIndex}` === activeId;
-                        }
+                        return row.rowType === 'group'
+                          ? `group-${row.groupNumber}` === activeId
+                          : `ex-${row.groupNumber}-${row.rowIndex}` === activeId;
                       }
                     })
                     .map((rowData, index) => (
-                      <tr
-                        key={`overlay-${index}`}
-                        className={rowClassName(rowData)}
-                        style={{
-                          background: isDarkMode ? '#2c3e50' : '#f8f9fa',
-                          boxShadow: '0 0 10px rgba(0,0,0,0.2)',
-                          width: '100%',
-                          tableLayout: 'fixed',
-                          border: isDarkMode ? '1px solid #4a6785' : '1px solid #c8c8c8',
-                          margin: '2px 0',
-                          opacity: '0.9'
-                        }}
-                      >
-                        <td
-                          style={{
-                            minWidth: '150px',
-                            width: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '0.5rem',
-                            overflow: 'hidden'
-                          }}
-                        >
-                          <FaGripVertical style={{ marginRight: '0.3rem', cursor: 'grab', flexShrink: 0 }} />
-                          <span style={{ overflow: 'hidden', width: '100%' }}>{renderNameColumn(rowData)}</span>
+                      <tr key={`overlay-${index}`} className={`${rowClassName(rowData)} dragging-overlay`}>
+                        <td className="name-column dragging">
+                          <div className="name-column-content">
+                            <FaGripVertical className="drag-handle" />
+                            <div className="name-value">
+                              {rowData.rowType === 'group' && (
+                                <div
+                                  className="group-indicator"
+                                  style={{
+                                    backgroundColor: `hsl(${(rowData.groupNumber * 35) % 360}, 70%, ${isDarkMode ? '45%' : '60%'})`
+                                  }}
+                                ></div>
+                              )}
+                              {renderNameColumn(rowData)}
+                            </div>
+                          </div>
                         </td>
                         {renderDataCells(rowData)}
                       </tr>
@@ -1962,6 +1883,27 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           </DragOverlay>
         </DndContext>
       )}
+
+      {/* Floating save/cancel in edit mode */}
+      {isEditing && (
+        <div className="floating-actions">
+          <button
+            className="p-button p-component p-button-success p-button-rounded"
+            onClick={handleSaveChanges}
+            title={intl.formatMessage({ id: 'common.save' })}
+          >
+            <FaSave />
+          </button>
+          <button
+            className="p-button p-component p-button-danger p-button-rounded"
+            onClick={handleCancelEdit}
+            title={intl.formatMessage({ id: 'common.cancel' })}
+          >
+            <i className="pi pi-times"></i>
+          </button>
+        </div>
+      )}
+
       <CreateTrainingCycleDialog
         clientId={clientData?.id}
         draggable={false}

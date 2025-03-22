@@ -40,24 +40,17 @@ import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { fetchTrainingCyclesTemplates, assignCycleTemplateToClient } from '../services/workoutService';
 import { Calendar } from 'primereact/calendar';
 
-// Estilos para el botón de agregar sesión en el calendario
+// Estilos mejorados para el botón de agregar sesión en el calendario
 const addButtonStyle = `
-  .add-session-btn {
-    opacity: 0.3;
-    transition: opacity 0.3s ease;
-  }
-  .fc-daygrid-day:hover .add-session-btn {
-    opacity: 1;
-  }
   .fc-daygrid-day-frame {
-    min-height: 80px;
+    position: relative;
   }
-  .fc-daygrid-day-top {
-    justify-content: center;
+  .fc-day-today .day-number {
+    color: var(--primary-700);
+    font-weight: 700;
   }
-  .day-number {
-    font-weight: bold;
-    margin-bottom: 0.2rem;
+  .fc-daygrid-day-events {
+    min-height: 40px;
   }
 `;
 
@@ -317,15 +310,11 @@ export default function ClientDashboard() {
     setPlanDetailsVisible(true);
   };
 
-  const handleDateClick = (info) => {
-    // info.date contains the clicked Date
-    // Reset time to only use the date portion
-    const clickedDate = new Date(info.date);
-    clickedDate.setHours(0, 0, 0, 0);
-    setSelectedDate(clickedDate);
-    setSelectedClient(clientId);
-    setSelectedSessionId(null);
-    setAssignSessionVisible(true);
+  const handleDateClick = (arg) => {
+    // Solo proceder si es un clic en un día, no en un evento
+    if (arg.view.type.includes('dayGrid') || arg.view.type.includes('timeGrid')) {
+      handleAddDayWorkout(arg.date);
+    }
   };
 
   const hidePlanDetails = () => {
@@ -341,25 +330,51 @@ export default function ClientDashboard() {
     const { title, extendedProps } = eventInfo.event;
     const { status, workoutInstanceId, sessionId, cycle } = extendedProps || {};
 
+    // Determinar la severidad según el estado
+    let severity = 'info';
+    let statusIcon = 'pi pi-calendar';
+    let statusTooltip = intl.formatMessage({ id: 'dashboard.calendar.pendingStatus' }, { defaultMessage: 'Pendiente' });
+
+    if (status === 'completed') {
+      severity = 'success';
+      statusIcon = 'pi pi-check-circle';
+      statusTooltip = intl.formatMessage(
+        { id: 'dashboard.calendar.completedStatus' },
+        { defaultMessage: 'Completado' }
+      );
+    } else if (status === 'expired') {
+      severity = 'danger';
+      statusIcon = 'pi pi-times-circle';
+      statusTooltip = intl.formatMessage({ id: 'dashboard.calendar.expiredStatus' }, { defaultMessage: 'Expirado' });
+    } else if (status === 'current') {
+      severity = 'info';
+      statusIcon = 'pi pi-sync';
+      statusTooltip = intl.formatMessage({ id: 'dashboard.calendar.currentStatus' }, { defaultMessage: 'En progreso' });
+    } else {
+      severity = 'warning';
+      statusIcon = 'pi pi-exclamation-circle';
+      statusTooltip = intl.formatMessage(
+        { id: 'dashboard.calendar.warningStatus' },
+        { defaultMessage: 'Atención requerida' }
+      );
+    }
+
     return (
       <div className="custom-event-content">
         {title !== 'no title' ? (
           <Button
-            tooltip="View Workout Details"
-            icon="pi pi-eye"
+            tooltip={intl.formatMessage(
+              { id: 'dashboard.calendar.viewDetails' },
+              { defaultMessage: 'Ver detalles del entrenamiento' }
+            )}
+            icon={statusIcon}
             size="small"
             label={title}
-            severity={
-              status === 'completed'
-                ? 'success'
-                : status === 'expired'
-                  ? 'danger'
-                  : status === 'current'
-                    ? 'info'
-                    : 'warning'
-            }
+            severity={severity}
             text
             raised
+            badge={statusTooltip}
+            badgeClassName={`status-badge status-${severity}`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -368,7 +383,10 @@ export default function ClientDashboard() {
           />
         ) : (
           <Button
-            tooltip="Assign Workouts to Day"
+            tooltip={intl.formatMessage(
+              { id: 'dashboard.calendar.assignWorkout' },
+              { defaultMessage: 'Asignar entrenamientos al día' }
+            )}
             icon="pi pi-calendar-plus"
             size="small"
             severity="primary"
@@ -381,8 +399,12 @@ export default function ClientDashboard() {
             }}
           >
             <div className="text-left p-0 m-0">
-              <p className="m-0">Assign Workout</p>
-              <small>{cycle}</small>
+              <p className="m-0">
+                {intl.formatMessage(
+                  { id: 'dashboard.calendar.assignWorkoutTo' },
+                  { defaultMessage: 'Asignar entrenamiento' }
+                )}
+              </p>
             </div>
           </Button>
         )}
@@ -390,34 +412,30 @@ export default function ClientDashboard() {
     );
   };
 
-  // Renderizar el botón + en cada celda del día
-  const renderDayCellContent = (cellInfo) => {
-    const date = cellInfo.date;
-    const dayNumberText = cellInfo.dayNumberText;
+  const renderDayCellContent = (dayInfo) => {
+    const isToday = dayInfo.isToday;
+    const dayNumberClasses = isToday ? 'day-number today-day' : 'day-number';
 
     return (
-      <div className="flex flex-column align-items-center">
-        <div className="day-number">{dayNumberText}</div>
+      <>
+        <div className={dayNumberClasses}>{dayInfo.dayNumberText}</div>
         <Button
           icon="pi pi-plus"
-          aria-label="Agregar sesión"
-          text
           rounded
-          raised
-          size="small"
-          tooltip={intl.formatMessage({ id: 'clientDashboard.addSession' }, { defaultMessage: 'Agregar sesión' })}
+          text
+          aria-label={intl.formatMessage({ id: 'dashboard.calendar.addSession' }, { defaultMessage: 'Añadir sesión' })}
+          tooltip={intl.formatMessage(
+            { id: 'dashboard.calendar.addSessionTooltip' },
+            { defaultMessage: 'Añadir nuevo entrenamiento a este día' }
+          )}
+          tooltipOptions={{ position: 'top' }}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            const clickedDate = new Date(date);
-            clickedDate.setHours(0, 0, 0, 0);
-            setSelectedDate(clickedDate);
-            setSelectedClient(clientId);
-            setSelectedSessionId(null);
-            setAssignSessionVisible(true);
+            handleAddDayWorkout(dayInfo.date);
           }}
         />
-      </div>
+      </>
     );
   };
 
@@ -562,57 +580,69 @@ export default function ClientDashboard() {
     return (
       <TabView>
         <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.calendar' })}>
-          <div className="mb-3 flex flex-wrap gap-2">
+          <div className="action-buttons">
             <Button
-              label={intl.formatMessage({
-                id: 'clientDashboard.buttons.assign'
-              })}
+              label={intl.formatMessage({ id: 'clientDashboard.buttons.assign' })}
               icon="pi pi-refresh"
               className="p-button-success"
               onClick={() => handleOpenAssignCycle('assign')}
             />
             <Button
-              label={intl.formatMessage({
-                id: 'clientDashboard.buttons.unassign'
-              })}
+              label={intl.formatMessage({ id: 'clientDashboard.buttons.unassign' })}
               icon="pi pi-trash"
               className="p-button-danger"
               onClick={() => handleOpenAssignCycle('unassign')}
             />
             <Button
-              label={intl.formatMessage({
-                id: 'clientDashboard.buttons.createCycle'
-              })}
+              label={intl.formatMessage({ id: 'clientDashboard.buttons.createCycle' })}
               icon="pi pi-plus"
               className="p-button-secondary"
               onClick={showCreateCycleDialog}
             />
             <Button
-              label={intl.formatMessage(
-                {
-                  id: 'clientDashboard.buttons.assignCycleTemplate'
-                },
-                { defaultMessage: 'Asignar Plantilla de Ciclo' }
-              )}
+              label={intl.formatMessage({ id: 'clientDashboard.buttons.assignCycleTemplate' })}
               icon="pi pi-clone"
               className="p-button-info"
               onClick={openAssignCycleTemplateDialog}
             />
           </div>
-          <Card>
+
+          <Card className="calendar-card">
             <FullCalendar
-              plugins={[dayGridPlugin, interactionPlugin, listPlugin, timeGridPlugin]}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
               events={calendarEvents}
               eventContent={renderEventContent}
+              dateClick={handleDateClick}
+              eventClick={handleEventClick}
               ref={calendarRef}
               fixedWeekCount={false}
-              className="custom-calendar"
               contentHeight="auto"
               locales={allLocales}
               locale={locale}
               firstDay={1}
               dayCellContent={renderDayCellContent}
+              headerToolbar={{
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listMonth'
+              }}
+              buttonText={{
+                today: intl.formatMessage({ id: 'calendar.today' }, { defaultMessage: 'Hoy' }),
+                month: intl.formatMessage({ id: 'calendar.month' }, { defaultMessage: 'Mes' }),
+                list: intl.formatMessage({ id: 'calendar.list' }, { defaultMessage: 'Lista' })
+              }}
+              dayMaxEvents={3}
+              moreLinkContent={({ num }) => (
+                <Badge
+                  value={`+${num}`}
+                  severity="info"
+                  tooltip={intl.formatMessage(
+                    { id: 'dashboard.calendar.moreEvents', defaultMessage: '{num} entrenamientos más' },
+                    { num }
+                  )}
+                />
+              )}
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
                 if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
@@ -623,6 +653,7 @@ export default function ClientDashboard() {
               }}
             />
           </Card>
+
           <AssignWorkoutToCycleDialog
             visible={assignCycleVisible}
             onHide={() => setAssignCycleVisible(false)}
@@ -647,13 +678,14 @@ export default function ClientDashboard() {
             setRefreshKey={setRefreshKey}
           />
           <Dialog
-            header="Plan Details"
+            header={intl.formatMessage({ id: 'dashboard.dialog.planDetails' }, { defaultMessage: 'Detalles del Plan' })}
             dismissableMask
             draggable={false}
             resizable={false}
             visible={planDetailsVisible}
-            style={{ width: '80vw' }}
+            style={{ width: '90vw', maxWidth: '1200px' }}
             onHide={hidePlanDetails}
+            className="plan-details-dialog"
           >
             {selectedPlan && (
               <NewPlanDetailHorizontal
@@ -674,14 +706,14 @@ export default function ClientDashboard() {
         <TabPanel
           header={intl.formatMessage({ id: 'clientDashboard.tabs.dashboard' }, { defaultMessage: 'Dashboard' })}
         >
-          <div className="flex justify-content-center align-items-center" style={{ height: '300px' }}>
-            <Card className="w-full">
+          <div className="flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
+            <Card className="w-full coming-soon-card">
               <div className="text-center">
-                <i className="pi pi-clock text-5xl mb-3"></i>
-                <h2>
+                <i className="pi pi-clock text-5xl mb-3 text-primary-300"></i>
+                <h2 className="text-color">
                   <FormattedMessage id="common.comingSoon" defaultMessage="Próximamente" />
                 </h2>
-                <p className="text-lg">
+                <p className="text-lg text-color-secondary">
                   <FormattedMessage
                     id="clientDashboard.comingSoon.dashboard"
                     defaultMessage="Estamos trabajando en un dashboard con estadísticas y métricas de progreso."
@@ -698,14 +730,14 @@ export default function ClientDashboard() {
             { defaultMessage: 'Historia Clínica' }
           )}
         >
-          <div className="flex justify-content-center align-items-center" style={{ height: '300px' }}>
-            <Card className="w-full">
+          <div className="flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
+            <Card className="w-full coming-soon-card">
               <div className="text-center">
-                <i className="pi pi-heart text-5xl mb-3"></i>
-                <h2>
+                <i className="pi pi-heart text-5xl mb-3 text-primary-300"></i>
+                <h2 className="text-color">
                   <FormattedMessage id="common.comingSoon" defaultMessage="Próximamente" />
                 </h2>
-                <p className="text-lg">
+                <p className="text-lg text-color-secondary">
                   <FormattedMessage
                     id="clientDashboard.comingSoon.medicalHistory"
                     defaultMessage="Próximamente podrás gestionar la historia clínica de tus clientes."
@@ -719,14 +751,14 @@ export default function ClientDashboard() {
         <TabPanel
           header={intl.formatMessage({ id: 'clientDashboard.tabs.userData' }, { defaultMessage: 'Datos del Usuario' })}
         >
-          <div className="flex justify-content-center align-items-center" style={{ height: '300px' }}>
-            <Card className="w-full">
+          <div className="flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
+            <Card className="w-full coming-soon-card">
               <div className="text-center">
-                <i className="pi pi-user text-5xl mb-3"></i>
-                <h2>
+                <i className="pi pi-user text-5xl mb-3 text-primary-300"></i>
+                <h2 className="text-color">
                   <FormattedMessage id="common.comingSoon" defaultMessage="Próximamente" />
                 </h2>
-                <p className="text-lg">
+                <p className="text-lg text-color-secondary">
                   <FormattedMessage
                     id="clientDashboard.comingSoon.userData"
                     defaultMessage="Próximamente podrás ver y editar todos los datos del usuario desde aquí."
@@ -755,51 +787,67 @@ export default function ClientDashboard() {
     return age;
   };
 
+  // Header personalizado para el panel principal
   const headerTemplate = (options) => {
     const className = `${options.className} justify-content-space-between`;
     return (
       <div className={className}>
-        <div className="flex align-items-center gap-2">
-          <Avatar image={clientData?.profilePicture || '/image.webp'} shape="circle" />
-          <div className="flex flex-column">
-            <span className="font-bold">{clientData?.name}</span>
-            {clientData?.birthdate && (
-              <small className="text-gray-600">
-                {intl.formatMessage({ id: 'common.age' }, { defaultMessage: 'Edad' })}:&nbsp;
-                {calculateAge(clientData.birthdate)}&nbsp;
-                {intl.formatMessage({ id: 'common.years' }, { defaultMessage: 'años' })}
-              </small>
-            )}
-          </div>
-          <div className="flex align-items-center">
-            <Button
-              icon="pi pi-pencil"
-              style={{ width: '1.2rem', height: '1.2rem' }}
-              text
-              onClick={() => handleNewStudentDialogShow(clientData.email)}
-              tooltip={intl.formatMessage({
-                id: 'students.actions.editProfile'
-              })}
+        <div className="profile-info">
+          <div className="profile-image">
+            <img
+              src={clientData?.profilePicture || '/image.webp'}
+              alt={clientData?.name || 'Profile'}
+              onError={(e) => {
+                e.target.src =
+                  'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg';
+              }}
             />
             {clientData &&
               ['fitnessGoal', 'activityLevel', 'gender', 'weight', 'height', 'birthdate'].some(
                 (field) => !clientData[field]
               ) && (
                 <>
-                  <Tooltip target=".missing-data-icon" />
-                  <i
-                    className="missing-data-icon pi pi-exclamation-triangle text-red-500 ml-2"
-                    data-pr-tooltip={intl.formatMessage({
-                      id: 'common.missingData'
-                    })}
-                    data-pr-position="right"
-                    style={{ cursor: 'help' }}
-                  />
+                  <Tooltip target=".missing-data-indicator" />
+                  <div
+                    className="missing-data-indicator"
+                    style={{
+                      position: 'absolute',
+                      bottom: '0',
+                      right: '0',
+                      background: 'white',
+                      borderRadius: '50%',
+                      width: '1rem',
+                      height: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid var(--red-500)'
+                    }}
+                    data-pr-tooltip={intl.formatMessage({ id: 'common.missingData' })}
+                    data-pr-position="bottom"
+                  >
+                    <i className="pi pi-exclamation-triangle text-red-500" style={{ fontSize: '0.7rem' }}></i>
+                  </div>
                 </>
               )}
           </div>
+          <div className="profile-details">
+            <h4>{clientData?.name}</h4>
+            {clientData?.birthdate && (
+              <p>
+                {intl.formatMessage({ id: 'common.age' })}:&nbsp;
+                {calculateAge(clientData.birthdate)}&nbsp;
+                {intl.formatMessage({ id: 'common.years' })}
+              </p>
+            )}
+          </div>
+          <Button
+            icon="pi pi-pencil"
+            className="p-button-rounded p-button-text p-button-sm"
+            onClick={() => handleNewStudentDialogShow(clientData?.email)}
+            tooltip={intl.formatMessage({ id: 'students.actions.editProfile' })}
+          />
         </div>
-        <div>&nbsp;</div>
       </div>
     );
   };
@@ -862,6 +910,25 @@ export default function ClientDashboard() {
     }
   };
 
+  const handleAddDayWorkout = (date) => {
+    const clickedDate = new Date(date);
+    clickedDate.setHours(0, 0, 0, 0);
+    setSelectedDate(clickedDate);
+    setSelectedClient(clientId);
+    setSelectedSessionId(null);
+    setAssignSessionVisible(true);
+  };
+
+  const handleEventClick = (arg) => {
+    const { extendedProps } = arg.event;
+    const { workoutInstanceId } = extendedProps || {};
+
+    // Solo proceder si hay un ID de instancia de entrenamiento
+    if (workoutInstanceId) {
+      handleViewWorkoutDetails(workoutInstanceId);
+    }
+  };
+
   return (
     <div className="client-dashboard p-1">
       <style>{addButtonStyle}</style>
@@ -889,10 +956,7 @@ export default function ClientDashboard() {
         draggable={false}
         resizable={false}
         className="responsive-dialog"
-        header={intl.formatMessage(
-          { id: 'clientDashboard.assignCycleTemplate.dialog.header' },
-          { defaultMessage: 'Asignar Plantilla de Ciclo de Entrenamiento' }
-        )}
+        header={intl.formatMessage({ id: 'clientDashboard.assignCycleTemplate.dialog.header' })}
         visible={isAssignCycleTemplateDialogVisible}
         style={{ width: '50vw' }}
         onHide={() => setAssignCycleTemplateDialogVisible(false)}
@@ -900,10 +964,7 @@ export default function ClientDashboard() {
         <div className="flex flex-column gap-3 p-3">
           <div className="field">
             <label className="block mb-2">
-              {intl.formatMessage(
-                { id: 'clientDashboard.assignCycleTemplate.selectCycle' },
-                { defaultMessage: 'Seleccionar Ciclo de Entrenamiento' }
-              )}
+              {intl.formatMessage({ id: 'clientDashboard.assignCycleTemplate.selectCycle' })}
             </label>
             <Dropdown
               value={selectedCycleTemplate}
@@ -922,32 +983,32 @@ export default function ClientDashboard() {
                 }
               }}
               optionLabel="name"
-              placeholder={intl.formatMessage(
-                { id: 'clientDashboard.assignCycleTemplate.selectCyclePlaceholder' },
-                { defaultMessage: 'Seleccione un ciclo de entrenamiento' }
-              )}
+              placeholder={intl.formatMessage({ id: 'clientDashboard.assignCycleTemplate.selectCyclePlaceholder' })}
               className="w-full"
             />
             {selectedCycleTemplate && (
-              <p className="mt-2 text-sm">
-                {selectedCycleTemplate.duration}{' '}
-                {selectedCycleTemplate.isDurationInMonths
-                  ? intl.formatMessage({ id: 'common.months', defaultMessage: 'meses' })
-                  : intl.formatMessage({ id: 'common.weeks', defaultMessage: 'semanas' })}{' '}
-                (
-                {selectedCycleTemplate.isDurationInMonths
-                  ? selectedCycleTemplate.duration * 4
-                  : selectedCycleTemplate.duration}{' '}
-                {intl.formatMessage({ id: 'common.weeks', defaultMessage: 'semanas' })})
-              </p>
+              <div className="cycle-info mt-2">
+                <div className="cycle-name">{selectedCycleTemplate.name}</div>
+                <div className="cycle-details">
+                  <p className="m-0 text-sm">
+                    {selectedCycleTemplate.duration}{' '}
+                    {selectedCycleTemplate.isDurationInMonths
+                      ? intl.formatMessage({ id: 'common.months' })
+                      : intl.formatMessage({ id: 'common.weeks' })}{' '}
+                    (
+                    {selectedCycleTemplate.isDurationInMonths
+                      ? selectedCycleTemplate.duration * 4
+                      : selectedCycleTemplate.duration}{' '}
+                    {intl.formatMessage({ id: 'common.weeks' })})
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
           <div className="field grid">
             <div className="col-6">
-              <label className="block mb-2">
-                {intl.formatMessage({ id: 'common.startDate', defaultMessage: 'Fecha de Inicio' })}
-              </label>
+              <label className="block mb-2">{intl.formatMessage({ id: 'common.startDate' })}</label>
               <Calendar
                 value={startDate}
                 onChange={(e) => {
@@ -969,15 +1030,13 @@ export default function ClientDashboard() {
               />
             </div>
             <div className="col-6">
-              <label className="block mb-2">
-                {intl.formatMessage({ id: 'common.endDate', defaultMessage: 'Fecha de Fin' })}
-              </label>
+              <label className="block mb-2">{intl.formatMessage({ id: 'common.endDate' })}</label>
               <Calendar value={endDate} disabled showIcon className="w-full" locale={intl.locale} />
             </div>
           </div>
 
           <Button
-            label={intl.formatMessage({ id: 'common.assign', defaultMessage: 'Asignar' })}
+            label={intl.formatMessage({ id: 'common.assign' })}
             icon="pi pi-check"
             className="p-button-success mt-3"
             onClick={handleAssignCycleTemplateToClient}

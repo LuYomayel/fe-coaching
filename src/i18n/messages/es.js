@@ -283,7 +283,7 @@ const messages = {
   'coach.exercise.error.video.invalid.header': 'Error',
 
   // NewManageStudents
-  'students.title': 'Tus entrenados {count}/{total}',
+  'students.title': 'Tus entrenados',
   'students.subtitle': 'Ver y gestionar el progreso de tus entrenados',
   'students.description':
     'Usa esta página para seguir el progreso de tus entrenados, asignar sesiones de entrenamiento y comunicarte directamente con ellos.',
@@ -554,9 +554,9 @@ const messages = {
   'sort.descending': 'Descendente',
 
   // NewClientDashboard - Adicionales
-  'dashboard.calendar.viewDetails': 'Ver Detalles del Entrenamiento',
-  'dashboard.calendar.assignWorkout': 'Asignar Entrenamiento al Día',
-  'dashboard.calendar.assignWorkoutTo': 'Asignar Entrenamiento',
+  'dashboard.calendar.viewDetails': 'Ver detalles del entrenamiento',
+  'dashboard.calendar.assignWorkout': 'Asignar entrenamientos al día',
+  'dashboard.calendar.assignWorkoutTo': 'Asignar entrenamiento',
   'clientDashboard.cycle.newCycle': 'Nuevo Ciclo',
   'dashboard.table.set': 'Serie',
   'dashboard.table.type': 'Tipo',
@@ -1085,6 +1085,17 @@ const messages = {
   'coach.rpe.generateValues.tooltip': 'Genera automáticamente valores basados en el rango y paso definidos',
   'coach.rpe.error.invalidRange': 'El rango y paso especificados no son válidos',
   'common.client': 'Cliente',
-  'common.assignedOn': 'Asignado el'
+  'common.assignedOn': 'Asignado el',
+
+  // Translations for dashboard calendar
+  'dashboard.calendar.pendingStatus': 'Pendiente',
+  'dashboard.calendar.completedStatus': 'Completado',
+  'dashboard.calendar.expiredStatus': 'Expirado',
+  'dashboard.calendar.currentStatus': 'En progreso',
+  'dashboard.calendar.warningStatus': 'Atención requerida',
+
+  'dashboard.calendar.addSession': 'Añadir sesión',
+  'dashboard.calendar.addSessionTooltip': 'Añadir nuevo entrenamiento a este día',
+  'dashboard.calendar.moreEvents': '{num} entrenamientos más'
 };
 export default messages;

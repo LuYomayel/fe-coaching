@@ -283,7 +283,7 @@ const messages = {
   'coach.exercise.error.video.invalid.header': 'Error',
 
   // NewManageStudents
-  'students.title': 'Your students {count}/{total}',
+  'students.title': 'Your students',
   'students.subtitle': "View and manage your students' progress",
   'students.description':
     "Use this page to track your students' progress, assign training plans, and communicate with them directly.",
@@ -557,6 +557,14 @@ const messages = {
   'dashboard.calendar.viewDetails': 'View Workout Details',
   'dashboard.calendar.assignWorkout': 'Assign Workouts to Day',
   'dashboard.calendar.assignWorkoutTo': 'Assign Workout',
+  'dashboard.calendar.pendingStatus': 'Pending',
+  'dashboard.calendar.completedStatus': 'Completed',
+  'dashboard.calendar.expiredStatus': 'Expired',
+  'dashboard.calendar.currentStatus': 'In progress',
+  'dashboard.calendar.warningStatus': 'Attention required',
+  'dashboard.calendar.addSession': 'Add session',
+  'dashboard.calendar.addSessionTooltip': 'Add new workout to this day',
+  'dashboard.calendar.moreEvents': '{num} more workouts',
   'clientDashboard.cycle.newCycle': 'New Cycle',
 
   'dashboard.table.set': 'Set',
