@@ -53,6 +53,7 @@ import { Tooltip } from 'primereact/tooltip';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { ColorPicker } from 'primereact/colorpicker';
 import { OverlayPanel } from 'primereact/overlaypanel';
+import '../styles/CoachProfile.css'; // Importar los nuevos estilos
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // Conjunto de emojis comunes para usar en el selector
@@ -288,9 +289,9 @@ export default function CoachProfilePage() {
   const [currentVideoUrl, setCurrentVideoUrl] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedBodyAreas, setSelectedBodyAreas] = useState([]);
-  // eslint-disable-next-line
   const [selectedFile, setSelectedFile] = useState(null);
   const fileUploadRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [totalSize, setTotalSize] = useState(0);
 
   const [filters, setFilters] = useState({
@@ -1074,7 +1075,7 @@ export default function CoachProfilePage() {
                     tooltipOptions={{ position: 'top' }}
                   />
                 </div>
-                <div className="col-12 flex justify-content-end">
+                <div className="col-12 flex justify-content-end gap-2">
                   <Button
                     label={intl.formatMessage({ id: 'coach.rpe.generateValues' })}
                     icon="pi pi-cog"
@@ -1118,9 +1119,27 @@ export default function CoachProfilePage() {
                       newRpe.maxValue === undefined ||
                       newRpe.step === undefined ||
                       newRpe.step <= 0 ||
-                      newRpe.minValue >= newRpe.maxValue
+                      newRpe.minValue >= newRpe.maxValue ||
+                      (newRpe.minValue !== undefined &&
+                        newRpe.maxValue !== undefined &&
+                        newRpe.step !== undefined &&
+                        Math.floor((newRpe.maxValue - newRpe.minValue) / newRpe.step) + 1 > 10)
                     }
                     tooltip={intl.formatMessage({ id: 'coach.rpe.generateValues.tooltip' })}
+                    tooltipOptions={{ position: 'left' }}
+                  />
+                  <Button
+                    label={intl.formatMessage({ id: 'coach.rpe.clearValues' })}
+                    icon="pi pi-trash"
+                    className="p-button-danger"
+                    onClick={() => {
+                      setNewRpe({
+                        ...newRpe,
+                        valuesMeta: []
+                      });
+                    }}
+                    disabled={!newRpe.valuesMeta || newRpe.valuesMeta.length === 0}
+                    tooltip={intl.formatMessage({ id: 'coach.rpe.clearValues.tooltip' })}
                     tooltipOptions={{ position: 'left' }}
                   />
                 </div>
@@ -1607,11 +1626,6 @@ export default function CoachProfilePage() {
   const rpeActionsBodyTemplate = (rowData) => (
     <React.Fragment>
       <Button
-        icon="pi pi-pencil"
-        className="p-button-rounded p-button-warning p-button-text"
-        onClick={() => openEditRpeDialog(rowData)}
-      />
-      <Button
         icon="pi pi-trash"
         className="p-button-rounded p-button-danger p-button-text"
         onClick={() =>
@@ -1712,7 +1726,7 @@ export default function CoachProfilePage() {
             label="Assign RPE Method"
             icon="pi pi-check"
             onClick={handleConfirmAssign}
-            disabled={!selectedType || !selectedTarget || !selectedRpe}
+            disabled={!selectedRpe || !selectedType || !selectedTarget}
           />
         </div>
       </div>
@@ -1721,12 +1735,39 @@ export default function CoachProfilePage() {
 
   // Función para confirmar la asignación usando showConfirmationDialog
   const handleConfirmAssign = () => {
+    if (!selectedRpe || !selectedType || !selectedTarget) {
+      showToast(
+        'error',
+        'Error',
+        intl.formatMessage({
+          id: 'coach.rpe.error.missingFields',
+          defaultMessage: 'Por favor selecciona todos los campos requeridos'
+        })
+      );
+      return;
+    }
+
+    let targetName = '';
+    if (selectedType === 'exercise') {
+      const exercise = exercises.find((e) => e.id === selectedTarget.id);
+      targetName = exercise ? exercise.name : '';
+    } else if (selectedType === 'user') {
+      const user = users.find((u) => u.id === selectedTarget.id);
+      targetName = user ? user.name : '';
+    }
+
+    const rpeMethod = rpeMethods.find((r) => r.id === selectedRpe);
+
     showConfirmationDialog({
       message: intl.formatMessage(
-        { id: 'coach.rpe.confirm.assign' },
         {
-          rpe: rpeMethods.find((r) => r.id === selectedRpe)?.name,
-          type: selectedType
+          id: 'coach.rpe.confirm.assign',
+          defaultMessage: '¿Estás seguro que deseas asignar el método RPE "{rpe}" a {target}?'
+        },
+        {
+          rpe: rpeMethod ? rpeMethod.name : '',
+          target:
+            targetName || intl.formatMessage({ id: `coach.rpe.target.${selectedType}`, defaultMessage: selectedType })
         }
       ),
       header: intl.formatMessage({ id: 'common.confirmation' }),
@@ -1768,20 +1809,18 @@ export default function CoachProfilePage() {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   // Función para obtener el nombre del RPE a partir de su ID
-  const getRpeNameById = (rpeId) => {
-    const rpe = rpeMethods.find((r) => r.id === rpeId);
-    return rpe ? rpe.name : 'Desconocido';
+  const getRpeNameById = (id) => {
+    const method = rpeMethods.find((method) => method.id === id);
+    return method ? method.name : 'N/A';
   };
 
   // Función para formatear el tipo de objetivo en texto legible
   const formatTargetType = (type) => {
     switch (type) {
+      case 'exercise':
+        return intl.formatMessage({ id: 'exercise.title' });
       case 'user':
-        return intl.formatMessage({ id: 'common.client' });
-      case 'workout':
-        return intl.formatMessage({ id: 'coach.workouts.title' });
-      case 'trainingCycle':
-        return intl.formatMessage({ id: 'workoutTable.cycle' });
+        return intl.formatMessage({ id: 'client.title' });
       default:
         return type;
     }
@@ -1819,306 +1858,843 @@ export default function CoachProfilePage() {
   };
 
   return (
-    <div className="coach-profile p-4">
-      <Card className={isCoachInfoLoading ? 'flex justify-content-center' : 'mb-4'}>
-        {isCoachInfoLoading ? (
-          <Spinner />
-        ) : (
-          <div className="flex flex-column md:flex-row">
-            <div className="flex-grow-1">
-              <h1 className="text-3xl font-bold mb-2">
-                <FormattedMessage id="coach.welcome" values={{ name: coachInfo?.name }} />
-              </h1>
-              <p className="mb-2">
-                <strong>
-                  <FormattedMessage id="coach.email" />:
-                </strong>{' '}
-                {coachInfo?.user.email}
-              </p>
-              <p className="mb-2">
-                <strong>
-                  <FormattedMessage id="coach.experience" />:
-                </strong>{' '}
-                {coachInfo?.experience}
-              </p>
-              <p className="mb-2">
-                <strong>
-                  <FormattedMessage id="coach.trainingType" />:
-                </strong>{' '}
-                {coachInfo?.trainingType.join(', ')}
-              </p>
-              {coachInfo?.hasGym && (
-                <p>
-                  <strong>
-                    <FormattedMessage id="coach.gymLocation" />:
-                  </strong>{' '}
-                  {coachInfo?.gymLocation}
-                </p>
-              )}
+    <div className="coach-profile-container">
+      {/* Sección de cabecera del perfil */}
+      <div className="profile-header">
+        <div className="profile-header-content">
+          <img
+            src={coachInfo?.profilePictureUrl || '/image.webp'}
+            alt={coachInfo?.name || 'Coach'}
+            className="profile-avatar"
+          />
+          <div className="profile-info">
+            <div className="profile-name-container">
+              <h1 className="profile-name">{coachInfo?.name || 'Coach Profile'}</h1>
+              <p className="profile-subtitle">{coachInfo?.user.email || 'Loading...'}</p>
             </div>
-            <div className="flex-grow-1 mt-4 md:mt-0">
-              <h2 className="text-xl font-bold mb-2">
-                <FormattedMessage id="coach.biography" />
-              </h2>
-              <p>{coachInfo?.bio}</p>
+            <div className="profile-stats">
+              <div className="stat-item">
+                <span className="stat-value">{users.length}</span>
+                <span className="stat-label">Clients</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{workouts.length}</span>
+                <span className="stat-label">Workouts</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{exercises.length}</span>
+                <span className="stat-label">Exercises</span>
+              </div>
             </div>
           </div>
-        )}
-      </Card>
+        </div>
+      </div>
 
-      <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
-        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.workouts' })}>
-          <DataTable
-            value={workouts}
-            className="p-datatable-sm"
-            header={renderHeader(intl.formatMessage({ id: 'coach.tabs.workouts' }))}
-            loading={isWorkoutsLoading}
-          >
-            <Column field="planName" header={intl.formatMessage({ id: 'coach.workouts.title' })}></Column>
-            <Column body={(rowData) => actionBodyTemplate(rowData, 'workout')} style={{ width: '120px' }}></Column>
-          </DataTable>
-        </TabPanel>
-
-        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.plans' })}>
-          <div>{renderHeader(intl.formatMessage({ id: 'coach.tabs.plans' }))}</div>
-          <div className="grid">
-            {coachPlans.map((plan) => (
-              <div key={plan.id} className="col-12 md:col-6 lg:col-4">
-                <Card title={plan.name} subTitle={`$${plan.price} / month`} className="h-full">
-                  <p className="m-0">
-                    {intl.formatMessage({ id: 'coach.workoutsPerWeek' })}: {plan.workoutsPerWeek}
-                  </p>
-                  <div className="flex justify-content-between mt-4">
-                    <Button
-                      label="Edit"
-                      icon="pi pi-pencil"
-                      className="p-button-text"
-                      onClick={() => {
-                        openEditPlanDialog(plan);
-                      }}
-                    />
-                    <Button
-                      label="Delete"
-                      icon="pi pi-trash"
-                      className="p-button-danger p-button-text"
-                      onClick={() => confirmDeletePlan(plan.id)}
-                    />
-                  </div>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </TabPanel>
-
-        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.exercises' })}>
-          <DataTable
-            value={exercises}
-            responsiveLayout="scroll"
-            className="p-datatable-sm"
-            header={renderHeader(intl.formatMessage({ id: 'coach.tabs.exercises' }))}
-            filters={filters}
-            globalFilterFields={['name', 'exerciseType', 'description']}
-            onFilter={(e) => setFilters(e.filters)}
-            loading={isExercisesLoading}
-            paginator
-            rows={10}
-            rowsPerPageOptions={[10, 20, 50]}
-          >
-            <Column
-              field="name"
-              header={intl.formatMessage({ id: 'coach.exercise.name' })}
-              style={{ width: '20%' }}
-              filter
-              filterElement={nameFilterTemplate}
-              body={(rowData) => {
-                return (
-                  <div className="flex align-items-center gap-2">
-                    {rowData.name}
-                    {missingDataIconTemplate(rowData)}
-                  </div>
-                );
-              }}
-            />
-            <Column
-              field="multimedia"
-              header={intl.formatMessage({ id: 'coach.exercise.video' })}
-              body={videoBodyTemplate}
-            />
-            <Column
-              field="exerciseType"
-              header={intl.formatMessage({ id: 'coach.exercise.type' })}
-              filter
-              filterElement={exerciseTypeFilterTemplate}
-            />
-            <Column
-              field="description"
-              header={intl.formatMessage({ id: 'coach.exercise.description' })}
-              style={{ width: '30%' }}
-              filter
-              filterElement={descriptionFilterTemplate}
-            />
-            <Column field="equipmentNeeded" header={intl.formatMessage({ id: 'coach.exercise.equipment' })} />
-            <Column
-              field="actions"
-              header={intl.formatMessage({ id: 'common.actions' })}
-              body={(rowData) => actionsBodyTemplate(rowData, 'exercise')}
-            />
-          </DataTable>
-        </TabPanel>
-
-        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.subscription' })}>
-          <div className="grid">
-            {subscriptionPlans.map((plan) => (
-              <div key={plan.id} className="col-12 md:col-6 lg:col-4">
-                <Card
-                  title={plan.name}
-                  subTitle={`$${plan.price} / month`}
-                  className={classNames('h-full relative', {
-                    'border-primary': plan.id === currentPlanId
-                  })}
-                >
-                  <ul className="list-none p-0 m-0">
-                    <li className="flex align-items-center mb-2">
-                      <i className="pi pi-check-circle mr-2 text-green-500"></i>
-                      <FormattedMessage id="coach.subscription.maxClients" values={{ max: plan.max_clients }} />
-                    </li>
-                  </ul>
-                  {plan.id === currentPlanId && (
-                    <div className="absolute top-0 right-0 bg-primary text-white px-2 py-1 text-xs font-bold">
-                      <FormattedMessage id="coach.subscription.currentPlan" />
-                    </div>
-                  )}
-                </Card>
-              </div>
-            ))}
-          </div>
-        </TabPanel>
-
-        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.rpe' })}>
-          <div className="flex justify-content-between mb-3">
-            <h2 className="text-xl font-bold">
-              <FormattedMessage id="coach.tabs.rpe" />
-            </h2>
-            <div>
+      {/* Contenido principal con pestañas */}
+      <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)} className="coach-tabs">
+        {/* Pestaña de Ejercicios */}
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.exercises' })} leftIcon="pi pi-heart">
+          <div className="tab-content">
+            <div className="action-buttons">
               <Button
-                label={intl.formatMessage({ id: 'common.add' }, { item: 'RPE Method' })}
-                icon="pi pi-plus"
-                className="mr-2"
+                label={intl.formatMessage(
+                  { id: 'common.add' },
+                  { item: intl.formatMessage({ id: 'coach.exercise.title' }) }
+                )}
+                icon="pi pi-plus-circle"
+                onClick={openCreateExerciseDialog}
+                className="p-button-primary"
+              />
+              <Button
+                label={intl.formatMessage({ id: 'coach.importExercises' })}
+                icon="pi pi-upload"
+                onClick={() => fileInputRef.current.click()}
+                className="p-button-outlined"
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx, .xls"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    const files = { 0: e.target.files[0] };
+                    onTemplateSelect({ files });
+                    uploadHandler({ files });
+                  }
+                }}
+              />
+              <FileUpload
+                ref={fileUploadRef}
+                customUpload
+                uploadHandler={uploadHandler}
+                onUpload={onTemplateUpload}
+                onSelect={onTemplateSelect}
+                onError={onTemplateError}
+                onClear={onTemplateClear}
+                multiple={false}
+                maxFileSize={1000000}
+                accept=".xlsx, .xls"
+                emptyTemplate={<p className="m-0">{intl.formatMessage({ id: 'coach.dragAndDropExercises' })}</p>}
+                style={{ display: 'none' }}
+              />
+            </div>
+
+            <Card className="section-card" title={intl.formatMessage({ id: 'coach.exercises.title' })}>
+              {isExercisesLoading ? (
+                <div className="loading-container">
+                  <Spinner />
+                </div>
+              ) : (
+                <DataTable
+                  value={exercises}
+                  className="coach-table"
+                  stripedRows
+                  paginator
+                  rows={10}
+                  rowsPerPageOptions={[5, 10, 25, 50]}
+                  emptyMessage={intl.formatMessage({ id: 'coach.noExercisesFound' })}
+                  filters={filters}
+                  filterDisplay="menu"
+                  globalFilterFields={['name', 'exerciseType', 'description']}
+                  header={renderHeader(intl.formatMessage({ id: 'coach.exerciseList' }))}
+                  globalFilter={filters.global.value}
+                  responsiveLayout="stack"
+                  breakpoint="960px"
+                  dataKey="id"
+                  scrollable
+                  scrollHeight="600px"
+                >
+                  <Column
+                    field="name"
+                    header={intl.formatMessage({ id: 'exercise.name' })}
+                    filter
+                    filterField="name"
+                    filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByName' })}
+                    filterElement={nameFilterTemplate}
+                    sortable
+                    style={{ minWidth: '250px' }}
+                    body={(rowData) => (
+                      <div className="exercise-name-cell">
+                        <span className="exercise-name">{rowData.name}</span>
+                        {missingDataIconTemplate(rowData)}
+                      </div>
+                    )}
+                  />
+                  <Column
+                    field="multimedia"
+                    header={intl.formatMessage({ id: 'exercise.video' })}
+                    body={videoBodyTemplate}
+                    style={{ minWidth: '200px' }}
+                  />
+                  <Column
+                    field="exerciseType"
+                    header={intl.formatMessage({ id: 'exercise.type' })}
+                    filter
+                    filterField="exerciseType"
+                    filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByType' })}
+                    filterElement={exerciseTypeFilterTemplate}
+                    sortable
+                    style={{ minWidth: '200px' }}
+                  />
+                  <Column
+                    field="description"
+                    header={intl.formatMessage({ id: 'exercise.description' })}
+                    filter
+                    filterField="description"
+                    filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByDescription' })}
+                    filterElement={descriptionFilterTemplate}
+                    style={{ minWidth: '300px' }}
+                    body={(rowData) => (
+                      <div className="description-cell">
+                        <p className="description-text">{rowData.description}</p>
+                      </div>
+                    )}
+                  />
+                  <Column
+                    field="equipmentNeeded"
+                    header={intl.formatMessage({ id: 'exercise.equipment' })}
+                    style={{ minWidth: '200px' }}
+                  />
+                  <Column
+                    header={intl.formatMessage({ id: 'common.actions' })}
+                    body={(rowData) => (
+                      <div className="action-button-cell">
+                        <Button
+                          icon="pi pi-pencil"
+                          className="p-button-rounded p-button-outlined"
+                          onClick={() => openEditExerciseDialog(rowData)}
+                          tooltip={intl.formatMessage({ id: 'common.edit' })}
+                          tooltipOptions={{ position: 'top' }}
+                        />
+                        <Button
+                          icon="pi pi-trash"
+                          className="p-button-rounded p-button-outlined p-button-danger"
+                          onClick={() => {
+                            showConfirmationDialog({
+                              message: intl.formatMessage({
+                                id: 'deleteExercise.confirmation.message'
+                              }),
+                              header: intl.formatMessage({ id: 'common.confirmation' }),
+                              icon: 'pi pi-exclamation-triangle',
+                              accept: () => handleDeleteExercise(rowData.id),
+                              reject: () => console.log('Rejected')
+                            });
+                          }}
+                          tooltip={intl.formatMessage({ id: 'common.delete' })}
+                          tooltipOptions={{ position: 'top' }}
+                        />
+                      </div>
+                    )}
+                    style={{ minWidth: '150px' }}
+                  />
+                </DataTable>
+              )}
+            </Card>
+
+            {missingExercises.length > 0 && (
+              <Card
+                className="section-card missing-exercises-card"
+                title={intl.formatMessage({ id: 'coach.missingExercises' })}
+              >
+                <div className="missing-exercises-header">
+                  <i className="pi pi-exclamation-triangle" style={{ color: 'var(--yellow-500)' }}></i>
+                  <span>{intl.formatMessage({ id: 'coach.missingExercisesWarning' })}</span>
+                </div>
+                <DataTable
+                  value={missingExercises}
+                  className="coach-table"
+                  stripedRows
+                  emptyMessage={intl.formatMessage({ id: 'coach.noMissingExercises' })}
+                  scrollable
+                  scrollHeight="300px"
+                >
+                  <Column field="name" header={intl.formatMessage({ id: 'exercise.name' })} sortable />
+                  <Column
+                    header={intl.formatMessage({ id: 'exercise.missingData' })}
+                    body={(rowData) => {
+                      const missingFields = ['multimedia', 'exerciseType', 'description', 'equipmentNeeded'].filter(
+                        (field) => !rowData[field]
+                      );
+                      return (
+                        <div className="missing-fields">
+                          {missingFields.map((field, index) => (
+                            <span key={index} className="missing-field-tag">
+                              {intl.formatMessage({ id: `exercise.${field}` })}
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    }}
+                  />
+                  <Column
+                    header={intl.formatMessage({ id: 'common.actions' })}
+                    body={(rowData) => (
+                      <Button
+                        icon="pi pi-pencil"
+                        label={intl.formatMessage({ id: 'common.complete' })}
+                        className="p-button-sm p-button-warning"
+                        onClick={() => openEditExerciseDialog(rowData)}
+                      />
+                    )}
+                  />
+                </DataTable>
+              </Card>
+            )}
+          </div>
+        </TabPanel>
+
+        {/* Pestaña de RPE */}
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.rpe' })} leftIcon="pi pi-chart-line">
+          <div className="tab-content">
+            <div className="action-buttons">
+              <Button
+                label={intl.formatMessage({ id: 'coach.createRpeMethod' })}
+                icon="pi pi-plus-circle"
                 onClick={() => {
-                  setRpeDialogVisible(true);
+                  setDialogMode('create');
                   setNewRpe({
                     name: '',
                     minValue: 0,
-                    maxValue: 0,
-                    step: 0,
+                    maxValue: 10,
+                    step: 1,
                     valuesMeta: []
                   });
+                  setRpeDialogVisible(true);
                 }}
+                className="p-button-primary"
               />
               <Button
-                label={intl.formatMessage({ id: 'common.assign' }, { item: 'RPE Method' })}
+                label={intl.formatMessage({ id: 'coach.assignRpe' })}
                 icon="pi pi-link"
-                onClick={() => setRpeAssignmentDialogVisible(true)}
+                onClick={() => {
+                  setSelectedType(null);
+                  setSelectedTarget(null);
+                  setSelectedRpe(null);
+                  setRpeAssignmentDialogVisible(true);
+                }}
+                className="p-button-outlined"
+                disabled={rpeMethods.length === 0}
               />
             </div>
-          </div>
 
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-2">
-              <FormattedMessage id="coach.rpe.methods" defaultMessage="RPE Methods" />
-            </h3>
-            <DataTable
-              value={rpeMethods}
-              className="mt-2"
-              loading={isRpeLoading}
-              emptyMessage={intl.formatMessage({ id: 'common.noData' })}
-            >
-              <Column field="name" header={intl.formatMessage({ id: 'coach.rpe.name' })} />
-              <Column field="minValue" header={intl.formatMessage({ id: 'coach.rpe.minValue' })} />
-              <Column field="maxValue" header={intl.formatMessage({ id: 'coach.rpe.maxValue' })} />
-              <Column field="step" header={intl.formatMessage({ id: 'coach.rpe.step' })} />
-              <Column header={intl.formatMessage({ id: 'common.actions' })} body={rpeActionsBodyTemplate} />
-            </DataTable>
-          </div>
+            <Card className="section-card" title={intl.formatMessage({ id: 'coach.rpeMethods' })}>
+              {isRpeLoading ? (
+                <div className="loading-container">
+                  <Spinner />
+                </div>
+              ) : (
+                <div className="rpe-grid">
+                  {rpeMethods.map((rpe) => (
+                    <div key={rpe.id} className="rpe-card">
+                      <h3 className="rpe-name">{rpe.name}</h3>
+                      <div className="rpe-range">
+                        <i className="pi pi-sliders-h" style={{ marginRight: '0.5rem' }}></i>
+                        <span>
+                          {rpe.minValue} - {rpe.maxValue} ({intl.formatMessage({ id: 'rpe.step' })}: {rpe.step})
+                        </span>
+                      </div>
+                      <div className="rpe-values">
+                        {rpe.valuesMeta && Array.isArray(rpe.valuesMeta) ? (
+                          rpe.valuesMeta.map((value, idx) => (
+                            <div key={idx} className="rpe-value flex align-items-center gap-2">
+                              <strong>{value.value}</strong>: {value.emoji || ''}{' '}
+                              {value.color && (
+                                <div
+                                  className="color-preview"
+                                  style={{
+                                    backgroundColor: `#${value.color}`,
+                                    width: '2rem',
+                                    height: '2rem',
+                                    borderRadius: '4px',
+                                    border: '1px solid #dee2e6'
+                                  }}
+                                />
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div>No hay valores definidos</div>
+                        )}
+                      </div>
+                      <div className="rpe-actions">
+                        <Button
+                          icon="pi pi-pencil"
+                          className="p-button-text p-button-rounded"
+                          onClick={() => openEditRpeDialog(rpe)}
+                          tooltip={intl.formatMessage({ id: 'common.edit' })}
+                          tooltipOptions={{ position: 'top' }}
+                        />
+                        <Button
+                          icon="pi pi-trash"
+                          className="p-button-text p-button-rounded p-button-danger"
+                          onClick={() => {
+                            showConfirmationDialog({
+                              message: intl.formatMessage({ id: 'coach.rpe.confirm.delete' }),
+                              header: intl.formatMessage({ id: 'common.confirmation' }),
+                              icon: 'pi pi-exclamation-triangle',
+                              accept: () => handleDeleteRpeMethod(rpe.id),
+                              reject: () => console.log('Rejected')
+                            });
+                          }}
+                          tooltip={intl.formatMessage({ id: 'common.delete' })}
+                          tooltipOptions={{ position: 'top' }}
+                        />
+                      </div>
+                    </div>
+                  ))}
 
-          <div>
-            <h3 className="text-lg font-semibold mb-2">
-              <FormattedMessage id="coach.rpe.assignments" defaultMessage="RPE Assignments" />
-            </h3>
-            <DataTable
-              value={rpeAssignments}
-              className="mt-2"
-              loading={isRpeLoading}
-              emptyMessage={intl.formatMessage({ id: 'common.noData' })}
-            >
-              <Column
-                header={intl.formatMessage({ id: 'coach.rpe.method' })}
-                // body={(rowData) => getRpeNameById(rowData.rpeMethodId)}
-                field="rpeMethod.name"
-              />
-              <Column
-                field="targetType"
-                header={intl.formatMessage({ id: 'coach.rpe.targetType' })}
-                body={(rowData) => formatTargetType(rowData.targetType)}
-              />
-              <Column field="targetName" header={intl.formatMessage({ id: 'coach.rpe.targetName' })} />
-              <Column
-                field="assignedAt"
-                header={intl.formatMessage({ id: 'common.assignedOn' })}
-                body={(rowData) => {
-                  const date = new Date(rowData.assignedAt);
-                  return formatDate(date);
-                }}
-              />
-              <Column
-                header={intl.formatMessage({ id: 'common.actions' })}
-                body={(rowData) => (
-                  <Button
-                    icon="pi pi-trash"
-                    className="p-button-rounded p-button-danger p-button-text"
-                    onClick={() => confirmRemoveRpeAssignment(rowData.id)}
-                    tooltip={intl.formatMessage({ id: 'common.delete' })}
+                  {rpeMethods.length === 0 && (
+                    <div className="empty-message">
+                      <i
+                        className="pi pi-info-circle"
+                        style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--text-color-secondary)' }}
+                      ></i>
+                      <p>{intl.formatMessage({ id: 'coach.noRpeMethods' })}</p>
+                      <Button
+                        label={intl.formatMessage({ id: 'coach.createFirstRpeMethod' })}
+                        icon="pi pi-plus-circle"
+                        onClick={() => {
+                          setDialogMode('create');
+                          setNewRpe({
+                            name: '',
+                            minValue: 0,
+                            maxValue: 10,
+                            step: 1,
+                            valuesMeta: []
+                          });
+                          setRpeDialogVisible(true);
+                        }}
+                        className="p-button-outlined"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+
+            <Card className="section-card" title={intl.formatMessage({ id: 'coach.rpeAssignments' })}>
+              {isRpeLoading ? (
+                <div className="loading-container">
+                  <Spinner />
+                </div>
+              ) : (
+                <DataTable
+                  value={rpeAssignments}
+                  className="coach-table"
+                  stripedRows
+                  paginator
+                  rows={10}
+                  emptyMessage={intl.formatMessage({ id: 'coach.noRpeAssignments' })}
+                  responsiveLayout="stack"
+                  breakpoint="960px"
+                  dataKey="id"
+                >
+                  <Column
+                    field="rpeId"
+                    header={intl.formatMessage({ id: 'rpe.method' })}
+                    sortable
+                    body={(rowData) => getRpeNameById(rowData.rpeId)}
+                    style={{ minWidth: '200px' }}
                   />
-                )}
-              />
-            </DataTable>
+                  <Column
+                    field="targetType"
+                    header={intl.formatMessage({ id: 'rpe.targetType' })}
+                    sortable
+                    body={(rowData) => (
+                      <span className="target-type-badge">
+                        <i className={`pi ${rowData.targetType === 'exercise' ? 'pi-heart' : 'pi-user'}`}></i>
+                        {formatTargetType(rowData.targetType)}
+                      </span>
+                    )}
+                    style={{ minWidth: '150px' }}
+                  />
+                  <Column
+                    field="targetName"
+                    header={intl.formatMessage({ id: 'rpe.targetName' })}
+                    sortable
+                    style={{ minWidth: '200px' }}
+                  />
+                  <Column
+                    field="createdAt"
+                    header={intl.formatMessage({ id: 'common.createdAt' })}
+                    sortable
+                    body={(rowData) => formatDate(rowData.createdAt)}
+                    style={{ minWidth: '150px' }}
+                  />
+                  <Column
+                    header={intl.formatMessage({ id: 'common.actions' })}
+                    body={(rowData) => (
+                      <Button
+                        icon="pi pi-trash"
+                        className="p-button-rounded p-button-outlined p-button-danger"
+                        onClick={() => confirmRemoveRpeAssignment(rowData.id)}
+                        tooltip={intl.formatMessage({ id: 'common.delete' })}
+                        tooltipOptions={{ position: 'top' }}
+                      />
+                    )}
+                    style={{ width: '100px' }}
+                  />
+                </DataTable>
+              )}
+            </Card>
           </div>
         </TabPanel>
+
+        {/* Pestaña de Planes */}
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.plans' })} leftIcon="pi pi-list">
+          <div className="tab-content">
+            <div className="action-buttons">
+              <Button
+                label={intl.formatMessage(
+                  { id: 'common.add' },
+                  { item: intl.formatMessage({ id: 'coach.plan.title' }) }
+                )}
+                icon="pi pi-plus-circle"
+                onClick={openCreatePlanDialog}
+                className="p-button-primary"
+              />
+            </div>
+
+            <Card className="section-card" title={intl.formatMessage({ id: 'coach.plans.title' })}>
+              <div className="plans-grid">
+                {coachPlans.map((plan) => (
+                  <div key={plan.id} className="plan-card">
+                    <div className="plan-header">
+                      <h3 className="plan-name">{plan.name}</h3>
+                      <span className="plan-price">${plan.price}</span>
+                    </div>
+                    <div className="plan-details">
+                      <div className="plan-detail-item">
+                        <i className="pi pi-calendar"></i>
+                        <span>
+                          {intl.formatMessage({ id: 'coach.workoutsPerWeek' })}: <strong>{plan.workoutsPerWeek}</strong>
+                        </span>
+                      </div>
+                      {plan.includeMealPlan && (
+                        <div className="plan-detail-item">
+                          <i className="pi pi-check-circle"></i>
+                          <span>{intl.formatMessage({ id: 'coach.includeMealPlan' })}</span>
+                        </div>
+                      )}
+                      <div className="plan-detail-item">
+                        <i className="pi pi-clock"></i>
+                        <span>
+                          {intl.formatMessage({ id: 'common.created' })}: <strong>{formatDate(plan.createdAt)}</strong>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="plan-actions">
+                      <Button
+                        icon="pi pi-pencil"
+                        className="p-button-rounded p-button-outlined"
+                        onClick={() => openEditPlanDialog(plan)}
+                        tooltip={intl.formatMessage({ id: 'common.edit' })}
+                        tooltipOptions={{ position: 'top' }}
+                      />
+                      <Button
+                        icon="pi pi-trash"
+                        className="p-button-rounded p-button-outlined p-button-danger"
+                        onClick={() => confirmDeletePlan(plan.id)}
+                        tooltip={intl.formatMessage({ id: 'common.delete' })}
+                        tooltipOptions={{ position: 'top' }}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                {coachPlans.length === 0 && (
+                  <div className="empty-message">
+                    <i className="pi pi-info-circle"></i>
+                    <p>{intl.formatMessage({ id: 'coach.noPlans' })}</p>
+                    <Button
+                      label={intl.formatMessage({ id: 'coach.createFirstPlan' })}
+                      icon="pi pi-plus-circle"
+                      onClick={openCreatePlanDialog}
+                      className="p-button-outlined"
+                    />
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </TabPanel>
+
+        {/* Pestaña de Suscripción */}
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.subscription' })} leftIcon="pi pi-credit-card">
+          <div className="tab-content">
+            <Card className="section-card" title={intl.formatMessage({ id: 'coach.subscription.plans' })}>
+              <div className="subscription-grid">
+                {subscriptionPlans.map((plan) => (
+                  <div key={plan.id} className={`subscription-card ${plan.id === currentPlanId ? 'current-plan' : ''}`}>
+                    {plan.id === currentPlanId && (
+                      <div className="current-plan-badge">
+                        <i className="pi pi-check-circle"></i>
+                        <span>{intl.formatMessage({ id: 'coach.subscription.currentPlan' })}</span>
+                      </div>
+                    )}
+                    <div className="subscription-header">
+                      <h3 className="subscription-name">{plan.name}</h3>
+                      <span className="subscription-price">
+                        ${plan.price}
+                        <span className="subscription-period">/mes</span>
+                      </span>
+                    </div>
+                    <div className="subscription-features">
+                      <div className="subscription-feature">
+                        <i className="pi pi-users"></i>
+                        <span>
+                          <strong>{plan.max_clients}</strong>{' '}
+                          {intl.formatMessage({ id: 'coach.subscription.maxClients' })}
+                        </span>
+                      </div>
+                      <div className="subscription-feature">
+                        <i className="pi pi-calendar"></i>
+                        <span>{intl.formatMessage({ id: 'coach.subscription.includedFeatures' })}</span>
+                      </div>
+                    </div>
+                    {plan.id !== currentPlanId && (
+                      <div className="subscription-actions">
+                        <Button
+                          label={intl.formatMessage({ id: 'coach.subscription.upgrade' })}
+                          className="p-button-outlined"
+                          icon="pi pi-arrow-up"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {currentPlanId && (
+              <Card className="section-card" title={intl.formatMessage({ id: 'coach.subscription.details' })}>
+                <div className="subscription-details">
+                  <div className="subscription-detail-item">
+                    <i className="pi pi-calendar"></i>
+                    <div className="subscription-detail-content">
+                      <span className="detail-label">{intl.formatMessage({ id: 'coach.subscription.startDate' })}</span>
+                      <span className="detail-value">{formatDate(new Date())}</span>
+                    </div>
+                  </div>
+                  <div className="subscription-detail-item">
+                    <i className="pi pi-sync"></i>
+                    <div className="subscription-detail-content">
+                      <span className="detail-label">
+                        {intl.formatMessage({ id: 'coach.subscription.renewalDate' })}
+                      </span>
+                      <span className="detail-value">
+                        {formatDate(new Date(new Date().setMonth(new Date().getMonth() + 1)))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="subscription-detail-item">
+                    <i className="pi pi-credit-card"></i>
+                    <div className="subscription-detail-content">
+                      <span className="detail-label">
+                        {intl.formatMessage({ id: 'coach.subscription.paymentMethod' })}
+                      </span>
+                      <span className="detail-value">XXXX-XXXX-XXXX-4242</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
+        </TabPanel>
+
+        {/* Pestaña de Clientes */}
+        {/*
+        <TabPanel header={intl.formatMessage({ id: 'coach.tabs.clients' })} leftIcon="pi pi-users">
+          <div className="tab-content">
+            <Card className="section-card" title={intl.formatMessage({ id: 'coach.myClients' })}>
+              <DataTable
+                value={users}
+                className="coach-table"
+                stripedRows
+                paginator
+                rows={10}
+                emptyMessage={intl.formatMessage({ id: 'coach.noClientsFound' })}
+                responsiveLayout="stack"
+                breakpoint="960px"
+                dataKey="id"
+              >
+                <Column
+                  field="name"
+                  header={intl.formatMessage({ id: 'client.name' })}
+                  sortable
+                  body={(rowData) => (
+                    <div className="client-name-cell">
+                      <img
+                        src={rowData.profilePictureUrl || '/image.webp'}
+                        alt={rowData.name}
+                        className="client-avatar"
+                      />
+                      <span>{rowData.name}</span>
+                    </div>
+                  )}
+                  style={{ minWidth: '200px' }}
+                />
+                <Column
+                  field="user.email"
+                  header={intl.formatMessage({ id: 'client.email' })}
+                  sortable
+                  style={{ minWidth: '200px' }}
+                />
+                <Column
+                  field="subscription.status"
+                  header={intl.formatMessage({ id: 'client.status' })}
+                  sortable
+                  body={(rowData) => (
+                    <span className={`status-badge ${rowData.subscription?.status?.toLowerCase() || 'inactive'}`}>
+                      <i
+                        className={`pi ${rowData.subscription?.status === 'Active' ? 'pi-check-circle' : 'pi-times-circle'}`}
+                      ></i>
+                      {rowData.subscription?.status || 'Inactive'}
+                    </span>
+                  )}
+                  style={{ minWidth: '150px' }}
+                />
+                <Column
+                  field="subscription.expirationDate"
+                  header={intl.formatMessage({ id: 'client.expiresOn' })}
+                  sortable
+                  body={(rowData) =>
+                    rowData.subscription?.expirationDate ? formatDate(rowData.subscription.expirationDate) : 'N/A'
+                  }
+                  style={{ minWidth: '150px' }}
+                />
+                <Column
+                  header={intl.formatMessage({ id: 'common.actions' })}
+                  body={(rowData) => (
+                    <div className="action-button-cell">
+                      <Button
+                        icon="pi pi-eye"
+                        className="p-button-rounded p-button-outlined"
+                        onClick={() => navigate(`/user-detail/${rowData.id}`)}
+                        tooltip={intl.formatMessage({ id: 'common.view' })}
+                        tooltipOptions={{ position: 'top' }}
+                      />
+                      <Button
+                        icon="pi pi-envelope"
+                        className="p-button-rounded p-button-outlined p-button-info"
+                        tooltip={intl.formatMessage({ id: 'client.sendMessage' })}
+                        tooltipOptions={{ position: 'top' }}
+                      />
+                    </div>
+                  )}
+                  style={{ width: '150px' }}
+                />
+              </DataTable>
+            </Card>
+          </div>
+        </TabPanel>
+        */}
       </TabView>
 
-      {activeIndex === 2 && (
-        <Card className="mt-4">
-          <h2 className="text-xl font-bold mb-3">
-            <FormattedMessage id="coach.buttons.import" />
-          </h2>
-          <FileUpload
-            name="file"
-            ref={fileUploadRef}
-            customUpload
-            headerTemplate={headerTemplate}
-            uploadHandler={uploadHandler}
-            onUpload={onTemplateUpload}
-            onSelect={onTemplateSelect}
-            onError={onTemplateError}
-            onClear={onTemplateClear}
-            accept=".csv,.xlsx"
-            maxFileSize={1000000}
-            emptyTemplate={
-              <p className="m-0">
-                <FormattedMessage id="coach.exercise.dragDrop" />
-              </p>
-            }
-          />
-        </Card>
-      )}
-
+      {/* Diálogos */}
       <Dialog
-        draggable={false}
-        resizable={false}
-        dismissableMask
-        header={intl.formatMessage({ id: 'coach.workout.details' })}
+        visible={exerciseDialogVisible}
+        style={{ width: '650px' }}
+        header={
+          dialogMode === 'create'
+            ? intl.formatMessage({ id: 'exercise.create' })
+            : intl.formatMessage({ id: 'exercise.edit' })
+        }
+        modal
+        className="coach-dialog"
+        onHide={closeExerciseDialog}
+        footer={
+          <div>
+            <Button
+              label={intl.formatMessage({ id: 'common.cancel' })}
+              icon="pi pi-times"
+              onClick={closeExerciseDialog}
+              className="p-button-text"
+            />
+            <Button
+              label={intl.formatMessage({ id: 'common.save' })}
+              icon="pi pi-check"
+              onClick={handleSaveExercise}
+              autoFocus
+            />
+          </div>
+        }
+      >
+        {renderExerciseModal()}
+      </Dialog>
+
+      {/* Dialog para crear/editar un plan */}
+      <Dialog
+        visible={createPlanDialogVisible}
+        style={{ width: '650px' }}
+        header={
+          dialogMode === 'create'
+            ? intl.formatMessage({ id: 'coach.createNewPlan' })
+            : intl.formatMessage({ id: 'coach.editPlan' })
+        }
+        modal
+        className="coach-dialog"
+        onHide={closeCreatePlanDialog}
+        footer={
+          <div>
+            <Button
+              label={intl.formatMessage({ id: 'common.cancel' })}
+              icon="pi pi-times"
+              onClick={closeCreatePlanDialog}
+              className="p-button-text"
+            />
+            <Button
+              label={intl.formatMessage({ id: 'common.save' })}
+              icon="pi pi-check"
+              onClick={handleCreatePlan}
+              autoFocus
+            />
+          </div>
+        }
+      >
+        {renderPlanModal()}
+      </Dialog>
+
+      {/* Modal Video */}
+      <Dialog
+        visible={videoDialogVisible}
+        style={{ width: '80vw', maxWidth: '800px' }}
+        header={intl.formatMessage({ id: 'exercise.video' })}
+        modal
+        className="coach-dialog"
+        onHide={() => setVideoDialogVisible(false)}
+      >
+        {renderVideoModal()}
+      </Dialog>
+
+      {/* Modal RPE Method */}
+      <Dialog
+        visible={rpeDialogVisible}
+        style={{ width: '650px' }}
+        header={
+          dialogMode === 'create'
+            ? intl.formatMessage({ id: 'coach.createNewRpeMethod' })
+            : intl.formatMessage({ id: 'coach.editRpeMethod' })
+        }
+        modal
+        className="coach-dialog"
+        onHide={() => setRpeDialogVisible(false)}
+        footer={
+          <div>
+            <Button
+              label={intl.formatMessage({ id: 'common.cancel' })}
+              icon="pi pi-times"
+              onClick={() => setRpeDialogVisible(false)}
+              className="p-button-text"
+            />
+            <Button
+              label={intl.formatMessage({ id: 'common.save' })}
+              icon="pi pi-check"
+              onClick={handleSaveRpeMethod}
+              autoFocus
+            />
+          </div>
+        }
+      >
+        {renderRpeMethodDialog()}
+      </Dialog>
+
+      {/* RPE Assignment Dialog */}
+      <Dialog
+        visible={rpeAssignmentDialogVisible}
+        style={{ width: '650px' }}
+        header={intl.formatMessage({ id: 'coach.assignRpeMethod' })}
+        modal
+        className="coach-dialog"
+        onHide={() => setRpeAssignmentDialogVisible(false)}
+        footer={
+          <div>
+            <Button
+              label={intl.formatMessage({ id: 'common.cancel' })}
+              icon="pi pi-times"
+              onClick={() => setRpeAssignmentDialogVisible(false)}
+              className="p-button-text"
+            />
+            <Button
+              label={intl.formatMessage({ id: 'common.assign' })}
+              icon="pi pi-check"
+              onClick={handleConfirmAssign}
+              disabled={!selectedRpe || !selectedType || !selectedTarget}
+              autoFocus
+            />
+          </div>
+        }
+      >
+        {renderRpeAssignmentDialog()}
+      </Dialog>
+
+      {/* Dialog para detalles del plan */}
+      <Dialog
         visible={planDetailsVisible}
-        className="responsive-dialog"
+        header={intl.formatMessage({ id: 'plan.details' })}
+        modal
+        className="coach-dialog responsive-dialog"
         style={{ width: '80vw' }}
         onHide={() => setPlanDetailsVisible(false)}
       >
@@ -2130,11 +2706,6 @@ export default function CoachProfilePage() {
           isTemplate={true}
         />
       </Dialog>
-      {renderRpeMethodDialog()}
-      {renderExerciseModal()}
-      {renderPlanModal()}
-      {renderVideoModal()}
-      {renderRpeAssignmentDialog()}
     </div>
   );
 }
