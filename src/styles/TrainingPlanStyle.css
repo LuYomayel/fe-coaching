@@ -21,7 +21,6 @@
     --primary-gradient,
     linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-darker, #106cc8) 100%)
   );
-  color: var(--text-color-inverse, white);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   position: relative;
@@ -377,7 +376,6 @@
 /* Estilos para el diálogo de finalización */
 .finish-training-dialog .p-dialog-header {
   background: var(--primary-gradient, linear-gradient(135deg, var(--primary-color) 0%, var(--primary-700) 100%));
-  color: var(--text-color-inverse, white);
   border-bottom: none;
   padding: 1.25rem;
   display: flex;
@@ -387,10 +385,6 @@
 .finish-training-dialog .p-dialog-header .p-dialog-title {
   font-weight: 700;
   font-size: 1.5rem;
-}
-
-.finish-training-dialog .p-dialog-header .p-dialog-header-icon {
-  color: var(--text-color-inverse, white);
 }
 
 .finish-training-dialog .p-dialog-content {
