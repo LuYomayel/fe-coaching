@@ -9,7 +9,7 @@ import { Row } from 'primereact/row';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 
-import { fetchExcelViewByCycleAndDay } from '../services/workoutService';
+import { fetchExcelViewByCycleAndDay, getRpeMethodAssigned } from '../services/workoutService';
 import { fetchCoachExercises } from '../services/exercisesService';
 
 import { UserContext } from '../utils/UserContext';
@@ -76,7 +76,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   const [propertiesUsedByWeek, setPropertiesUsedByWeek] = useState([]);
 
   const [coachExercises, setCoachExercises] = useState([]);
-
+  const [rpeMethods, setRpeMethods] = useState([]);
+  const [workoutInstanceId, setWorkoutInstanceId] = useState(null);
   const [isDraggingGroup, setIsDraggingGroup] = useState(false);
 
   // Añadir estado para el elemento actualmente arrastrado
@@ -181,6 +182,21 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     fetchData();
   }, [user]);
 
+  useEffect(() => {
+    if (!clientData.id || !cycleId || !workoutInstanceId) return;
+
+    const fetchData = async () => {
+      try {
+        const response = await getRpeMethodAssigned(clientData.id, workoutInstanceId, cycleId);
+
+        setRpeMethods(response.data.rpeMethod);
+      } catch (err) {
+        console.error('Error fetching rpe methods:', err);
+      }
+    };
+    fetchData();
+  }, [clientData, cycleId, workoutInstanceId]);
+
   /****************************************
    * 2) Fetch ExcelView
    ****************************************/
@@ -190,6 +206,22 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       try {
         setIsLoading(true);
         const response = await fetchExcelViewByCycleAndDay(cycleId, dayNumber);
+        // Buscar cualquier workoutInstance que exista y obtener su instanceId
+        let workoutInstanceId = null;
+        for (const week of response.data.weeks) {
+          for (const session of week.sessions) {
+            for (const instance of session.workoutInstances) {
+              if (instance.instanceId) {
+                workoutInstanceId = instance.instanceId;
+                break;
+              }
+            }
+            if (workoutInstanceId) break;
+          }
+          if (workoutInstanceId) break;
+        }
+        setWorkoutInstanceId(workoutInstanceId);
+        console.log('workoutInstanceId', workoutInstanceId);
         setNumWeeks(response.data.weeks.length);
         setExcelData(response.data);
       } catch (error) {
@@ -457,7 +489,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     const subHeaderColumns = [];
     usedProps.forEach((list, idx) => {
       list.forEach((prop) => {
-        const headerLabel = propertyLabels[prop] || prop;
+        let headerLabel = propertyLabels[prop] || prop;
         subHeaderColumns.push(<Column header={headerLabel} key={`${prop}-header-${idx}`} />);
       });
     });
@@ -1414,7 +1446,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     const { headerGroup, usedProps } = buildHeaderGroup() || {};
     // If there's no data, bail out
     if (!headerGroup || !usedProps) return null;
-
+    console.log('rpeMethods', rpeMethods, usedProps);
     return (
       <thead>
         <tr className="table-header-row">
@@ -1429,9 +1461,9 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         </tr>
         <tr className="property-header-row">
           {usedProps.map((propsList, i) =>
-            propsList.map((prop, index) => (
+            propsList.map((prop) => (
               <th className="property-header" key={`${prop}-header-${i}`}>
-                {propertyLabels[prop] || prop}
+                {prop === 'rpe' ? rpeMethods.name : propertyLabels[prop] || prop}
               </th>
             ))
           )}

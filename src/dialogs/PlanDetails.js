@@ -23,7 +23,8 @@ export default function NewPlanDetailHorizontal({
   setPlanDetailsVisible,
   setRefreshKey,
   setLoading,
-  isTemplate
+  isTemplate,
+  clientId
 }) {
   const intl = useIntl();
   const toast = useRef(null);
@@ -93,9 +94,11 @@ export default function NewPlanDetailHorizontal({
     const fetchRpeMethods = async () => {
       try {
         setLoading(true);
-        const { data } = await getRpeMethodAssigned(client.id, planId, currentCycle.id);
+        const { data } = await getRpeMethodAssigned(clientId, planId, currentCycle.id);
+        console.log('data', data);
         setRpeMethods(data.rpeMethod);
       } catch (error) {
+        console.log('error', error);
         showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
       } finally {
         setLoading(false);

@@ -694,6 +694,7 @@ export default function ClientDashboard() {
                 setRefreshKey={setRefreshKey}
                 setLoading={setLoading}
                 isTemplate={false}
+                clientId={clientId}
               />
             )}
           </Dialog>
