@@ -28,7 +28,7 @@ const RpeOption = ({ color, value, emoji }) => (
   </div>
 );
 
-export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId }) {
+export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, clientId }) {
   const showToast = useToast();
   const { planId } = useParams();
   const { client, user } = useContext(UserContext);
@@ -44,7 +44,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId })
       setLoading(true);
       setError(null);
       //const { data } = await getRpeMethods(client.coach.user.id);
-      const response = await getRpeMethodAssigned(user.userId, planId, cycleId);
+      const response = await getRpeMethodAssigned(client.id || clientId, planId, cycleId);
       setSelectedRpeMethod(response.data.rpeMethod);
       //const rpeMethod = response.data.rpeMethod.find;
       console.log('response', response);
