@@ -617,7 +617,7 @@ export default function CoachProfilePage() {
               text === intl.formatMessage({ id: 'coach.tabs.exercises' })
                 ? openCreateExerciseDialog()
                 : text === intl.formatMessage({ id: 'coach.tabs.workouts' })
-                  ? navigate('/plans/create')
+                  ? navigate('/plans/create', { state: { changeToTemplate: false } })
                   : openCreatePlanDialog()
             }
           />

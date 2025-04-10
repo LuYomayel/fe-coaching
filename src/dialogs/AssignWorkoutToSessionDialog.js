@@ -68,7 +68,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   };
 
   const handleCreateNew = () => {
-    navigate(`/plans/create-and-assign`, { state: { clientId, sessionDate: selectedDate } });
+    navigate(`/plans/create-and-assign`, { state: { clientId, sessionDate: selectedDate, changeToTemplate: false } });
   };
 
   return (

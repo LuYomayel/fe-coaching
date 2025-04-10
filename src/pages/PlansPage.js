@@ -546,7 +546,7 @@ export default function PlansPage() {
               label={intl.formatMessage({ id: 'coach.buttons.newPlan' })}
               icon="pi pi-plus"
               className="p-button-rounded p-button-primary"
-              onClick={() => navigate('/plans/create')}
+              onClick={() => navigate('/plans/create', { state: { changeToTemplate: false } })}
             />
             {filterOption === 'all' || filterOption === 'general' ? (
               <Button
