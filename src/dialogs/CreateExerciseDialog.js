@@ -12,6 +12,14 @@ import { isValidYouTubeUrl } from '../utils/UtilFunctions';
 import { fetchBodyAreas } from '../services/exercisesService';
 import { useSpinner } from '../utils/GlobalSpinner';
 
+// Función auxiliar para truncar mensajes largos
+const truncateMessage = (message, maxLength = 50) => {
+  if (message && message.length > maxLength) {
+    return message.substring(0, maxLength) + '...';
+  }
+  return message;
+};
+
 export const CreateExerciseDialog = React.memo(
   ({
     exercise,
@@ -46,7 +54,7 @@ export const CreateExerciseDialog = React.memo(
           setBodyAreas(formattedBodyAreas);
         } catch (error) {
           console.log('error', error);
-          showToast('error', 'Error', error.message);
+          showToast('error', 'Error', truncateMessage(error.message));
         } finally {
           setLoading(false);
         }
@@ -75,14 +83,16 @@ export const CreateExerciseDialog = React.memo(
           if (message !== 'success') {
             throw new Error(message);
           } else {
-            showToast('success', 'Success', intl.formatMessage({ id: 'coach.exercise.success.created' }));
+            const successMessage = intl.formatMessage({ id: 'coach.exercise.success.created' });
+            showToast('success', 'Success', truncateMessage(successMessage));
           }
         } else {
           const { message } = await updateExercise(newExercise.id, body);
           if (message !== 'success') {
             throw new Error(message);
           } else {
-            showToast('success', 'Success', intl.formatMessage({ id: 'coach.exercise.success.updated' }));
+            const successMessage = intl.formatMessage({ id: 'coach.exercise.success.updated' });
+            showToast('success', 'Success', truncateMessage(successMessage));
           }
         }
 
@@ -90,7 +100,7 @@ export const CreateExerciseDialog = React.memo(
         setRefreshKey((old) => old + 1);
       } catch (error) {
         console.log('error', error);
-        showToast('error', 'Error', error.message);
+        showToast('error', 'Error', truncateMessage(error.message));
       }
     };
 
@@ -187,17 +197,21 @@ export const CreateExerciseDialog = React.memo(
                     return showToast(
                       'error',
                       'Error',
-                      intl.formatMessage({
-                        id: 'coach.exercise.error.name.empty'
-                      })
+                      truncateMessage(
+                        intl.formatMessage({
+                          id: 'coach.exercise.error.name.empty'
+                        })
+                      )
                     );
                   if (!isValidYouTubeUrl(newExercise.multimedia)) {
                     return showToast(
                       'error',
                       'Error',
-                      intl.formatMessage({
-                        id: 'coach.exercise.error.video.invalid'
-                      })
+                      truncateMessage(
+                        intl.formatMessage({
+                          id: 'coach.exercise.error.video.invalid'
+                        })
+                      )
                     );
                   }
                   showConfirmationDialog({

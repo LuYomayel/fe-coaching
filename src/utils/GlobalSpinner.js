@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import LogoLoader from '../components/LogoLoader';
 
 // Crear un contexto para el spinner
 const SpinnerContext = createContext();
@@ -11,7 +11,7 @@ export const SpinnerProvider = ({ children }) => {
     <SpinnerContext.Provider value={{ loading, setLoading }}>
       {loading && (
         <div className="global-spinner-container">
-          <ProgressSpinner className="global-spinner" />
+          <LogoLoader size="large" className="global-spinner" />
         </div>
       )}
       {children}

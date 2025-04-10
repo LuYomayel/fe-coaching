@@ -1266,7 +1266,8 @@ const messages = {
   'training.finish.challenging': 'Desafiante',
   'training.finish.additionalNotes': 'Notas Adicionales',
   'training.finish.additionalNotes.placeholder': '¿Algo más que quieras anotar sobre esta sesión?',
-  cancel: 'Cancelar',
-  submit: 'Enviar'
+
+  'coach.exercise.upload.updated': 'Ejercicios actualizados',
+  'exercise.exerciseType': 'Tipo de Ejercicio'
 };
 export default messages;

@@ -53,7 +53,7 @@ export default function Settings() {
       localStorage.setItem('locale', locale);
       localStorage.setItem('propertyUnits', JSON.stringify(propertyUnits));
       setLoading(false);
-    }, 1000);
+    }, 100000);
   };
 
   const handleCancel = () => {
@@ -62,7 +62,7 @@ export default function Settings() {
       setIsDarkMode(JSON.parse(localStorage.getItem('theme')));
       switchLanguage(localStorage.getItem('locale'));
       setLoading(false);
-    }, 1000);
+    }, 10000);
   };
 
   return (

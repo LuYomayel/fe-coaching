@@ -996,6 +996,9 @@ const messages = {
   'coach.home.days': 'days',
   'coach.home.timesPerWeek': 'times per week',
   'coach.home.timesPerMonth': 'times per month',
-  'coach.home.timesPerYear': 'times per year'
+  'coach.home.timesPerYear': 'times per year',
+
+  'coach.exercise.upload.updated': 'Updated Exercises',
+  'exercise.exerciseType': 'Exercise Type'
 };
 export default messages;

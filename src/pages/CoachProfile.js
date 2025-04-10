@@ -1420,6 +1420,13 @@ export default function CoachProfilePage() {
     console.log('FileUpload cleared');
   };
 
+  const truncateMessage = (message, maxLength = 150) => {
+    if (message && message.length > maxLength) {
+      return message.substring(0, maxLength) + '...';
+    }
+    return message;
+  };
+
   const handleUpload = async (formData, files) => {
     try {
       setLoading(true);
@@ -1427,11 +1434,11 @@ export default function CoachProfilePage() {
       console.log('data', data);
       onTemplateUpload({ files });
       setRefreshKey((old) => old + 1);
-      if (data.duplicateExercises.length > 0) {
+      if (data.updatedExercises.length > 0) {
         showToast(
-          'warn',
-          `${intl.formatMessage({ id: 'coach.exercise.upload.success' })}: ${data.registeredExercisesCount}. ${intl.formatMessage({ id: 'coach.exercise.upload.duplicated' })}: ${data.duplicatesCount}`,
-          `${data.duplicateExercises.map((ex) => `${ex.name} at row ${ex.row}`)}`,
+          'info',
+          `${intl.formatMessage({ id: 'coach.exercise.upload.success' })}: ${data.registeredExercisesCount}. ${intl.formatMessage({ id: 'coach.exercise.upload.updated' })}: ${data.updatedExercisesCount}`,
+          truncateMessage(`${data.updatedExercises.map((ex) => `${ex.name} at row ${ex.row}`)}`),
           true
         );
       } else {
@@ -1669,7 +1676,7 @@ export default function CoachProfilePage() {
 
         <div className="p-d-flex p-jc-end mt-4">
           <Button
-            label="Assign RPE Method"
+            label={intl.formatMessage({ id: 'coach.assignRpeMethod' })}
             icon="pi pi-check"
             onClick={handleConfirmAssign}
             disabled={!selectedRpe || !selectedType || !selectedTarget}
