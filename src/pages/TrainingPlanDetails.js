@@ -24,7 +24,7 @@ import '../styles/TrainingPlanStyle.css';
 export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshKey, isTraining = true }) {
   const { planId } = useParams();
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
+  const { user, client } = useContext(UserContext);
   const showToast = useToast();
   const { loading, setLoading } = useSpinner();
   const intl = useIntl();
@@ -425,6 +425,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                                 onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
                                 planId={planId}
                                 cycleId={currentCycle.id}
+                                clientId={client.id}
                               />
                             </div>
                             <div className="p-field">

@@ -291,6 +291,7 @@ export default function StudentHome() {
             setLoading={setLoading}
             setPlanDetailsVisible={setPlanDetailsVisible}
             setRefreshKey={setRefreshKey}
+            clientId={client.id}
           />
         )}
       </Dialog>
