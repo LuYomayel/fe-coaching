@@ -32,7 +32,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId })
   const showToast = useToast();
   const { planId } = useParams();
   const { client, user } = useContext(UserContext);
-  const [rpeMethods, setRpeMethods] = useState([]);
+
   // eslint-disable-next-line
   const [workout, setWorkout] = useState(null);
   const [selectedRpeMethod, setSelectedRpeMethod] = useState(null);
@@ -43,12 +43,11 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId })
     try {
       setLoading(true);
       setError(null);
-      const { data } = await getRpeMethods(client.coach.user.id);
+      //const { data } = await getRpeMethods(client.coach.user.id);
       const response = await getRpeMethodAssigned(user.userId, planId, cycleId);
       setSelectedRpeMethod(response.data.rpeMethod);
       //const rpeMethod = response.data.rpeMethod.find;
-      const methods = data;
-      setRpeMethods(methods);
+      console.log('response', response);
     } catch (error) {
       setError('Error al cargar los métodos RPE');
       showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
@@ -58,7 +57,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId })
   }, [client.coach.user.id, showToast, planId, user.userId]);
 
   const fetchWorkoutData = useCallback(async () => {
-    if (!rpeMethods.length) return;
+    if (!selectedRpeMethod.length) return;
 
     try {
       setLoading(true);
@@ -71,17 +70,17 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId })
     } finally {
       setLoading(false);
     }
-  }, [planId, rpeMethods, showToast]);
+  }, [planId, selectedRpeMethod, showToast]);
 
   useEffect(() => {
     fetchRpeMethods();
   }, [fetchRpeMethods]);
 
   useEffect(() => {
-    if (rpeMethods.length) {
+    if (selectedRpeMethod.length) {
       fetchWorkoutData();
     }
-  }, [rpeMethods, fetchWorkoutData]);
+  }, [selectedRpeMethod, fetchWorkoutData]);
 
   const getRpeOptions = useMemo(() => {
     if (!selectedRpeMethod) return [];
