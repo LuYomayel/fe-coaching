@@ -2483,8 +2483,7 @@ export default function CoachProfilePage() {
       {/* Diálogo para crear/editar un ejercicio */}
       {exerciseDialogVisible && (
         <CreateExerciseDialog
-          newExercise={newExercise}
-          setNewExercise={setNewExercise}
+          exercise={newExercise}
           exerciseDialogVisible={exerciseDialogVisible}
           closeExerciseDialog={closeExerciseDialog}
           dialogMode={dialogMode}
