@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Card } from 'primereact/card';
-import Spinner from '../utils/LittleSpinner';
+import { useSpinner } from '../utils/GlobalSpinner';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +19,7 @@ import {
 } from '../services/workoutService';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
-import { useSpinner } from '../utils/GlobalSpinner';
+
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Fieldset } from 'primereact/fieldset';
 import { Dialog } from 'primereact/dialog';
@@ -38,10 +38,10 @@ export default function PlansPage() {
   const [workouts, setWorkouts] = useState([]);
   const [trainingCycleTemplates, setTrainingCycleTemplates] = useState([]);
   const intl = useIntl();
+  const { isLoading, setLoading } = useSpinner();
   const navigate = useNavigate();
   const { user, coach } = useContext(UserContext);
   const [refreshKey, setRefreshKey] = useState(0);
-  const { setLoading, isLoading } = useSpinner();
   const { showConfirmationDialog } = useConfirmationDialog();
   const showToast = useToast();
   const [deletedWorkoutTemplates, setDeletedWorkoutTemplates] = useState([]);
@@ -498,7 +498,9 @@ export default function PlansPage() {
             tooltip={intl.formatMessage({ id: 'common.edit' })}
             icon="pi pi-pencil"
             className="p-button-secondary"
-            onClick={() => navigate(`/plans/edit-template/${workoutInstanceTemplate.id}`)}
+            onClick={() =>
+              navigate(`/plans/edit-template/${workoutInstanceTemplate.id}`, { state: { changeToTemplate: false } })
+            }
           />
           <Button
             tooltip={intl.formatMessage({ id: 'common.delete' })}
@@ -514,61 +516,57 @@ export default function PlansPage() {
   const renderTrainingSessionsTab = () => {
     return (
       <Card className={isLoading ? 'flex justify-content-center mb-4' : 'mb-4'}>
-        {isLoading ? (
-          <Spinner />
-        ) : (
-          <>
-            <h2 className="text-2xl font-bold mb-3">
-              <FormattedMessage id="coach.sections.trainingPlans" />
-            </h2>
-            <small className="block text-gray-600 mb-4">
-              <FormattedMessage id="coach.plan.description" />
-            </small>
-            <Dropdown
-              value={filterOption}
-              options={filterOptions}
-              onChange={(e) => setFilterOption(e.value)}
-              placeholder={intl.formatMessage({ id: 'plansPage.filter.placeholder' })}
-              className="mb-3"
+        <>
+          <h2 className="text-2xl font-bold mb-3">
+            <FormattedMessage id="coach.sections.trainingPlans" />
+          </h2>
+          <small className="block text-gray-600 mb-4">
+            <FormattedMessage id="coach.plan.description" />
+          </small>
+          <Dropdown
+            value={filterOption}
+            options={filterOptions}
+            onChange={(e) => setFilterOption(e.value)}
+            placeholder={intl.formatMessage({ id: 'plansPage.filter.placeholder' })}
+            className="mb-3"
+          />
+          <div className="grid">
+            {filteredWorkouts.map((plan, index) => (
+              <div key={index} className="col-12 md:col-4">
+                <Card
+                  title={renderPlanName(plan)}
+                  subTitle={plan.workoutInstanceTemplates[0].personalizedNotes}
+                  className="mb-3"
+                ></Card>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-content-end gap-2 ">
+            <Button
+              label={intl.formatMessage({ id: 'coach.buttons.newPlan' })}
+              icon="pi pi-plus"
+              className="p-button-rounded p-button-primary"
+              onClick={() => navigate('/plans/create')}
             />
-            <div className="grid">
-              {filteredWorkouts.map((plan, index) => (
-                <div key={index} className="col-12 md:col-4">
-                  <Card
-                    title={renderPlanName(plan)}
-                    subTitle={plan.workoutInstanceTemplates[0].personalizedNotes}
-                    className="mb-3"
-                  ></Card>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-content-end gap-2 ">
+            {filterOption === 'all' || filterOption === 'general' ? (
               <Button
-                label={intl.formatMessage({ id: 'coach.buttons.newPlan' })}
-                icon="pi pi-plus"
+                label={intl.formatMessage({ id: 'coach.buttons.assignPlans' })}
+                icon="pi pi-user-plus"
                 className="p-button-rounded p-button-primary"
-                onClick={() => navigate('/plans/create')}
+                onClick={() => setDialogVisible(true)}
+                disabled={selectedWorkouts.length === 0}
               />
-              {filterOption === 'all' || filterOption === 'general' ? (
-                <Button
-                  label={intl.formatMessage({ id: 'coach.buttons.assignPlans' })}
-                  icon="pi pi-user-plus"
-                  className="p-button-rounded p-button-primary"
-                  onClick={() => setDialogVisible(true)}
-                  disabled={selectedWorkouts.length === 0}
-                />
-              ) : (
-                <Button
-                  label={intl.formatMessage({ id: 'coach.buttons.unassignPlans' })}
-                  icon="pi pi-user-minus"
-                  className="p-button-rounded p-button-primary"
-                  onClick={() => handleUnassignAllFromClient()}
-                  disabled={selectedWorkouts.length === 0}
-                />
-              )}
-            </div>
-          </>
-        )}
+            ) : (
+              <Button
+                label={intl.formatMessage({ id: 'coach.buttons.unassignPlans' })}
+                icon="pi pi-user-minus"
+                className="p-button-rounded p-button-primary"
+                onClick={() => handleUnassignAllFromClient()}
+                disabled={selectedWorkouts.length === 0}
+              />
+            )}
+          </div>
+        </>
       </Card>
     );
   };

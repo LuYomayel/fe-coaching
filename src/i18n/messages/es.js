@@ -486,6 +486,7 @@ const messages = {
   'plan.group.removed.message.number': 'El grupo número {number} ha sido eliminado',
   'plan.group.removed.message.name': 'El grupo "{name}" ha sido eliminado',
   'plan.group.empty': 'Arrastra ejercicios aquí para agregarlos al grupo.',
+  'plan.group.empty.notDraggable': 'No hay ejercicios en este grupo',
   'plan.group.restDurationSuffix': ' segundos',
   'plan.exercise.select': 'Seleccionar un Ejercicio',
   'plan.exercise.add': 'Agregar Ejercicio',
@@ -1175,6 +1176,10 @@ const messages = {
   'rpe.target': 'Objetivo',
   'coach.rpe.error.missingFields': 'Por favor selecciona todos los campos requeridos',
   'coach.rpe.clearValues': 'Limpiar Valores',
+  'coach.rpe.clearValues.tooltip': 'Elimina todos los valores meta configurados',
+  'coach.assignRpeMethod': 'Asignar Método RPE',
+  'coach.assignRpeMethod.tooltip': 'Asigna un método RPE a un entrenamiento o ejercicio',
+
   // Coach Subscription
   'coach.subscription.plans': 'Planes de Suscripción',
   'coach.subscription.details': 'Detalles de Suscripción',

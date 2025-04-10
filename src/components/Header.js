@@ -11,14 +11,15 @@ import { useChatSidebar } from '../utils/ChatSideBarContext';
 //import { Badge } from 'primereact/badge';
 //import { fetchLastMessages } from '../services/usersService'
 import { useIntl } from 'react-intl';
-import Spinner from '../utils/LittleSpinner';
+import { useSpinner } from '../utils/GlobalSpinner';
 export default function Header() {
   const intl = useIntl();
   // eslint-disable-next-line
   const { isChatSidebarOpen, closeChatSidebar, openChatSidebar } = useChatSidebar();
   const op = useRef(null);
-  const { user, client, setUser, isLoading } = useContext(UserContext);
+  const { user, client, setUser } = useContext(UserContext);
   const navigate = useNavigate();
+  const { isLoading } = useSpinner();
   /*
   const notificationOp = useRef(null);
   const [notifications, setNotifications] = useState([])
@@ -103,10 +104,6 @@ export default function Header() {
       setUnreadCount(unreadCount - 1);
     };
     */
-
-  if (isLoading) {
-    return <Spinner />;
-  }
 
   if (!user || !user.isVerified) {
     return null;

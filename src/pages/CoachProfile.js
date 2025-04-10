@@ -38,7 +38,6 @@ import { extractYouTubeVideoId, formatDate, getYouTubeThumbnail, isValidYouTubeU
 import { MultiSelect } from 'primereact/multiselect';
 import { FilterMatchMode } from 'primereact/api';
 import * as XLSX from 'xlsx';
-import Spinner from '../utils/LittleSpinner';
 import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
 import {
   createExercise,
@@ -54,6 +53,7 @@ import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { ColorPicker } from 'primereact/colorpicker';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import '../styles/CoachProfile.css'; // Importar los nuevos estilos
+import { CreateExerciseDialog } from '../dialogs/CreateExerciseDialog';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // Conjunto de emojis comunes para usar en el selector
@@ -529,6 +529,7 @@ export default function CoachProfilePage() {
     fetchRpeMethods();
     fetchClients();
     fetchTrainingPlans();
+    console.log('Hola');
     // eslint-disable-next-line
   }, [user.userId, showToast, navigate, refreshKey]);
 
@@ -643,61 +644,6 @@ export default function CoachProfilePage() {
         />
       </div>
     ) : null;
-  };
-
-  const actionBodyTemplate = (rowData, type) => {
-    return (
-      <React.Fragment>
-        <Button
-          tooltip="View Details"
-          icon="pi pi-eye"
-          className="p-button-rounded p-button-info p-button-text"
-          onClick={() => {
-            if (type === 'exercise') {
-              handleVideoClick(rowData.multimedia);
-            } else {
-              handleViewPlanDetails(rowData.workoutInstanceTemplates[0].id);
-            }
-          }}
-        />
-        <Button
-          tooltip="Edit"
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-warning p-button-text"
-          onClick={() => {
-            if (type === 'exercise') {
-              openEditExerciseDialog(rowData);
-            } else if (type === 'workout') {
-              navigate(`/plans/edit-template/${rowData.workoutInstanceTemplates[0].id}`);
-            } else if (type === 'plan') {
-              openEditPlanDialog(rowData);
-            }
-          }}
-        />
-        <Button
-          tooltip={intl.formatMessage({ id: 'common.delete' })}
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger p-button-text"
-          onClick={() => {
-            if (type === 'exercise') {
-              showConfirmationDialog({
-                message: intl.formatMessage({
-                  id: 'deleteExercise.confirmation.message'
-                }),
-                header: intl.formatMessage({ id: 'common.confirmation' }),
-                icon: 'pi pi-exclamation-triangle',
-                accept: () => handleDeleteExercise(rowData.id),
-                reject: () => console.log('Rejected')
-              });
-            } else if (type === 'plan') {
-              confirmDeletePlan(rowData.id);
-            } else if (type === 'workout') {
-              confirmDeleteWorkout(rowData.workoutInstanceTemplates[0].id);
-            }
-          }}
-        />
-      </React.Fragment>
-    );
   };
 
   const handleDeleteExercise = async (exerciseId) => {
@@ -1941,115 +1887,109 @@ export default function CoachProfilePage() {
             </div>
 
             <Card className="section-card" title={intl.formatMessage({ id: 'coach.exercises.title' })}>
-              {isExercisesLoading ? (
-                <div className="loading-container">
-                  <Spinner />
-                </div>
-              ) : (
-                <DataTable
-                  value={exercises}
-                  className="coach-table"
-                  stripedRows
-                  paginator
-                  rows={10}
-                  rowsPerPageOptions={[5, 10, 25, 50]}
-                  emptyMessage={intl.formatMessage({ id: 'coach.noExercisesFound' })}
-                  filters={filters}
-                  filterDisplay="menu"
-                  globalFilterFields={['name', 'exerciseType', 'description']}
-                  header={renderHeader(intl.formatMessage({ id: 'coach.exerciseList' }))}
-                  globalFilter={filters.global.value}
-                  responsiveLayout="stack"
-                  breakpoint="960px"
-                  dataKey="id"
-                  scrollable
-                  scrollHeight="600px"
-                >
-                  <Column
-                    field="name"
-                    header={intl.formatMessage({ id: 'exercise.name' })}
-                    filter
-                    filterField="name"
-                    filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByName' })}
-                    filterElement={nameFilterTemplate}
-                    sortable
-                    style={{ minWidth: '250px' }}
-                    body={(rowData) => (
-                      <div className="exercise-name-cell">
-                        <span className="exercise-name">{rowData.name}</span>
-                        {missingDataIconTemplate(rowData)}
-                      </div>
-                    )}
-                  />
-                  <Column
-                    field="multimedia"
-                    header={intl.formatMessage({ id: 'exercise.video' })}
-                    body={videoBodyTemplate}
-                    style={{ minWidth: '200px' }}
-                  />
-                  <Column
-                    field="exerciseType"
-                    header={intl.formatMessage({ id: 'exercise.type' })}
-                    filter
-                    filterField="exerciseType"
-                    filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByType' })}
-                    filterElement={exerciseTypeFilterTemplate}
-                    sortable
-                    style={{ minWidth: '200px' }}
-                  />
-                  <Column
-                    field="description"
-                    header={intl.formatMessage({ id: 'exercise.description' })}
-                    filter
-                    filterField="description"
-                    filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByDescription' })}
-                    filterElement={descriptionFilterTemplate}
-                    style={{ minWidth: '300px' }}
-                    body={(rowData) => (
-                      <div className="description-cell">
-                        <p className="description-text">{rowData.description}</p>
-                      </div>
-                    )}
-                  />
-                  <Column
-                    field="equipmentNeeded"
-                    header={intl.formatMessage({ id: 'exercise.equipment' })}
-                    style={{ minWidth: '200px' }}
-                  />
-                  <Column
-                    header={intl.formatMessage({ id: 'common.actions' })}
-                    body={(rowData) => (
-                      <div className="action-button-cell">
-                        <Button
-                          icon="pi pi-pencil"
-                          className="p-button-rounded p-button-outlined"
-                          onClick={() => openEditExerciseDialog(rowData)}
-                          tooltip={intl.formatMessage({ id: 'common.edit' })}
-                          tooltipOptions={{ position: 'top' }}
-                        />
-                        <Button
-                          icon="pi pi-trash"
-                          className="p-button-rounded p-button-outlined p-button-danger"
-                          onClick={() => {
-                            showConfirmationDialog({
-                              message: intl.formatMessage({
-                                id: 'deleteExercise.confirmation.message'
-                              }),
-                              header: intl.formatMessage({ id: 'common.confirmation' }),
-                              icon: 'pi pi-exclamation-triangle',
-                              accept: () => handleDeleteExercise(rowData.id),
-                              reject: () => console.log('Rejected')
-                            });
-                          }}
-                          tooltip={intl.formatMessage({ id: 'common.delete' })}
-                          tooltipOptions={{ position: 'top' }}
-                        />
-                      </div>
-                    )}
-                    style={{ minWidth: '150px' }}
-                  />
-                </DataTable>
-              )}
+              <DataTable
+                value={exercises}
+                className="coach-table"
+                stripedRows
+                paginator
+                rows={10}
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                emptyMessage={intl.formatMessage({ id: 'coach.noExercisesFound' })}
+                filters={filters}
+                filterDisplay="menu"
+                globalFilterFields={['name', 'exerciseType', 'description']}
+                header={renderHeader(intl.formatMessage({ id: 'coach.exerciseList' }))}
+                globalFilter={filters.global.value}
+                responsiveLayout="stack"
+                breakpoint="960px"
+                dataKey="id"
+                scrollable
+                scrollHeight="600px"
+              >
+                <Column
+                  field="name"
+                  header={intl.formatMessage({ id: 'exercise.name' })}
+                  filter
+                  filterField="name"
+                  filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByName' })}
+                  filterElement={nameFilterTemplate}
+                  sortable
+                  style={{ minWidth: '250px' }}
+                  body={(rowData) => (
+                    <div className="exercise-name-cell">
+                      <span className="exercise-name">{rowData.name}</span>
+                      {missingDataIconTemplate(rowData)}
+                    </div>
+                  )}
+                />
+                <Column
+                  field="multimedia"
+                  header={intl.formatMessage({ id: 'exercise.video' })}
+                  body={videoBodyTemplate}
+                  style={{ minWidth: '200px' }}
+                />
+                <Column
+                  field="exerciseType"
+                  header={intl.formatMessage({ id: 'exercise.type' })}
+                  filter
+                  filterField="exerciseType"
+                  filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByType' })}
+                  filterElement={exerciseTypeFilterTemplate}
+                  sortable
+                  style={{ minWidth: '200px' }}
+                />
+                <Column
+                  field="description"
+                  header={intl.formatMessage({ id: 'exercise.description' })}
+                  filter
+                  filterField="description"
+                  filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByDescription' })}
+                  filterElement={descriptionFilterTemplate}
+                  style={{ minWidth: '300px' }}
+                  body={(rowData) => (
+                    <div className="description-cell">
+                      <p className="description-text">{rowData.description}</p>
+                    </div>
+                  )}
+                />
+                <Column
+                  field="equipmentNeeded"
+                  header={intl.formatMessage({ id: 'exercise.equipment' })}
+                  style={{ minWidth: '200px' }}
+                />
+                <Column
+                  header={intl.formatMessage({ id: 'common.actions' })}
+                  body={(rowData) => (
+                    <div className="action-button-cell">
+                      <Button
+                        icon="pi pi-pencil"
+                        className="p-button-rounded p-button-outlined"
+                        onClick={() => openEditExerciseDialog(rowData)}
+                        tooltip={intl.formatMessage({ id: 'common.edit' })}
+                        tooltipOptions={{ position: 'top' }}
+                      />
+                      <Button
+                        icon="pi pi-trash"
+                        className="p-button-rounded p-button-outlined p-button-danger"
+                        onClick={() => {
+                          showConfirmationDialog({
+                            message: intl.formatMessage({
+                              id: 'deleteExercise.confirmation.message'
+                            }),
+                            header: intl.formatMessage({ id: 'common.confirmation' }),
+                            icon: 'pi pi-exclamation-triangle',
+                            accept: () => handleDeleteExercise(rowData.id),
+                            reject: () => console.log('Rejected')
+                          });
+                        }}
+                        tooltip={intl.formatMessage({ id: 'common.delete' })}
+                        tooltipOptions={{ position: 'top' }}
+                      />
+                    </div>
+                  )}
+                  style={{ minWidth: '150px' }}
+                />
+              </DataTable>
             </Card>
 
             {missingExercises.length > 0 && (
@@ -2139,164 +2079,152 @@ export default function CoachProfilePage() {
             </div>
 
             <Card className="section-card" title={intl.formatMessage({ id: 'coach.rpeMethods' })}>
-              {isRpeLoading ? (
-                <div className="loading-container">
-                  <Spinner />
-                </div>
-              ) : (
-                <div className="rpe-grid">
-                  {rpeMethods.map((rpe) => (
-                    <div key={rpe.id} className="rpe-card">
-                      <h3 className="rpe-name">{rpe.name}</h3>
-                      <div className="rpe-range">
-                        <i className="pi pi-sliders-h" style={{ marginRight: '0.5rem' }}></i>
-                        <span>
-                          {rpe.minValue} - {rpe.maxValue} ({intl.formatMessage({ id: 'rpe.step' })}: {rpe.step})
-                        </span>
-                      </div>
-                      <div className="rpe-values">
-                        {rpe.valuesMeta && Array.isArray(rpe.valuesMeta) ? (
-                          rpe.valuesMeta.map((value, idx) => (
-                            <div key={idx} className="rpe-value flex align-items-center gap-2">
-                              <strong>{value.value}</strong>: {value.emoji || ''}{' '}
-                              {value.color && (
-                                <div
-                                  className="color-preview"
-                                  style={{
-                                    backgroundColor: `#${value.color}`,
-                                    width: '2rem',
-                                    height: '2rem',
-                                    borderRadius: '4px',
-                                    border: '1px solid #dee2e6'
-                                  }}
-                                />
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <div>No hay valores definidos</div>
-                        )}
-                      </div>
-                      <div className="rpe-actions">
-                        <Button
-                          icon="pi pi-pencil"
-                          className="p-button-text p-button-rounded"
-                          onClick={() => openEditRpeDialog(rpe)}
-                          tooltip={intl.formatMessage({ id: 'common.edit' })}
-                          tooltipOptions={{ position: 'top' }}
-                        />
-                        <Button
-                          icon="pi pi-trash"
-                          className="p-button-text p-button-rounded p-button-danger"
-                          onClick={() => {
-                            showConfirmationDialog({
-                              message: intl.formatMessage({ id: 'coach.rpe.confirm.delete' }),
-                              header: intl.formatMessage({ id: 'common.confirmation' }),
-                              icon: 'pi pi-exclamation-triangle',
-                              accept: () => handleDeleteRpeMethod(rpe.id),
-                              reject: () => console.log('Rejected')
-                            });
-                          }}
-                          tooltip={intl.formatMessage({ id: 'common.delete' })}
-                          tooltipOptions={{ position: 'top' }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                  {rpeMethods.length === 0 && (
-                    <div className="empty-message">
-                      <i
-                        className="pi pi-info-circle"
-                        style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--text-color-secondary)' }}
-                      ></i>
-                      <p>{intl.formatMessage({ id: 'coach.noRpeMethods' })}</p>
-                      <Button
-                        label={intl.formatMessage({ id: 'coach.createFirstRpeMethod' })}
-                        icon="pi pi-plus-circle"
-                        onClick={() => {
-                          setDialogMode('create');
-                          setNewRpe({
-                            name: '',
-                            minValue: 0,
-                            maxValue: 10,
-                            step: 1,
-                            valuesMeta: []
-                          });
-                          setRpeDialogVisible(true);
-                        }}
-                        className="p-button-outlined"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </Card>
-
-            <Card className="section-card" title={intl.formatMessage({ id: 'coach.rpeAssignments' })}>
-              {isRpeLoading ? (
-                <div className="loading-container">
-                  <Spinner />
-                </div>
-              ) : (
-                <DataTable
-                  value={rpeAssignments}
-                  className="coach-table"
-                  stripedRows
-                  paginator
-                  rows={10}
-                  emptyMessage={intl.formatMessage({ id: 'coach.noRpeAssignments' })}
-                  responsiveLayout="stack"
-                  breakpoint="960px"
-                  dataKey="id"
-                >
-                  <Column
-                    field="rpeId"
-                    header={intl.formatMessage({ id: 'rpe.method' })}
-                    sortable
-                    body={(rowData) => getRpeNameById(rowData.rpeId)}
-                    style={{ minWidth: '200px' }}
-                  />
-                  <Column
-                    field="targetType"
-                    header={intl.formatMessage({ id: 'rpe.targetType' })}
-                    sortable
-                    body={(rowData) => (
-                      <span className="target-type-badge">
-                        <i className={`pi ${rowData.targetType === 'exercise' ? 'pi-heart' : 'pi-user'}`}></i>
-                        {formatTargetType(rowData.targetType)}
+              <div className="rpe-grid">
+                {rpeMethods.map((rpe) => (
+                  <div key={rpe.id} className="rpe-card">
+                    <h3 className="rpe-name">{rpe.name}</h3>
+                    <div className="rpe-range">
+                      <i className="pi pi-sliders-h" style={{ marginRight: '0.5rem' }}></i>
+                      <span>
+                        {rpe.minValue} - {rpe.maxValue} ({intl.formatMessage({ id: 'rpe.step' })}: {rpe.step})
                       </span>
-                    )}
-                    style={{ minWidth: '150px' }}
-                  />
-                  <Column
-                    field="targetName"
-                    header={intl.formatMessage({ id: 'rpe.targetName' })}
-                    sortable
-                    style={{ minWidth: '200px' }}
-                  />
-                  <Column
-                    field="createdAt"
-                    header={intl.formatMessage({ id: 'common.createdAt' })}
-                    sortable
-                    body={(rowData) => formatDate(rowData.createdAt)}
-                    style={{ minWidth: '150px' }}
-                  />
-                  <Column
-                    header={intl.formatMessage({ id: 'common.actions' })}
-                    body={(rowData) => (
+                    </div>
+                    <div className="rpe-values">
+                      {rpe.valuesMeta && Array.isArray(rpe.valuesMeta) ? (
+                        rpe.valuesMeta.map((value, idx) => (
+                          <div key={idx} className="rpe-value flex align-items-center gap-2">
+                            <strong>{value.value}</strong>: {value.emoji || ''}{' '}
+                            {value.color && (
+                              <div
+                                className="color-preview"
+                                style={{
+                                  backgroundColor: `#${value.color}`,
+                                  width: '2rem',
+                                  height: '2rem',
+                                  borderRadius: '4px',
+                                  border: '1px solid #dee2e6'
+                                }}
+                              />
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div>No hay valores definidos</div>
+                      )}
+                    </div>
+                    <div className="rpe-actions">
+                      <Button
+                        icon="pi pi-pencil"
+                        className="p-button-text p-button-rounded"
+                        onClick={() => openEditRpeDialog(rpe)}
+                        tooltip={intl.formatMessage({ id: 'common.edit' })}
+                        tooltipOptions={{ position: 'top' }}
+                      />
                       <Button
                         icon="pi pi-trash"
-                        className="p-button-rounded p-button-outlined p-button-danger"
-                        onClick={() => confirmRemoveRpeAssignment(rowData.id)}
+                        className="p-button-text p-button-rounded p-button-danger"
+                        onClick={() => {
+                          showConfirmationDialog({
+                            message: intl.formatMessage({ id: 'coach.rpe.confirm.delete' }),
+                            header: intl.formatMessage({ id: 'common.confirmation' }),
+                            icon: 'pi pi-exclamation-triangle',
+                            accept: () => handleDeleteRpeMethod(rpe.id),
+                            reject: () => console.log('Rejected')
+                          });
+                        }}
                         tooltip={intl.formatMessage({ id: 'common.delete' })}
                         tooltipOptions={{ position: 'top' }}
                       />
-                    )}
-                    style={{ width: '100px' }}
-                  />
-                </DataTable>
-              )}
+                    </div>
+                  </div>
+                ))}
+
+                {rpeMethods.length === 0 && (
+                  <div className="empty-message">
+                    <i
+                      className="pi pi-info-circle"
+                      style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--text-color-secondary)' }}
+                    ></i>
+                    <p>{intl.formatMessage({ id: 'coach.noRpeMethods' })}</p>
+                    <Button
+                      label={intl.formatMessage({ id: 'coach.createFirstRpeMethod' })}
+                      icon="pi pi-plus-circle"
+                      onClick={() => {
+                        setDialogMode('create');
+                        setNewRpe({
+                          name: '',
+                          minValue: 0,
+                          maxValue: 10,
+                          step: 1,
+                          valuesMeta: []
+                        });
+                        setRpeDialogVisible(true);
+                      }}
+                      className="p-button-outlined"
+                    />
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            <Card className="section-card" title={intl.formatMessage({ id: 'coach.rpeAssignments' })}>
+              <DataTable
+                value={rpeAssignments}
+                className="coach-table"
+                stripedRows
+                paginator
+                rows={10}
+                emptyMessage={intl.formatMessage({ id: 'coach.noRpeAssignments' })}
+                responsiveLayout="stack"
+                breakpoint="960px"
+                dataKey="id"
+              >
+                <Column
+                  field="rpeId"
+                  header={intl.formatMessage({ id: 'rpe.method' })}
+                  sortable
+                  body={(rowData) => getRpeNameById(rowData.rpeId)}
+                  style={{ minWidth: '200px' }}
+                />
+                <Column
+                  field="targetType"
+                  header={intl.formatMessage({ id: 'rpe.targetType' })}
+                  sortable
+                  body={(rowData) => (
+                    <span className="target-type-badge">
+                      <i className={`pi ${rowData.targetType === 'exercise' ? 'pi-heart' : 'pi-user'}`}></i>
+                      {formatTargetType(rowData.targetType)}
+                    </span>
+                  )}
+                  style={{ minWidth: '150px' }}
+                />
+                <Column
+                  field="targetName"
+                  header={intl.formatMessage({ id: 'rpe.targetName' })}
+                  sortable
+                  style={{ minWidth: '200px' }}
+                />
+                <Column
+                  field="createdAt"
+                  header={intl.formatMessage({ id: 'common.createdAt' })}
+                  sortable
+                  body={(rowData) => formatDate(rowData.createdAt)}
+                  style={{ minWidth: '150px' }}
+                />
+                <Column
+                  header={intl.formatMessage({ id: 'common.actions' })}
+                  body={(rowData) => (
+                    <Button
+                      icon="pi pi-trash"
+                      className="p-button-rounded p-button-outlined p-button-danger"
+                      onClick={() => confirmRemoveRpeAssignment(rowData.id)}
+                      tooltip={intl.formatMessage({ id: 'common.delete' })}
+                      tooltipOptions={{ position: 'top' }}
+                    />
+                  )}
+                  style={{ width: '100px' }}
+                />
+              </DataTable>
             </Card>
           </div>
         </TabPanel>
@@ -2552,71 +2480,55 @@ export default function CoachProfilePage() {
         */}
       </TabView>
 
-      {/* Diálogos */}
-      <Dialog
-        visible={exerciseDialogVisible}
-        style={{ width: '650px' }}
-        header={
-          dialogMode === 'create'
-            ? intl.formatMessage({ id: 'exercise.create' })
-            : intl.formatMessage({ id: 'exercise.edit' })
-        }
-        modal
-        className="coach-dialog"
-        onHide={closeExerciseDialog}
-        footer={
-          <div>
-            <Button
-              label={intl.formatMessage({ id: 'common.cancel' })}
-              icon="pi pi-times"
-              onClick={closeExerciseDialog}
-              className="p-button-text"
-            />
-            <Button
-              label={intl.formatMessage({ id: 'common.save' })}
-              icon="pi pi-check"
-              onClick={handleSaveExercise}
-              autoFocus
-            />
-          </div>
-        }
-      >
-        {renderExerciseModal()}
-      </Dialog>
+      {/* Diálogo para crear/editar un ejercicio */}
+      {exerciseDialogVisible && (
+        <CreateExerciseDialog
+          newExercise={newExercise}
+          setNewExercise={setNewExercise}
+          exerciseDialogVisible={exerciseDialogVisible}
+          closeExerciseDialog={closeExerciseDialog}
+          dialogMode={dialogMode}
+          setExerciseDialogVisible={setExerciseDialogVisible}
+          setRefreshKey={setRefreshKey}
+          user={user}
+        />
+      )}
 
       {/* Dialog para crear/editar un plan */}
-      <Dialog
-        visible={createPlanDialogVisible}
-        style={{ width: '650px' }}
-        header={
-          dialogMode === 'create'
-            ? intl.formatMessage({ id: 'coach.createNewPlan' })
-            : intl.formatMessage({ id: 'coach.editPlan' })
-        }
-        modal
-        className="coach-dialog"
-        onHide={closeCreatePlanDialog}
-        footer={
-          <div>
-            <Button
-              label={intl.formatMessage({ id: 'common.cancel' })}
-              icon="pi pi-times"
-              onClick={closeCreatePlanDialog}
-              className="p-button-text"
-            />
-            <Button
-              label={intl.formatMessage({ id: 'common.save' })}
-              icon="pi pi-check"
-              onClick={handleCreatePlan}
-              autoFocus
-            />
-          </div>
-        }
-      >
-        {renderPlanModal()}
-      </Dialog>
-
+      {createPlanDialogVisible && (
+        <Dialog
+          visible={createPlanDialogVisible}
+          style={{ width: '650px' }}
+          header={
+            dialogMode === 'create'
+              ? intl.formatMessage({ id: 'coach.createNewPlan' })
+              : intl.formatMessage({ id: 'coach.editPlan' })
+          }
+          modal
+          className="coach-dialog"
+          onHide={closeCreatePlanDialog}
+          footer={
+            <div>
+              <Button
+                label={intl.formatMessage({ id: 'common.cancel' })}
+                icon="pi pi-times"
+                onClick={closeCreatePlanDialog}
+                className="p-button-text"
+              />
+              <Button
+                label={intl.formatMessage({ id: 'common.save' })}
+                icon="pi pi-check"
+                onClick={handleCreatePlan}
+                autoFocus
+              />
+            </div>
+          }
+        >
+          {renderPlanModal()}
+        </Dialog>
+      )}
       {/* Modal Video */}
+
       <Dialog
         visible={videoDialogVisible}
         style={{ width: '80vw', maxWidth: '800px' }}

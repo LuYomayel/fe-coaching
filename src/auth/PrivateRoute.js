@@ -3,15 +3,13 @@ import { Navigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
 import CoachProfileForm from '../pages/CoachProfileForm';
 import NotSubscribed from '../components/NotSubscribed';
-import Spinner from '../utils/LittleSpinner';
+import { useSpinner } from '../utils/GlobalSpinner';
 const PrivateRoute = ({ element: Component, requiredType, ...rest }) => {
-  const { user, coach, client, isLoading } = useContext(UserContext);
+  const { user, coach, client } = useContext(UserContext);
+  const { isLoading } = useSpinner();
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center align-items-center h-screen">
-        <Spinner />
-      </div>
-    ); // O muestra un spinner o un componente de carga mientras se obtienen los datos
+    return <></>; // O muestra un spinner o un componente de carga mientras se obtienen los datos
   }
 
   if (!user) {

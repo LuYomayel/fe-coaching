@@ -222,6 +222,7 @@ const CreatePlan = ({ isEdit }) => {
               }
             });
           });
+          console.log('data', data);
           setPlan(data);
         } catch (error) {
           showToast('error', 'Error fetching plan details', `${error.message}`);
@@ -1183,6 +1184,7 @@ const CreatePlan = ({ isEdit }) => {
                                                   key !== 'id' &&
                                                   value !== null &&
                                                   key !== 'notes' &&
+                                                  key !== 'setLogs' &&
                                                   key !== 'rowIndex'
                                                 ) {
                                                   return (

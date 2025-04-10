@@ -468,6 +468,7 @@ const messages = {
   'plan.group.removed.message.number': 'The group number {number} has been removed',
   'plan.group.removed.message.name': 'The group "{name}" has been removed',
   'plan.group.empty': 'Drag and drop exercises here to add them to the group.',
+  'plan.group.empty.notDraggable': 'No exercises in this group',
   'plan.group.restDurationSuffix': ' seconds',
 
   'plan.exercise.select': 'Select an Exercise',
@@ -972,6 +973,29 @@ const messages = {
   'coach.home.viewAll': 'View All',
   'coach.home.noClientsData': 'No client data available',
   'coach.home.table.last7days': 'Last 7 Days',
-  'common.inactive': 'Inactive'
+  'common.inactive': 'Inactive',
+  'coach.home.newClient': 'New Client',
+  'coach.home.newTraining': 'New Training',
+  'coach.home.newExercise': 'New Exercise',
+
+  'coach.home.remainingDays': 'Remaining Days',
+  'coach.home.trainingFrequency': 'Training Frequency',
+  'coach.home.clientList': 'Client List',
+  'coach.home.paymentStatus': 'Payment Status',
+  'coach.home.lastTraining': 'Last Training',
+
+  'coach.home.manageClient': 'Manage Client',
+
+  'coach.home.noUnpaidClients': 'No unpaid clients',
+  'coach.home.noRemainingDays': 'No clients with remaining days',
+  'coach.home.noTrainingFrequency': 'No training frequency data',
+  'coach.home.noClients': 'No clients found',
+  'coach.home.paid': 'Paid',
+  'coach.home.unpaid': 'Unpaid',
+  'coach.home.pending': 'Pending',
+  'coach.home.days': 'days',
+  'coach.home.timesPerWeek': 'times per week',
+  'coach.home.timesPerMonth': 'times per month',
+  'coach.home.timesPerYear': 'times per year'
 };
 export default messages;

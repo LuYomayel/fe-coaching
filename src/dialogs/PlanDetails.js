@@ -110,7 +110,7 @@ export default function NewPlanDetailHorizontal({
   }, [isTemplate, client?.coach?.user?.id, user.userId, showToast, setLoading, currentCycle]);
 
   const handleEdit = () => {
-    navigate(`/plans/edit/${planId}`);
+    navigate(`/plans/edit/${planId}`, { state: { changeToTemplate: false } });
   };
 
   const handleDelete = () => {
@@ -568,7 +568,7 @@ export default function NewPlanDetailHorizontal({
 
                 {/* Render exercises */}
                 {group.exercises.length === 0 && !group.isRestPeriod && (
-                  <p style={{ color: '#999' }}>{intl.formatMessage({ id: 'plan.group.empty' })}</p>
+                  <p style={{ color: '#999' }}>{intl.formatMessage({ id: 'plan.group.empty.notDraggable' })}</p>
                 )}
                 {group.exercises.map((exercise) =>
                   workoutPlan.status === 'completed'
