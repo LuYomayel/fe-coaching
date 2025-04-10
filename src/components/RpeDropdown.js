@@ -57,7 +57,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId })
   }, [client.coach.user.id, showToast, planId, user.userId]);
 
   const fetchWorkoutData = useCallback(async () => {
-    if (!selectedRpeMethod.length) return;
+    if (!selectedRpeMethod) return;
 
     try {
       setLoading(true);
@@ -77,7 +77,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId })
   }, [fetchRpeMethods]);
 
   useEffect(() => {
-    if (selectedRpeMethod.length) {
+    if (selectedRpeMethod) {
       fetchWorkoutData();
     }
   }, [selectedRpeMethod, fetchWorkoutData]);
