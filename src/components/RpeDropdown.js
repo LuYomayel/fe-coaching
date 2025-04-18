@@ -44,7 +44,9 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
       setLoading(true);
       setError(null);
       //const { data } = await getRpeMethods(client.coach.user.id);
-      const response = await getRpeMethodAssigned(client.id || clientId, planId, cycleId);
+
+      const response = await getRpeMethodAssigned(client.id || clientId, planId || -1, cycleId || -1);
+      console.log('response', response);
       setSelectedRpeMethod(response.data.rpeMethod);
       //const rpeMethod = response.data.rpeMethod.find;
       console.log('response', response);

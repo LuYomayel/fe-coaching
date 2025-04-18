@@ -1,199 +1,75 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { Toast } from 'primereact/toast';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { Dropdown } from 'primereact/dropdown';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import listPlugin from '@fullcalendar/list';
-import {
-  fetchTrainingCyclesForClientByUserId,
-  fetchTrainingSessionWithNoWeekByClientId
-} from '../services/workoutService';
-import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
-import { getDayMonthYear, formatRelativeDate } from '../utils/UtilFunctions';
 import { useIntl, FormattedMessage } from 'react-intl';
+import { fetchAmIWorkingOutToday, fetchClientStreak } from '../services/usersService';
+
+import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
+
 import '../styles/StudentHome.css';
 
 export default function StudentHome() {
   const intl = useIntl();
   const { user, client } = useContext(UserContext);
   const navigate = useNavigate();
-  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [streak, setStreak] = useState({ daily: null, weekly: null });
+  const [todayWorkouts, setTodayWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [today] = useState(new Date());
-  const toast = useRef(null);
-  const calendarRef = useRef(null);
-
-  const updateStatus = (workout, session) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const sessionDate = new Date(session.sessionDate);
-    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
-    if (workout.status === 'pending') {
-      if (sessionDay < today) {
-        return 'expired';
-      } else if (sessionDay.getTime() === today.getTime()) {
-        return 'current';
-      }
-    } else {
-      return workout.status;
-    }
-  };
 
   useEffect(() => {
-    const fetchTrainingData = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const { data } = await fetchTrainingCyclesForClientByUserId(user.userId);
-        const cycles = data;
-        const events = cycles.flatMap((cycle) =>
-          cycle.trainingWeeks.flatMap((week) =>
-            week.trainingSessions.flatMap((session) => {
-              const sessionEvents =
-                session.workoutInstances.length > 0
-                  ? session.workoutInstances.map((workoutInstance) => {
-                      workoutInstance.status = updateStatus(workoutInstance, session);
-                      return {
-                        title: workoutInstance.workout.planName,
-                        start: getDayMonthYear(session).toISOString().split('T')[0],
-                        extendedProps: {
-                          status: workoutInstance.status,
-                          workoutInstanceId: workoutInstance.id,
-                          sessionId: session.id
-                        }
-                      };
-                    })
-                  : [
-                      {
-                        title: 'no title',
-                        start: getDayMonthYear(session).toISOString().split('T')[0],
-                        extendedProps: {
-                          sessionId: session.id
-                        }
-                      }
-                    ];
 
-              return sessionEvents;
-            })
-          )
-        );
+        // Fetch streak data
+        const { data: streakData } = await fetchClientStreak(client.id);
+        setStreak(streakData);
 
-        const trainingSessionWithNoWeek = await fetchTrainingSessionWithNoWeekByClientId(client.id);
-        const trainingSessionWithNoWeekEvents = trainingSessionWithNoWeek.data.map((session) => ({
-          title: session.workoutInstances[0].instanceName
-            ? session.workoutInstances[0].instanceName
-            : session.workoutInstances[0].workout.planName,
-          start: getDayMonthYear(session).toISOString().split('T')[0],
-          extendedProps: {
-            workoutInstanceId: session.workoutInstances[0].id,
-            status: session.workoutInstances[0].status,
-            sessionId: session.id
-          }
+        // Fetch today's workouts using the correct endpoint
+        const { data: todayWorkoutsData } = await fetchAmIWorkingOutToday(client.id);
+        // Transform the data to match our component's structure
+        console.log(todayWorkoutsData);
+        const transformedWorkouts = todayWorkoutsData.map((workout) => ({
+          id: workout.workoutInstanceId,
+          name: workout.planName,
+          status: workout.status,
+          sessionId: workout.sessionId,
+          sessionDate: workout.sessionDate,
+          dayNumber: workout.dayNumber
         }));
-        setCalendarEvents([...events, ...trainingSessionWithNoWeekEvents]);
+
+        setTodayWorkouts(transformedWorkouts);
         setLoading(false);
       } catch (error) {
-        console.log(error);
-        setError('Failed to fetch training data');
+        console.error('Error fetching data:', error);
         setLoading(false);
-        toast.current.show({
-          severity: 'error',
-          summary: 'Error',
-          detail: error.message,
-          life: 3000
-        });
       }
     };
 
-    fetchTrainingData();
-    // eslint-disable-next-line
-  }, [user.userId, refreshKey]);
+    if (user.userId && client) {
+      fetchData();
+    }
+  }, [user.userId, client, refreshKey]);
 
-  const handleViewWorkoutDetails = (workoutInstanceId) => {
-    setSelectedPlan(workoutInstanceId);
+  const handleViewWorkoutDetails = (workoutId) => {
+    setSelectedPlan(workoutId);
     setPlanDetailsVisible(true);
   };
 
-  const handleStartTrainingSession = (workoutInstanceId) => {
-    navigate(`/plans/start-session/${workoutInstanceId}`, {
-      state: { isTraining: true, planId: workoutInstanceId }
+  const handleStartTrainingSession = (workoutId) => {
+    navigate(`/plans/start-session/${workoutId}`, {
+      state: { isTraining: true, planId: workoutId }
     });
   };
 
-  const renderEventContent = (eventInfo) => {
-    const { title, extendedProps } = eventInfo.event;
-    const { status, workoutInstanceId } = extendedProps || {};
-
-    return (
-      <div className="custom-event-content p-2">
-        {title !== 'no title' && (
-          <>
-            <div className="event-title">{title}</div>
-            <div className="event-actions">
-              <Button
-                icon="pi pi-eye"
-                className="p-button-rounded p-button-sm p-button-info mr-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewWorkoutDetails(workoutInstanceId);
-                }}
-                tooltip={intl.formatMessage({
-                  id: 'studentHome.calendar.viewDetails'
-                })}
-                tooltipOptions={{ position: 'top' }}
-              />
-              {status !== 'completed' && (
-                <Button
-                  icon="pi pi-play"
-                  className="p-button-rounded p-button-sm p-button-success"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStartTrainingSession(workoutInstanceId);
-                  }}
-                  tooltip={intl.formatMessage({
-                    id: 'studentHome.calendar.startTraining'
-                  })}
-                  tooltipOptions={{ position: 'top' }}
-                />
-              )}
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
-  const monthOptions = [
-    { label: intl.formatMessage({ id: 'months.january' }), value: 0 },
-    { label: intl.formatMessage({ id: 'months.february' }), value: 1 },
-    { label: intl.formatMessage({ id: 'months.march' }), value: 2 },
-    { label: intl.formatMessage({ id: 'months.april' }), value: 3 },
-    { label: intl.formatMessage({ id: 'months.may' }), value: 4 },
-    { label: intl.formatMessage({ id: 'months.june' }), value: 5 },
-    { label: intl.formatMessage({ id: 'months.july' }), value: 6 },
-    { label: intl.formatMessage({ id: 'months.august' }), value: 7 },
-    { label: intl.formatMessage({ id: 'months.september' }), value: 8 },
-    { label: intl.formatMessage({ id: 'months.october' }), value: 9 },
-    { label: intl.formatMessage({ id: 'months.november' }), value: 10 },
-    { label: intl.formatMessage({ id: 'months.december' }), value: 11 }
-  ];
-
-  const handleMonthChange = (e) => {
-    setSelectedMonth(e.value);
-    const calendarApi = calendarRef.current.getApi();
-    calendarApi.gotoDate(new Date(new Date().getFullYear(), e.value, 1));
+  const handleGoToCalendar = () => {
+    navigate('/student/calendar');
   };
 
   const formatDate = (date) => {
@@ -203,33 +79,53 @@ export default function StudentHome() {
 
   return (
     <div className="student-home">
-      <Toast ref={toast} />
-
       <div className="student-header">
         <div className="student-header-content">
           <h1 className="student-welcome">
             <FormattedMessage id="studentHome.welcome" values={{ name: client?.name || '' }} />
           </h1>
-          <p className="student-subheader">{formatDate(today)}</p>
+          <p className="student-subheader">{formatDate(new Date())}</p>
         </div>
       </div>
 
-      <Card className="student-card">
-        <div className="calendar-controls">
-          <h2 className="calendar-title">
-            <i className="pi pi-calendar text-primary mr-2"></i>
-            <FormattedMessage id="studentHome.calendar.title" />
-          </h2>
-          <Dropdown
-            value={selectedMonth}
-            options={monthOptions}
-            onChange={handleMonthChange}
-            placeholder={intl.formatMessage({
-              id: 'studentHome.calendar.filterMonth'
-            })}
-            className="month-selector"
-          />
+      {/* Streak Card */}
+      <Card className="streak-card mb-4">
+        <div className="streak-container">
+          <div className="streak-item">
+            <i className="pi pi-calendar streak-icon"></i>
+            <div className="streak-info">
+              <h3>
+                <FormattedMessage id="studentHome.streak.daily" />
+              </h3>
+              <p className="streak-count">{streak.daily?.currentStreak || 0}</p>
+              <p className="streak-label">
+                <FormattedMessage id="studentHome.streak.days" />
+              </p>
+            </div>
+          </div>
+          <div className="streak-divider"></div>
+          <div className="streak-item">
+            <i className="pi pi-calendar-plus streak-icon"></i>
+            <div className="streak-info">
+              <h3>
+                <FormattedMessage id="studentHome.streak.weekly" />
+              </h3>
+              <p className="streak-count">{streak.weekly?.currentStreak || 0}</p>
+              <p className="streak-label">
+                <FormattedMessage id="studentHome.streak.weeks" />
+              </p>
+            </div>
+          </div>
         </div>
+      </Card>
+
+      {/* Today's Workouts Card */}
+      <Card className="workouts-card mb-4">
+        <h2 className="workouts-title">
+          <i className="pi pi-calendar text-primary mr-2"></i>
+          <FormattedMessage id="studentHome.todayWorkouts" />
+        </h2>
+
         {loading ? (
           <div className="loading-container">
             <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
@@ -237,44 +133,54 @@ export default function StudentHome() {
               <FormattedMessage id="common.loading" />
             </span>
           </div>
-        ) : error ? (
-          <div className="error-message">
-            <i className="pi pi-exclamation-triangle"></i>
-            <FormattedMessage id="error.fetchTraining" />
+        ) : todayWorkouts.length > 0 ? (
+          <div className="workouts-list">
+            {todayWorkouts.map((workout) => (
+              <div key={workout.id} className="workout-item">
+                <div className="workout-info">
+                  <h3>{workout.name}</h3>
+                  <span className={`workout-status status-${workout.status}`}>
+                    <FormattedMessage id={`workout.status.${workout.status}`} />
+                  </span>
+                </div>
+                <div className="workout-actions">
+                  <Button
+                    icon="pi pi-eye"
+                    className="p-button-rounded p-button-info mr-2"
+                    onClick={() => handleViewWorkoutDetails(workout.id)}
+                    tooltip={intl.formatMessage({ id: 'studentHome.viewWorkout' })}
+                  />
+                  {workout.status !== 'completed' && (
+                    <Button
+                      icon="pi pi-play"
+                      className="p-button-rounded p-button-success"
+                      onClick={() => handleStartTrainingSession(workout.id)}
+                      tooltip={intl.formatMessage({ id: 'studentHome.startWorkout' })}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
-          <FullCalendar
-            ref={calendarRef}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-            initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
-            events={calendarEvents}
-            eventContent={renderEventContent}
-            locale={intl.locale}
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
-            }}
-            buttonText={{
-              today: intl.formatMessage({ id: 'calendar.today' }),
-              month: intl.formatMessage({ id: 'calendar.month' }),
-              week: intl.formatMessage({ id: 'calendar.week' }),
-              day: intl.formatMessage({ id: 'calendar.day' }),
-              list: intl.formatMessage({ id: 'calendar.list' })
-            }}
-            height="auto"
-            windowResize={(arg) => {
-              const calendarApi = calendarRef.current.getApi();
-              if (window.innerWidth <= 768 && arg.view.type !== 'listMonth') {
-                calendarApi.changeView('listMonth');
-              } else if (window.innerWidth > 768 && arg.view.type !== 'dayGridMonth') {
-                calendarApi.changeView('dayGridMonth');
-              }
-            }}
-          />
+          <div className="no-workouts">
+            <i className="pi pi-calendar-times"></i>
+            <p>
+              <FormattedMessage id="studentHome.noWorkoutsToday" />
+            </p>
+          </div>
         )}
       </Card>
 
+      {/* Calendar Button */}
+      <Button
+        label={intl.formatMessage({ id: 'studentHome.viewCalendar' })}
+        icon="pi pi-calendar"
+        className="p-button-primary p-button-rounded w-100"
+        onClick={handleGoToCalendar}
+      />
+
+      {/* Plan Details Dialog */}
       <Dialog
         header={intl.formatMessage({ id: 'studentHome.dialog.planDetails' })}
         draggable={false}

@@ -32,6 +32,8 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { NotificationProvider } from './utils/NotificationsContext.js';
 import Settings from './pages/Settings.js';
+import StudentCalendar from './pages/StudentCalendar';
+import TrainingSession from './pages/TrainingSession.js';
 const stripePromise = await loadStripe(
   'pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq'
 );
@@ -108,6 +110,13 @@ const App = () => {
                               path="/plans/start-session/:planId"
                               element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />}
                             />
+                            {/*
+                            <Route
+                              path="/plans/start-session/:planId"
+                              element={<PrivateRoute element={TrainingSession} requiredType="client" />}
+                            />
+                            */}
+                            <Route path="/student/calendar" element={<StudentCalendar />} />
 
                             <Route path="/verify-email" element={<VerifyEmail />} />
                             <Route

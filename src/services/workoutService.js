@@ -291,8 +291,8 @@ const createNewTrainingFromExcelView = async (plan) => {
   return data;
 };
 
-const submitFeedback = async (planId, body) => {
-  const url = `${apiUrl}/workout/feedback/${planId}`;
+const submitFeedback = async (planId, body, clientId) => {
+  const url = `${apiUrl}/workout/feedback/${planId}/clientId/${clientId}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -504,7 +504,10 @@ const getRpeMethods = async (userId) => {
   return data;
 };
 
-const getRpeMethodAssigned = async (clientId, planId, cycleId) => {
+const getRpeMethodAssigned = async (clientId = -1, planId = -1, cycleId = -1) => {
+  console.log('clientId', clientId);
+  console.log('planId', planId);
+  console.log('cycleId', cycleId);
   const response = await fetch(`${apiUrl}/workout/rpe/get-by-client-id/${clientId}/${planId}/${cycleId}`);
   const data = await response.json();
   if (data.error) {

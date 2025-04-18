@@ -5,9 +5,9 @@ import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Accordion, AccordionTab } from 'primereact/accordion';
-import { Fieldset } from 'primereact/fieldset';
-import { Splitter, SplitterPanel } from 'primereact/splitter';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useIntl, FormattedMessage } from 'react-intl';
 
@@ -37,6 +37,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
   const [completedGroups, setCompletedGroups] = useState([]);
   const [isClientTraining, setIsClientTraining] = useState(isTraining);
   const [currentCycle, setCurrentCycle] = useState(null);
+  const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
 
   useEffect(() => {
     const fetchPlan = async () => {
@@ -49,7 +50,6 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
         setCurrentCycle(data.trainingSession.trainingWeek.trainingCycle);
       } catch (error) {
         console.log(error);
-        //showToast('error', 'Error fetching plan details', error.message);
       } finally {
         setLoading(false);
       }
@@ -97,50 +97,48 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
     });
   };
 
-  const handleCompletedChange = (exerciseId, isNotAsPlanned) => {
+  const handleSetCompletedChange = (exerciseId, setIndex, completed) => {
     setExerciseProgress((prevProgress) => {
       const newProgress = { ...prevProgress };
       const group = plan.groups.find((group) => group.exercises.some((ex) => ex.id === exerciseId));
       if (!group) return newProgress;
       const exercise = group.exercises.find((ex) => ex.id === exerciseId);
       if (!exercise) return newProgress;
-      const numSets = parseInt(exercise.sets) || group.set;
 
-      const sets = Array.from({ length: numSets }).map(() => ({
-        repetitions: exercise.repetitions,
-        weight: exercise.weight,
-        time: exercise.time,
-        distance: exercise.distance,
-        tempo: exercise.tempo,
-        notes: exercise.notes,
-        difficulty: exercise.difficulty,
-        duration: exercise.duration,
-        restInterval: exercise.restInterval
-      }));
-
-      if (isNotAsPlanned) {
-        const currentValue = newProgress[exerciseId]?.completedNotAsPlanned || false;
+      // Asegurarse de que el set existe
+      if (!newProgress[exerciseId]?.sets) {
+        const numSets = parseInt(exercise.sets) || group.set;
         newProgress[exerciseId] = {
           ...newProgress[exerciseId],
-          completedNotAsPlanned: !currentValue,
-          completed: false,
-          sets: !currentValue ? sets : []
-        };
-      } else {
-        const currentValue = newProgress[exerciseId]?.completed || false;
-        newProgress[exerciseId] = {
-          ...newProgress[exerciseId],
-          completed: !currentValue,
-          completedNotAsPlanned: false,
-          sets: !currentValue ? sets : []
+          sets: Array.from({ length: numSets }).map(() => ({
+            repetitions: exercise.repetitions,
+            weight: exercise.weight,
+            time: exercise.time,
+            distance: exercise.distance,
+            tempo: exercise.tempo,
+            notes: exercise.notes,
+            difficulty: exercise.difficulty,
+            duration: exercise.duration,
+            restInterval: exercise.restInterval,
+            completed: false
+          }))
         };
       }
-      // Verifica si todos los ejercicios del grupo están completados o completados parcialmente
-      const allExercisesCompleted = group.exercises.every(
-        (ex) => newProgress[ex.id]?.completed || newProgress[ex.id]?.completedNotAsPlanned
-      );
 
-      // Actualiza el estado del grupo (agrega un campo `groupCompleted` en el objeto `newProgress` o usa otro estado)
+      // Actualizar el estado completado del set
+      newProgress[exerciseId].sets[setIndex] = {
+        ...newProgress[exerciseId].sets[setIndex],
+        completed: completed
+      };
+
+      // Verificar si todos los sets están completados
+      const allSetsCompleted = Object.values(newProgress[exerciseId].sets).every((set) => set.completed);
+      newProgress[exerciseId].completed = allSetsCompleted;
+
+      // Verificar si todos los ejercicios del grupo están completados
+      const allExercisesCompleted = group.exercises.every((ex) => newProgress[ex.id]?.completed);
+
+      // Actualizar el estado del grupo
       setCompletedGroups((prevCompletedGroups) => {
         const newCompletedGroups = [...prevCompletedGroups];
         const groupIndex = newCompletedGroups.findIndex((g) => g.id === group.id);
@@ -204,7 +202,6 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
           exerciseId: parseInt(exerciseId),
           sets,
           completed: progress.completed,
-          completedNotAsPlanned: progress.completedNotAsPlanned,
           rating: progress.rating,
           comments: progress.comments
         };
@@ -228,7 +225,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
     };
 
     setLoading(true);
-    submitFeedback(planId, body)
+    submitFeedback(planId, body, client.id)
       .then(() => {
         setExerciseProgress({});
         setFinishDialogVisible(false);
@@ -247,18 +244,6 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
       });
   };
 
-  if (loading || !plan) {
-    return (
-      <div className="loading-container">
-        <ProgressSpinner className="loading-spinner" />
-        <span>
-          <FormattedMessage id="training.loading" />
-        </span>
-      </div>
-    );
-  }
-
-  // Obtener el estado correcto para mostrar
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed':
@@ -272,6 +257,307 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
     }
   };
 
+  const isGroupCompleted = (group) => {
+    const groupStatus = completedGroups.find((g) => g.id === group.id);
+
+    // Verificar si todos los ejercicios del grupo están completados
+    const allExercisesCompleted = group.exercises.every((exercise) => exerciseProgress[exercise.id]?.completed);
+
+    return groupStatus?.completed || allExercisesCompleted;
+  };
+
+  const canNavigateToNextGroup = () => {
+    if (!plan || currentGroupIndex >= plan.groups.length - 1) return false;
+
+    const currentGroup = plan.groups[currentGroupIndex];
+    return isGroupCompleted(currentGroup);
+  };
+
+  const navigateToNextGroup = () => {
+    if (canNavigateToNextGroup()) {
+      setCurrentGroupIndex((prev) => prev + 1);
+    }
+  };
+
+  const navigateToPreviousGroup = () => {
+    if (currentGroupIndex > 0) {
+      setCurrentGroupIndex((prev) => prev - 1);
+    }
+  };
+
+  const navigateToGroup = (index) => {
+    // Solo permitir navegar a grupos anteriores o completados
+    if (index < currentGroupIndex || isGroupCompleted(plan.groups[index])) {
+      setCurrentGroupIndex(index);
+    }
+  };
+
+  const canFinishTraining = () => {
+    if (!plan || !plan.groups) return false;
+
+    // Verificar que todos los grupos estén completados
+    return plan.groups.every((group) => {
+      // Verificar que todos los ejercicios del grupo estén completados
+      return group.exercises.every((exercise) => {
+        const progress = exerciseProgress[exercise.id];
+        return progress?.completed === true;
+      });
+    });
+  };
+
+  const renderExerciseGroup = (group) => {
+    const isCompleted = isGroupCompleted(group);
+
+    return (
+      <div key={group.id} className={`exercise-group ${isCompleted ? 'completed' : ''}`}>
+        <div className="exercise-group-header">
+          <div className="exercise-group-title">
+            <FormattedMessage id="training.group" values={{ number: group.groupNumber }} />
+            <div className="exercise-group-progress">
+              {group.exercises.filter((ex) => exerciseProgress[ex.id]?.completed).length}/{group.exercises.length}
+            </div>
+          </div>
+        </div>
+
+        <div className="exercise-group-content">
+          <div className="exercise-group-info">
+            <div className="exercise-group-info-left">
+              <div className="exercise-group-info-item">
+                <i className="pi pi-refresh"></i>
+                <span>
+                  <FormattedMessage id="training.group.set" />: {group.set}
+                </span>
+              </div>
+              <div className="exercise-group-info-item">
+                <i className="pi pi-clock"></i>
+                <span>
+                  <FormattedMessage id="training.group.rest" />: {group.rest} <FormattedMessage id="training.seconds" />
+                </span>
+              </div>
+            </div>
+            {group.exercises.some((ex) => ex.exercise.multimedia) && (
+              <div className="exercise-group-info-right">
+                <div
+                  className="exercise-group-thumbnail"
+                  onClick={() => {
+                    const firstVideo = group.exercises.find((ex) => ex.exercise.multimedia);
+                    if (firstVideo) {
+                      handleVideoClick(firstVideo.exercise.multimedia);
+                    }
+                  }}
+                >
+                  <img
+                    className="exercise-group-thumbnail"
+                    src={getYouTubeThumbnail(group.exercises.find((ex) => ex.exercise.multimedia).exercise.multimedia)}
+                    alt="Video thumbnail"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="exercise-list">
+            {group.exercises.map((exercise) => {
+              const progress = exerciseProgress[exercise.id] || {};
+              const isCompleted = progress.completed;
+
+              return (
+                <Card key={exercise.id} className={`exercise-card ${isCompleted ? 'completed' : ''}`}>
+                  <div className="exercise-card-header">
+                    <h3 className="exercise-name">{exercise.exercise.name}</h3>
+                  </div>
+
+                  <div className="exercise-inputs">
+                    <div className="exercise-sets">
+                      {/*
+                      <h4 className="exercise-set-header">
+                        <FormattedMessage id="training.exercise.sets" />
+                      </h4>
+                      */}
+
+                      <DataTable
+                        value={Array.from({ length: parseInt(exercise.sets) || group.set || 1 }).map((_, index) => {
+                          const setData = progress.sets?.[index] || {};
+                          return {
+                            setNumber: index + 1,
+                            repetitions: setData.repetitions || exercise.repetitions || '',
+                            weight: setData.weight || exercise.weight || '',
+                            time: setData.time || exercise.time || '',
+                            distance: setData.distance || exercise.distance || '',
+                            tempo: setData.tempo || exercise.tempo || '',
+                            completed: setData.completed || false
+                          };
+                        })}
+                        className="exercise-sets-table"
+                        size="small"
+                        showGridlines
+                        stripedRows
+                        paginator={false}
+                        rows={5}
+                        style={{ fontSize: '0.9rem' }}
+                      >
+                        <Column
+                          field="setNumber"
+                          header={intl.formatMessage({ id: 'training.exercise.set' })}
+                          style={{ width: '10%', padding: '0.5rem' }}
+                        />
+
+                        {exercise.repetitions && (
+                          <Column
+                            field="repetitions"
+                            header={intl.formatMessage({ id: 'training.exercise.reps' })}
+                            body={(rowData) => (
+                              <InputText
+                                value={rowData.repetitions}
+                                onChange={(e) =>
+                                  handleExerciseChange(
+                                    exercise.id,
+                                    rowData.setNumber - 1,
+                                    'repetitions',
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full p-inputtext-sm"
+                                style={{ padding: '0.25rem' }}
+                              />
+                            )}
+                            style={{ padding: '0.5rem' }}
+                          />
+                        )}
+
+                        {exercise.weight && (
+                          <Column
+                            field="weight"
+                            header={intl.formatMessage({ id: 'training.exercise.weight' })}
+                            body={(rowData) => (
+                              <InputText
+                                value={rowData.weight}
+                                onChange={(e) =>
+                                  handleExerciseChange(exercise.id, rowData.setNumber - 1, 'weight', e.target.value)
+                                }
+                                className="w-full p-inputtext-sm"
+                                style={{ padding: '0.25rem' }}
+                              />
+                            )}
+                            style={{ padding: '0.5rem' }}
+                          />
+                        )}
+
+                        {exercise.time && (
+                          <Column
+                            field="time"
+                            header={intl.formatMessage({ id: 'training.exercise.time' })}
+                            body={(rowData) => (
+                              <InputText
+                                value={rowData.time}
+                                onChange={(e) =>
+                                  handleExerciseChange(exercise.id, rowData.setNumber - 1, 'time', e.target.value)
+                                }
+                                className="w-full p-inputtext-sm"
+                                style={{ padding: '0.25rem' }}
+                              />
+                            )}
+                            style={{ padding: '0.5rem' }}
+                          />
+                        )}
+
+                        {exercise.distance && (
+                          <Column
+                            field="distance"
+                            header={intl.formatMessage({ id: 'training.exercise.distance' })}
+                            body={(rowData) => (
+                              <InputText
+                                value={rowData.distance}
+                                onChange={(e) =>
+                                  handleExerciseChange(exercise.id, rowData.setNumber - 1, 'distance', e.target.value)
+                                }
+                                className="w-full p-inputtext-sm"
+                                style={{ padding: '0.25rem' }}
+                              />
+                            )}
+                            style={{ padding: '0.5rem' }}
+                          />
+                        )}
+
+                        {exercise.tempo && (
+                          <Column
+                            field="tempo"
+                            header={intl.formatMessage({ id: 'training.exercise.tempo' })}
+                            body={(rowData) => (
+                              <InputText
+                                value={rowData.tempo}
+                                onChange={(e) =>
+                                  handleExerciseChange(exercise.id, rowData.setNumber - 1, 'tempo', e.target.value)
+                                }
+                                className="w-full p-inputtext-sm"
+                                style={{ padding: '0.25rem' }}
+                              />
+                            )}
+                            style={{ padding: '0.5rem' }}
+                          />
+                        )}
+
+                        <Column
+                          field="completed"
+                          header={intl.formatMessage({ id: 'training.exercise.completed' })}
+                          body={(rowData) => (
+                            <Checkbox
+                              checked={rowData.completed}
+                              onChange={(e) => handleSetCompletedChange(exercise.id, rowData.setNumber - 1, e.checked)}
+                              binary
+                              className="p-checkbox-sm"
+                            />
+                          )}
+                          style={{ width: '10%', padding: '0.5rem' }}
+                        />
+                      </DataTable>
+                    </div>
+
+                    <div className="">
+                      <label htmlFor={`comments-${exercise.id}`}>
+                        <FormattedMessage id="training.comments" defaultMessage="Comments" />
+                      </label>
+                      <InputTextarea
+                        id={`comments-${exercise.id}`}
+                        rows={3}
+                        value={progress.comments || ''}
+                        onChange={(e) => handleExerciseChange(exercise.id, null, 'comments', e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+
+                    {client && currentCycle && (
+                      <div className="exercise-field">
+                        <RpeDropdownComponent
+                          selectedRpe={progress.rating || 0}
+                          onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
+                          planId={planId}
+                          cycleId={currentCycle.id}
+                          clientId={client.id}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (loading || !plan) {
+    return (
+      <div className="loading-container">
+        <ProgressSpinner className="loading-spinner" />
+        <span>
+          <FormattedMessage id="training.loading" />
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="training-plan-details">
       <div className="training-plan-header">
@@ -282,403 +568,43 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
           <h2 className="training-plan-name">{plan.instanceName ? plan.instanceName : plan.workout.planName}</h2>
           {!plan.isTemplate && (
             <div className="training-plan-status">
-              {/* {getStatusIcon(plan.status)} 
+              {getStatusIcon(plan.status)}
               <FormattedMessage id="training.status" />: {plan.status}
-              */}
             </div>
           )}
         </div>
       </div>
 
-      <div className="mobile-view md:hidden">
-        <Accordion className="exercise-tabs">
-          {plan.groups.map((group, groupIndex) => {
-            const groupStatus = completedGroups.find((g) => g.id === group.id);
-            const statusIcon = groupStatus?.completed ? (
-              <i className="pi pi-check-circle text-green-500" />
-            ) : (
-              <i className="pi pi-clock text-yellow-500" />
-            );
-            return (
-              <AccordionTab
-                key={groupIndex}
-                header={
-                  <div className="exercise-group-title">
-                    <FormattedMessage id="training.group" values={{ number: group.groupNumber }} />
-                    <span>{statusIcon}</span>
-                  </div>
-                }
-              >
-                <div className="exercise-group-info">
-                  <div className="exercise-group-info-item">
-                    <strong>
-                      <FormattedMessage id="training.group.set" />:
-                    </strong>{' '}
-                    {group.set}
-                  </div>
-                  <div className="exercise-group-info-item">
-                    <strong>
-                      <FormattedMessage id="training.group.rest" />:
-                    </strong>{' '}
-                    {group.rest} <FormattedMessage id="training.seconds" />
-                  </div>
-                </div>
+      <div className="exercise-groups-container">
+        <div className="exercise-groups-navigation">
+          <Button
+            icon="pi pi-chevron-left"
+            className={`p-button-rounded p-button-text navigation-button ${currentGroupIndex === 0 ? 'p-disabled' : ''}`}
+            onClick={navigateToPreviousGroup}
+            disabled={currentGroupIndex === 0}
+            aria-label="Previous group"
+          />
 
-                {group.exercises.map((exercise, exerciseIndex) => (
-                  <div key={exerciseIndex} className="exercise-card">
-                    <div className="exercise-card-header">
-                      <h3 className="exercise-name">{exercise.exercise.name}</h3>
-                    </div>
-                    <div className="exercise-thumbnail" onClick={() => handleVideoClick(exercise.exercise.multimedia)}>
-                      <img
-                        src={getYouTubeThumbnail(exercise.exercise.multimedia)}
-                        alt={exercise.exercise.name}
-                        className="w-full"
-                      />
-                      <div className="exercise-play-overlay">
-                        <div className="exercise-play-button">
-                          <i className="pi pi-play"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <Accordion className="exercise-tabs">
-                      <AccordionTab header={intl.formatMessage({ id: 'training.exercise.details' })}>
-                        {Object.keys(exercise).map(
-                          (property, propertyIndex) =>
-                            property !== 'exercise' &&
-                            property !== 'id' &&
-                            exercise[property] !== null &&
-                            property !== 'completed' &&
-                            property !== 'rpe' &&
-                            property !== 'rowIndex' &&
-                            property !== 'setLogs' &&
-                            property !== 'comments' &&
-                            property !== 'completedNotAsPlanned' && (
-                              <div key={propertyIndex} className="exercise-field">
-                                <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>
-                                  {property.charAt(0).toUpperCase() + property.slice(1)}:
-                                </label>
-                                <p>{exercise[property]}</p>
-                              </div>
-                            )
-                        )}
-                      </AccordionTab>
-                      <AccordionTab header={intl.formatMessage({ id: 'training.exercise.progress' })}>
-                        {isClientTraining ? (
-                          <div className="exercise-inputs">
-                            <div className="p-field-checkbox">
-                              <Checkbox
-                                inputId={`completed-not-as-planned-${exercise.id}`}
-                                checked={exerciseProgress[exercise.id]?.completedNotAsPlanned || false}
-                                onChange={() => handleCompletedChange(exercise.id, true)}
-                              />
-                              <label htmlFor={`completed-not-as-planned-${exercise.id}`}>
-                                <FormattedMessage id="training.checkbox.notAsPlanned" />
-                              </label>
-                            </div>
-                            {exerciseProgress[exercise.id]?.completedNotAsPlanned &&
-                              Array.from({ length: parseInt(exercise.sets) || group.set || 1 }).map((_, setIndex) => (
-                                <div key={setIndex}>
-                                  <h4 className="exercise-set-header">Set {setIndex + 1}</h4>
-                                  {Object.keys(exercise).map(
-                                    (property) =>
-                                      property !== 'exercise' &&
-                                      property !== 'id' &&
-                                      exercise[property] !== null &&
-                                      property !== 'completed' &&
-                                      property !== 'completedNotAsPlanned' &&
-                                      property !== 'rpe' &&
-                                      property !== 'rowIndex' &&
-                                      property !== 'sets' &&
-                                      property !== 'setLogs' &&
-                                      property !== 'comments' && (
-                                        <div key={property} className="exercise-field">
-                                          <label htmlFor={`${property}-${exercise.id}-${setIndex}`}>
-                                            {property.charAt(0).toUpperCase() + property.slice(1)}:
-                                          </label>
-                                          <InputText
-                                            id={`${property}-${exercise.id}-${setIndex}`}
-                                            value={exerciseProgress[exercise.id]?.sets?.[setIndex]?.[property] || ''}
-                                            onChange={(e) =>
-                                              handleExerciseChange(exercise.id, setIndex, property, e.target.value)
-                                            }
-                                            className="w-full"
-                                          />
-                                        </div>
-                                      )
-                                  )}
-                                </div>
-                              ))}
-                            <div className="p-field-checkbox">
-                              <Checkbox
-                                inputId={`completed-${exercise.id}`}
-                                checked={exerciseProgress[exercise.id]?.completed || false}
-                                onChange={() => handleCompletedChange(exercise.id, false)}
-                              />
-                              <label htmlFor={`completed-${exercise.id}`}>
-                                <FormattedMessage id="training.checkbox.completed" defaultMessage="Completed" />
-                              </label>
-                            </div>
-                            <div className="p-field">
-                              <RpeDropdownComponent
-                                selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
-                                onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
-                                planId={planId}
-                                cycleId={currentCycle.id}
-                                clientId={client.id}
-                              />
-                            </div>
-                            <div className="p-field">
-                              <label htmlFor={`comments-${exercise.id}`}>
-                                <FormattedMessage id="training.comments" defaultMessage="Comments" />
-                              </label>
-                              <InputTextarea
-                                id={`comments-${exercise.id}`}
-                                rows={3}
-                                value={exerciseProgress[exercise.id]?.comments || ''}
-                                onChange={(e) => handleExerciseChange(exercise.id, null, 'comments', e.target.value)}
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="exercise-inputs">
-                            <div className="p-field-checkbox">
-                              <Checkbox
-                                inputId={`completed-${exercise.id}`}
-                                checked={exercise.completed || false}
-                                readOnly
-                              />
-                              <label htmlFor={`completed-${exercise.id}`}>
-                                <FormattedMessage id="training.checkbox.completed" defaultMessage="Completed" />
-                              </label>
-                            </div>
-                            <div className="p-field-checkbox">
-                              <Checkbox
-                                inputId={`completedNotAsPlanned-${exercise.id}`}
-                                checked={exercise.completedNotAsPlanned || false}
-                                readOnly
-                              />
-                              <label htmlFor={`completedNotAsPlanned-${exercise.id}`}>
-                                <FormattedMessage id="training.checkbox.notAsPlanned" />
-                              </label>
-                            </div>
-                            <div className="p-field">
-                              <RpeDropdownComponent
-                                selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
-                                onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
-                                planId={planId}
-                                cycleId={currentCycle.id}
-                              />
-                            </div>
-                            <div className="p-field">
-                              <label htmlFor={`comments-${exercise.id}`}>
-                                <FormattedMessage id="training.comments" defaultMessage="Comments" />
-                              </label>
-                              <InputTextarea
-                                disabled
-                                id={`comments-${exercise.id}`}
-                                rows={3}
-                                value={exercise.comments || ''}
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </AccordionTab>
-                    </Accordion>
-                  </div>
-                ))}
-              </AccordionTab>
-            );
-          })}
-        </Accordion>
-      </div>
+          <div className="exercise-groups-content">{renderExerciseGroup(plan.groups[currentGroupIndex])}</div>
 
-      <div className="desktop-view hidden md:block">
-        {plan.groups.map((group, groupIndex) => (
-          <Fieldset legend={`Group ${group.groupNumber}`} key={groupIndex} className="mb-4" toggleable>
-            <div className="exercise-group-info">
-              <div className="exercise-group-info-item">
-                <strong>Set Count:</strong> {group.set}
-              </div>
-              <div className="exercise-group-info-item">
-                <strong>Rest Interval:</strong> {group.rest} seconds
-              </div>
-            </div>
+          <Button
+            icon="pi pi-chevron-right"
+            className={`p-button-rounded p-button-text navigation-button ${!canNavigateToNextGroup() ? 'p-disabled' : ''}`}
+            onClick={navigateToNextGroup}
+            disabled={!canNavigateToNextGroup()}
+            aria-label="Next group"
+          />
+        </div>
 
-            {group.exercises.map((exercise, exerciseIndex) => (
-              <Card key={exerciseIndex} className="exercise-card mb-4">
-                <div className="exercise-card-header">
-                  <h3 className="exercise-name">{exercise.exercise.name}</h3>
-                </div>
-                <div className="grid">
-                  <div className="col-12 md:col-4">
-                    <div className="exercise-thumbnail" onClick={() => handleVideoClick(exercise.exercise.multimedia)}>
-                      <img
-                        src={getYouTubeThumbnail(exercise.exercise.multimedia)}
-                        alt={`${exercise.exercise.name} thumbnail`}
-                        className="w-full"
-                      />
-                      <div className="exercise-play-overlay">
-                        <div className="exercise-play-button">
-                          <i className="pi pi-play"></i>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-12 md:col-8">
-                    <Splitter>
-                      <SplitterPanel className="flex align-items-center justify-content-center">
-                        {Object.keys(exercise).map(
-                          (property, propertyIndex) =>
-                            property !== 'exercise' &&
-                            property !== 'id' &&
-                            exercise[property] !== null &&
-                            property !== 'completed' &&
-                            property !== 'rpe' &&
-                            property !== 'rowIndex' &&
-                            property !== 'setLogs' &&
-                            property !== 'comments' &&
-                            property !== 'completedNotAsPlanned' && (
-                              <div key={propertyIndex} className="exercise-field">
-                                <label htmlFor={`${property}${groupIndex}-${exerciseIndex}`}>
-                                  {property.charAt(0).toUpperCase() + property.slice(1)}:
-                                </label>
-                                <p>{exercise[property]}</p>
-                              </div>
-                            )
-                        )}
-                      </SplitterPanel>
-                      <SplitterPanel className="flex align-items-center justify-content-center">
-                        {isClientTraining ? (
-                          <div className="exercise-inputs">
-                            <div className="p-field-checkbox">
-                              <Checkbox
-                                inputId={`completed-not-as-planned-${exercise.id}`}
-                                checked={exerciseProgress[exercise.id]?.completedNotAsPlanned || false}
-                                onChange={() => handleCompletedChange(exercise.id, true)}
-                              />
-                              <label htmlFor={`completed-not-as-planned-${exercise.id}`}>
-                                <FormattedMessage id="training.checkbox.notAsPlanned" />
-                              </label>
-                            </div>
-                            {exerciseProgress[exercise.id]?.completedNotAsPlanned &&
-                              Array.from({ length: parseInt(exercise.sets) || group.set || 1 }).map((_, setIndex) => (
-                                <div key={setIndex}>
-                                  <h4 className="exercise-set-header">Set {setIndex + 1}</h4>
-                                  {Object.keys(exercise).map(
-                                    (property) =>
-                                      property !== 'exercise' &&
-                                      property !== 'id' &&
-                                      exercise[property] !== null &&
-                                      property !== 'completed' &&
-                                      property !== 'completedNotAsPlanned' &&
-                                      property !== 'rpe' &&
-                                      property !== 'rowIndex' &&
-                                      property !== 'setLogs' &&
-                                      property !== 'sets' &&
-                                      property !== 'comments' && (
-                                        <div key={property} className="exercise-field">
-                                          <label htmlFor={`${property}-${exercise.id}-${setIndex}`}>
-                                            {property.charAt(0).toUpperCase() + property.slice(1)}:
-                                          </label>
-                                          <InputText
-                                            id={`${property}-${exercise.id}-${setIndex}`}
-                                            value={exerciseProgress[exercise.id]?.sets?.[setIndex]?.[property] || ''}
-                                            onChange={(e) =>
-                                              handleExerciseChange(exercise.id, setIndex, property, e.target.value)
-                                            }
-                                            className="w-full"
-                                          />
-                                        </div>
-                                      )
-                                  )}
-                                </div>
-                              ))}
-                            <div className="p-field-checkbox">
-                              <Checkbox
-                                inputId={`completed-${exercise.id}`}
-                                checked={exerciseProgress[exercise.id]?.completed || false}
-                                onChange={() => handleCompletedChange(exercise.id, false)}
-                              />
-                              <label htmlFor={`completed-${exercise.id}`}>
-                                <FormattedMessage id="training.checkbox.completed" defaultMessage="Completed" />
-                              </label>
-                            </div>
-                            <div className="p-field">
-                              <RpeDropdownComponent
-                                selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
-                                onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
-                                planId={planId}
-                                cycleId={currentCycle.id}
-                              />
-                            </div>
-                            <div className="p-field">
-                              <label htmlFor={`comments-${exercise.id}`}>
-                                <FormattedMessage id="training.comments" defaultMessage="Comments" />
-                              </label>
-                              <InputTextarea
-                                id={`comments-${exercise.id}`}
-                                rows={3}
-                                value={exerciseProgress[exercise.id]?.comments || ''}
-                                onChange={(e) => handleExerciseChange(exercise.id, null, 'comments', e.target.value)}
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="exercise-inputs">
-                            <div className="p-field-checkbox">
-                              <Checkbox
-                                inputId={`completed-${exercise.id}`}
-                                checked={exercise.completed || false}
-                                readOnly
-                              />
-                              <label htmlFor={`completed-${exercise.id}`}>
-                                <FormattedMessage id="training.checkbox.completed" defaultMessage="Completed" />
-                              </label>
-                            </div>
-                            <div className="p-field-checkbox">
-                              <Checkbox
-                                inputId={`completedNotAsPlanned-${exercise.id}`}
-                                checked={exercise.completedNotAsPlanned || false}
-                                readOnly
-                              />
-                              <label htmlFor={`completedNotAsPlanned-${exercise.id}`}>
-                                <FormattedMessage id="training.checkbox.notAsPlanned" />
-                              </label>
-                            </div>
-                            <div className="p-field">
-                              <RpeDropdownComponent
-                                selectedRpe={exerciseProgress[exercise.id]?.rating || 0}
-                                onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
-                                planId={planId}
-                                cycleId={currentCycle.id}
-                              />
-                            </div>
-                            <div className="p-field">
-                              <label htmlFor={`comments-${exercise.id}`}>
-                                <FormattedMessage id="training.comments" defaultMessage="Comments" />
-                              </label>
-                              <InputTextarea
-                                disabled
-                                id={`comments-${exercise.id}`}
-                                rows={3}
-                                value={exercise.comments || ''}
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </SplitterPanel>
-                    </Splitter>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </Fieldset>
-        ))}
+        <div className="exercise-groups-indicator">
+          {plan.groups.map((_, index) => (
+            <div
+              key={index}
+              className={`group-indicator ${index === currentGroupIndex ? 'active' : ''} ${isGroupCompleted(plan.groups[index]) ? 'completed' : ''}`}
+              onClick={() => navigateToGroup(index)}
+            />
+          ))}
+        </div>
       </div>
 
       {isClientTraining && (
@@ -694,6 +620,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
             icon="pi pi-check"
             className="p-button-success"
             onClick={() => setFinishDialogVisible(true)}
+            disabled={!canFinishTraining()}
           />
         </div>
       )}

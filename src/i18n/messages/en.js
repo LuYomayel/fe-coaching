@@ -324,12 +324,20 @@ const messages = {
   'students.success.verificationSent': 'Verification email sent successfully!',
   'students.success.updated': 'Profile updated successfully!',
   // NewStudentHome
-  'studentHome.welcome': 'Hello, {name}',
-  'studentHome.calendar.title': 'My training calendar',
-  'studentHome.calendar.filterMonth': 'Filter by month',
-  'studentHome.calendar.viewDetails': 'View details',
-  'studentHome.calendar.startTraining': 'Start training',
-  'studentHome.dialog.planDetails': 'Plan details',
+  'studentHome.welcome': 'Welcome, {name}!',
+  'studentHome.streak.daily': 'Daily Streak',
+  'studentHome.streak.weekly': 'Weekly Streak',
+  'studentHome.streak.days': 'days',
+  'studentHome.streak.weeks': 'weeks',
+  'studentHome.todayWorkouts': "Today's Workouts",
+  'studentHome.noWorkoutsToday': 'No workouts scheduled for today',
+  'studentHome.viewWorkout': 'View Details',
+  'studentHome.startWorkout': 'Start Workout',
+  'studentHome.viewCalendar': 'View Full Calendar',
+  'workout.status.pending': 'Pending',
+  'workout.status.completed': 'Completed',
+  'workout.status.expired': 'Expired',
+  'studentHome.dialog.planDetails': 'Plan Details',
   'studentHome.noEvents': 'No training sessions scheduled',
   'studentHome.todayDate': 'Today is {date}',
   'studentHome.upcomingSessions': 'Upcoming sessions',
@@ -403,7 +411,14 @@ const messages = {
 
   'training.exercise.details': 'Exercise Details',
   'training.exercise.progress': 'Exercise Progress',
-  'training.exercise.set': 'Set {number}',
+  'training.exercise.set': 'Set',
+  'training.exercise.reps': 'Reps',
+  'training.exercise.weight': 'Weight',
+  'training.exercise.time': 'Time',
+  'training.exercise.distance': 'Distance',
+  'training.exercise.tempo': 'Tempo',
+  'training.exercise.completed': 'Completed',
+  'training.exercise.sets': 'Sets',
   'training.exercise.comments': 'Comments',
 
   'training.checkbox.completed': 'Completed',
@@ -413,22 +428,22 @@ const messages = {
   'training.buttons.finishTraining': 'Finish Training',
   'training.buttons.viewDetails': 'View Details',
 
-  'training.success.saved': 'Your progress has been saved successfully.',
+  'training.success.saved': 'Progress saved successfully',
   'training.success.finished': 'Congratulations, you have finished your routine.',
 
-  'training.error.noFeedback': 'No valid feedback to submit.',
-  'training.error.exerciseNotFound': 'Original exercise not found.',
-  'training.error.fillAllFields': 'All relevant fields must be filled out.',
+  'training.error.noFeedback': 'No feedback to submit',
+  'training.error.exerciseNotFound': 'Exercise not found',
+  'training.error.fillAllFields': 'Please fill all fields',
 
   'training.loading': 'Loading...',
 
   // TrainingDetails
   'training.group.title': 'Group {number}',
-  'training.group.set': 'Set',
-  'training.group.rest': 'Rest (seconds)',
+  'training.group.set': 'Sets',
+  'training.group.rest': 'Rest',
 
   'training.exercise.video': 'Video URL',
-  'training.exercise.sets': 'Set {number}',
+
   'training.exercise.rpe': 'RPE',
 
   'training.plan.name': 'Plan Name',
@@ -999,6 +1014,17 @@ const messages = {
   'coach.home.timesPerYear': 'times per year',
 
   'coach.exercise.upload.updated': 'Updated Exercises',
-  'exercise.exerciseType': 'Exercise Type'
+  'exercise.exerciseType': 'Exercise Type',
+
+  // Student Home
+
+  // Student Calendar
+  'studentCalendar.title': 'My Training Calendar',
+  'studentCalendar.filterMonth': 'Filter by month',
+  'studentCalendar.viewDetails': 'View details',
+  'studentCalendar.startTraining': 'Start training',
+  'studentCalendar.noEvents': 'No events scheduled for this month',
+  'studentCalendar.loading': 'Loading calendar...'
 };
+
 export default messages;

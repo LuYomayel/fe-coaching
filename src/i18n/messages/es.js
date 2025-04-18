@@ -325,17 +325,21 @@ const messages = {
   'students.success.verificationSent': 'Email de verificación enviado exitosamente!',
 
   // NewStudentHome
-  'studentHome.welcome': 'Hola, {name}',
-  'studentHome.calendar.title': 'Mi calendario de entrenamientos',
-  'studentHome.calendar.filterMonth': 'Filtrar por mes',
-  'studentHome.calendar.viewDetails': 'Ver detalles',
-  'studentHome.calendar.startTraining': 'Iniciar entrenamiento',
-  'studentHome.dialog.planDetails': 'Detalles del plan',
-  'studentHome.noEvents': 'No hay entrenamientos programados',
-  'studentHome.todayDate': 'Hoy es {date}',
-  'studentHome.upcomingSessions': 'Próximas sesiones',
-  'studentHome.loading.calendar': 'Cargando tu calendario...',
-  'studentHome.error.calendar': 'Error al cargar el calendario',
+  'studentHome.welcome': '¡Bienvenido, {name}!',
+  'studentHome.streak.daily': 'Racha Diaria',
+  'studentHome.streak.weekly': 'Racha Semanal',
+  'studentHome.streak.days': 'días',
+  'studentHome.streak.weeks': 'semanas',
+  'studentHome.todayWorkouts': 'Entrenamientos de Hoy',
+  'studentHome.noWorkoutsToday': 'No hay entrenamientos programados para hoy',
+  'studentHome.viewWorkout': 'Ver Detalles',
+  'studentHome.startWorkout': 'Comenzar Entrenamiento',
+  'studentHome.viewCalendar': 'Ver Calendario Completo',
+  'workout.status.pending': 'Pendiente',
+  'workout.status.completed': 'Completado',
+  'workout.status.expired': 'Expirado',
+  'studentHome.dialog.planDetails': 'Detalles del Plan',
+  'studentHome.noEvents': 'No hay sesiones de entrenamiento programadas',
 
   // Meses (si no existen ya)
   'months.january': 'Enero',
@@ -405,8 +409,26 @@ const messages = {
   'training.exercise.details': 'Detalles del Ejercicio',
   'training.exercise.progress': 'Progreso del Ejercicio',
   'training.exercise.videoUrl': 'URL del Video',
-  'training.exercise.set': 'Serie {number}',
-  'training.exercise.rpe': 'RPE',
+  'training.exercise.set': 'Set',
+  'training.exercise.reps': 'Reps',
+  'training.exercise.weight': 'Peso',
+  'training.exercise.time': 'Tiempo',
+  'training.exercise.distance': 'Distancia',
+  'training.exercise.tempo': 'Tempo',
+  'training.exercise.completed': 'Completado',
+  'training.exercise.sets': 'Series',
+
+  'training.group.set': 'Series',
+  'training.group.rest': 'Descanso',
+
+  'training.comments': 'Comentarios',
+  'training.buttons.saveProgress': 'Guardar Progreso',
+  'training.buttons.finishTraining': 'Finalizar Entrenamiento',
+  'training.success.saved': 'Progreso guardado exitosamente',
+  'training.error.exerciseNotFound': 'Ejercicio no encontrado',
+  'training.error.fillAllFields': 'Por favor complete todos los campos',
+  'training.error.noFeedback': 'No hay feedback para enviar',
+  'training.loading': 'Cargando...',
 
   'training.checkbox.completed': 'Completado',
   'training.checkbox.notAsPlanned': 'Completado No Según lo Planeado',
@@ -427,26 +449,15 @@ const messages = {
   'training.dialog.finishTitle': 'Finalizar Entrenamiento',
   'training.dialog.videoTitle': 'Video del Ejercicio',
 
-  'training.buttons.saveProgress': 'Guardar Progreso',
-  'training.buttons.finishTraining': 'Finalizar Entrenamiento',
   'training.buttons.viewDetails': 'Ver Detalles',
 
-  'training.success.saved': 'Tu progreso ha sido guardado exitosamente.',
   'training.success.finished': '¡Felicitaciones, has terminado tu rutina!',
-
-  'training.error.noFeedback': 'No hay retroalimentación válida para enviar.',
-  'training.error.exerciseNotFound': 'Ejercicio original no encontrado.',
-  'training.error.fillAllFields': 'Todos los campos relevantes deben estar completos.',
-
-  'training.loading': 'Cargando...',
 
   // TrainingDetails
   'training.group.title': 'Grupo {number}',
-  'training.group.set': 'Serie',
-  'training.group.rest': 'Descanso (segundos)',
 
   'training.exercise.video': 'URL del Video',
-  'training.exercise.sets': 'Serie {number}',
+
   'training.exercise.comments': 'Comentarios',
 
   'training.plan.name': 'Nombre del Plan',
@@ -1268,6 +1279,9 @@ const messages = {
   'training.finish.additionalNotes.placeholder': '¿Algo más que quieras anotar sobre esta sesión?',
 
   'coach.exercise.upload.updated': 'Ejercicios actualizados',
-  'exercise.exerciseType': 'Tipo de Ejercicio'
+  'exercise.exerciseType': 'Tipo de Ejercicio',
+
+  cancel: 'Cancelar',
+  submit: 'Enviar'
 };
 export default messages;

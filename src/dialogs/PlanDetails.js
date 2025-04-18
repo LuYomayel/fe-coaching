@@ -55,7 +55,9 @@ export default function NewPlanDetailHorizontal({
       try {
         setLoading(true);
         const { data } = isTemplate ? await fetchWorkoutInstanceTemplate(planId) : await fetchWorkoutInstance(planId);
-        setCurrentCycle(data.trainingSession.trainingWeek.trainingCycle);
+        const trainingCycle = data.trainingSession?.trainingWeek?.trainingCycle || -1;
+        console.log(trainingCycle);
+        setCurrentCycle(trainingCycle);
         // Sort groups by groupNumber
         data.groups.sort((a, b) => a.groupNumber - b.groupNumber);
         // Normalize empty exercise props
@@ -94,7 +96,7 @@ export default function NewPlanDetailHorizontal({
     const fetchRpeMethods = async () => {
       try {
         setLoading(true);
-        const { data } = await getRpeMethodAssigned(clientId, planId, currentCycle.id);
+        const { data } = await getRpeMethodAssigned(clientId, planId, currentCycle.id || -1);
         console.log('data', data);
         setRpeMethods(data.rpeMethod);
       } catch (error) {

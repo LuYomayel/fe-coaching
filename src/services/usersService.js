@@ -291,6 +291,60 @@ const deleteClient = async (clientId) => {
   return data;
 };
 
+const fetchClientStreak = async (clientId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${apiUrl}/workout-streaks/client/${clientId}/active`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching client streak:', error);
+    throw error;
+  }
+};
+
+const fetchClientDailyStreak = async (clientId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${apiUrl}/workout-streaks/client/${clientId}/daily`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching client daily streak:', error);
+    throw error;
+  }
+};
+
+const fetchAmIWorkingOutToday = async (clientId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${apiUrl}/workout/am-i-traning-today/${clientId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching am i working out today:', error);
+    throw error;
+  }
+};
+
 export {
   fetchUser, // checked
   fetchCoach, // checked
@@ -309,5 +363,8 @@ export {
   markMessagesAsRead, // checked
   fetchUnreadMessages, // checked
   updateClient, // checked
-  fetchClientsSubscribed // checked
+  fetchClientsSubscribed, // checked
+  fetchClientStreak, // checked
+  fetchClientDailyStreak, // checked
+  fetchAmIWorkingOutToday // checked
 };

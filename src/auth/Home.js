@@ -148,6 +148,7 @@ export default function HomePage() {
           localStorage.setItem('token', loginData.data.access_token);
           const decodedToken = jwtDecode(loginData.data.access_token);
           setUser(decodedToken);
+          console.log(decodedToken);
           if (!decodedToken.isVerified) {
             showToast(
               'error',

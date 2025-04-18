@@ -33,11 +33,13 @@ export const UserProvider = ({ children }) => {
           const data = await fetchUserData(decodedUser.userId);
 
           if (decodedUser.isVerified && decodedUser.email === data.email) {
+            console.log(decodedUser);
             if (decodedUser.userType === 'coach') {
               const data = await fetchCoachData(decodedUser.userId);
               setCoach(data);
             } else if (decodedUser.userType === 'client') {
               const data = await fetchClientData(decodedUser.userId);
+              console.log(data);
               setClient(data);
             } else {
               localStorage.removeItem('token');

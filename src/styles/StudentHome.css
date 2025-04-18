@@ -14,16 +14,8 @@
 
 /* Estilos para el Dashboard del Estudiante */
 .student-home {
-  --cell-min-height: 120px;
-  --event-border-radius: 6px;
-  --add-button-size: 2rem;
-  --calendar-header-bg: var(--surface-card);
-  --calendar-accent-color: var(--primary-color);
-  --calendar-today-color: var(--primary-200);
-  --calendar-border-color: var(--surface-border);
-  --calendar-cell-hover: var(--surface-hover);
-  padding: 1.5rem;
-  max-width: 1400px;
+  padding: 1rem;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -34,7 +26,7 @@
   padding: 2rem;
 
   box-shadow: var(--card-shadow);
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   position: relative;
   overflow: hidden;
 }
@@ -57,7 +49,7 @@
 }
 
 .student-welcome {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   margin: 0;
   padding: 0;
@@ -65,7 +57,8 @@
 }
 
 .student-subheader {
-  font-size: 1.1rem;
+  color: var(--text-color-secondary);
+  font-size: 1rem;
   opacity: 0.9;
   margin: 0;
   padding: 0;
@@ -238,47 +231,175 @@
   margin: 0;
 }
 
-/* Estado de carga y sin datos */
+/* Streak Card Styles */
+.streak-card {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600) 100%);
+  border-radius: 12px;
+  padding: 1rem;
+  color: var(--primary-color-text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.streak-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.657-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z' fill='rgba(255,255,255,.07)' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 0.8;
+  z-index: 0;
+}
+
+.streak-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.streak-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem;
+  position: relative;
+}
+
+@keyframes flame {
+  0%,
+  100% {
+    transform: scale(1) rotate(-5deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+}
+
+.streak-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary-100);
+}
+
+.streak-info h3 {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.streak-count {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+  color: var(--primary-100);
+}
+
+.streak-label {
+  font-size: 0.875rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.streak-divider {
+  width: 1px;
+  height: 50px;
+  background-color: var(--primary-200);
+  margin: 0 1rem;
+}
+
+/* Workouts Card Styles */
+.workouts-card {
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.workouts-title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.workouts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.workout-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--surface-card);
+  border-radius: var(--border-radius);
+  transition: transform 0.2s;
+}
+
+.workout-item:hover {
+  transform: translateY(-2px);
+}
+
+.workout-info h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.workout-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-pending {
+  background-color: var(--yellow-100);
+  color: var(--yellow-900);
+}
+
+.status-completed {
+  background-color: var(--green-100);
+  color: var(--green-900);
+}
+
+.status-expired {
+  background-color: var(--red-100);
+  color: var(--red-900);
+}
+
+.workout-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.no-workouts {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-color-secondary);
+}
+
+.no-workouts i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--surface-400);
+}
+
+/* Loading Container */
 .loading-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem;
-  background-color: var(--surface-ground);
-  border-radius: 12px;
-  box-shadow: var(--card-shadow);
-  margin-bottom: 1.5rem;
-}
-
-.loading-container i {
-  margin-right: 1rem;
-  color: var(--primary-color);
-}
-
-.error-message {
-  background-color: var(--red-100);
-  color: var(--red-700);
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.error-message i {
-  margin-right: 0.5rem;
-  font-size: 1.2rem;
-}
-
-/* Diálogo de detalles del plan */
-.student-home .p-dialog .p-dialog-header {
-  padding: 1.5rem;
-  background-color: var(--surface-section);
-  border-bottom: 1px solid var(--surface-border);
-}
-
-.student-home .p-dialog .p-dialog-content {
-  padding: 0;
+  padding: 2rem;
+  gap: 1rem;
 }
 
 /* Animaciones */
@@ -366,5 +487,90 @@
   .student-home .p-dialog {
     width: 90vw !important;
     max-width: none !important;
+  }
+
+  .streak-container {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .streak-item {
+    padding: 0.25rem;
+  }
+
+  .streak-icon {
+    font-size: 1.25rem;
+  }
+
+  .streak-info h3 {
+    font-size: 0.875rem;
+  }
+
+  .streak-count {
+    font-size: 1.5rem;
+  }
+
+  .streak-label {
+    font-size: 0.75rem;
+  }
+
+  .streak-divider {
+    height: 40px;
+    margin: 0 0.5rem;
+  }
+
+  .streak-item::after {
+    font-size: 1rem;
+    top: -8px;
+  }
+
+  .workout-item {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .workout-actions {
+    justify-content: center;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .streak-card {
+    padding: 0.5rem;
+  }
+
+  .streak-container {
+    gap: 0.25rem;
+  }
+
+  .streak-item {
+    padding: 0.15rem;
+  }
+
+  .streak-icon {
+    font-size: 1rem;
+  }
+
+  .streak-info h3 {
+    font-size: 0.75rem;
+  }
+
+  .streak-count {
+    font-size: 1.25rem;
+  }
+
+  .streak-label {
+    font-size: 0.7rem;
+  }
+
+  .streak-divider {
+    height: 35px;
+    margin: 0 0.25rem;
+  }
+
+  .streak-item::after {
+    font-size: 0.875rem;
+    top: -6px;
   }
 }
