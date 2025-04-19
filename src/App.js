@@ -71,6 +71,7 @@ const App = () => {
                             style={{
                               marginLeft: isMobile ? '0' : sidebarExpanded ? '250px' : '70px',
                               transition: 'margin-left 0.3s ease',
+                              height: '100vh',
                               overflow: 'auto'
                             }}
                           >
