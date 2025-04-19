@@ -45,7 +45,9 @@ import {
   fetchBodyAreas,
   fetchCoachExercises,
   importExercises,
-  updateExercise
+  updateExercise,
+  analyzeExcelFile,
+  processImportExercises
 } from '../services/exercisesService';
 import { ProgressBar } from 'primereact/progressbar';
 import { Tooltip } from 'primereact/tooltip';
@@ -55,6 +57,7 @@ import { OverlayPanel } from 'primereact/overlaypanel';
 import '../styles/CoachProfile.css'; // Importar los nuevos estilos
 import { CreateExerciseDialog } from '../dialogs/CreateExerciseDialog';
 import VideoDialog from '../dialogs/VideoDialog';
+import ExcelAnalysisDialog from '../components/ExcelAnalysisDialog';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // Conjunto de emojis comunes para usar en el selector
@@ -285,6 +288,7 @@ export default function CoachProfilePage() {
   const [createPlanDialogVisible, setCreatePlanDialogVisible] = useState(false);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
+  const [analysisDialogVisible, setAnalysisDialogVisible] = useState(false);
 
   // Other states
   const [currentVideoUrl, setCurrentVideoUrl] = useState(null);
@@ -334,6 +338,8 @@ export default function CoachProfilePage() {
   const [selectedType, setSelectedType] = useState(null);
   const [selectedTarget, setSelectedTarget] = useState(null);
   const [selectedRpe, setSelectedRpe] = useState(null);
+  const [analysisData, setAnalysisData] = useState(null);
+  const [pendingUploadFormData, setPendingUploadFormData] = useState(null);
 
   const typeOptions = [
     { label: 'Workout', value: 'workout' },
@@ -1444,14 +1450,127 @@ export default function CoachProfilePage() {
   const uploadHandler = async ({ files }) => {
     const formData = new FormData();
     formData.append('file', files[0]);
-    const rowsCount = await readFile(files[0]);
-    showConfirmationDialog({
-      message: intl.formatMessage({ id: 'coach.exercise.confirm.upload' }, { rowsCount }),
-      header: intl.formatMessage({ id: 'common.confirmation' }),
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => handleUpload(formData, files),
-      reject: () => console.log('Rejected')
-    });
+
+    try {
+      // Primero analizamos el archivo
+      const { data: analysisData } = await analyzeExcelFile(coach.id, formData);
+
+      // Mostramos el diálogo de análisis
+      setAnalysisDialogVisible(true);
+      setAnalysisData(analysisData);
+
+      // Guardamos el formData para usarlo después de la confirmación
+      setPendingUploadFormData(formData);
+    } catch (error) {
+      onTemplateError(error);
+      showToast('error', 'Error', error.message);
+    }
+  };
+
+  const handleAnalysisConfirm = async () => {
+    try {
+      setLoading(true);
+
+      console.log('Analysis Data:', analysisData);
+
+      // Preparar los datos para el procesamiento
+      const importData = {
+        newExercises: analysisData.exercisesToCreate.map((exercise) => {
+          console.log('Processing new exercise:', exercise);
+          return {
+            name: exercise.name,
+            description: exercise.newData.description,
+            multimedia: exercise.newData.multimedia,
+            exerciseType: exercise.newData.exerciseType,
+            equipmentNeeded: exercise.newData.equipmentNeeded,
+            bodyArea: exercise.newData.bodyArea || []
+          };
+        }),
+        updateExercises: analysisData.exercisesToUpdate
+          .map((exercise) => {
+            console.log('Processing update exercise:', exercise);
+
+            // Si no hay cambios, no incluirlo
+            if (!exercise.changes || Object.keys(exercise.changes).length === 0) {
+              return null;
+            }
+
+            // Filtrar solo los campos que fueron seleccionados para actualizar
+            const selectedUpdates = {};
+
+            // Si no hay selectedChanges, asumimos que todos los cambios están seleccionados
+            if (!exercise.selectedChanges) {
+              Object.entries(exercise.changes).forEach(([field, value]) => {
+                if (exercise.newData[field] !== undefined) {
+                  selectedUpdates[field] = exercise.newData[field];
+                }
+              });
+            } else {
+              // Si hay selectedChanges, solo incluir los campos seleccionados
+              Object.entries(exercise.selectedChanges).forEach(([field, isSelected]) => {
+                if (isSelected !== false && exercise.newData[field] !== undefined) {
+                  selectedUpdates[field] = exercise.newData[field];
+                }
+              });
+            }
+
+            // Solo incluir ejercicios que tienen al menos un campo seleccionado para actualizar
+            if (Object.keys(selectedUpdates).length > 0) {
+              return {
+                id: exercise.id,
+                updates: selectedUpdates
+              };
+            }
+
+            return null;
+          })
+          .filter(Boolean) // Eliminar los elementos null
+      };
+
+      console.log('Import Data to be sent:', importData);
+
+      // Procesar la importación
+      const { data } = await processImportExercises(coach.id, importData);
+
+      setRefreshKey((old) => old + 1);
+
+      if (data.updatedExercises?.length > 0) {
+        showToast(
+          'info',
+          `${intl.formatMessage({ id: 'coach.exercise.upload.success' })}: ${data.registeredExercises?.length || 0}. ${intl.formatMessage({ id: 'coach.exercise.upload.updated' })}: ${data.updatedExercises?.length || 0}`,
+          truncateMessage(
+            `${data.updatedExercises.map((ex) => `${ex.name}${ex.row ? ` en fila ${ex.row}` : ''}`).join(', ')}`
+          ),
+          true
+        );
+      } else {
+        showToast(
+          'success',
+          intl.formatMessage({ id: 'coach.exercise.upload.success' }),
+          `${data.registeredExercises?.map((ex) => `${ex.name}${ex.row ? ` en fila ${ex.row}` : ''}`).join(', ')}`
+        );
+      }
+
+      fileUploadRef.current.clear();
+      setSelectedFile(null);
+      setTotalSize(0);
+      setAnalysisDialogVisible(false);
+      setPendingUploadFormData(null);
+      setAnalysisData(null);
+    } catch (error) {
+      onTemplateError(error);
+      showToast('error', 'Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAnalysisCancel = () => {
+    setAnalysisDialogVisible(false);
+    setPendingUploadFormData(null);
+    fileUploadRef.current.clear();
+    setSelectedFile(null);
+    setTotalSize(0);
   };
 
   const readFile = (file) => {
@@ -2610,6 +2729,14 @@ export default function CoachProfilePage() {
           isTemplate={true}
         />
       </Dialog>
+
+      <ExcelAnalysisDialog
+        visible={analysisDialogVisible}
+        onHide={handleAnalysisCancel}
+        analysisData={analysisData}
+        onConfirm={handleAnalysisConfirm}
+        setAnalysisData={setAnalysisData}
+      />
     </div>
   );
 }

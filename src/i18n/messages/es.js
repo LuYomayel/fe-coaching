@@ -1331,6 +1331,21 @@ const messages = {
   'verification.error': 'Error al verificar el correo',
   'verification.error.invalidCode': 'Código de verificación inválido',
   'verification.resend': 'Reenviar código',
-  'verification.message': 'Por favor ingresa el código de verificación enviado a {email}'
+  'verification.message': 'Por favor ingresa el código de verificación enviado a {email}',
+
+  'exercises.analysis.title': 'Análisis de Ejercicios',
+  'exercises.analysis.summary': 'Resumen del Análisis',
+  'exercises.analysis.total': 'Total de ejercicios: {total} (Nuevos: {new}, Existentes: {existing})',
+  'exercises.name': 'Nombre',
+  'exercises.status': 'Estado',
+  'exercises.status.new': 'Nuevo',
+  'exercises.status.existing': 'Existente',
+  'exercises.currentData': 'Datos Actuales',
+  'exercises.newData': 'Nuevos Datos',
+  'exercises.changes': 'Cambios',
+  'exercises.field.description': 'Descripción',
+  'exercises.field.exerciseType': 'Tipo de Ejercicio',
+  'exercises.field.equipmentNeeded': 'Equipo Necesario',
+  'exercises.field.multimedia': 'Multimedia'
 };
 export default messages;
