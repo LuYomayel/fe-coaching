@@ -182,12 +182,12 @@ export default function HomePage() {
     if (validateSignUpForm()) {
       setLoading(true);
       try {
-        const response = await registerCoach(signUpForm);
-        console.log(response);
-        if (response.message !== 'success') {
-          throw new Error(response.message || 'Something went wrong');
+        const { data, message, error } = await registerCoach(signUpForm);
+
+        if (message !== 'success') {
+          throw new Error(error || 'Something went wrong');
         } else {
-          console.log(response.data);
+          console.log(data);
           setLoading(false);
           setRegisteredEmail(signUpForm.email);
           setVerificationDialogVisible(true);
@@ -196,7 +196,7 @@ export default function HomePage() {
         }
       } catch (error) {
         console.log(error);
-        showToast('error', 'Error', error);
+        showToast('error', 'Error', error.message);
         setLoading(false);
       }
     }
