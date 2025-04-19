@@ -9,14 +9,14 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [coach, setCoach] = useState(null);
   const [client, setClient] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+
   const { setLoading } = useSpinner();
 
   useEffect(() => {
     const checkEverything = async () => {
       try {
         setLoading(true);
-        setIsLoading(true);
+
         const token = localStorage.getItem('token');
 
         if (token) {
@@ -61,8 +61,7 @@ export const UserProvider = ({ children }) => {
       } catch (error) {
         console.log(error);
       } finally {
-        setLoading(false);
-        setIsLoading(false);
+        //setLoading(false);
       }
     };
     checkEverything();
@@ -99,7 +98,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient, isLoading }}>
+    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient }}>
       {children}
     </UserContext.Provider>
   );
