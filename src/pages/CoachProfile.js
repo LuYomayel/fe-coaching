@@ -54,6 +54,7 @@ import { ColorPicker } from 'primereact/colorpicker';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import '../styles/CoachProfile.css'; // Importar los nuevos estilos
 import { CreateExerciseDialog } from '../dialogs/CreateExerciseDialog';
+import VideoDialog from '../dialogs/VideoDialog';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // Conjunto de emojis comunes para usar en el selector
@@ -921,26 +922,11 @@ export default function CoachProfilePage() {
 
   const renderVideoModal = () => {
     return (
-      <Dialog
-        draggable={false}
-        dismissableMask
-        resizable={false}
-        header="Video"
+      <VideoDialog
         visible={videoDialogVisible}
-        className="responsive-dialog"
-        style={{ width: '50vw' }}
         onHide={() => setVideoDialogVisible(false)}
-      >
-        <iframe
-          width="100%"
-          height="400px"
-          src={currentVideoUrl}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title="Exercise Video"
-        />
-      </Dialog>
+        videoUrl={currentVideoUrl}
+      />
     );
   };
 

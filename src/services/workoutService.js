@@ -1,176 +1,277 @@
-import { formatDateToApi } from '../utils/UtilFunctions';
-
 const apiUrl = process.env.REACT_APP_API_URL;
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`
+  };
+};
+
 const findAllWorkoutTemplatesByCoachId = async (coachId) => {
-  const response = await fetch(`${apiUrl}/workout/workout-template/coachId/${coachId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/workout-template/coachId/${coachId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching workout templates:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchTrainingCyclesTemplates = async (coachId) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycle-templates/coachId/${coachId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle-templates/coachId/${coachId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching training cycles templates:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchWorkoutInstanceTemplate = async (templateId) => {
-  const response = await fetch(`${apiUrl}/workout/workout-instance-template/${templateId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/workout-instance-template/${templateId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching workout instance template:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchWorkoutInstance = async (planId) => {
-  const response = await fetch(`${apiUrl}/workout/workout-instance/${planId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/workout-instance/${planId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching workout instance:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchTrainingCyclesByClient = async (clientId) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycles/client/clientId/${clientId}`);
-  const data = await response.json();
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycles/client/clientId/${clientId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
 
-  if (data.error) {
-    throw new Error(data.error);
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    const cycles = data.data;
+
+    if (cycles.length === 0) return { events: [], cycleOptions: [] };
+    const events = cycles.flatMap((cycle) =>
+      cycle.trainingWeeks.flatMap((week) =>
+        week.trainingSessions.flatMap((session) => {
+          const sessionEvents =
+            session.workoutInstances.length > 0
+              ? session.workoutInstances.map((workoutInstance) => {
+                  workoutInstance.status = updateStatusLocal(workoutInstance, session);
+                  return {
+                    title: workoutInstance.instanceName
+                      ? workoutInstance.instanceName
+                      : workoutInstance.workout.planName,
+                    start: session.sessionDate,
+                    extendedProps: {
+                      status: workoutInstance.status,
+                      workoutInstanceId: workoutInstance.id,
+                      sessionId: session.id
+                    }
+                  };
+                })
+              : [
+                  {
+                    title: 'no title',
+                    start: session.sessionDate,
+                    extendedProps: {
+                      sessionId: session.id,
+                      cycle: cycle.name
+                    }
+                  }
+                ];
+
+          return sessionEvents;
+        })
+      )
+    );
+    return { events, cycleOptions: cycles };
+  } catch (error) {
+    console.error('Error fetching training cycles by client:', error);
+    throw error;
   }
-  const cycles = data.data;
-
-  if (cycles.length === 0) return { events: [], cycleOptions: [] };
-  const events = cycles.flatMap((cycle) =>
-    cycle.trainingWeeks.flatMap((week) =>
-      week.trainingSessions.flatMap((session) => {
-        const sessionEvents =
-          session.workoutInstances.length > 0
-            ? session.workoutInstances.map((workoutInstance) => {
-                workoutInstance.status = updateStatusLocal(workoutInstance, session);
-                return {
-                  title: workoutInstance.instanceName ? workoutInstance.instanceName : workoutInstance.workout.planName,
-                  //start: getDayMonthYear(session).toISOString().split('T')[0],
-                  start: session.sessionDate,
-                  extendedProps: {
-                    status: workoutInstance.status,
-                    workoutInstanceId: workoutInstance.id,
-                    sessionId: session.id
-                  }
-                };
-              })
-            : [
-                {
-                  title: 'no title',
-                  //start: getDayMonthYear(session).toISOString().split('T')[0],
-                  start: session.sessionDate,
-                  extendedProps: {
-                    sessionId: session.id,
-                    cycle: cycle.name
-                  }
-                }
-              ];
-
-        return sessionEvents;
-      })
-    )
-  );
-  return { events, cycleOptions: cycles };
 };
 
 const fetchTrainingSessionWithNoWeekByClientId = async (clientId) => {
-  const response = await fetch(`${apiUrl}/workout/training-session-with-no-weeks/clientId/${clientId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-session-with-no-weeks/clientId/${clientId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching training session with no week:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchTrainingCyclesForClientByUserId = async (userId) => {
-  const url = `${apiUrl}/workout/training-cycles/client/userId/${userId}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const url = `${apiUrl}/workout/training-cycles/client/userId/${userId}`;
+    const response = await fetch(url, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching training cycles for client by user ID:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchTrainingCyclesByCoachId = async (coachId) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycles/coachId/${coachId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycles/coachId/${coachId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching training cycles by coach ID:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchTrainingCycleTemplateById = async (cycleId) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching training cycle template by ID:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchDeletedWorkoutTemplatesByCoachId = async (coachId) => {
-  const response = await fetch(`${apiUrl}/workout/workout-template/coachId/${coachId}/deleted`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/workout-template/coachId/${coachId}/deleted`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching deleted workout templates:', error);
+    throw error;
   }
-  return data;
 };
+
 const fetchWorkoutsByClientId = async (clientId) => {
-  const response = await fetch(`${apiUrl}/workout/clientId/${clientId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/clientId/${clientId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching workouts by client ID:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchAssignedWorkoutsForCycleDay = async (cycleId, dayNumber) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycle/${cycleId}/day/${dayNumber}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle/${cycleId}/day/${dayNumber}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching assigned workouts for cycle day:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchExcelViewByCycleAndDay = async (cycleId, dayNumber) => {
-  const response = await fetch(`${apiUrl}/workout/excel-view/${cycleId}/day/${dayNumber}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/excel-view/${cycleId}/day/${dayNumber}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching excel view by cycle and day:', error);
+    throw error;
   }
-  return data;
 };
 
 const createTrainingCycle = async (body) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycles`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycles`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error creating training cycle:', error);
+    throw error;
   }
-  return data;
 };
 
 const updateStatusLocal = (workout, session) => {
@@ -190,461 +291,634 @@ const updateStatusLocal = (workout, session) => {
 };
 
 const updateExercisesInstace = async (exercises) => {
-  const response = await fetch(`${apiUrl}/workout/updateExercises`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(exercises)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/updateExercises`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(exercises)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error updating exercises instance:', error);
+    throw error;
   }
-  return data;
 };
 
 const verifyExerciseChanges = async (exerciseData) => {
-  const response = await fetch(`${apiUrl}/workout/verify-exercise-changes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(exerciseData)
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/verify-exercise-changes`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(exerciseData)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error verifying exercise changes:', error);
+    throw error;
   }
-  return data;
 };
 
 const updatePlanName = async (planId, planName) => {
-  const response = await fetch(`${apiUrl}/workout/update-name/${planId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: planName })
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/update-name/${planId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ name: planName })
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error updating plan name:', error);
+    throw error;
   }
-  return data;
 };
 
 const submitPlan = async (plan, planId, isEdit, isTemplate) => {
-  const requestMethod = isEdit ? 'PUT' : 'POST';
-  const endpoint = isEdit ? `${apiUrl}/workout/${isTemplate ? 'template' : 'instance'}/${planId}` : `${apiUrl}/workout`;
+  try {
+    const requestMethod = isEdit ? 'PUT' : 'POST';
+    const endpoint = isEdit
+      ? `${apiUrl}/workout/${isTemplate ? 'template' : 'instance'}/${planId}`
+      : `${apiUrl}/workout`;
 
-  const response = await fetch(endpoint, {
-    method: requestMethod,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(plan)
-  });
+    const response = await fetch(endpoint, {
+      method: requestMethod,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(plan)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error submitting plan:', error);
+    throw error;
   }
-  return data;
 };
 
 const updateTrainingCycle = async (cycleId, body) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error updating training cycle:', error);
+    throw error;
   }
-  return data;
 };
 
-const deleteTrainingCycle = async (cycleId) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`, {
-    method: 'DELETE'
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+const deleteTrainingCycle = async (cycleId, forceDelete = false) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle/cycleId/${cycleId}?forceDelete=${forceDelete}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error deleting training cycle:', error);
+    throw error;
   }
-  return data;
+};
+
+const verifyTrainingCycleDeletion = async (cycleId) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle/cycleId/${cycleId}/verify-deletion`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error verifying training cycle deletion:', error);
+    throw error;
+  }
+};
+
+const deleteTrainingCycleTemplate = async (cycleId) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle-templates/cycleId/${cycleId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error deleting training cycle:', error);
+    throw error;
+  }
 };
 
 const createNewTrainingFromExcelView = async (plan) => {
-  const response = await fetch(`${apiUrl}/workout/from-excel-view`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(plan)
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/from-excel-view`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(plan)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error creating new training from excel view:', error);
+    throw error;
   }
-  return data;
 };
 
 const submitFeedback = async (planId, body, clientId) => {
-  const url = `${apiUrl}/workout/feedback/${planId}/clientId/${clientId}`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
+  try {
+    const url = `${apiUrl}/workout/feedback/${planId}/clientId/${clientId}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error submitting feedback:', error);
+    throw error;
   }
-  return data;
 };
 
 const assignWorkoutToClient = async (workoutIds, clientId) => {
-  const response = await fetch(`${apiUrl}/workout/assign-workout-to-client/${clientId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(workoutIds)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/assign-workout-to-client/${clientId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(workoutIds)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error assigning workout to client:', error);
+    throw error;
   }
-  return data;
 };
 
 const unassignWorkoutFromClient = async (workoutsIds, clientId) => {
-  const response = await fetch(`${apiUrl}/workout/unassign-workout-from-client/${clientId}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(workoutsIds)
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/unassign-workout-from-client/${clientId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(workoutsIds)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error unassigning workout from client:', error);
+    throw error;
   }
-  return data;
 };
 
 const assignWorkout = async (data) => {
-  const response = await fetch(`${apiUrl}/workout/assignWorkout`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/assignWorkout`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
 
-  const responseData = await response.json();
-  if (responseData.error) {
-    throw new Error(responseData.message);
+    const responseData = await response.json();
+    if (responseData.error) {
+      throw new Error(responseData.message);
+    }
+    return responseData;
+  } catch (error) {
+    console.error('Error assigning workout:', error);
+    throw error;
   }
-  return responseData;
 };
 
 const assignWorkoutsToCycle = async (cycleId, clientId, body) => {
-  const response = await fetch(`${apiUrl}/workout/assign-cycle/${cycleId}/assign-workouts/${clientId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/assign-cycle/${cycleId}/assign-workouts/${clientId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error assigning workouts to cycle:', error);
+    throw error;
   }
-  return data;
 };
 
 const createTrainingCycleTemplate = async (body) => {
-  const response = await fetch(`${apiUrl}/workout/training-cycle-templates`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-cycle-templates`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error creating training cycle template:', error);
+    throw error;
   }
-  return data;
 };
 
 const createCycleAndAssignWorkouts = async (body) => {
-  const response = await fetch(`${apiUrl}/workout/create-cycle-and-assign-workouts/${body.clientId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/create-cycle-and-assign-workouts/${body.clientId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error creating cycle and assigning workouts:', error);
+    throw error;
   }
-  return data;
 };
 
 const assignSession = async (sessionId, body) => {
-  const response = await fetch(`${apiUrl}/workout/assign-session/${sessionId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/assign-session/${sessionId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error assigning session:', error);
+    throw error;
   }
-  return data;
 };
 
 const assignTrainingSessionToClient = async (body) => {
-  const response = await fetch(`${apiUrl}/workout/assign-training-session-to-client`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/assign-training-session-to-client`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error assigning training session to client:', error);
+    throw error;
   }
-  return data;
 };
 
 const createAndAssignWorkout = async (body) => {
-  const response = await fetch(`${apiUrl}/workout/create-workout-and-assign`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/create-workout-and-assign`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error creating and assigning workout:', error);
+    throw error;
   }
-  return data;
 };
 
 const unassignWorkoutsFromCycle = async (cycleId, body) => {
-  const response = await fetch(`${apiUrl}/workout/delete-instances-cycle/${cycleId}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/delete-instances-cycle/${cycleId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error unassigning workouts from cycle:', error);
+    throw error;
   }
-  return data;
 };
 
 const deleteWorkoutPlan = async (planId, isTemplate) => {
-  const url = isTemplate ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout/deleteInstance/${planId}`;
+  try {
+    const url = isTemplate ? `${apiUrl}/workout/${planId}` : `${apiUrl}/workout/deleteInstance/${planId}`;
 
-  const response = await fetch(url, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
     }
-  });
-
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    return data;
+  } catch (error) {
+    console.error('Error deleting workout plan:', error);
+    throw error;
   }
-  return data;
 };
 
 const deletePlan = async (workoutInstanceId) => {
-  const url = `${apiUrl}/workout/deleteInstance/${workoutInstanceId}`;
-  const response = await fetch(url, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
+  try {
+    const url = `${apiUrl}/workout/deleteInstance/${workoutInstanceId}`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
     }
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+    return true;
+  } catch (error) {
+    console.error('Error deleting plan:', error);
+    throw error;
   }
-  return true;
 };
 
 const getRpeMethods = async (userId) => {
-  const response = await fetch(`${apiUrl}/workout/rpe/all/${userId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/rpe/all/${userId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error getting RPE methods:', error);
+    throw error;
   }
-  return data;
 };
 
 const getRpeMethodAssigned = async (clientId = -1, planId = -1, cycleId = -1) => {
-  console.log('clientId', clientId);
-  console.log('planId', planId);
-  console.log('cycleId', cycleId);
-  const response = await fetch(`${apiUrl}/workout/rpe/get-by-client-id/${clientId}/${planId}/${cycleId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/rpe/get-by-client-id/${clientId}/${planId}/${cycleId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error getting RPE method assigned:', error);
+    throw error;
   }
-  return data;
 };
 
 const getRpeAssignments = async (userId) => {
-  const response = await fetch(`${apiUrl}/workout/rpe/get-all-assignments/${userId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/rpe/get-all-assignments/${userId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error getting RPE assignments:', error);
+    throw error;
   }
-  return data;
 };
 
 const createOrUpdateRpeMethod = async (dialogMode, newRpe, userId) => {
-  const url =
-    dialogMode === 'create'
-      ? `${apiUrl}/workout/rpe/create/${userId}`
-      : `${apiUrl}/workout/rpe/update/${newRpe.id}/${userId}`;
-  const method = dialogMode === 'create' ? 'POST' : 'PUT';
+  try {
+    const url =
+      dialogMode === 'create'
+        ? `${apiUrl}/workout/rpe/create/${userId}`
+        : `${apiUrl}/workout/rpe/update/${newRpe.id}/${userId}`;
+    const method = dialogMode === 'create' ? 'POST' : 'PUT';
 
-  const response = await fetch(url, {
-    method: method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newRpe)
-  });
+    const response = await fetch(url, {
+      method: method,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(newRpe)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.message);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.message);
+    }
+    return true;
+  } catch (error) {
+    console.error('Error creating or updating RPE method:', error);
+    throw error;
   }
-  return true;
 };
 
 const assignRpeToTarget = async (rpeMethodId, targetType, targetId, userId) => {
-  const body = { rpeMethodId, targetType, targetId };
-  const response = await fetch(`${apiUrl}/workout/rpe/assign/${userId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  try {
+    const body = { rpeMethodId, targetType, targetId };
+    const response = await fetch(`${apiUrl}/workout/rpe/assign/${userId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.message);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.message);
+    }
+    return true;
+  } catch (error) {
+    console.error('Error assigning RPE to target:', error);
+    throw error;
   }
-  return true;
 };
 
 const removeRpeAssignment = async (assignmentId, userId) => {
-  const response = await fetch(`${apiUrl}/workout/rpe/remove-assignment/${assignmentId}/${userId}`, {
-    method: 'DELETE'
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/rpe/remove-assignment/${assignmentId}/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.message);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.message);
+    }
+    return true;
+  } catch (error) {
+    console.error('Error removing RPE assignment:', error);
+    throw error;
   }
-  return true;
 };
 
 const deleteRpe = async (rpeId, userId) => {
-  const response = await fetch(`${apiUrl}/workout/rpe/delete/${rpeId}/${userId}`, {
-    method: 'DELETE'
-  });
+  try {
+    const response = await fetch(`${apiUrl}/workout/rpe/delete/${rpeId}/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
 
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.message);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.message);
+    }
+    return true;
+  } catch (error) {
+    console.error('Error deleting RPE:', error);
+    throw error;
   }
-  return true;
 };
 
 const deleteExercises = async (exercises) => {
-  const response = await fetch(`${apiUrl}/workout/delete-exercises`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(exercises)
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.message);
+  try {
+    const response = await fetch(`${apiUrl}/workout/delete-exercises`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(exercises)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.message);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error deleting exercises:', error);
+    throw error;
   }
-  return data;
 };
 
 const assignCycleTemplateToClient = async (payload) => {
-  const response = await fetch(`${apiUrl}/workout/assign-cycle-template-to-client`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.message);
+  try {
+    const response = await fetch(`${apiUrl}/workout/assign-cycle-template-to-client`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.message);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error assigning cycle template to client:', error);
+    throw error;
   }
-  return data;
 };
 
 // Coach Home Page
 const fetchLastTimeTrained = async (coachId) => {
-  const response = await fetch(`${apiUrl}/workout/last-time-trained/${coachId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/last-time-trained/${coachId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching last time trained:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchHowLongToFinishCycle = async (coachId) => {
-  const response = await fetch(`${apiUrl}/workout/how-long-to-finish-cycle/${coachId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/how-long-to-finish-cycle/${coachId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching how long to finish cycle:', error);
+    throw error;
   }
-  return data;
 };
 
 const fetchTrainingFrequency = async (coachId) => {
-  const response = await fetch(`${apiUrl}/workout/training-frequency/${coachId}`);
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
+  try {
+    const response = await fetch(`${apiUrl}/workout/training-frequency/${coachId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching training frequency:', error);
+    throw error;
   }
-  return data;
 };
 
 const saveWorkoutChanges = async (payload) => {
   try {
     const response = await fetch(`${apiUrl}/workout/save-changes-from-excel-view`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload)
     });
     const data = await response.json();
@@ -653,7 +927,7 @@ const saveWorkoutChanges = async (payload) => {
     }
     return data;
   } catch (error) {
-    console.error('Error in saveWorkoutChanges:', error);
+    console.error('Error saving workout changes:', error);
     throw error;
   }
 };
@@ -693,7 +967,9 @@ export {
   fetchTrainingCyclesTemplates,
   updateTrainingCycle,
   deleteTrainingCycle,
+  verifyTrainingCycleDeletion,
   fetchTrainingCycleTemplateById,
+  deleteTrainingCycleTemplate,
   assignCycleTemplateToClient,
   fetchDeletedWorkoutTemplatesByCoachId,
   assignTrainingSessionToClient,

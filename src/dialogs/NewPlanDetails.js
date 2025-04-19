@@ -11,23 +11,14 @@ import {
   getRpeMethods
 } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
-import {
-  getYouTubeThumbnail,
-  extractYouTubeVideoId,
-  formatDate
-} from '../utils/UtilFunctions';
+import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
-import { useIntl } from 'react-intl';
+import { useIntl, FormattedMessage } from 'react-intl';
+import VideoDialog from './VideoDialog';
 
-export default function NewPlanDetail({
-  planId,
-  setPlanDetailsVisible,
-  setRefreshKey,
-  setLoading,
-  isTemplate
-}) {
+export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefreshKey, setLoading, isTemplate }) {
   const intl = useIntl();
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState('');
@@ -57,16 +48,12 @@ export default function NewPlanDetail({
         setLoading(true);
         if (isTemplate) {
           const { data } = await fetchWorkoutInstanceTemplate(planId);
-          data.groups.sort(
-            (groupA, groupB) => groupA.groupNumber - groupB.groupNumber
-          );
+          data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber);
           setWorkoutPlan(data);
         } else {
           const { data } = await fetchWorkoutInstance(planId);
           console.log('data', data);
-          data.groups.sort(
-            (groupA, groupB) => groupA.groupNumber - groupB.groupNumber
-          );
+          data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber);
           setWorkoutPlan(data);
         }
       } catch (error) {
@@ -84,9 +71,7 @@ export default function NewPlanDetail({
       try {
         setLoading(true);
 
-        const { data } = await getRpeMethods(
-          client.coach.user.id || user.userId
-        );
+        const { data } = await getRpeMethods(client.coach.user.id || user.userId);
         setRpeMethods(data);
       } catch (error) {
         showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
@@ -110,18 +95,12 @@ export default function NewPlanDetail({
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
-          const response = await deleteWorkoutPlan(
-            planId,
-            workoutPlan.isTemplate
-          );
+          const response = await deleteWorkoutPlan(planId, workoutPlan.isTemplate);
           if (response.message === 'success') {
             showToast(
               'success',
               intl.formatMessage({ id: 'coach.plan.success.deleted' }),
-              intl.formatMessage(
-                { id: 'coach.plan.success.deleted.message' },
-                { name: workoutPlan.workout.planName }
-              )
+              intl.formatMessage({ id: 'coach.plan.success.deleted.message' }, { name: workoutPlan.workout.planName })
             );
             setPlanDetailsVisible(false);
             setRefreshKey((old) => old + 1);
@@ -154,11 +133,7 @@ export default function NewPlanDetail({
 
   const renderSetLogs = (setLogs) => {
     if (!setLogs || setLogs.length === 0) {
-      return (
-        <p style={{ fontStyle: 'italic', color: '#666' }}>
-          No set logs available
-        </p>
-      );
+      return <p style={{ fontStyle: 'italic', color: '#666' }}>No set logs available</p>;
     }
 
     // Define the possible columns (excluding "setNumber" which we always want)
@@ -175,23 +150,13 @@ export default function NewPlanDetail({
     ];
 
     // Determine which columns have at least one non-empty value
-    const columns = possibleKeys.filter((key) =>
-      setLogs.some((log) => log[key] !== null && log[key] !== '')
-    );
+    const columns = possibleKeys.filter((key) => setLogs.some((log) => log[key] !== null && log[key] !== ''));
 
     return (
       <Accordion className="p-mt-2">
-        <AccordionTab
-          header={intl.formatMessage({ id: 'exercise.properties.setLogs' })}
-        >
-          <div
-            className="p-datatable p-component"
-            style={{ width: '100%', overflowX: 'auto' }}
-          >
-            <table
-              className="p-datatable-table"
-              style={{ width: '100%', borderCollapse: 'collapse' }}
-            >
+        <AccordionTab header={intl.formatMessage({ id: 'exercise.properties.setLogs' })}>
+          <div className="p-datatable p-component" style={{ width: '100%', overflowX: 'auto' }}>
+            <table className="p-datatable-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--surface-border)' }}>
                   <th style={{ padding: '0.5rem', textAlign: 'left' }}>Set</th>
@@ -212,10 +177,7 @@ export default function NewPlanDetail({
               </thead>
               <tbody>
                 {setLogs.map((log) => (
-                  <tr
-                    key={log.id}
-                    style={{ borderBottom: '1px solid var(--surface-border)' }}
-                  >
+                  <tr key={log.id} style={{ borderBottom: '1px solid var(--surface-border)' }}>
                     <td style={{ padding: '0.5rem' }}>{log.setNumber}</td>
                     {columns.map((col) => (
                       <td key={col} style={{ padding: '0.5rem' }}>
@@ -233,10 +195,7 @@ export default function NewPlanDetail({
   };
 
   const renderExerciseDetails = (exercise, group) => (
-    <div
-      className="flex flex-column md:flex-row align-items-center mb-3"
-      key={exercise.id}
-    >
+    <div className="flex flex-column md:flex-row align-items-center mb-3" key={exercise.id}>
       <div className="w-full md:w-4 mb-2 md:mb-0">
         <div className="mr-2 flex-shrink-0">
           <a
@@ -265,73 +224,61 @@ export default function NewPlanDetail({
         <div className="grid">
           {exercise.sets && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.sets' })}:{' '}
-              {exercise.sets}
+              {intl.formatMessage({ id: 'exercise.properties.sets' })}: {exercise.sets}
               {propertyUnits?.sets ? `${propertyUnits?.sets}` : ''}
             </div>
           )}
           {exercise.repetitions && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.reps' })}:{' '}
-              {exercise.repetitions}
+              {intl.formatMessage({ id: 'exercise.properties.reps' })}: {exercise.repetitions}
             </div>
           )}
           {exercise.weight && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.weight' })}:{' '}
-              {exercise.weight}
+              {intl.formatMessage({ id: 'exercise.properties.weight' })}: {exercise.weight}
               {propertyUnits?.weight ? `${propertyUnits?.weight}` : ''}
             </div>
           )}
           {exercise.time && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.time' })}:{' '}
-              {exercise.time}
+              {intl.formatMessage({ id: 'exercise.properties.time' })}: {exercise.time}
               {propertyUnits?.time ? `${propertyUnits?.time}` : ''}
             </div>
           )}
           {exercise.tempo && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.tempo' })}:{' '}
-              {exercise.tempo}
+              {intl.formatMessage({ id: 'exercise.properties.tempo' })}: {exercise.tempo}
               {propertyUnits?.tempo ? `${propertyUnits?.tempo}` : ''}
             </div>
           )}
           {exercise.restInterval && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.restInterval' })}:{' '}
-              {exercise.restInterval}
-              {propertyUnits?.restInterval
-                ? `${propertyUnits?.restInterval}`
-                : ''}
+              {intl.formatMessage({ id: 'exercise.properties.restInterval' })}: {exercise.restInterval}
+              {propertyUnits?.restInterval ? `${propertyUnits?.restInterval}` : ''}
             </div>
           )}
           {exercise.difficulty && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.difficulty' })}:{' '}
-              {exercise.difficulty}
+              {intl.formatMessage({ id: 'exercise.properties.difficulty' })}: {exercise.difficulty}
               {propertyUnits?.difficulty ? `${propertyUnits?.difficulty}` : ''}
             </div>
           )}
           {exercise.distance && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.distance' })}:{' '}
-              {exercise.distance}
+              {intl.formatMessage({ id: 'exercise.properties.distance' })}: {exercise.distance}
               {propertyUnits?.distance ? `${propertyUnits?.distance}` : ''}
             </div>
           )}
           {exercise.duration && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.duration' })}:{' '}
-              {exercise.duration}
+              {intl.formatMessage({ id: 'exercise.properties.duration' })}: {exercise.duration}
               {propertyUnits?.duration ? `${propertyUnits?.duration}` : ''}
             </div>
           )}
 
           {exercise.notes && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.notes' })}:{' '}
-              {exercise.notes}
+              {intl.formatMessage({ id: 'exercise.properties.notes' })}: {exercise.notes}
             </div>
           )}
         </div>
@@ -340,10 +287,7 @@ export default function NewPlanDetail({
   );
 
   const renderExerciseDetailsWithFeedback = (exercise) => (
-    <div
-      className="flex flex-column md:flex-row align-items-center mb-3"
-      key={exercise.id}
-    >
+    <div className="flex flex-column md:flex-row align-items-center mb-3" key={exercise.id}>
       {/* Detalles del ejercicio */}
       <div className="w-full md:w-4 mb-2 md:mb-0">
         <div className="mr-2 flex-shrink-0">
@@ -373,62 +317,52 @@ export default function NewPlanDetail({
         <div className="grid">
           {exercise.repetitions && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.reps' })}:{' '}
-              {exercise.repetitions}
+              {intl.formatMessage({ id: 'exercise.properties.reps' })}: {exercise.repetitions}
             </div>
           )}
           {exercise.weight && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.weight' })}:{' '}
-              {exercise.weight}
+              {intl.formatMessage({ id: 'exercise.properties.weight' })}: {exercise.weight}
             </div>
           )}
           {exercise.time && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.time' })}:{' '}
-              {exercise.time}
+              {intl.formatMessage({ id: 'exercise.properties.time' })}: {exercise.time}
             </div>
           )}
           {exercise.tempo && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.tempo' })}:{' '}
-              {exercise.tempo}
+              {intl.formatMessage({ id: 'exercise.properties.tempo' })}: {exercise.tempo}
             </div>
           )}
           {exercise.restInterval && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.restInterval' })}:{' '}
-              {exercise.restInterval}
+              {intl.formatMessage({ id: 'exercise.properties.restInterval' })}: {exercise.restInterval}
             </div>
           )}
           {exercise.difficulty && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.difficulty' })}:{' '}
-              {exercise.difficulty}
+              {intl.formatMessage({ id: 'exercise.properties.difficulty' })}: {exercise.difficulty}
             </div>
           )}
           {exercise.notes && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.notes' })}:{' '}
-              {exercise.notes}
+              {intl.formatMessage({ id: 'exercise.properties.notes' })}: {exercise.notes}
             </div>
           )}
           {exercise.distance && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.distance' })}:{' '}
-              {exercise.distance}
+              {intl.formatMessage({ id: 'exercise.properties.distance' })}: {exercise.distance}
             </div>
           )}
           {exercise.duration && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.duration' })}:{' '}
-              {exercise.duration}
+              {intl.formatMessage({ id: 'exercise.properties.duration' })}: {exercise.duration}
             </div>
           )}
           {exercise.sets && (
             <div className="col-6 md:col-3">
-              {intl.formatMessage({ id: 'exercise.properties.sets' })}:{' '}
-              {exercise.sets}
+              {intl.formatMessage({ id: 'exercise.properties.sets' })}: {exercise.sets}
             </div>
           )}
         </div>
@@ -437,9 +371,7 @@ export default function NewPlanDetail({
       <div className="w-full md:w-12 ">
         <div className="grid">
           {exercise.completed ? (
-            <div className="col-3 md:col-3 w-2">
-              {intl.formatMessage({ id: 'exercise.properties.completed' })}
-            </div>
+            <div className="col-3 md:col-3 w-2">{intl.formatMessage({ id: 'exercise.properties.completed' })}</div>
           ) : exercise.completedNotAsPlanned ? (
             <div className="col-3 md:col-3 w-2">
               {intl.formatMessage({
@@ -447,9 +379,7 @@ export default function NewPlanDetail({
               })}
             </div>
           ) : (
-            <div className="col-3 md:col-3 w-2">
-              {intl.formatMessage({ id: 'exercise.properties.notCompleted' })}
-            </div>
+            <div className="col-3 md:col-3 w-2">{intl.formatMessage({ id: 'exercise.properties.notCompleted' })}</div>
           )}
           {exercise.rpe && rpeMethods.length > 0 && (
             <div className="col-3 md:col-3 w-2">
@@ -465,8 +395,7 @@ export default function NewPlanDetail({
           )}
           {exercise.comments && (
             <div className="col-6 md:col-3 w-8">
-              {intl.formatMessage({ id: 'exercise.properties.comments' })}:{' '}
-              {exercise.comments}
+              {intl.formatMessage({ id: 'exercise.properties.comments' })}: {exercise.comments}
             </div>
           )}
           <div>{renderSetLogs(exercise.setLogs)}</div>
@@ -523,53 +452,37 @@ export default function NewPlanDetail({
             </div>
           )}
           {user.userType === 'client' && workoutPlan.status === 'pending' && (
-            <Button
-              label="Start Workout"
-              icon="pi pi-play"
-              className="p-button-success"
-              onClick={handleStartWorkout}
-            />
+            <Button label="Start Workout" icon="pi pi-play" className="p-button-success" onClick={handleStartWorkout} />
           )}
         </div>
         {!isTemplate && (
           <p>
-            <strong>{intl.formatMessage({ id: 'common.status' })}:</strong>{' '}
-            {workoutPlan.status}
+            <strong>{intl.formatMessage({ id: 'common.status' })}:</strong> {workoutPlan.status}
             {workoutPlan.status === 'completed' && (
               <>
                 <p className="">
-                  {intl.formatMessage({ id: 'common.completedOn' })}:{' '}
-                  {formatDate(workoutPlan.feedback.realEndDate)}
+                  {intl.formatMessage({ id: 'common.completedOn' })}: {formatDate(workoutPlan.feedback.realEndDate)}
                 </p>
                 <p className="">
-                  {intl.formatMessage({ id: 'common.sessionTime' })}:{' '}
-                  {workoutPlan.feedback.sessionTime}
+                  {intl.formatMessage({ id: 'common.sessionTime' })}: {workoutPlan.feedback.sessionTime}
                 </p>
                 <p className="">
-                  {intl.formatMessage({ id: 'common.feedback' })}:{' '}
-                  {workoutPlan.feedback.generalFeedback}
+                  {intl.formatMessage({ id: 'common.feedback' })}: {workoutPlan.feedback.generalFeedback}
                 </p>
                 <p className="">
                   {intl.formatMessage({ id: 'common.mood' })}:{' '}
-                  {workoutPlan.feedback.mood
-                    ? `${workoutPlan.feedback.mood}/10`
-                    : '-'}
+                  {workoutPlan.feedback.mood ? `${workoutPlan.feedback.mood}/10` : '-'}
                 </p>
                 <p className="">
                   {intl.formatMessage({ id: 'common.energyLevel' })}:{' '}
-                  {workoutPlan.feedback.energyLevel
-                    ? `${workoutPlan.feedback.energyLevel}/10`
-                    : '-'}
+                  {workoutPlan.feedback.energyLevel ? `${workoutPlan.feedback.energyLevel}/10` : '-'}
                 </p>
                 <p className="">
                   {intl.formatMessage({ id: 'common.perceivedDifficulty' })}:{' '}
-                  {workoutPlan.feedback.perceivedDifficulty
-                    ? `${workoutPlan.feedback.perceivedDifficulty}/10`
-                    : '-'}
+                  {workoutPlan.feedback.perceivedDifficulty ? `${workoutPlan.feedback.perceivedDifficulty}/10` : '-'}
                 </p>
                 <p className="">
-                  {intl.formatMessage({ id: 'common.extraNotes' })}:{' '}
-                  {workoutPlan.feedback.extraNotes}
+                  {intl.formatMessage({ id: 'common.extraNotes' })}: {workoutPlan.feedback.extraNotes}
                 </p>
               </>
             )}
@@ -579,60 +492,48 @@ export default function NewPlanDetail({
 
       <Accordion>
         {workoutPlan.groups.map((group) => {
-          const allExercisesCompleted = group.exercises.every(
-            (exercise) => exercise.completed || exercise.completedNotAsPlanned
-          );
+          const allExercisesCompleted = group.exercises.every((ex) => ex.completed || ex.completedNotAsPlanned);
           return (
             <AccordionTab
-              key={group.groupNumber}
+              key={group.id || group.groupNumber}
               header={
-                <>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}
-                  >
-                    {group.name
-                      ? group.name
-                      : `${intl.formatMessage({ id: 'common.group' })} ${group.groupNumber}`}
-                    {!workoutPlan.isTemplate &&
-                      workoutPlan.status === 'completed' && (
-                        <span
-                          className="ml-2"
-                          style={{
-                            color: allExercisesCompleted ? 'green' : 'orange',
-                            fontSize: '1.2rem'
-                          }}
-                        >
-                          {allExercisesCompleted ? (
-                            <i
-                              className="pi pi-check-circle"
-                              style={{ color: 'green', fontSize: '1.2rem' }}
-                            />
-                          ) : (
-                            <i
-                              className="pi pi-times-circle"
-                              style={{ color: 'red', fontSize: '1.2rem' }}
-                            />
-                          )}
-                        </span>
-                      )}
+                <div className="flex justify-content-between align-items-center">
+                  <div className="flex align-items-center">
+                    {group.isRestPeriod ? (
+                      <h3 className="text-xl m-0">
+                        <FormattedMessage id="plan.group.restPeriod" />
+                      </h3>
+                    ) : (
+                      <h3 className="text-xl m-0">
+                        {group.name
+                          ? group.name
+                          : intl.formatMessage({ id: 'common.group' }, { number: group.groupNumber })}{' '}
+                        {group.groupNumber}
+                      </h3>
+                    )}
                   </div>
-                </>
+                  {!workoutPlan.isTemplate && workoutPlan.status === 'completed' && (
+                    <span
+                      className="ml-2"
+                      style={{
+                        color: allExercisesCompleted ? 'green' : 'red',
+                        fontSize: '1.2rem'
+                      }}
+                    >
+                      {allExercisesCompleted ? (
+                        <i className="pi pi-check-circle" style={{ color: 'green' }} />
+                      ) : (
+                        <i className="pi pi-times-circle" style={{ color: 'red' }} />
+                      )}
+                    </span>
+                  )}
+                </div>
               }
             >
-              {/* <p>Sets: {group.set}</p> */}
-              {/* <p>Rest between sets: {group.rest} sec</p> */}
-              {/* {group.name && <p>Group name: {group.name}</p>} */}
               {group.isRestPeriod && (
                 <p>
-                  {intl.formatMessage({ id: 'plan.group.restPeriod' })}:{' '}
-                  {group.restDuration}{' '}
-                  {propertyUnits?.restInterval
-                    ? `${propertyUnits?.restInterval}`
-                    : ''}
+                  {intl.formatMessage({ id: 'plan.group.restPeriod' })}: {group.restDuration}{' '}
+                  {propertyUnits?.restInterval ? `${propertyUnits?.restInterval}` : ''}
                 </p>
               )}
               {group.exercises.map((exercise) =>
@@ -645,22 +546,7 @@ export default function NewPlanDetail({
         })}
       </Accordion>
 
-      <Dialog
-        header="Exercise Video"
-        visible={videoDialogVisible}
-        style={{ width: '70vw' }}
-        onHide={() => setVideoDialogVisible(false)}
-      >
-        <iframe
-          width="100%"
-          height="400"
-          src={selectedVideo}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title="Exercise Video"
-        ></iframe>
-      </Dialog>
+      <VideoDialog visible={videoDialogVisible} onHide={() => setVideoDialogVisible(false)} videoUrl={selectedVideo} />
     </div>
   );
 }

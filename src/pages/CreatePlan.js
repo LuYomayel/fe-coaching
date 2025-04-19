@@ -29,6 +29,7 @@ import { extractYouTubeVideoId } from '../utils/UtilFunctions';
 import { fetchCoachExercises, createExercises } from '../services/exercisesService';
 import { InputNumber } from 'primereact/inputnumber';
 import { ButtonGroup } from 'primereact/buttongroup';
+import VideoDialog from '../dialogs/VideoDialog';
 const CreatePlan = ({ isEdit }) => {
   const intl = useIntl();
   const { state, pathname } = useLocation();
@@ -1471,26 +1472,7 @@ const CreatePlan = ({ isEdit }) => {
         ))}
       </Dialog>
 
-      <Dialog
-        header={intl.formatMessage({ id: 'exercise.video.view' })}
-        visible={videoDialogVisible}
-        style={{ width: '70vw' }}
-        onHide={() => setVideoDialogVisible(false)}
-        dismissableMask
-        draggable={false}
-        resizable={false}
-        className="responsive-dialog"
-      >
-        <iframe
-          width="100%"
-          height="400"
-          src={selectedVideo}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title="Exercise Video"
-        ></iframe>
-      </Dialog>
+      <VideoDialog visible={videoDialogVisible} onHide={() => setVideoDialogVisible(false)} videoUrl={selectedVideo} />
     </div>
   );
 };

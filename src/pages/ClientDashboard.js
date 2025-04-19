@@ -186,19 +186,21 @@ export default function ClientDashboard() {
         showToast('error', 'Error fetching client data', error.message);
       });
 
-    // Cargar plantillas de ciclos de entrenamiento
-    fetchTrainingCyclesTemplates(clientData?.coach?.id || null)
-      .then((response) => {
-        if (response.message === 'success') {
-          setTrainingCycleTemplates(response.data);
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching training cycle templates:', error);
-      });
     // eslint-disable-next-line
   }, [clientId, refreshKey]);
 
+  useEffect(() => {
+    if (clientData) {
+      fetchTrainingCyclesTemplates(clientData?.coach?.id || null)
+        .then((response) => {
+          setTrainingCycleTemplates(response.data);
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching training cycle templates:', error);
+        });
+    }
+  }, [clientData?.coach?.id, refreshKey]);
   // Update chart data when selectedExercise changes
   useEffect(() => {
     if (selectedExercise) {
@@ -991,17 +993,36 @@ export default function ClientDashboard() {
               <div className="cycle-info mt-2">
                 <div className="cycle-name">{selectedCycleTemplate.name}</div>
                 <div className="cycle-details">
-                  <p className="m-0 text-sm">
-                    {selectedCycleTemplate.duration}{' '}
-                    {selectedCycleTemplate.isDurationInMonths
-                      ? intl.formatMessage({ id: 'common.months' })
-                      : intl.formatMessage({ id: 'common.weeks' })}{' '}
-                    (
-                    {selectedCycleTemplate.isDurationInMonths
-                      ? selectedCycleTemplate.duration * 4
-                      : selectedCycleTemplate.duration}{' '}
-                    {intl.formatMessage({ id: 'common.weeks' })})
-                  </p>
+                  <div className="m-0 text-sm flex gap-2">
+                    <div className="m-0 text-sm">
+                      {selectedCycleTemplate.duration}{' '}
+                      {selectedCycleTemplate.isDurationInMonths
+                        ? intl.formatMessage({ id: 'common.months' })
+                        : intl.formatMessage({ id: 'common.weeks' })}{' '}
+                      (
+                      {selectedCycleTemplate.isDurationInMonths
+                        ? selectedCycleTemplate.duration * 4
+                        : selectedCycleTemplate.duration}{' '}
+                      {intl.formatMessage({ id: 'common.weeks' })})
+                    </div>
+                    <div>
+                      <p>/</p>
+                    </div>
+
+                    <div className="m-0 text-sm">
+                      {selectedCycleTemplate.trainingWeeks?.[0]?.trainingSessions?.length || 0}{' '}
+                      {intl.formatMessage({ id: 'common.workoutsPerWeek' })}
+                    </div>
+                  </div>
+
+                  <div className="cycle-workouts mt-2 flex flex-wrap gap-2">
+                    {selectedCycleTemplate.trainingWeeks?.[0]?.trainingSessions?.map((session, index) => (
+                      <p key={index} className="m-0 text-sm">
+                        {session.workoutInstances?.[0]?.workout?.planName || session.workout?.planName}{' '}
+                        {index !== selectedCycleTemplate.trainingWeeks?.[0]?.trainingSessions?.length - 1 && ', '}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

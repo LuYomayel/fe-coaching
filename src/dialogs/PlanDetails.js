@@ -17,6 +17,7 @@ import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl';
+import VideoDialog from './VideoDialog';
 
 export default function NewPlanDetailHorizontal({
   planId,
@@ -583,26 +584,7 @@ export default function NewPlanDetailHorizontal({
         })}
       </div>
 
-      <Dialog
-        header={intl.formatMessage({ id: 'exercise.video.view' })}
-        visible={videoDialogVisible}
-        style={{ width: '70vw' }}
-        onHide={() => setVideoDialogVisible(false)}
-        dismissableMask
-        draggable={false}
-        resizable={false}
-        className="responsive-dialog"
-      >
-        <iframe
-          width="100%"
-          height="400"
-          src={selectedVideo}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title="Exercise Video"
-        ></iframe>
-      </Dialog>
+      <VideoDialog visible={videoDialogVisible} onHide={() => setVideoDialogVisible(false)} videoUrl={selectedVideo} />
     </div>
   );
 }

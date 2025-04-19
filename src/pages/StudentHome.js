@@ -52,10 +52,10 @@ export default function StudentHome() {
       }
     };
 
-    if (user.userId && client) {
+    if (user && client) {
       fetchData();
     }
-  }, [user.userId, client, refreshKey]);
+  }, [user, client, refreshKey]);
 
   const handleViewWorkoutDetails = (workoutId) => {
     setSelectedPlan(workoutId);

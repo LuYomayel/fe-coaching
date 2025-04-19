@@ -123,13 +123,12 @@ export default function StudentCalendar() {
       console.log(data);
     };
 
-    console.log(user.userId);
-    if (user.userId && client) {
+    if (user && client) {
       fetchTrainingData();
       fetchClientRacha();
     }
     // eslint-disable-next-line
-  }, [user.userId, client, refreshKey]);
+  }, [user, client, refreshKey]);
 
   const handleViewWorkoutDetails = (workoutInstanceId) => {
     setSelectedPlan(workoutInstanceId);

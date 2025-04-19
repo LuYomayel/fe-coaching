@@ -13,9 +13,10 @@ import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { jwtDecode } from 'jwt-decode';
-import { fetchClient, fetchCoach } from '../services/usersService';
+import { fetchClient, fetchCoach, registerCoach, login } from '../services/usersService';
 import { fetchCoachSubscriptionPlans } from '../services/subscriptionService';
 import { useIntl, FormattedMessage } from 'react-intl';
+import VerificationCodeDialog from '../dialogs/VerificationCodeDialog';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 export default function HomePage() {
@@ -27,7 +28,8 @@ export default function HomePage() {
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    userType: 'coach'
   });
   const [loginErrors, setLoginErrors] = useState({ email: '', password: '' });
   const [signUpErrors, setSignUpErrors] = useState({
@@ -47,13 +49,15 @@ export default function HomePage() {
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
 
+  const [verificationDialogVisible, setVerificationDialogVisible] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       const decodedToken = jwtDecode(token);
 
       if (!decodedToken.isVerified) {
-        // showToast('error', 'Verify your email prior to logging in!', 'Check your email to verify it, please');
         showToast(
           'error',
           intl.formatMessage({ id: 'common.error' }),
@@ -129,31 +133,23 @@ export default function HomePage() {
     if (validateLoginForm()) {
       setLoading(true);
       try {
-        const response = await fetch(`${apiUrl}/auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: loginForm.email,
-            password: loginForm.password
-          })
-        });
-        const loginData = await response.json();
-        if (loginData.message !== 'success') {
-          throw new Error(loginData.message || 'Something went wrong');
-        }
+        const { data: loginData } = await login(loginForm);
+        console.log(loginData);
         setLoading(false);
-        if (loginData.data.access_token) {
-          localStorage.setItem('token', loginData.data.access_token);
-          const decodedToken = jwtDecode(loginData.data.access_token);
+        if (loginData.access_token) {
+          console.log('loginData.access_token', loginData.access_token);
+          localStorage.setItem('token', loginData.access_token);
+          const decodedToken = jwtDecode(loginData.access_token);
           setUser(decodedToken);
           console.log(decodedToken);
           if (!decodedToken.isVerified) {
+            setRegisteredEmail(loginForm.email);
+            setVerificationDialogVisible(true);
+            setLoginVisible(false);
             showToast(
               'error',
-              `${intl.formatMessage({ id: 'home.error.verifyEmail' })}`,
-              `${intl.formatMessage({ id: 'home.error.checkEmail' })}`
+              intl.formatMessage({ id: 'common.error' }),
+              intl.formatMessage({ id: 'home.error.verifyEmail' })
             );
           } else {
             if (decodedToken.userType === 'coach') {
@@ -186,32 +182,34 @@ export default function HomePage() {
     if (validateSignUpForm()) {
       setLoading(true);
       try {
-        const response = await fetch(`${apiUrl}/auth/signUp`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: signUpForm.email,
-            password: signUpForm.password
-          })
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Something went wrong');
+        const response = await registerCoach(signUpForm);
+        console.log(response);
+        if (response.message !== 'success') {
+          throw new Error(response.message || 'Something went wrong');
         } else {
+          console.log(response.data);
           setLoading(false);
-          showToast(
-            'success',
-            intl.formatMessage({ id: 'common.success' }),
-            intl.formatMessage({ id: 'home.success.checkEmail' })
-          );
+          setRegisteredEmail(signUpForm.email);
+          setVerificationDialogVisible(true);
+          setSignUpVisible(false);
+          showToast('success', 'Success', intl.formatMessage({ id: 'signup.success' }));
         }
       } catch (error) {
-        showToast('error', 'Error', error.message);
+        console.log(error);
+        showToast('error', 'Error', error);
         setLoading(false);
       }
     }
+  };
+
+  const handleVerificationSuccess = () => {
+    setSignUpForm({
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      userType: 'coach'
+    });
   };
 
   const scrollToSection = (sectionRef) => {
@@ -639,6 +637,12 @@ export default function HomePage() {
       <footer>{renderFooter()}</footer>
       {renderLoginDialog()}
       {renderSignUpDialog()}
+      <VerificationCodeDialog
+        visible={verificationDialogVisible}
+        onHide={() => setVerificationDialogVisible(false)}
+        email={registeredEmail}
+        onVerificationSuccess={handleVerificationSuccess}
+      />
     </div>
   );
 }

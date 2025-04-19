@@ -13,7 +13,7 @@ import {
   findAllWorkoutTemplatesByCoachId,
   fetchTrainingCycleTemplateById,
   updateTrainingCycle,
-  deleteTrainingCycle,
+  deleteTrainingCycleTemplate,
   assignCycleTemplateToClient,
   fetchDeletedWorkoutTemplatesByCoachId
 } from '../services/workoutService';
@@ -72,6 +72,16 @@ export default function PlansPage() {
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+
+  const [datesOfWeek, setDatesOfWeek] = useState([
+    { label: intl.formatMessage({ id: 'plansPage.monday' }), value: 1 },
+    { label: intl.formatMessage({ id: 'plansPage.tuesday' }), value: 2 },
+    { label: intl.formatMessage({ id: 'plansPage.wednesday' }), value: 3 },
+    { label: intl.formatMessage({ id: 'plansPage.thursday' }), value: 4 },
+    { label: intl.formatMessage({ id: 'plansPage.friday' }), value: 5 },
+    { label: intl.formatMessage({ id: 'plansPage.saturday' }), value: 6 },
+    { label: intl.formatMessage({ id: 'plansPage.sunday' }), value: 7 }
+  ]);
 
   useEffect(() => {
     const fetchDeletedWorkoutTemplates = async () => {
@@ -449,7 +459,7 @@ export default function PlansPage() {
       accept: async () => {
         setLoading(true);
         try {
-          await deleteTrainingCycle(cycleTemplateId);
+          await deleteTrainingCycleTemplate(cycleTemplateId);
           setRefreshKey((prev) => prev + 1);
         } catch (error) {
           console.error('Error deleting cycle template:', error);
@@ -789,15 +799,7 @@ export default function PlansPage() {
                     <div className="w-full md:w-6">
                       <Dropdown
                         value={selectedDay}
-                        options={[
-                          { label: intl.formatMessage({ id: 'plansPage.monday' }), value: 1 },
-                          { label: intl.formatMessage({ id: 'plansPage.tuesday' }), value: 2 },
-                          { label: intl.formatMessage({ id: 'plansPage.wednesday' }), value: 3 },
-                          { label: intl.formatMessage({ id: 'plansPage.thursday' }), value: 4 },
-                          { label: intl.formatMessage({ id: 'plansPage.friday' }), value: 5 },
-                          { label: intl.formatMessage({ id: 'plansPage.saturday' }), value: 6 },
-                          { label: intl.formatMessage({ id: 'plansPage.sunday' }), value: 7 }
-                        ]}
+                        options={datesOfWeek}
                         onChange={(e) => setSelectedDay(e.value)}
                         placeholder={intl.formatMessage({ id: 'plansPage.selectDay' })}
                         disabled={isReadOnly}
@@ -834,7 +836,7 @@ export default function PlansPage() {
                         <li key={i} className="flex align-items-center">
                           <span>
                             🏋️ {workout?.planName || intl.formatMessage({ id: 'plansPage.workout' })} -{' '}
-                            {intl.formatMessage({ id: 'plansPage.day' })} {session.dayNumber}
+                            {datesOfWeek.find((d) => d.value === session.dayNumber)?.label}
                           </span>
                           <Button
                             icon="pi pi-trash"

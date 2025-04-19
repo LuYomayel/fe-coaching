@@ -61,9 +61,11 @@ const messages = {
   'common.years': 'años',
   'common.months': 'meses',
   'common.weeks': 'semanas',
+  'common.workoutsPerWeek': 'entrenamientos por semana',
   'common.startDate': 'Fecha de Inicio',
   'common.endDate': 'Fecha de Fin',
   'common.comingSoon': 'Próximamente',
+  'common.all': 'Todos',
 
   'home.success.checkEmail': '¡Revisa tu correo para continuar!',
   // Mensajes de confirmacion
@@ -340,6 +342,10 @@ const messages = {
   'workout.status.expired': 'Expirado',
   'studentHome.dialog.planDetails': 'Detalles del Plan',
   'studentHome.noEvents': 'No hay sesiones de entrenamiento programadas',
+  'studentHome.calendar.title': 'Calendario de Entrenamientos',
+  'studentHome.calendar.filterMonth': 'Filtrar por mes',
+  'studentHome.calendar.viewDetails': 'Ver detalles',
+  'studentHome.calendar.startTraining': 'Comenzar Entrenamiento',
 
   // Meses (si no existen ya)
   'months.january': 'Enero',
@@ -727,8 +733,18 @@ const messages = {
   'home.toast.error': 'Error',
   'home.toast.success': 'Éxito',
 
-  'home.error.verifyEmail': '¡Verifica tu correo antes de iniciar sesión!',
+  'home.error.verifyEmail': '¡Verifica tu correo electrónico antes de iniciar sesión!',
   'home.error.checkEmail': '¡Revisa tu correo para continuar!',
+  'home.verification.title': 'Verificación de Correo',
+  'home.verification.message': 'Por favor ingresa el código de verificación enviado a {email}',
+  'home.verification.code': 'Código de verificación',
+  'home.verification.verify': 'Verificar',
+  'home.verification.success': '¡Correo verificado exitosamente!',
+  'home.verification.error': 'Error al verificar el correo',
+  'home.verification.error.invalidCode': 'Código de verificación inválido',
+  'home.verification.resend': 'Reenviar código',
+  'home.verification.resendSuccess': '¡Código de verificación reenviado exitosamente!',
+  'home.verification.resendError': 'Error al reenviar el código de verificación',
 
   // ResetPassword
   'resetPassword.title': 'Restablecer Contraseña',
@@ -955,30 +971,52 @@ const messages = {
   'coach.rpe.emoji': 'Emoji (ej., 🔥)',
 
   // AssignWorkoutToCycleDialog
-  'assignWorkoutToCycleDialog.cycle': 'Ciclo',
-  'assignWorkoutToCycleDialog.assignWorkouts': 'Asignar Entrenamientos',
-  'assignWorkoutToCycleDialog.unassignWorkouts': 'Desasignar Entrenamientos',
-  'assignWorkoutToCycleDialog.addAssignment': 'Agregar Asignación',
+  'assignWorkoutToCycleDialog.unassignByDay': 'Desasignar por día',
+  'assignWorkoutToCycleDialog.deleteEntireCycle': 'Eliminar ciclo completo',
+  'assignWorkoutToCycleDialog.selectCycle': 'Seleccionar Ciclo',
+  'assignWorkoutToCycleDialog.selectDay': 'Seleccionar Día',
+  'assignWorkoutToCycleDialog.selectWorkout': 'Seleccionar Entrenamiento',
   'assignWorkoutToCycleDialog.assignWorkoutsToCycle': 'Asignar Entrenamientos al Ciclo',
   'assignWorkoutToCycleDialog.unassignWorkoutsFromCycle': 'Desasignar Entrenamientos del Ciclo',
-  'assignWorkoutToCycleDialog.selectCycle': 'Seleccionar Ciclo',
-  'assignWorkoutToCycleDialog.selectDayOfWeek': 'Seleccionar Día de la Semana',
-  'assignWorkoutToCycleDialog.selectWorkout': 'Seleccionar Entrenamiento',
-  'assignWorkoutToCycleDialog.selectWorkoutToUnassign': 'Seleccionar Entrenamiento para Desasignar',
-  'assignWorkoutToCycleDialog.error.selectWorkoutAndDay':
-    'Por favor, selecciona un entrenamiento y un día de la semana para la última asignación.',
-  'assignWorkoutToCycleDialog.error.selectAtLeastOneWorkout': 'Por favor, selecciona al menos un entrenamiento.',
-  'assignWorkoutToCycleDialog.dayOfWeek': 'Día de la Semana',
-  'assignWorkoutToCycleDialog.success.assign': 'Éxito',
-  'assignWorkoutToCycleDialog.success.assign.detail': 'Entrenamientos asignados al ciclo exitosamente',
-  'assignWorkoutToCycleDialog.error.assign': 'Error',
-  'assignWorkoutToCycleDialog.error.assign.detail': 'No se asignaron entrenamientos',
-  'assignWorkoutToCycleDialog.success.unassign': 'Éxito',
-  'assignWorkoutToCycleDialog.success.unassign.detail': 'Entrenamientos desasignados del ciclo exitosamente',
-  'assignWorkoutToCycleDialog.error.unassign': 'Error',
-  'assignWorkoutToCycleDialog.error.unassign.detail':
-    'No se desasignaron entrenamientos porque están siendo utilizados por un cliente',
+  'assignWorkoutToCycleDialog.cycle': 'Ciclo',
+  'assignWorkoutToCycleDialog.day': 'Día',
+  'assignWorkoutToCycleDialog.workout': 'Entrenamiento',
+  'assignWorkoutToCycleDialog.assign': 'Asignar',
+  'assignWorkoutToCycleDialog.unassign': 'Desasignar',
+  'assignWorkoutToCycleDialog.error.assign': 'Error al Asignar',
+  'assignWorkoutToCycleDialog.error.assign.detail': 'Ocurrió un error al asignar los entrenamientos al ciclo.',
+  'assignWorkoutToCycleDialog.success.assign': 'Entrenamientos Asignados',
+  'assignWorkoutToCycleDialog.success.assign.detail': 'Los entrenamientos han sido asignados exitosamente al ciclo.',
+  'assignWorkoutToCycleDialog.error.unassign': 'Error al Desasignar',
+  'assignWorkoutToCycleDialog.error.unassign.detail': 'Ocurrió un error al desasignar los entrenamientos del ciclo.',
+  'assignWorkoutToCycleDialog.success.unassign': 'Entrenamientos Desasignados',
+  'assignWorkoutToCycleDialog.success.unassign.detail':
+    'Los entrenamientos han sido desasignados exitosamente del ciclo.',
+  'assignWorkoutToCycleDialog.deleteCycle': 'Eliminar Ciclo',
+  'assignWorkoutToCycleDialog.warningTitle': 'Advertencia',
+  'assignWorkoutToCycleDialog.cancel': 'Cancelar',
+  'assignWorkoutToCycleDialog.confirm': 'Confirmar',
+  'assignWorkoutToCycleDialog.verificationTitle': 'Verificación de Eliminación',
+  'assignWorkoutToCycleDialog.warningMessage':
+    'Este ciclo de entrenamiento tiene {count} registros de retroalimentación que se perderán al eliminarlo.',
+  'assignWorkoutToCycleDialog.forceDelete': 'Forzar eliminación y perder todos los registros',
+  'assignWorkoutToCycleDialog.safeToDelete': 'Este ciclo puede ser eliminado de forma segura.',
   'assignWorkoutToCycleDialog.assignment': 'Asignación',
+  'assignWorkoutToCycleDialog.selectDayOfWeek': 'Seleccionar Día de la Semana',
+  'assignWorkoutToCycleDialog.addAssignment': 'Agregar Asignación',
+  'assignWorkoutToCycleDialog.assignWorkouts': 'Asignar Entrenamientos',
+  'assignWorkoutToCycleDialog.unassignWorkouts': 'Desasignar Entrenamientos',
+  'assignWorkoutToCycleDialog.success.deleteCycle': 'Ciclo Eliminado',
+  'assignWorkoutToCycleDialog.success.deleteCycle.detail': 'El ciclo ha sido eliminado exitosamente.',
+  'assignWorkoutToCycleDialog.error.deleteCycle': 'Error al Eliminar',
+  'assignWorkoutToCycleDialog.error.deleteCycle.detail': 'Ocurrió un error al eliminar el ciclo.',
+  'assignWorkoutToCycleDialog.error.selectWorkoutAndDay':
+    'Por favor seleccione un entrenamiento y un día de la semana para la última asignación.',
+  'assignWorkoutToCycleDialog.error.selectAtLeastOneWorkout': 'Por favor seleccione al menos un entrenamiento.',
+  'assignWorkoutToCycleDialog.dayOfWeek': 'Día de la Semana',
+  'assignWorkoutToCycleDialog.selectWorkoutToUnassign': 'Seleccionar Entrenamiento a Desasignar',
+  'assignWorkoutToCycleDialog.dependenciesTitle': 'Entrenamientos Dependientes',
+
   // CreateTrainingCycleDialog
   'createCycle.dialog.header': 'Crear Ciclo de Entrenamiento',
   'createCycle.cycleName': 'Nombre del Ciclo',
@@ -1282,6 +1320,17 @@ const messages = {
   'exercise.exerciseType': 'Tipo de Ejercicio',
 
   cancel: 'Cancelar',
-  submit: 'Enviar'
+  submit: 'Enviar',
+
+  // Assign Workout to Cycle Dialog
+  'verification.title': 'Verificación de Correo',
+  'verification.codePlaceholder': 'Ingresa el código de verificación',
+  'verification.code': 'Código de verificación',
+  'verification.verify': 'Verificar',
+  'verification.success': '¡Correo verificado exitosamente!',
+  'verification.error': 'Error al verificar el correo',
+  'verification.error.invalidCode': 'Código de verificación inválido',
+  'verification.resend': 'Reenviar código',
+  'verification.message': 'Por favor ingresa el código de verificación enviado a {email}'
 };
 export default messages;
