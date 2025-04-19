@@ -91,36 +91,48 @@ const ExcelAnalysisDialog = ({ visible, onHide, analysisData, onConfirm, setAnal
   };
 
   const currentDataBodyTemplate = (rowData) => {
+    // Verificar si currentData existe
+    if (!rowData.currentData) {
+      return <div className="data-cell">-</div>;
+    }
+
     return (
       <div className="data-cell">
         <div>
           <strong>{intl.formatMessage({ id: 'exercises.field.description' })}:</strong>{' '}
-          {rowData.currentData.description}
+          {rowData.currentData.description || '-'}
         </div>
         <div>
           <strong>{intl.formatMessage({ id: 'exercises.field.exerciseType' })}:</strong>{' '}
-          {rowData.currentData.exerciseType}
+          {rowData.currentData.exerciseType || '-'}
         </div>
         <div>
           <strong>{intl.formatMessage({ id: 'exercises.field.equipmentNeeded' })}:</strong>{' '}
-          {rowData.currentData.equipmentNeeded}
+          {rowData.currentData.equipmentNeeded || '-'}
         </div>
       </div>
     );
   };
 
   const newDataBodyTemplate = (rowData) => {
+    // Verificar si newData existe
+    if (!rowData.newData) {
+      return <div className="data-cell">-</div>;
+    }
+
     return (
       <div className="data-cell">
         <div>
-          <strong>{intl.formatMessage({ id: 'exercises.field.description' })}:</strong> {rowData.newData.description}
+          <strong>{intl.formatMessage({ id: 'exercises.field.description' })}:</strong>{' '}
+          {rowData.newData.description || '-'}
         </div>
         <div>
-          <strong>{intl.formatMessage({ id: 'exercises.field.exerciseType' })}:</strong> {rowData.newData.exerciseType}
+          <strong>{intl.formatMessage({ id: 'exercises.field.exerciseType' })}:</strong>{' '}
+          {rowData.newData.exerciseType || '-'}
         </div>
         <div>
           <strong>{intl.formatMessage({ id: 'exercises.field.equipmentNeeded' })}:</strong>{' '}
-          {rowData.newData.equipmentNeeded}
+          {rowData.newData.equipmentNeeded || '-'}
         </div>
       </div>
     );
