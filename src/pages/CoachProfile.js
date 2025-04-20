@@ -253,17 +253,6 @@ export default function CoachProfilePage() {
   const navigate = useNavigate();
   const { setLoading } = useSpinner(); // <- spinner function
 
-  const [isWorkoutsLoading, setIsWorkoutsLoading] = useState(true);
-  const [isCoachInfoLoading, setIsCoachInfoLoading] = useState(true);
-  const [isExercisesLoading, setIsExercisesLoading] = useState(true);
-  // eslint-disable-next-line
-  const [isCoachSubscriptionLoading, setIsCoachSubscriptionLoading] = useState(true);
-  // eslint-disable-next-line
-  const [isCoachPlansLoading, setIsCoachPlansLoading] = useState(true);
-  // eslint-disable-next-line
-  const [isBodyAreasLoading, setIsBodyAreasLoading] = useState(true);
-  // eslint-disable-next-line
-  const [isSubscriptionPlansLoading, setIsSubscriptionPlansLoading] = useState(true);
   // State variables
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -399,20 +388,16 @@ export default function CoachProfilePage() {
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
-        setIsWorkoutsLoading(true);
         const { data } = await findAllWorkoutTemplatesByCoachId(coach.id);
         setWorkouts(data);
       } catch (error) {
         console.log('error', error);
         showToast('error', 'Error', error.message);
-      } finally {
-        setIsWorkoutsLoading(false);
       }
     };
 
     const fetchCoachInfo = async () => {
       try {
-        setIsCoachInfoLoading(true);
         const { data } = await fetchCoach(user.userId);
         setCoachInfo(data);
       } catch (error) {
@@ -420,41 +405,32 @@ export default function CoachProfilePage() {
           navigate('/complete-coach-profile');
         }
         showToast('error', 'Error', error.message);
-      } finally {
-        setIsCoachInfoLoading(false);
       }
     };
 
     const fetchCoachSubscriptionData = async () => {
       try {
-        setIsCoachSubscriptionLoading(true);
         const { data } = await fetchCoachSubscription(coach.id);
         setCurrentPlanId(data.subscriptionPlan.id);
       } catch (error) {
         console.log('error', error);
         showToast('error', 'Error', error.message);
-      } finally {
-        setIsCoachSubscriptionLoading(false);
       }
     };
 
     const fetchCoachPlansData = async () => {
       try {
-        setIsCoachPlansLoading(true);
         const { data } = await fetchCoachPlans(user.userId);
 
         setCoachPlans(data);
       } catch (error) {
         console.log('error', error);
         showToast('error', 'Error', error.message);
-      } finally {
-        setIsCoachPlansLoading(false);
       }
     };
 
     const fetchExercises = async () => {
       try {
-        setIsExercisesLoading(true);
         const { data } = await fetchCoachExercises(coach.id);
         if (data.error) {
           throw new Error(data.message || 'Something went wrong');
@@ -469,14 +445,11 @@ export default function CoachProfilePage() {
       } catch (error) {
         console.error('error', error);
         showToast('error', 'Error', error.message);
-      } finally {
-        setIsExercisesLoading(false);
       }
     };
 
     const fetchBodyAreasData = async () => {
       try {
-        setIsBodyAreasLoading(true);
         const { data } = await fetchBodyAreas();
         if (data.error) {
           throw new Error(data.message || 'Something went wrong');
@@ -489,21 +462,16 @@ export default function CoachProfilePage() {
       } catch (error) {
         console.log('error', error);
         showToast('error', 'Error', error.message);
-      } finally {
-        setIsBodyAreasLoading(false);
       }
     };
 
     const fetchSubscriptionPlans = async () => {
       try {
-        setIsSubscriptionPlansLoading(true);
         const { data } = await fetchCoachSubscriptionPlans();
         setSubscriptionPlans(data);
       } catch (error) {
         console.log('error', error);
         showToast('error', 'Error', error.message);
-      } finally {
-        setIsSubscriptionPlansLoading(false);
       }
     };
 
@@ -2586,7 +2554,7 @@ export default function CoachProfilePage() {
                   style={{ width: '150px' }}
                 />
               </DataTable>
-            </Card>
+        </Card>
           </div>
         </TabPanel>
         */}
@@ -2730,13 +2698,15 @@ export default function CoachProfilePage() {
         />
       </Dialog>
 
-      <ExcelAnalysisDialog
-        visible={analysisDialogVisible}
-        onHide={handleAnalysisCancel}
-        analysisData={analysisData}
-        onConfirm={handleAnalysisConfirm}
-        setAnalysisData={setAnalysisData}
-      />
+      {analysisDialogVisible && (
+        <ExcelAnalysisDialog
+          visible={analysisDialogVisible}
+          onHide={handleAnalysisCancel}
+          analysisData={analysisData}
+          onConfirm={handleAnalysisConfirm}
+          setAnalysisData={setAnalysisData}
+        />
+      )}
     </div>
   );
 }

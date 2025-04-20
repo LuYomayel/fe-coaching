@@ -5,7 +5,7 @@ import { ThemeProvider } from './utils/ThemeContext';
 import { ToastProvider } from './utils/ToastContext';
 import { UserProvider } from './utils/UserContext.js';
 import { ConfirmationDialogProvider } from './utils/ConfirmationDialogContext.js';
-import { SpinnerProvider } from './utils/GlobalSpinner.js';
+import { SpinnerProvider, useSpinner } from './utils/GlobalSpinner.js';
 import Sidebar from './components/Sidebar.js';
 import Unauthorized from './components/Unauthorized.js';
 import PrivateRoute from './auth/PrivateRoute.js';
@@ -27,13 +27,12 @@ import StudentHome from './pages/StudentHome.js';
 import ClientProfile from './pages/ClientProfile.js';
 import TrainingPlanDetails from './pages/TrainingPlanDetails.js';
 import PlanDetail from './dialogs/PlanDetails.js';
-import BodyContainer from './utils/BodyContainer.js';
+
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { NotificationProvider } from './utils/NotificationsContext.js';
 import Settings from './pages/Settings.js';
 import StudentCalendar from './pages/StudentCalendar';
-import TrainingSession from './pages/TrainingSession.js';
 
 const stripePromise = await loadStripe(
   'pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq'

@@ -5,7 +5,7 @@ import LogoLoader from '../components/LogoLoader';
 const SpinnerContext = createContext();
 
 export const SpinnerProvider = ({ children }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   return (
     <SpinnerContext.Provider value={{ loading, setLoading }}>

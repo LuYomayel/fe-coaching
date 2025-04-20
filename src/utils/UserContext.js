@@ -9,6 +9,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [coach, setCoach] = useState(null);
   const [client, setClient] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const { setLoading } = useSpinner();
 
@@ -16,36 +17,32 @@ export const UserProvider = ({ children }) => {
     const checkEverything = async () => {
       try {
         setLoading(true);
-
         const token = localStorage.getItem('token');
 
         if (token) {
           const decodedUser = jwtDecode(token);
-          setUser(decodedUser);
           const isTokenExpired = decodedUser.exp * 1000 < Date.now();
+
           if (isTokenExpired) {
             localStorage.removeItem('token');
             setUser(null);
             setCoach(null);
             setClient(null);
+            setIsInitialized(true);
             return;
           }
-          const data = await fetchUserData(decodedUser.userId);
 
-          if (decodedUser.isVerified && decodedUser.email === data.email) {
-            console.log(decodedUser);
+          const userData = await fetchUserData(decodedUser.userId);
+
+          if (decodedUser.isVerified && decodedUser.email === userData.email) {
+            setUser(decodedUser);
+
             if (decodedUser.userType === 'coach') {
-              const data = await fetchCoachData(decodedUser.userId);
-              setCoach(data);
+              const coachData = await fetchCoachData(decodedUser.userId);
+              setCoach(coachData);
             } else if (decodedUser.userType === 'client') {
-              const data = await fetchClientData(decodedUser.userId);
-              console.log(data);
-              setClient(data);
-            } else {
-              localStorage.removeItem('token');
-              setUser(null);
-              setCoach(null);
-              setClient(null);
+              const clientData = await fetchClientData(decodedUser.userId);
+              setClient(clientData);
             }
           } else {
             localStorage.removeItem('token');
@@ -59,13 +56,17 @@ export const UserProvider = ({ children }) => {
           setClient(null);
         }
       } catch (error) {
-        console.log(error);
+        console.error('Error initializing user context:', error);
+        setUser(null);
+        setCoach(null);
+        setClient(null);
       } finally {
-        //setLoading(false);
+        setLoading(false);
+        setIsInitialized(true);
       }
     };
+
     checkEverything();
-    // eslint-disable-next-line
   }, []);
 
   const fetchUserData = async (userId) => {
@@ -73,7 +74,8 @@ export const UserProvider = ({ children }) => {
       const { data } = await fetchUser(userId);
       return data;
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching user data:', error);
+      throw error;
     }
   };
 
@@ -82,8 +84,9 @@ export const UserProvider = ({ children }) => {
       const { data } = await fetchCoach(userId);
       return data;
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching coach data:', error);
       setCoach(null);
+      throw error;
     }
   };
 
@@ -92,13 +95,14 @@ export const UserProvider = ({ children }) => {
       const { data } = await fetchClient(userId);
       return data;
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching client data:', error);
       setClient(null);
+      throw error;
     }
   };
 
   return (
-    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient }}>
+    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient, isInitialized }}>
       {children}
     </UserContext.Provider>
   );
