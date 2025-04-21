@@ -58,6 +58,7 @@ import '../styles/CoachProfile.css'; // Importar los nuevos estilos
 import { CreateExerciseDialog } from '../dialogs/CreateExerciseDialog';
 import VideoDialog from '../dialogs/VideoDialog';
 import ExcelAnalysisDialog from '../components/ExcelAnalysisDialog';
+import BankDataDialog from '../dialogs/BankDataDialog';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // Conjunto de emojis comunes para usar en el selector
@@ -278,6 +279,7 @@ export default function CoachProfilePage() {
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [analysisDialogVisible, setAnalysisDialogVisible] = useState(false);
+  const [isBankDataDialogVisible, setIsBankDataDialogVisible] = useState(false);
 
   // Other states
   const [currentVideoUrl, setCurrentVideoUrl] = useState(null);
@@ -1883,6 +1885,15 @@ export default function CoachProfilePage() {
     }
   };
 
+  const handleOpenBankDataDialog = () => {
+    setIsBankDataDialogVisible(true);
+  };
+
+  const handleBankDataDialogClose = () => {
+    setIsBankDataDialogVisible(false);
+    setRefreshKey((prev) => prev + 1);
+  };
+
   return (
     <div className="coach-profile-container">
       {/* Sección de cabecera del perfil */}
@@ -1911,6 +1922,20 @@ export default function CoachProfilePage() {
                 <span className="stat-value">{exercises.length}</span>
                 <span className="stat-label">Exercises</span>
               </div>
+            </div>
+            <div className="profile-actions mt-3">
+              <Button
+                label={intl.formatMessage({ id: 'profile.edit' })}
+                icon="pi pi-pencil"
+                className="p-button-rounded p-button-warning mr-2"
+                //onClick={handleEditPersonalInfo}
+              />
+              <Button
+                label={intl.formatMessage({ id: 'payment.bankData' })}
+                icon="pi pi-credit-card"
+                className="p-button-rounded p-button-info"
+                onClick={handleOpenBankDataDialog}
+              />
             </div>
           </div>
         </div>
@@ -2707,6 +2732,8 @@ export default function CoachProfilePage() {
           setAnalysisData={setAnalysisData}
         />
       )}
+
+      <BankDataDialog visible={isBankDataDialogVisible} onHide={handleBankDataDialogClose} coachId={coach.id} />
     </div>
   );
 }

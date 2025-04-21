@@ -24,9 +24,10 @@ import { useSpinner } from '../utils/GlobalSpinner';
 import { fetchClient, fetchClientActivitiesByUserId, updatePersonalInfo } from '../services/usersService';
 import { fetchSubscriptionDetails } from '../services/subscriptionService';
 import { formatDate, getDayMonthYear, getSeverity, sortBySessionDate, updateStatus } from '../utils/UtilFunctions';
+import PaymentDialog from '../dialogs/PaymentDialog';
 
 export default function ClientProfile() {
-  const { user } = useContext(UserContext);
+  const { user, client } = useContext(UserContext);
   const showToast = useToast();
   const { showConfirmationDialog } = useConfirmationDialog();
   const { setLoading } = useSpinner();
@@ -56,6 +57,7 @@ export default function ClientProfile() {
     }
   });
   const [statuses] = useState(['current', 'expired', 'completed', 'pending']);
+  const [isPaymentDialogVisible, setIsPaymentDialogVisible] = useState(false);
 
   // Fetch data on component mount and when refreshKey changes
   useEffect(() => {
@@ -84,6 +86,8 @@ export default function ClientProfile() {
         const { data: subscriptionData } = await fetchSubscriptionDetails(user.userId);
         setSubscription(subscriptionData);
 
+        console.log('subscriptionData', subscriptionData);
+        console.log('client', client);
         const checkStatusWorkouts = updateStatus(subscriptionData.workoutInstances);
         const workoutsSorted = sortBySessionDate(checkStatusWorkouts);
         setWorkoutHistory(workoutsSorted);
@@ -159,6 +163,15 @@ export default function ClientProfile() {
       },
       reject: () => {}
     });
+  };
+
+  const handleOpenPaymentDialog = () => {
+    setIsPaymentDialogVisible(true);
+  };
+
+  const handlePaymentDialogClose = () => {
+    setIsPaymentDialogVisible(false);
+    setRefreshKey((prev) => prev + 1);
   };
 
   // Templates for DataTable filters and cells
@@ -350,6 +363,12 @@ export default function ClientProfile() {
               </strong>{' '}
               {subscription?.subscription?.status}
             </p>
+            <Button
+              label={intl.formatMessage({ id: 'payment.makePayment' })}
+              icon="pi pi-credit-card"
+              className="p-button-rounded p-button-success mt-3"
+              onClick={handleOpenPaymentDialog}
+            />
           </Card>
         </div>
 
@@ -514,6 +533,15 @@ export default function ClientProfile() {
           </div>
         </div>
       </Dialog>
+
+      <PaymentDialog
+        visible={isPaymentDialogVisible}
+        onHide={handlePaymentDialogClose}
+        subscription={subscription}
+        clientId={client.id}
+        coachId={client?.coach?.id}
+        coachPlanId={subscription?.coachPlan?.id}
+      />
     </div>
   );
 }
