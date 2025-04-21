@@ -1,7 +1,5 @@
-import { jwtDecode } from 'jwt-decode';
 const apiUrl = process.env.REACT_APP_API_URL;
 const token = localStorage.getItem('token');
-const decodedToken = jwtDecode(token);
 
 /**
  * Crea un pago a través de Mercado Pago
@@ -75,7 +73,6 @@ export const checkMercadoPagoPaymentStatus = async (paymentId) => {
  */
 export const notifyBankTransfer = async (transferData, coachId) => {
   try {
-    console.log('decodedToken', decodedToken);
     const response = await fetch(`${apiUrl}/payment/bank-transfer/notify/${coachId}`, {
       method: 'POST',
       headers: {
@@ -133,8 +130,6 @@ export const getCoachBankData = async (coachId) => {
  */
 export const updateCoachBankData = async (coachId, bankData) => {
   try {
-    console.log('bankData', token);
-    console.log('decodedToken', decodedToken);
     const response = await fetch(`${apiUrl}/payment/coach-bank-data/${coachId}`, {
       method: 'POST',
       headers: {
