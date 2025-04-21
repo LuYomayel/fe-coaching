@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
@@ -24,7 +25,9 @@ import '../styles/TrainingPlanStyle.css';
 export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshKey, isTraining = true }) {
   const { planId } = useParams();
   const navigate = useNavigate();
-  const { user, client } = useContext(UserContext);
+  const { state } = useLocation();
+  const { clientId } = state;
+  const { user, client, coach } = useContext(UserContext);
   const showToast = useToast();
   const { loading, setLoading } = useSpinner();
   const intl = useIntl();
@@ -47,9 +50,11 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
         if (data.status === 'completed') setIsClientTraining(false);
         data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber);
         setPlan(data);
-        setCurrentCycle(data.trainingSession.trainingWeek.trainingCycle);
+
+        setCurrentCycle(data.trainingSession?.trainingWeek?.trainingCycle || -1);
       } catch (error) {
         console.log(error);
+        showToast('error', 'Error', error.message);
       } finally {
         setLoading(false);
       }
@@ -221,11 +226,13 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
       energyLevel,
       mood,
       perceivedDifficulty,
-      additionalNotes
+      additionalNotes,
+      isCoachFeedback: user.userType === 'coach',
+      providedBy: user.userType === 'coach' ? coach.id : client.id
     };
 
     setLoading(true);
-    submitFeedback(planId, body, client.id)
+    submitFeedback(planId, body, client ? client.id : clientId)
       .then(() => {
         setExerciseProgress({});
         setFinishDialogVisible(false);
@@ -233,7 +240,11 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
           setRefreshKey((prev) => prev + 1);
         }
         showToast('success', 'Session finished!', 'Congratulations, you have finished your routine.');
-        navigate('/student');
+        if (user.userType === 'coach') {
+          navigate(`/client-dashboard/${clientId}`);
+        } else {
+          navigate('/student');
+        }
       })
       .catch((error) => {
         showToast('error', 'Error', error.message);
@@ -526,14 +537,14 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                       />
                     </div>
 
-                    {client && currentCycle && (
+                    {(client || clientId) && currentCycle && (
                       <div className="exercise-field">
                         <RpeDropdownComponent
                           selectedRpe={progress.rating || 0}
                           onChange={(e) => handleExerciseChange(exercise.id, null, 'rating', e.value)}
                           planId={planId}
-                          cycleId={currentCycle.id}
-                          clientId={client.id}
+                          cycleId={currentCycle !== -1 ? currentCycle.id : currentCycle}
+                          clientId={client ? client.id : clientId}
                         />
                       </div>
                     )}

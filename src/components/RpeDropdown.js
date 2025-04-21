@@ -31,7 +31,7 @@ const RpeOption = ({ color, value, emoji }) => (
 export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, clientId }) {
   const showToast = useToast();
   const { planId } = useParams();
-  const { client, user } = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
   // eslint-disable-next-line
   const [workout, setWorkout] = useState(null);
@@ -44,8 +44,8 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
       setLoading(true);
       setError(null);
       //const { data } = await getRpeMethods(client.coach.user.id);
-
-      const response = await getRpeMethodAssigned(client.id || clientId, planId || -1, cycleId || -1);
+      console.log('params', clientId, planId, cycleId);
+      const response = await getRpeMethodAssigned(clientId, planId || -1, cycleId || -1);
       console.log('response', response);
       setSelectedRpeMethod(response.data.rpeMethod);
       //const rpeMethod = response.data.rpeMethod.find;
@@ -56,7 +56,7 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
     } finally {
       setLoading(false);
     }
-  }, [client.coach.user.id, showToast, planId, user.userId]);
+  }, [clientId, showToast, planId, user.userId]);
 
   const fetchWorkoutData = useCallback(async () => {
     if (!selectedRpeMethod) return;

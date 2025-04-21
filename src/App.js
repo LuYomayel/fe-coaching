@@ -134,7 +134,7 @@ const App = () => {
                               />
                               <Route
                                 path="/plans/start-session/:planId"
-                                element={<PrivateRoute element={TrainingPlanDetails} requiredType="client" />}
+                                element={<PrivateRoute element={TrainingPlanDetails} />}
                               />
                               <Route path="/student/calendar" element={<StudentCalendar />} />
 

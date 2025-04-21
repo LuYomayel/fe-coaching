@@ -92,6 +92,7 @@ const fetchTrainingCyclesByClient = async (clientId) => {
             session.workoutInstances.length > 0
               ? session.workoutInstances.map((workoutInstance) => {
                   workoutInstance.status = updateStatusLocal(workoutInstance, session);
+                  if (session.notes) console.log(session);
                   return {
                     title: workoutInstance.instanceName
                       ? workoutInstance.instanceName
@@ -100,7 +101,12 @@ const fetchTrainingCyclesByClient = async (clientId) => {
                     extendedProps: {
                       status: workoutInstance.status,
                       workoutInstanceId: workoutInstance.id,
-                      sessionId: session.id
+                      sessionId: session.id,
+                      trainingType: session.trainingType,
+                      location: session.location,
+                      sessionTime: session.sessionTime,
+                      contactMethod: session.contactMethod,
+                      notes: session.notes
                     }
                   };
                 })
@@ -932,6 +938,24 @@ const saveWorkoutChanges = async (payload) => {
   }
 };
 
+const updateWorkoutInstance = async (workoutInstanceId, body) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/session-details/${workoutInstanceId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error updating workout instance:', error);
+    throw error;
+  }
+};
+
 export {
   fetchTrainingCyclesByCoachId,
   findAllWorkoutTemplatesByCoachId,
@@ -981,5 +1005,6 @@ export {
   saveWorkoutChanges,
   createAndAssignWorkout,
   getRpeMethodAssigned,
-  getRpeAssignments
+  getRpeAssignments,
+  updateWorkoutInstance
 };

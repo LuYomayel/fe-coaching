@@ -3,13 +3,17 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
+import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
+import { Calendar } from 'primereact/calendar';
 import {
   fetchWorkoutInstance,
   fetchWorkoutInstanceTemplate,
   deleteWorkoutPlan,
   getRpeMethods,
   getRpeAssignments,
-  getRpeMethodAssigned
+  getRpeMethodAssigned,
+  updateWorkoutInstance
 } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
 import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
@@ -18,7 +22,8 @@ import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import VideoDialog from './VideoDialog';
-
+import { fetchClientByClientId } from '../services/usersService';
+import { contactMethodOptions } from '../utils/Options';
 export default function NewPlanDetailHorizontal({
   planId,
   setPlanDetailsVisible,
@@ -38,6 +43,7 @@ export default function NewPlanDetailHorizontal({
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState('');
   const [currentCycle, setCurrentCycle] = useState(null);
+  const [clientData, setClientData] = useState(null);
   const [workoutPlan, setWorkoutPlan] = useState({
     groups: [],
     workout: {
@@ -50,6 +56,33 @@ export default function NewPlanDetailHorizontal({
     },
     status: ''
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedLocation, setEditedLocation] = useState('');
+  const [editedContactMethod, setEditedContactMethod] = useState('');
+  const [editedNotes, setEditedNotes] = useState('');
+  const [editedSessionTime, setEditedSessionTime] = useState(null);
+  const [editedTrainingType, setEditedTrainingType] = useState('');
+  const [contactMethodOptions] = useState([
+    { label: 'Zoom', value: 'zoom' },
+    { label: 'WhatsApp', value: 'whatsapp' },
+    { label: 'Google Meet', value: 'google_meet' },
+    { label: 'Skype', value: 'skype' }
+  ]);
+  const [trainingTypeOptions] = useState([
+    { label: 'Presencial', value: 'presencial' },
+    { label: 'Virtual Sincrónico', value: 'virtual_sincronico' },
+    { label: 'Virtual Asincrónico', value: 'virtual_asincronico' },
+    { label: 'Híbrido', value: 'hibrido' }
+  ]);
+
+  useEffect(() => {
+    const fetchClientData = async () => {
+      const { data } = await fetchClientByClientId(clientId);
+      console.log('data', data);
+      setClientData(data);
+    };
+    fetchClientData();
+  }, [clientId]);
 
   useEffect(() => {
     const fetchPlanDetails = async () => {
@@ -83,6 +116,13 @@ export default function NewPlanDetailHorizontal({
           });
         });
         setWorkoutPlan(data);
+
+        // Inicializar los campos editables con los valores actuales
+        setEditedLocation(data.trainingSession?.location || '');
+        setEditedContactMethod(data.trainingSession?.contactMethod || '');
+        setEditedNotes(data.trainingSession?.notes || '');
+        setEditedSessionTime(data.trainingSession?.sessionTime ? new Date(data.trainingSession.sessionTime) : null);
+        setEditedTrainingType(data.trainingSession?.trainingType || '');
       } catch (error) {
         showToast('error', 'Error fetching plan details', error.message);
       } finally {
@@ -144,7 +184,15 @@ export default function NewPlanDetailHorizontal({
 
   const handleStartWorkout = () => {
     navigate(`/plans/start-session/${planId}`, {
-      state: { isTraining: true, planId: workoutPlan.id }
+      state: {
+        isTraining: true,
+        planId: workoutPlan.id,
+        trainingType: workoutPlan.trainingSession?.trainingType,
+        location: workoutPlan.trainingSession?.location,
+        contactMethod: workoutPlan.trainingSession?.contactMethod,
+        isCoach: user.userType === 'coach',
+        clientId: clientId
+      }
     });
   };
 
@@ -156,6 +204,60 @@ export default function NewPlanDetailHorizontal({
     } catch (error) {
       showToast('error', 'Error', error.message);
     }
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      setLoading(true);
+
+      // Preparar los datos actualizados
+      const updatedData = {
+        location: editedLocation,
+        contactMethod: editedContactMethod,
+        notes: editedNotes,
+        sessionTime: editedSessionTime
+          ? `${editedSessionTime.getHours().toString().padStart(2, '0')}:${editedSessionTime.getMinutes().toString().padStart(2, '0')}`
+          : null,
+        trainingType: editedTrainingType
+      };
+
+      console.log('updatedData', planId, updatedData);
+      // Llamar al servicio para actualizar el workoutInstance
+      await updateWorkoutInstance(planId, updatedData);
+
+      // Actualizar el estado local
+      setWorkoutPlan((prev) => ({
+        ...prev,
+        trainingSession: {
+          ...prev.trainingSession,
+          location: editedLocation,
+          contactMethod: editedContactMethod,
+          notes: editedNotes,
+          sessionTime: editedSessionTime ? editedSessionTime.toISOString() : null,
+          trainingType: editedTrainingType
+        }
+      }));
+
+      setIsEditing(false);
+      showToast('success', 'Cambios guardados', 'Los cambios se han guardado correctamente');
+      setRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      showToast('error', 'Error al guardar los cambios', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    // Restaurar los valores originales
+    setEditedLocation(workoutPlan.trainingSession?.location || '');
+    setEditedContactMethod(workoutPlan.trainingSession?.contactMethod || '');
+    setEditedNotes(workoutPlan.trainingSession?.notes || '');
+    setEditedSessionTime(
+      workoutPlan.trainingSession?.sessionTime ? new Date(workoutPlan.trainingSession.sessionTime) : null
+    );
+    setEditedTrainingType(workoutPlan.trainingSession?.trainingType || '');
+    setIsEditing(false);
   };
 
   const renderSetLogs = (setLogs) => {
@@ -433,50 +535,248 @@ export default function NewPlanDetailHorizontal({
                 : workoutPlan.workout?.planName}
           </h2>
 
-          {/* If user is coach => show Edit/Delete. If user is client => maybe show Start Workout if pending */}
-          <div className="flex gap-2">
-            {user.userType === 'coach' && (
-              <>
-                {(isTemplate || workoutPlan.status === 'pending') && (
+          {/* Botones de edición y guardado */}
+          {!isTemplate && user.userType === 'coach' && (
+            <div className="flex gap-2">
+              {!isEditing ? (
+                <Button
+                  label={intl.formatMessage({ id: 'common.edit' })}
+                  icon="pi pi-pencil"
+                  className="p-button-primary"
+                  onClick={() => setIsEditing(true)}
+                />
+              ) : (
+                <>
                   <Button
-                    label={intl.formatMessage({ id: 'common.edit' })}
-                    icon="pi pi-pencil"
-                    className="p-button-primary"
-                    onClick={handleEdit}
+                    label={intl.formatMessage({ id: 'common.save' })}
+                    icon="pi pi-check"
+                    className="p-button-success"
+                    onClick={handleSaveChanges}
                   />
-                )}
-                {(isTemplate || workoutPlan.status === 'pending') && (
                   <Button
-                    label={intl.formatMessage({ id: 'common.delete' })}
-                    icon="pi pi-trash"
-                    className="p-button-danger"
-                    onClick={handleDelete}
-                  />
-                )}
-                {!isTemplate && (
-                  <Button
-                    label={intl.formatMessage({ id: 'common.template' })}
-                    tooltip={intl.formatMessage({ id: 'common.useAsTemplate' })}
-                    icon="pi pi-copy"
+                    label={intl.formatMessage({ id: 'common.cancel' })}
+                    icon="pi pi-times"
                     className="p-button-secondary"
-                    onClick={() =>
-                      navigate(`/plans/edit/${workoutPlan.id}`, {
-                        state: { isEdit: true, changeToTemplate: true }
-                      })
-                    }
+                    onClick={handleCancelEdit}
                   />
-                )}
-              </>
-            )}
-            {user.userType === 'client' && workoutPlan.status === 'pending' && (
-              <Button
-                label="Start Workout"
-                icon="pi pi-play"
-                className="p-button-success"
-                onClick={handleStartWorkout}
-              />
-            )}
-          </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Información de ubicación, método de contacto, notas y tiempo de sesión */}
+        <div className="mt-3">
+          {isEditing ? (
+            <div className="grid">
+              <div className="col-12 mb-3">
+                <label htmlFor="trainingType" className="block mb-2">
+                  {intl.formatMessage({ id: 'common.trainingType' })}
+                </label>
+                <Dropdown
+                  id="trainingType"
+                  value={editedTrainingType}
+                  options={trainingTypeOptions}
+                  onChange={(e) => setEditedTrainingType(e.value)}
+                  placeholder={intl.formatMessage({ id: 'common.selectTrainingType' })}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Mostrar campos según el tipo de entrenamiento seleccionado */}
+              {(editedTrainingType === 'presencial' || editedTrainingType === 'hibrido') && (
+                <div className="col-12 md:col-6 mb-3">
+                  <label htmlFor="location" className="block mb-2">
+                    {intl.formatMessage({ id: 'common.location' })}
+                  </label>
+                  <InputText
+                    id="location"
+                    value={editedLocation}
+                    onChange={(e) => setEditedLocation(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              {(editedTrainingType === 'virtual_sincronico' || editedTrainingType === 'hibrido') && (
+                <div className="col-12 md:col-6 mb-3">
+                  <label htmlFor="contactMethod" className="block mb-2">
+                    {intl.formatMessage({ id: 'common.contactMethod' })}
+                  </label>
+                  <Dropdown
+                    id="contactMethod"
+                    value={editedContactMethod}
+                    options={contactMethodOptions}
+                    onChange={(e) => setEditedContactMethod(e.value)}
+                    placeholder={intl.formatMessage({ id: 'common.selectContactMethod' })}
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              {(editedTrainingType === 'presencial' ||
+                editedTrainingType === 'virtual_sincronico' ||
+                editedTrainingType === 'hibrido') && (
+                <div className="col-12 md:col-6 mb-3">
+                  <label htmlFor="sessionTime" className="block mb-2">
+                    {intl.formatMessage({ id: 'common.sessionTime' })}
+                  </label>
+                  <Calendar
+                    id="sessionTime"
+                    value={editedSessionTime}
+                    onChange={(e) => setEditedSessionTime(e.value)}
+                    timeOnly
+                    hourFormat="24"
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              <div className="col-12 mb-3">
+                <label htmlFor="notes" className="block mb-2">
+                  {intl.formatMessage({ id: 'common.notes' })}
+                </label>
+                <InputText
+                  id="notes"
+                  value={editedNotes}
+                  onChange={(e) => setEditedNotes(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-column gap-2">
+              {/* Mostrar tipo de entrenamiento */}
+              {workoutPlan.trainingSession?.trainingType && (
+                <div className="flex align-items-center">
+                  <i className="pi pi-calendar mr-2" />
+                  <span>
+                    {trainingTypeOptions.find((option) => option.value === workoutPlan.trainingSession.trainingType)
+                      ?.label || workoutPlan.trainingSession.trainingType}
+                  </span>
+                </div>
+              )}
+
+              {/* Mostrar ubicación según prioridad: primero session, luego cliente */}
+              {(workoutPlan.trainingSession?.trainingType === 'hibrido' ||
+                workoutPlan.trainingSession?.trainingType === 'presencial' ||
+                workoutPlan.trainingSession?.trainingType === 'virtual_sincronico') &&
+              workoutPlan.trainingSession?.location ? (
+                <div className="flex align-items-center">
+                  <i className="pi pi-map-marker mr-2" />
+                  <span>{workoutPlan.trainingSession.location}</span>
+                </div>
+              ) : (
+                (clientData?.trainingType === 'hibrido' ||
+                  clientData?.trainingType === 'presencial' ||
+                  clientData?.trainingType === 'virtual_sincronico') &&
+                clientData?.location && (
+                  <div className="flex align-items-center">
+                    <i className="pi pi-map-marker mr-2" />
+                    <span>{clientData.location}</span>
+                  </div>
+                )
+              )}
+
+              {/* Mostrar notas según prioridad: primero session, luego cliente */}
+              {workoutPlan.trainingSession?.notes ? (
+                <div className="flex align-items-center">
+                  <i className="pi pi-comment mr-2" />
+                  <span>{workoutPlan.trainingSession.notes}</span>
+                </div>
+              ) : (
+                clientData?.notes && (
+                  <div className="flex align-items-center">
+                    <i className="pi pi-comment mr-2" />
+                    <span>{clientData.notes}</span>
+                  </div>
+                )
+              )}
+
+              {/* Mostrar método de contacto según prioridad: primero session, luego cliente */}
+              {workoutPlan.trainingSession?.contactMethod ? (
+                <div className="flex align-items-center">
+                  <i className="pi pi-phone mr-2" />
+                  <span>
+                    {contactMethodOptions.find((option) => option.value === workoutPlan.trainingSession.contactMethod)
+                      ?.label || workoutPlan.trainingSession.contactMethod}
+                  </span>
+                </div>
+              ) : (
+                clientData?.contactMethod && (
+                  <div className="flex align-items-center">
+                    <i className="pi pi-phone mr-2" />
+                    <span>
+                      {contactMethodOptions.find((option) => option.value === clientData.contactMethod)?.label ||
+                        clientData.contactMethod}
+                    </span>
+                  </div>
+                )
+              )}
+
+              {/* Mostrar tiempo de sesión */}
+              {workoutPlan.trainingSession?.sessionTime && (
+                <div className="flex align-items-center">
+                  <i className="pi pi-clock mr-2" />
+                  <span>
+                    {(() => {
+                      try {
+                        const date = new Date(workoutPlan.trainingSession.sessionTime);
+                        return isNaN(date.getTime())
+                          ? workoutPlan.trainingSession.sessionTime
+                          : date.toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            });
+                      } catch (error) {
+                        return workoutPlan.trainingSession.sessionTime;
+                      }
+                    })()}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* If user is coach => show Edit/Delete. If user is client => maybe show Start Workout if pending */}
+        <div className="flex gap-2 mt-3">
+          {user.userType === 'coach' && (
+            <>
+              {(isTemplate || workoutPlan.status === 'pending') && !isEditing && (
+                <Button
+                  label={intl.formatMessage({ id: 'common.edit' })}
+                  icon="pi pi-pencil"
+                  className="p-button-primary"
+                  onClick={handleEdit}
+                />
+              )}
+              {(isTemplate || workoutPlan.status === 'pending') && !isEditing && (
+                <Button
+                  label={intl.formatMessage({ id: 'common.delete' })}
+                  icon="pi pi-trash"
+                  className="p-button-danger"
+                  onClick={handleDelete}
+                />
+              )}
+              {!isTemplate && !isEditing && (
+                <Button
+                  label={intl.formatMessage({ id: 'common.template' })}
+                  tooltip={intl.formatMessage({ id: 'common.useAsTemplate' })}
+                  icon="pi pi-copy"
+                  className="p-button-secondary"
+                  onClick={() =>
+                    navigate(`/plans/edit/${workoutPlan.id}`, {
+                      state: { isEdit: true, changeToTemplate: true }
+                    })
+                  }
+                />
+              )}
+            </>
+          )}
+          {user.userType === 'client' && workoutPlan.status === 'pending' && !isEditing && (
+            <Button label="Start Workout" icon="pi pi-play" className="p-button-success" onClick={handleStartWorkout} />
+          )}
         </div>
 
         {/* Show feedback below the plan name if the plan is completed */}
@@ -489,7 +789,7 @@ export default function NewPlanDetailHorizontal({
               {intl.formatMessage({ id: 'common.completedOn' })}: {formatDate(workoutPlan.feedback?.realEndDate)}
             </p>
             <p className="">
-              {intl.formatMessage({ id: 'common.sessionTime' })}: {workoutPlan.feedback?.sessionTime}
+              {intl.formatMessage({ id: 'exercise.properties.sessionTime' })}: {workoutPlan.feedback?.sessionTime}
             </p>
             <p className="">
               {intl.formatMessage({ id: 'common.feedback' })}: {workoutPlan.feedback?.generalFeedback}

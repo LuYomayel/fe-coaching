@@ -66,6 +66,12 @@ const messages = {
   'common.cycle': 'Cycle',
   'common.selectCycle': 'Select cycle',
   'common.all': 'All',
+  'common.location': 'Location',
+  'common.contactMethod': 'Contact Method',
+  'common.notes': 'Notes',
+  'common.selectContactMethod': 'Select Contact Method',
+  'common.trainingType': 'Training Type',
+  'common.selectTrainingType': 'Select Training Type',
 
   'home.success.checkEmail': 'Check your email to continue!',
   // Mensajes de confirmacion
@@ -1092,7 +1098,39 @@ const messages = {
   'verification.error.invalidCode': 'Invalid verification code',
   'verification.resend': 'Resend code',
   'verification.title': 'Email Verification',
-  'verification.message': 'Please enter the verification code sent to {email}'
+  'verification.message': 'Please enter the verification code sent to {email}',
+
+  'assignWorkout.title': 'Assign Workout to Session',
+  'assignWorkout.description': 'Select a workout to assign to the session',
+  'assignWorkout.trainingType': 'Training Type',
+  'assignWorkout.selectWorkout': 'Select Workout',
+  'assignWorkout.selectWorkoutPlaceholder': 'Select a workout',
+  'assignWorkout.selectDate': 'Select Date',
+  'assignWorkout.selectDatePlaceholder': 'Select a date',
+  'assignWorkout.selectTime': 'Select Time',
+  'assignWorkout.selectTimePlaceholder': 'Select a time',
+  'assignWorkout.selectLocation': 'Select Location',
+  'assignWorkout.selectLocationPlaceholder': 'Select a location',
+  'assignWorkout.selectTrainingType': 'Select Training Type',
+  'assignWorkout.selectTrainingTypePlaceholder': 'Select a training type',
+  'assignWorkout.location': 'Location',
+  'assignWorkout.locationPlaceholder': 'Select a location',
+  'assignWorkout.sessionTime': 'Session Time',
+  'assignWorkout.contactMethod': 'Contact Method',
+  'assignWorkout.selectContactMethod': 'Select a contact method',
+  'assignWorkout.assign': 'Assign',
+  'assignWorkout.createNewSession': 'Create New Session',
+  'assignWorkout.meetingLink': 'Meeting Link',
+  'assignWorkout.meetingLinkPlaceholder': 'Enter the meeting link',
+  'dashboard.calendar.joinMeeting': 'Join Meeting',
+  'dashboard.calendar.startTrainingSession': 'Start Training Session',
+
+  'student.trainingType': 'Training Type',
+  'student.selectTrainingType': 'Select a training type',
+  'student.contactMethod': 'Contact Method',
+  'student.selectContactMethod': 'Select a contact method',
+  'student.location': 'Location',
+  'student.locationPlaceholder': 'Select a location'
 };
 
 export default messages;

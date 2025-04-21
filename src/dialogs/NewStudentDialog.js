@@ -23,6 +23,9 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
   const [height, setHeight] = useState(null);
   const [weight, setWeight] = useState(null);
   const [customFitnessGoal, setCustomFitnessGoal] = useState('');
+  const [trainingType, setTrainingType] = useState(null);
+  const [location, setLocation] = useState('');
+  const [contactMethod, setContactMethod] = useState('');
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
 
@@ -30,6 +33,20 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
   // eslint-disable-next-line
   const [studentId, setStudentId] = useState(studentData ? studentData.id : null);
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
+
+  const trainingTypeOptions = [
+    { label: 'Presencial', value: 'presencial' },
+    { label: 'Virtual Sincrónico', value: 'virtual_sincronico' },
+    { label: 'Virtual Asincrónico', value: 'virtual_asincronico' },
+    { label: 'Híbrido', value: 'hibrido' }
+  ];
+
+  const contactMethodOptions = [
+    { label: 'Zoom', value: 'zoom' },
+    { label: 'WhatsApp', value: 'whatsapp' },
+    { label: 'Google Meet', value: 'google_meet' },
+    { label: 'Skype', value: 'skype' }
+  ];
 
   useEffect(() => {
     if (studentData) {
@@ -42,6 +59,9 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       setHeight(studentData.height);
       setWeight(studentData.weight);
       setCustomFitnessGoal(studentData.customFitnessGoal || '');
+      setTrainingType(studentData.trainingType || null);
+      setLocation(studentData.location || '');
+      setContactMethod(studentData.contactMethod || '');
     }
   }, [studentData]);
 
@@ -150,6 +170,9 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       weight,
       height,
       birthdate,
+      trainingType,
+      location: trainingType === 'presencial' || trainingType === 'hibrido' ? location : undefined,
+      contactMethod: trainingType === 'virtual_sincronico' || trainingType === 'hibrido' ? contactMethod : undefined,
       coachId: user.userId
     };
 
@@ -182,12 +205,29 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
       }
     }
 
+    if ((trainingType === 'presencial' || trainingType === 'hibrido') && !location) {
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'error' }),
+        intl.formatMessage({ id: 'student.error.locationRequired' })
+      );
+      return;
+    }
+
+    if ((trainingType === 'virtual_sincronico' || trainingType === 'hibrido') && !contactMethod) {
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'error' }),
+        intl.formatMessage({ id: 'student.error.contactMethodRequired' })
+      );
+      return;
+    }
+
     showConfirmationDialog({
       message: intl.formatMessage({ id: 'student.confirmation.create' }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => handleSaveStudent(body),
-      //accept: () => console.log(body),
       reject: () => console.log('Rejected')
     });
   };
@@ -292,6 +332,72 @@ const NewStudentDialog = ({ onClose, setRefreshKey, studentData }) => {
           onChange={(e) => setBirthDate(e.target.value)}
         />
       </div>
+      <div className="p-field">
+        <label htmlFor="trainingType">
+          <FormattedMessage id="student.trainingType" />
+        </label>
+        <Dropdown
+          id="trainingType"
+          value={trainingType}
+          options={trainingTypeOptions}
+          onChange={(e) => setTrainingType(e.value)}
+          placeholder={intl.formatMessage({ id: 'student.selectTrainingType' })}
+        />
+      </div>
+      {trainingType === 'presencial' && (
+        <div className="p-field">
+          <label htmlFor="location">
+            <FormattedMessage id="student.location" />
+          </label>
+          <InputText
+            id="location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder={intl.formatMessage({ id: 'student.locationPlaceholder' })}
+          />
+        </div>
+      )}
+      {trainingType === 'virtual_sincronico' && (
+        <div className="p-field">
+          <label htmlFor="contactMethod">
+            <FormattedMessage id="student.contactMethod" />
+          </label>
+          <Dropdown
+            id="contactMethod"
+            value={contactMethod}
+            options={contactMethodOptions}
+            onChange={(e) => setContactMethod(e.value)}
+            placeholder={intl.formatMessage({ id: 'student.selectContactMethod' })}
+          />
+        </div>
+      )}
+      {trainingType === 'hibrido' && (
+        <>
+          <div className="p-field">
+            <label htmlFor="location">
+              <FormattedMessage id="student.location" />
+            </label>
+            <InputText
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder={intl.formatMessage({ id: 'student.locationPlaceholder' })}
+            />
+          </div>
+          <div className="p-field">
+            <label htmlFor="contactMethod">
+              <FormattedMessage id="student.contactMethod" />
+            </label>
+            <Dropdown
+              id="contactMethod"
+              value={contactMethod}
+              options={contactMethodOptions}
+              onChange={(e) => setContactMethod(e.value)}
+              placeholder={intl.formatMessage({ id: 'student.selectContactMethod' })}
+            />
+          </div>
+        </>
+      )}
       <Button
         label={intl.formatMessage({ id: 'save' })}
         icon="pi pi-save"

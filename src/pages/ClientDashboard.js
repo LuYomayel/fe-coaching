@@ -12,7 +12,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import AssignWorkoutToCycleDialog from '../dialogs/AssignWorkoutToCycleDialog';
@@ -39,7 +39,7 @@ import { Tooltip } from 'primereact/tooltip';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { fetchTrainingCyclesTemplates, assignCycleTemplateToClient } from '../services/workoutService';
 import { Calendar } from 'primereact/calendar';
-
+import { contactMethodOptions } from '../utils/Options';
 // Estilos mejorados para el botón de agregar sesión en el calendario
 const addButtonStyle = `
   .fc-daygrid-day-frame {
@@ -62,6 +62,7 @@ export default function ClientDashboard() {
   const { locale } = useLanguage();
   const intl = useIntl();
   const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
+  const navigate = useNavigate();
 
   // State variables
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -109,7 +110,6 @@ export default function ClientDashboard() {
     setCalendarEvents([]);
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleOptions }) => {
-        console.log(events);
         setCycleOptions(cycleOptions);
         setCalendarEvents((e) => [...events, ...e]);
         const options = cycleOptions.map((cycle) => ({
@@ -129,17 +129,20 @@ export default function ClientDashboard() {
       .then(({ data }) => {
         const events = data.map((session) => {
           const start = formatDateToApi(new Date(session.sessionDate));
-
+          const workoutInstance = session.workoutInstances[0];
           return {
-            title: session.workoutInstances[0]?.instanceName
-              ? session.workoutInstances[0].instanceName
-              : session.workoutInstances[0].workout.planName,
+            title: workoutInstance?.instanceName ? workoutInstance.instanceName : workoutInstance?.workout?.planName,
             start: start,
             extendedProps: {
               sessionId: session.id,
-              status: session.workoutInstances[0]?.status,
-              workoutInstanceId: session.workoutInstances[0]?.id,
-              cycle: null
+              status: workoutInstance?.status,
+              workoutInstanceId: workoutInstance?.id,
+              cycle: null,
+              trainingType: session?.trainingType,
+              location: session?.location,
+              sessionTime: session?.sessionTime,
+              contactMethod: session?.contactMethod,
+              notes: session?.notes
             }
           };
         });
@@ -194,7 +197,6 @@ export default function ClientDashboard() {
       fetchTrainingCyclesTemplates(clientData?.coach?.id || null)
         .then((response) => {
           setTrainingCycleTemplates(response.data);
-          console.log(response.data);
         })
         .catch((error) => {
           console.error('Error fetching training cycle templates:', error);
@@ -330,7 +332,8 @@ export default function ClientDashboard() {
     }
 
     const { title, extendedProps } = eventInfo.event;
-    const { status, workoutInstanceId, sessionId, cycle } = extendedProps || {};
+    const { status, workoutInstanceId, sessionId, cycle, trainingType, location, sessionTime, notes, contactMethod } =
+      extendedProps || {};
 
     // Determinar la severidad según el estado
     let severity = 'info';
@@ -361,28 +364,146 @@ export default function ClientDashboard() {
       );
     }
 
+    const renderLocationAndTime = () => {
+      if (!trainingType && !clientData) return null;
+
+      const showLocation =
+        ((trainingType === 'presencial' || clientData?.trainingType === 'presencial') &&
+          clientData?.location !== null) ||
+        ((trainingType === 'hibrido' || clientData?.trainingType === 'hibrido') && clientData?.location !== null);
+      const showTime =
+        ((trainingType === 'presencial' || clientData?.trainingType === 'presencial') &&
+          clientData?.location !== null) ||
+        ((trainingType === 'virtual_sincronico' || clientData?.trainingType === 'virtual_sincronico') &&
+          clientData?.location !== null) ||
+        ((trainingType === 'hibrido' || clientData?.trainingType === 'hibrido') && clientData?.location !== null);
+      const showMeetingLink =
+        ((trainingType === 'virtual_sincronico' || clientData?.trainingType === 'virtual_sincronico') &&
+          clientData?.location !== null &&
+          notes) ||
+        ((trainingType === 'hibrido' || clientData?.trainingType === 'hibrido') &&
+          clientData?.location !== null &&
+          notes);
+      const showTrainingSessionButton = trainingType === 'presencial' && workoutInstanceId && status !== 'completed';
+
+      const getGoogleMapsUrl = (location) => {
+        if (!location) return null;
+        const encodedLocation = encodeURIComponent(location);
+        return `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+      };
+
+      const handleLocationClick = (e, location) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const mapsUrl = getGoogleMapsUrl(location);
+        if (mapsUrl) {
+          window.open(mapsUrl, '_blank');
+        }
+      };
+
+      const handleTrainingSessionClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigate(`/plans/start-session/${workoutInstanceId}`, {
+          state: {
+            isTraining: true,
+            planId: workoutInstanceId,
+            clientId: clientId
+          }
+        });
+      };
+
+      // Usar la ubicación específica del entrenamiento o la ubicación predeterminada del cliente
+      const locationToShow =
+        location ||
+        ((trainingType === 'presencial' || clientData?.trainingType === 'presencial') && clientData?.location
+          ? clientData.location
+          : null);
+
+      return (
+        <div className="event-details mt-2">
+          {showLocation && locationToShow && (
+            <div className="event-location">
+              <i className="pi pi-map-marker mr-2" />
+              <a
+                href={getGoogleMapsUrl(locationToShow)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => handleLocationClick(e, locationToShow)}
+                className="location-link"
+              >
+                {locationToShow}
+              </a>
+            </div>
+          )}
+          {showTime && sessionTime && (
+            <div className="event-time">
+              <i className="pi pi-clock mr-2" />
+              {(() => {
+                try {
+                  const date = new Date(sessionTime);
+                  return isNaN(date.getTime())
+                    ? sessionTime
+                    : date.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                } catch (error) {
+                  return sessionTime;
+                }
+              })()}
+            </div>
+          )}
+          {showMeetingLink && (
+            <div className="event-meeting-link">
+              <i className="pi pi-link mr-2" />
+              <a href={notes} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                {contactMethodOptions.find((option) => option.value === contactMethod)?.label || contactMethod}
+              </a>
+            </div>
+          )}
+          {showTrainingSessionButton && (
+            <div className="event-training-session mt-2">
+              <Button
+                icon="pi pi-play"
+                label={intl.formatMessage(
+                  { id: 'dashboard.calendar.startTrainingSession' },
+                  { defaultMessage: 'Iniciar sesión de entrenamiento' }
+                )}
+                className="p-button-success p-button-sm"
+                onClick={handleTrainingSessionClick}
+              />
+            </div>
+          )}
+        </div>
+      );
+    };
+
     return (
       <div className="custom-event-content">
         {title !== 'no title' ? (
-          <Button
-            tooltip={intl.formatMessage(
-              { id: 'dashboard.calendar.viewDetails' },
-              { defaultMessage: 'Ver detalles del entrenamiento' }
-            )}
-            icon={statusIcon}
-            size="small"
-            label={title}
-            severity={severity}
-            text
-            raised
-            badge={statusTooltip}
-            badgeClassName={`status-badge status-${severity}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleViewWorkoutDetails(workoutInstanceId);
-            }}
-          />
+          <div>
+            <Button
+              tooltip={intl.formatMessage(
+                { id: 'dashboard.calendar.viewDetails' },
+                { defaultMessage: 'Ver detalles del entrenamiento' }
+              )}
+              icon={statusIcon}
+              size="small"
+              label={title}
+              severity={severity}
+              text
+              raised
+              badge={statusTooltip}
+              badgeClassName={`status-badge status-${severity}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleViewWorkoutDetails(workoutInstanceId);
+              }}
+            />
+            {renderLocationAndTime()}
+          </div>
         ) : (
           <Button
             tooltip={intl.formatMessage(
@@ -806,9 +927,16 @@ export default function ClientDashboard() {
               }}
             />
             {clientData &&
-              ['fitnessGoal', 'activityLevel', 'gender', 'weight', 'height', 'birthdate'].some(
-                (field) => !clientData[field]
-              ) && (
+              [
+                'fitnessGoal',
+                'activityLevel',
+                'gender',
+                'weight',
+                'height',
+                'birthdate',
+                'contactMethod',
+                'location'
+              ].some((field) => !clientData[field]) && (
                 <>
                   <Tooltip target=".missing-data-indicator" />
                   <div
