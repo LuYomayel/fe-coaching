@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback, memo } from 'react';
 import { useIntl, FormattedMessage } from 'react-intl';
 
 import { Dropdown } from 'primereact/dropdown';
@@ -54,6 +54,107 @@ const properties = [
   'distance',
   'rpe'
 ];
+
+// 1) Extract the row renderer
+function SortableRowComponent({
+  rowData,
+  index,
+  renderNameColumn,
+  renderDataCells,
+  handleDeleteExercise,
+  isEditing,
+  isDraggingGroup,
+  isHoveringFirstColumn,
+  propertiesUsedByWeek,
+  hoverRowIndex,
+  showInsertButton,
+  firstColumnRef,
+  handleAddExerciseAtPosition,
+  handleAddGroup,
+  rowClassName,
+  isDarkMode,
+  intl
+}) {
+  const rowKey =
+    rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
+
+  const isDraggable =
+    isEditing &&
+    (rowData.rowType === 'group' || (rowData.rowType === 'exercise' && !isDraggingGroup && !rowData.isDragDisabled));
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: rowKey,
+    disabled: !isDraggable
+  });
+
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transition,
+    ...(isDragging || (isDraggingGroup && rowData.isBeingDragged)
+      ? {
+          background: isDarkMode ? 'rgba(52, 73, 94, 0.95)' : 'rgba(248, 249, 250, 0.95)',
+          boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
+          borderRadius: '8px',
+          border: isDarkMode ? '2px solid #3498db' : '2px solid #4299e1',
+          zIndex: 1000
+        }
+      : {})
+  };
+
+  return (
+    <>
+      {isEditing && showInsertButton && hoverRowIndex === index && (
+        <tr className="insert-row">
+          <td colSpan={1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0)}>
+            <div className="insert-buttons-container">
+              <button className="insert-button" onClick={() => handleAddExerciseAtPosition(index)}>
+                <FaPlus className="insert-icon" /> {intl.formatMessage({ id: 'workoutTable.insertExercise' })}
+              </button>
+              <button className="insert-button" onClick={() => handleAddGroup(index)}>
+                <FaPlus className="insert-icon" /> {intl.formatMessage({ id: 'plan.group.addGroup' })}
+              </button>
+            </div>
+          </td>
+        </tr>
+      )}
+      <tr
+        ref={setNodeRef}
+        style={style}
+        className={`${rowClassName(rowData)} ${isDragging ? 'dragging' : ''}`}
+        onDoubleClick={() => isEditing && handleAddExerciseAtPosition(index)}
+        {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
+      >
+        <td ref={firstColumnRef} className={`name-column ${isEditing ? 'editable-column' : ''}`}>
+          <div className="name-column-content">
+            {isEditing && isDraggable && <FaGripVertical className="drag-handle" />}
+            {isEditing && rowData.rowType === 'exercise' && (
+              <FaTrash
+                className="delete-icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteExercise(rowData);
+                }}
+              />
+            )}
+            {rowData.rowType === 'group' && (
+              <div
+                className="group-indicator"
+                style={{
+                  backgroundColor: `hsl(${(rowData.groupNumber * 35) % 360}, 70%, ${isDarkMode ? '45%' : '60%'})`
+                }}
+              />
+            )}
+            <div className="name-value">{renderNameColumn(rowData)}</div>
+          </div>
+        </td>
+        {renderDataCells(rowData)}
+      </tr>
+    </>
+  );
+}
+
+// 2) Wrap in React.memo (no custom comparator)
+const SortableRow = memo(SortableRowComponent);
 
 export default function NewWorkoutTable({ cycleOptions, clientData }) {
   const { user, coach } = useContext(UserContext);
@@ -139,13 +240,14 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   };
 
   const tableStyles = {
-    width: '100%',
+    //width: '100%',
     borderCollapse: 'collapse',
     tableLayout: 'fixed',
     marginBottom: '2rem',
     borderRadius: '8px',
     overflow: 'hidden',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    minWidth: '800px' // Ancho mínimo para asegurar que la tabla no se comprima demasiado
   };
 
   const rowClassName = (rowData) => {
@@ -1442,7 +1544,28 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     }
   };
 
-  const renderTableHeader = () => {
+  const [oldValue, setOldValue] = useState(null);
+  // Función que solo actualiza el valor en el objeto de datos
+  const handlePropertyChange = useCallback((rowData, prop, weekNum, newValue) => {
+    if (!rowData.weeksData[weekNum]) {
+      rowData.weeksData[weekNum] = { exerciseInstanceId: null };
+    }
+    setOldValue(rowData.weeksData[weekNum][prop]);
+    rowData.weeksData[weekNum][prop] = newValue === '' ? null : newValue;
+  }, []);
+
+  const handlePropertyBlur = useCallback(
+    (rowData, prop, weekNum, newValue) => {
+      if (oldValue !== rowData.weeksData[weekNum][prop]) {
+        // trigger a full re-render of tableData so detectChanges sees the update
+        setTableData((prev) => [...prev]);
+      }
+      setOldValue(null);
+    },
+    [oldValue]
+  );
+
+  const renderTableHeader = useCallback(() => {
     const { headerGroup, usedProps } = buildHeaderGroup() || {};
     // If there's no data, bail out
     if (!headerGroup || !usedProps) return null;
@@ -1470,100 +1593,87 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         </tr>
       </thead>
     );
-  };
+  }, [buildHeaderGroup, intl, rpeMethods, propertyLabels]);
 
-  const renderDataCells = (rowData) => {
-    console.log('renderDataCells', rowData);
-    // Si es un grupo, devolvemos celdas vacías
-    if (rowData.rowType === 'group') {
-      const totalColumns = propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
-      return Array.from({ length: totalColumns }).map((_, idx) => (
-        <td key={`group-${rowData.groupNumber}-${idx}`} className="group-empty-cell" />
-      ));
-    }
+  const renderEditableCell = useCallback(
+    (rowData, prop, weekNum, currentValue) => {
+      // Si no existe la estructura de datos para esta semana, crearla
+      if (!rowData.weeksData[weekNum]) {
+        rowData.weeksData[weekNum] = { exerciseInstanceId: null };
+      }
 
-    // Para filas de ejercicios
-    return propertiesUsedByWeek.map((propsList, weekIndex) => {
-      const realWeek = weekIndex + 1;
-      return propsList.map((prop, index) => {
-        const cellKey = `ex-${rowData.name}-w${realWeek}-${prop}`;
-        const cellValue =
-          rowData.weeksData[realWeek] && rowData.weeksData[realWeek][prop] !== undefined
-            ? rowData.weeksData[realWeek][prop]
-            : '';
+      // Determinar el tipo de editor según la propiedad
+      switch (prop) {
+        case 'sets':
+        case 'repetitions':
+        case 'weight':
+        case 'time':
+        case 'restInterval':
+        case 'duration':
+        case 'distance':
+        case 'tempo':
+        case 'difficulty':
+          return (
+            <InputText
+              value={currentValue === undefined || currentValue === null ? '' : currentValue}
+              onBlur={(e) => handlePropertyBlur(rowData, prop, weekNum, e.target.value)}
+              onChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.target.value)}
+              size="small"
+              className="p-inputtext-sm w-full"
+            />
+          );
+        case 'notes':
+          return (
+            <InputText
+              value={currentValue || ''}
+              onBlur={(e) => handlePropertyBlur(rowData, prop, weekNum, e.target.value)}
+              onChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.target.value)}
+              className="p-inputtext-sm w-full"
+            />
+          );
+        default:
+          return currentValue;
+      }
+    },
+    [handlePropertyBlur, handlePropertyChange]
+  );
 
-        return (
-          <td
-            className={`data-cell ${index === 0 ? 'first-prop' : ''} ${index === propsList.length - 1 ? 'last-prop' : ''}`}
-            key={cellKey}
-          >
-            {isEditing ? renderEditableCell(rowData, prop, realWeek, cellValue) : cellValue}
-          </td>
-        );
+  const renderDataCells = useCallback(
+    (rowData) => {
+      console.log('renderDataCells', rowData);
+      // Si es un grupo, devolvemos celdas vacías
+      if (rowData.rowType === 'group') {
+        const totalColumns = propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
+        return Array.from({ length: totalColumns }).map((_, idx) => (
+          <td key={`group-${rowData.groupNumber}-${idx}`} className="group-empty-cell" />
+        ));
+      }
+
+      // Para filas de ejercicios
+      return propertiesUsedByWeek.map((propsList, weekIndex) => {
+        const realWeek = weekIndex + 1;
+        return propsList.map((prop, index) => {
+          const cellKey = `ex-${rowData.name}-w${realWeek}-${prop}`;
+          const cellValue =
+            rowData.weeksData[realWeek] && rowData.weeksData[realWeek][prop] !== undefined
+              ? rowData.weeksData[realWeek][prop]
+              : '';
+
+          return (
+            <td
+              className={`data-cell ${index === 0 ? 'first-prop' : ''} ${index === propsList.length - 1 ? 'last-prop' : ''}`}
+              key={cellKey}
+            >
+              {isEditing ? renderEditableCell(rowData, prop, realWeek, cellValue) : cellValue}
+            </td>
+          );
+        });
       });
-    });
-  };
+    },
+    [propertiesUsedByWeek, isEditing]
+  );
 
-  function renderEditableCell(rowData, prop, weekNum, currentValue) {
-    // Si no existe la estructura de datos para esta semana, crearla
-    if (!rowData.weeksData[weekNum]) {
-      rowData.weeksData[weekNum] = { exerciseInstanceId: null };
-    }
-
-    // Determinar el tipo de editor según la propiedad
-    switch (prop) {
-      case 'sets':
-      case 'repetitions':
-      case 'weight':
-      case 'time':
-      case 'restInterval':
-      case 'duration':
-      case 'distance':
-      case 'tempo':
-      case 'difficulty':
-        return (
-          <InputText
-            value={currentValue === undefined || currentValue === null ? '' : currentValue}
-            onChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.target.value)}
-            size="small"
-            className="p-inputtext-sm w-full"
-          />
-        );
-      case 'notes':
-        return (
-          <InputText
-            value={currentValue || ''}
-            onChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.target.value)}
-            className="p-inputtext-sm w-full"
-          />
-        );
-      default:
-        return currentValue;
-    }
-  }
-
-  function handlePropertyChange(rowData, prop, weekNum, newValue) {
-    // Actualizar el valor en el objeto de datos
-    if (!rowData.weeksData[weekNum]) {
-      rowData.weeksData[weekNum] = { exerciseInstanceId: null };
-    }
-
-    // Permitir valores vacíos
-    rowData.weeksData[weekNum][prop] = newValue === '' ? null : newValue;
-
-    // Actualizar el estado de la tabla
-    setTableData((prevData) => {
-      const updatedData = prevData.map((row) => {
-        if (row.id === rowData.id) {
-          return { ...row };
-        }
-        return row;
-      });
-      return updatedData;
-    });
-  }
-
-  function handleExerciseNameChange(rowData, newName) {
+  const handleExerciseNameChange = (rowData, newName) => {
     // Actualizar el nombre en el objeto de datos
     const oldName = rowData.name;
     rowData.name = newName;
@@ -1597,15 +1707,15 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
     // Actualizar el estado de la tabla
     setTableData([...tableData]);
-  }
+  };
 
-  function handleGroupLabelChange(rowData, newLabel) {
+  const handleGroupLabelChange = (rowData, newLabel) => {
     // Actualizar la etiqueta en el objeto de datos
     rowData.label = newLabel;
 
     // Actualizar el estado de la tabla
     setTableData([...tableData]);
-  }
+  };
 
   // Referencia para la primera columna
   const firstColumnRef = useRef(null);
@@ -1630,7 +1740,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     //console.log('showInsertButton', showInsertButton);
   }, [hoverRowIndex, isHoveringFirstColumn, showInsertButton]);
 
-  function SortableRow({ rowData, index }) {
+  /*
+  const SortableRow = ({ rowData, index }) => {
     const rowKey =
       rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
 
@@ -1711,7 +1822,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         </tr>
       </>
     );
-  }
+  };
+  */
 
   // Modificar el itemTemplate para el dropdown de días
   const dayItemTemplate = (option) => {
@@ -1870,12 +1982,25 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
                       key={
                         rowData.rowType === 'group'
                           ? `group-${rowData.groupNumber}`
-                          : `ex-${rowData.groupNumber}-${rowData.rowIndex}-${
-                              rowData.name || 'unnamed'
-                            }-${rowData.exerciseInstanceId || Math.random().toString(36).substr(2, 9)}`
+                          : `ex-${rowData.groupNumber}-${rowData.rowIndex}-${rowData.exerciseInstanceId}`
                       }
                       rowData={rowData}
                       index={index}
+                      renderNameColumn={renderNameColumn}
+                      renderDataCells={renderDataCells}
+                      handleDeleteExercise={handleDeleteExercise}
+                      isEditing={isEditing}
+                      isDraggingGroup={isDraggingGroup}
+                      hoverRowIndex={hoverRowIndex}
+                      showInsertButton={showInsertButton}
+                      firstColumnRef={firstColumnRef}
+                      handleAddExerciseAtPosition={handleAddExerciseAtPosition}
+                      handleAddGroup={handleAddGroup}
+                      rowClassName={rowClassName}
+                      isDarkMode={isDarkMode}
+                      intl={intl}
+                      isHoveringFirstColumn={isHoveringFirstColumn}
+                      propertiesUsedByWeek={propertiesUsedByWeek}
                     />
                   ))}
                 </SortableContext>

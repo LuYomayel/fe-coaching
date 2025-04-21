@@ -71,6 +71,7 @@
 .panel-client-dashboard .p-panel-content {
   padding: 0.15rem;
   margin: 0;
+  overflow-x: auto;
 }
 
 .panel-client-dashboard .p-tabview-panels {
