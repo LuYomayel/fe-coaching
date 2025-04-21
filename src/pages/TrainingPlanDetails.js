@@ -419,7 +419,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                             header={intl.formatMessage({ id: 'training.exercise.reps' })}
                             body={(rowData) => (
                               <InputText
-                                value={rowData.repetitions}
+                                value={rowData.repetitions || ''}
                                 onChange={(e) =>
                                   handleExerciseChange(
                                     exercise.id,
@@ -442,7 +442,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                             header={intl.formatMessage({ id: 'training.exercise.weight' })}
                             body={(rowData) => (
                               <InputText
-                                value={rowData.weight}
+                                value={rowData.weight || ''}
                                 onChange={(e) =>
                                   handleExerciseChange(exercise.id, rowData.setNumber - 1, 'weight', e.target.value)
                                 }
@@ -460,7 +460,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                             header={intl.formatMessage({ id: 'training.exercise.time' })}
                             body={(rowData) => (
                               <InputText
-                                value={rowData.time}
+                                value={rowData.time || ''}
                                 onChange={(e) =>
                                   handleExerciseChange(exercise.id, rowData.setNumber - 1, 'time', e.target.value)
                                 }
@@ -478,7 +478,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                             header={intl.formatMessage({ id: 'training.exercise.distance' })}
                             body={(rowData) => (
                               <InputText
-                                value={rowData.distance}
+                                value={rowData.distance || ''}
                                 onChange={(e) =>
                                   handleExerciseChange(exercise.id, rowData.setNumber - 1, 'distance', e.target.value)
                                 }
@@ -496,7 +496,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                             header={intl.formatMessage({ id: 'training.exercise.tempo' })}
                             body={(rowData) => (
                               <InputText
-                                value={rowData.tempo}
+                                value={rowData.tempo || ''}
                                 onChange={(e) =>
                                   handleExerciseChange(exercise.id, rowData.setNumber - 1, 'tempo', e.target.value)
                                 }

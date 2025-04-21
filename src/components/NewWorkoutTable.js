@@ -1442,7 +1442,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     }
   };
 
-  function renderTableHeader() {
+  const renderTableHeader = () => {
     const { headerGroup, usedProps } = buildHeaderGroup() || {};
     // If there's no data, bail out
     if (!headerGroup || !usedProps) return null;
@@ -1470,9 +1470,10 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         </tr>
       </thead>
     );
-  }
+  };
 
-  function renderDataCells(rowData) {
+  const renderDataCells = (rowData) => {
+    console.log('renderDataCells', rowData);
     // Si es un grupo, devolvemos celdas vacías
     if (rowData.rowType === 'group') {
       const totalColumns = propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
@@ -1501,7 +1502,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         );
       });
     });
-  }
+  };
 
   function renderEditableCell(rowData, prop, weekNum, currentValue) {
     // Si no existe la estructura de datos para esta semana, crearla
@@ -1521,13 +1522,11 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       case 'tempo':
       case 'difficulty':
         return (
-          <InputNumber
-            value={currentValue}
-            onValueChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.value)}
+          <InputText
+            value={currentValue === undefined || currentValue === null ? '' : currentValue}
+            onChange={(e) => handlePropertyChange(rowData, prop, weekNum, e.target.value)}
             size="small"
             className="p-inputtext-sm w-full"
-            min={0}
-            showButtons={false}
           />
         );
       case 'notes':
@@ -1548,10 +1547,20 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     if (!rowData.weeksData[weekNum]) {
       rowData.weeksData[weekNum] = { exerciseInstanceId: null };
     }
-    rowData.weeksData[weekNum][prop] = newValue;
+
+    // Permitir valores vacíos
+    rowData.weeksData[weekNum][prop] = newValue === '' ? null : newValue;
 
     // Actualizar el estado de la tabla
-    setTableData([...tableData]);
+    setTableData((prevData) => {
+      const updatedData = prevData.map((row) => {
+        if (row.id === rowData.id) {
+          return { ...row };
+        }
+        return row;
+      });
+      return updatedData;
+    });
   }
 
   function handleExerciseNameChange(rowData, newName) {
