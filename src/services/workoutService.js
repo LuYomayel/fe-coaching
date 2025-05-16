@@ -1,14 +1,5 @@
-import { formatDateToApi } from '../utils/UtilFunctions';
-
+import { getAuthHeaders } from '../utils/UtilFunctions';
 const apiUrl = process.env.REACT_APP_API_URL;
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`
-  };
-};
 
 const findAllWorkoutTemplatesByCoachId = async (coachId) => {
   try {

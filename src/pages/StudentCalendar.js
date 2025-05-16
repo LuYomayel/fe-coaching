@@ -59,7 +59,6 @@ export default function StudentCalendar() {
         setLoading(true);
         const { data } = await fetchTrainingCyclesForClientByUserId(user.userId);
         const cycles = data;
-        console.log(cycles);
         const events = cycles.flatMap((cycle) =>
           cycle.trainingWeeks.flatMap((week) =>
             week.trainingSessions.flatMap((session) => {
@@ -68,7 +67,6 @@ export default function StudentCalendar() {
                   ? session.workoutInstances.map((workoutInstance) => {
                       workoutInstance.status = updateStatus(workoutInstance, session);
                       const start = formatDateToApi(new Date(session.sessionDate));
-                      console.log(workoutInstance.workout.planName, start, session.sessionDate);
                       return {
                         title: workoutInstance.workout.planName,
                         start: start,
@@ -130,12 +128,10 @@ export default function StudentCalendar() {
       fetchTrainingData();
       fetchClientRacha();
     }
-    // eslint-disable-next-line
-  }, [user, client, refreshKey]);
+  }, [user, client]);
 
   const handleViewWorkoutDetails = (workoutInstanceId) => {
     setSelectedPlan(workoutInstanceId);
-    console.log(workoutInstanceId);
     setPlanDetailsVisible(true);
   };
 
@@ -145,6 +141,9 @@ export default function StudentCalendar() {
     });
   };
 
+  useEffect(() => {
+    console.log(calendarEvents);
+  }, [calendarEvents, planDetailsVisible]);
   const renderEventContent = (eventInfo) => {
     const { title, extendedProps } = eventInfo.event;
     const { status, workoutInstanceId } = extendedProps || {};
@@ -262,7 +261,9 @@ export default function StudentCalendar() {
             initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
             events={calendarEvents}
             eventContent={renderEventContent}
-            locale={intl.locale}
+            firstDay={1}
+            timeZone="UTC"
+            locale="es"
             headerToolbar={{
               left: 'prev,next today',
               center: 'title',
@@ -284,12 +285,6 @@ export default function StudentCalendar() {
                 calendarApi.changeView('dayGridMonth');
               }
             }}
-            firstDay={2}
-            timeZone="UTC"
-            eventDataTransform={(eventData) => {
-              eventData.start = `${eventData.start}T12:00:00Z`;
-              return eventData;
-            }}
           />
         )}
       </Card>
@@ -309,7 +304,6 @@ export default function StudentCalendar() {
             planId={selectedPlan}
             setLoading={setLoading}
             setPlanDetailsVisible={setPlanDetailsVisible}
-            setRefreshKey={setRefreshKey}
             clientId={client.id}
           />
         )}

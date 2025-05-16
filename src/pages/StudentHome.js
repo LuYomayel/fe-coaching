@@ -34,7 +34,6 @@ export default function StudentHome() {
         // Fetch today's workouts using the correct endpoint
         const { data: todayWorkoutsData } = await fetchAmIWorkingOutToday(client.id);
         // Transform the data to match our component's structure
-        console.log(todayWorkoutsData);
         const transformedWorkouts = todayWorkoutsData.map((workout) => ({
           id: workout.workoutInstanceId,
           name: workout.planName,

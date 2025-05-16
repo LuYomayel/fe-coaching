@@ -752,12 +752,9 @@ export default function ClientDashboard() {
               events={calendarEvents}
               eventContent={renderEventContent}
               firstDay={1}
+              timeZone="UTC"
               //dateClick={handleDateClick}
               //eventClick={handleEventClick}
-              timeZone="UTC"
-              eventDidMount={(info) => {
-                console.log(`${info.event.title}`, 'event.start ISO:', info.event.start.toString());
-              }}
               ref={calendarRef}
               fixedWeekCount={false}
               contentHeight="auto"

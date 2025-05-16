@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef, useCallback, memo } from 'react';
 import { useIntl, FormattedMessage } from 'react-intl';
-
+import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -40,6 +40,7 @@ import { FaTrash } from 'react-icons/fa';
 import { saveWorkoutChanges } from '../services/workoutService';
 import '../styles/WorkoutTable.css';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
+import { Button } from 'primereact/button';
 // Our known exercise properties
 const properties = [
   'sets',
@@ -161,6 +162,15 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   const showToast = useToast();
   const intl = useIntl();
   const { isDarkMode } = useTheme();
+
+  // Fixed display order and extra columns state
+  const defaultPropsOrder = ['sets', 'repetitions', 'weight'];
+  const [extraProps, setExtraProps] = useState([]);
+  const [propDialogVisible, setPropDialogVisible] = useState(false);
+  const [newProp, setNewProp] = useState(null);
+  const availableProps = properties.filter(
+    (p) => !defaultPropsOrder.includes(p) && p !== 'rpe' && !extraProps.includes(p)
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [cycleId, setCycleId] = useState(null);
@@ -567,42 +577,45 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
    * 6) Table layout
    ****************************************/
   function buildHeaderGroup() {
-    if (!numWeeks || !tableData.length) return null;
+    if (!numWeeks) return null;
 
-    // We'll generate usedProps for each week from the actual tableData
-    const usedProps = [];
-    for (let i = 1; i <= numWeeks; i++) {
-      usedProps.push([]);
-    }
-    tableData.forEach((row) => {
-      if (row.rowType === 'exercise') {
-        for (let w = 1; w <= numWeeks; w++) {
-          if (row.weeksData[w]) {
-            Object.keys(row.weeksData[w]).forEach((prop) => {
-              if (properties.includes(prop) && !usedProps[w - 1].includes(prop)) {
-                usedProps[w - 1].push(prop);
-              }
-            });
-          }
-        }
-      }
-    });
+    // Each week uses the same ordered props: default, extras, then rpe
+    const usedProps = Array.from({ length: numWeeks }, () => [...defaultPropsOrder, ...extraProps, 'rpe']);
 
-    const subHeaderColumns = [];
-    usedProps.forEach((list, idx) => {
-      list.forEach((prop) => {
-        let headerLabel = propertyLabels[prop] || prop;
-        subHeaderColumns.push(<Column header={headerLabel} key={`${prop}-header-${idx}`} />);
-      });
-    });
-
+    // Top row: week labels spanning proper colSpan
     const topRowWeekColumns = usedProps.map((list, i) => (
       <Column
+        key={`week-colspan-${i}`}
         header={`${intl.formatMessage({ id: 'workoutTable.week' }, { week: i + 1 })}`}
         colSpan={list.length}
-        key={`week-colspan-${i}`}
       />
     ));
+
+    // Second row: property headers in order, with a "+" column before RPE
+    const subHeaderColumns = usedProps.flatMap((list, i) =>
+      list.map((prop) => {
+        // weight column gets the "+" button
+        if (prop === 'weight') {
+          return (
+            <Column
+              key={`weight-with-add-${i}`}
+              header={
+                <div className="flex align-items-center justify-between">
+                  {propertyLabels[prop]}
+                  <Button
+                    icon="pi pi-plus"
+                    className="p-button-text p-button-sm"
+                    onClick={() => setPropDialogVisible(true)}
+                  />
+                </div>
+              }
+            />
+          );
+        }
+        // all other props render normally
+        return <Column key={`${prop}-header-${i}`} header={propertyLabels[prop] || prop} />;
+      })
+    );
 
     return {
       usedProps,
@@ -621,6 +634,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       )
     };
   }
+  // Compute header and column order
+  const { usedProps } = buildHeaderGroup() || {};
 
   /****************************************
    * DRAG & DROP: Single Table
@@ -1586,7 +1601,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           {usedProps.map((propsList, i) =>
             propsList.map((prop) => (
               <th className="property-header" key={`${prop}-header-${i}`}>
-                {prop === 'rpe' ? rpeMethods.name : propertyLabels[prop] || prop}
+                {selectHeaderName(prop)}
               </th>
             ))
           )}
@@ -1595,6 +1610,20 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     );
   }, [buildHeaderGroup, intl, rpeMethods, propertyLabels]);
 
+  const selectHeaderName = (prop) => {
+    if (prop === 'weight') {
+      return (
+        <div className="flex align-items-center justify-between">
+          {propertyLabels[prop]}
+          <Button icon="pi pi-plus" className="p-button-text p-button-sm" onClick={() => setPropDialogVisible(true)} />
+        </div>
+      );
+    } else if (prop === 'rpe') {
+      return rpeMethods.name;
+    } else {
+      return propertyLabels[prop] || prop;
+    }
+  };
   const renderEditableCell = useCallback(
     (rowData, prop, weekNum, currentValue) => {
       // Si no existe la estructura de datos para esta semana, crearla
@@ -1640,37 +1669,35 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
   const renderDataCells = useCallback(
     (rowData) => {
-      console.log('renderDataCells', rowData);
-      // Si es un grupo, devolvemos celdas vacías
+      if (!usedProps) return null;
+
+      // Empty cells for group rows
       if (rowData.rowType === 'group') {
-        const totalColumns = propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
+        const totalColumns = usedProps.reduce((acc, list) => acc + list.length, 0);
         return Array.from({ length: totalColumns }).map((_, idx) => (
           <td key={`group-${rowData.groupNumber}-${idx}`} className="group-empty-cell" />
         ));
       }
 
-      // Para filas de ejercicios
-      return propertiesUsedByWeek.map((propsList, weekIndex) => {
+      // For exercise rows, render only the columns in usedProps
+      return usedProps.map((propsList, weekIndex) => {
         const realWeek = weekIndex + 1;
-        return propsList.map((prop, index) => {
+        return propsList.map((prop) => {
           const cellKey = `ex-${rowData.name}-w${realWeek}-${prop}`;
           const cellValue =
-            rowData.weeksData[realWeek] && rowData.weeksData[realWeek][prop] !== undefined
+            rowData.weeksData[realWeek] && rowData.weeksData[realWeek][prop] != null
               ? rowData.weeksData[realWeek][prop]
               : '';
 
           return (
-            <td
-              className={`data-cell ${index === 0 ? 'first-prop' : ''} ${index === propsList.length - 1 ? 'last-prop' : ''}`}
-              key={cellKey}
-            >
+            <td key={cellKey} className={`data-cell ${prop === 'weight' ? 'text-left' : ''}`}>
               {isEditing ? renderEditableCell(rowData, prop, realWeek, cellValue) : cellValue}
             </td>
           );
         });
       });
     },
-    [propertiesUsedByWeek, isEditing]
+    [usedProps, isEditing, renderEditableCell]
   );
 
   const handleExerciseNameChange = (rowData, newName) => {
@@ -2081,6 +2108,31 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         onHide={() => setNewCycleDialogVisible(false)}
         setRefreshKey={refreshTable}
       />
+      <Dialog
+        header="Add another column"
+        visible={propDialogVisible}
+        onHide={() => setPropDialogVisible(false)}
+        footer={
+          <Button
+            label="Add"
+            onClick={() => {
+              if (newProp) {
+                setExtraProps((prev) => [...prev, newProp]);
+                setNewProp(null);
+              }
+              setPropDialogVisible(false);
+            }}
+          />
+        }
+      >
+        <Dropdown
+          value={newProp}
+          options={availableProps.map((p) => ({ label: propertyLabels[p] || p, value: p }))}
+          onChange={(e) => setNewProp(e.value)}
+          placeholder="Select property…"
+          className="w-full"
+        />
+      </Dialog>
     </div>
   );
 }

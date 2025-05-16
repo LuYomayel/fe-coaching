@@ -491,15 +491,62 @@ export default function NewPlanDetailHorizontal({
       <div className="w-full md:w-12">
         <div className="p-grid">
           {exercise.completed ? (
-            <div className="p-col-3">{intl.formatMessage({ id: 'exercise.properties.completed' })}</div>
+            <div className="p-col-3">
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  background: '#d4edda',
+                  color: '#155724',
+                  borderRadius: '16px',
+                  padding: '0.25rem 0.75rem',
+                  fontWeight: 600,
+                  fontSize: '0.95rem'
+                }}
+              >
+                <i className="pi pi-check-circle" style={{ color: '#28a745', marginRight: 8, fontSize: '1.2rem' }} />
+                {intl.formatMessage({ id: 'exercise.properties.completed' })}
+              </span>
+            </div>
           ) : exercise.completedNotAsPlanned ? (
             <div className="p-col-3">
-              {intl.formatMessage({
-                id: 'exercise.properties.completedNotAsPlanned'
-              })}
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  background: '#fff3cd',
+                  color: '#856404',
+                  borderRadius: '16px',
+                  padding: '0.25rem 0.75rem',
+                  fontWeight: 600,
+                  fontSize: '0.95rem'
+                }}
+              >
+                <i
+                  className="pi pi-exclamation-triangle"
+                  style={{ color: '#ffc107', marginRight: 8, fontSize: '1.2rem' }}
+                />
+                {intl.formatMessage({ id: 'exercise.properties.completedNotAsPlanned' })}
+              </span>
             </div>
           ) : (
-            <div className="p-col-3">{intl.formatMessage({ id: 'exercise.properties.notCompleted' })}</div>
+            <div className="p-col-3">
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  background: '#f8d7da',
+                  color: '#721c24',
+                  borderRadius: '16px',
+                  padding: '0.25rem 0.75rem',
+                  fontWeight: 600,
+                  fontSize: '0.95rem'
+                }}
+              >
+                <i className="pi pi-times-circle" style={{ color: '#dc3545', marginRight: 8, fontSize: '1.2rem' }} />
+                {intl.formatMessage({ id: 'exercise.properties.notCompleted' })}
+              </span>
+            </div>
           )}
           {exercise.rpe && rpeMethods && (
             <div className="p-col-3">
@@ -515,7 +562,7 @@ export default function NewPlanDetailHorizontal({
       </div>
 
       {/* Render set logs if available */}
-      {renderSetLogs(exercise.setLogs)}
+      {exercise.completed && renderSetLogs(exercise.setLogs)}
     </div>
   );
 

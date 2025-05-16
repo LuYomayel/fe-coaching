@@ -210,6 +210,19 @@ const formatRelativeDate = (date, intl) => {
   }
 };
 
+const getToken = () => {
+  const token = localStorage.getItem('token');
+  return token;
+};
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`
+  };
+};
+
 export {
   formatDate,
   formatDateToApi,
@@ -222,5 +235,7 @@ export {
   validateDates,
   validateStudentDetails,
   getDayMonthYear,
-  formatRelativeDate
+  formatRelativeDate,
+  getToken,
+  getAuthHeaders
 };

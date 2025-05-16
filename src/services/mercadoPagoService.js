@@ -1,5 +1,6 @@
+import { getAuthHeaders } from '../utils/UtilFunctions';
+
 const apiUrl = process.env.REACT_APP_API_URL;
-const token = localStorage.getItem('token');
 
 /**
  * Crea un pago a través de Mercado Pago
@@ -18,10 +19,7 @@ export const createMercadoPagoPayment = async (paymentData) => {
   try {
     const response = await fetch(`${apiUrl}/payment/mercado-pago/create`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(paymentData)
     });
 
@@ -44,9 +42,7 @@ export const createMercadoPagoPayment = async (paymentData) => {
 export const checkMercadoPagoPaymentStatus = async (paymentId) => {
   try {
     const response = await fetch(`${apiUrl}/payment/mercado-pago/status/${paymentId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: getAuthHeaders()
     });
 
     const data = await response.json();
@@ -75,10 +71,7 @@ export const notifyBankTransfer = async (transferData, coachId) => {
   try {
     const response = await fetch(`${apiUrl}/payment/bank-transfer/notify/${coachId}`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(transferData)
     });
 
@@ -101,9 +94,7 @@ export const notifyBankTransfer = async (transferData, coachId) => {
 export const getCoachBankData = async (coachId) => {
   try {
     const response = await fetch(`${apiUrl}/payment/coach-bank-data/${coachId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: getAuthHeaders()
     });
 
     const data = await response.json();
@@ -132,10 +123,7 @@ export const updateCoachBankData = async (coachId, bankData) => {
   try {
     const response = await fetch(`${apiUrl}/payment/coach-bank-data/${coachId}`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(bankData)
     });
 
