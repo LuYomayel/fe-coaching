@@ -18,6 +18,14 @@ const fetchBodyAreas = async () => {
   return data;
 };
 
+const fetchExerciseTypes = async () => {
+  const response = await fetch(`${apiUrl}/exercise/exercise-type`);
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data;
+};
 const createExercise = async (exercise) => {
   const response = await fetch(`${apiUrl}/exercise`, {
     method: 'POST',
@@ -44,7 +52,7 @@ const importExercises = async (coachId, file) => {
 };
 
 const updateExercise = async (exerciseId, exercise) => {
-  const response = await fetch(`${apiUrl}/exercise/${exerciseId}`, {
+  const response = await fetch(`${apiUrl}/exercise/by-id/${exerciseId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(exercise)
@@ -54,6 +62,24 @@ const updateExercise = async (exerciseId, exercise) => {
     throw new Error(data.error);
   }
   return data;
+};
+
+const massUpdateExercises = async (exercises) => {
+  try {
+    const response = await fetch(`${apiUrl}/exercise/mass-update`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(exercises)
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error updating exercises', error);
+    throw error;
+  }
 };
 
 const deleteExercise = async (exerciseId) => {
@@ -108,11 +134,13 @@ const processImportExercises = async (coachId, importData) => {
 export {
   fetchCoachExercises, // checked
   fetchBodyAreas, // checked
+  fetchExerciseTypes, // checked
   deleteExercise, // checked
   createExercise, // checked
   updateExercise, // checked
   importExercises, // checked
   createExercises, // checked
   analyzeExcelFile,
-  processImportExercises
+  processImportExercises,
+  massUpdateExercises
 };

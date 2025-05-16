@@ -47,7 +47,9 @@ import {
   importExercises,
   updateExercise,
   analyzeExcelFile,
-  processImportExercises
+  processImportExercises,
+  massUpdateExercises,
+  fetchExerciseTypes
 } from '../services/exercisesService';
 import { ProgressBar } from 'primereact/progressbar';
 import { Tooltip } from 'primereact/tooltip';
@@ -256,7 +258,7 @@ export default function CoachProfilePage() {
 
   // State variables
   const [refreshKey, setRefreshKey] = useState(0);
-
+  const [isEditingExercises, setIsEditingExercises] = useState(false);
   // Coach info
   const [coachInfo, setCoachInfo] = useState(null); // <- state for coach info
 
@@ -269,7 +271,8 @@ export default function CoachProfilePage() {
   const [exercises, setExercises] = useState([]); // <- state for exercises
   const [missingExercises, setMissingExercises] = useState([]); // <- state for missing exercises
   const [bodyAreas, setBodyAreas] = useState([]); // <- state for body areas
-
+  const [exerciseTypes, setExerciseTypes] = useState([]); // <- state for exercise types
+  const [originalExercisesForEdit, setOriginalExercisesForEdit] = useState([]); // <- state for original exercises for edit
   // Current plan
   const [currentPlanId, setCurrentPlanId] = useState(null);
 
@@ -331,6 +334,7 @@ export default function CoachProfilePage() {
   const [selectedRpe, setSelectedRpe] = useState(null);
   const [analysisData, setAnalysisData] = useState(null);
   const [pendingUploadFormData, setPendingUploadFormData] = useState(null);
+  const [modifiedExercises, setModifiedExercises] = useState({}); // Para rastrear cambios individuales
 
   const typeOptions = [
     { label: 'Workout', value: 'workout' },
@@ -444,6 +448,7 @@ export default function CoachProfilePage() {
         );
         setMissingExercises(missingExercises);
         setExercises(data);
+        console.log('data', data);
       } catch (error) {
         console.error('error', error);
         showToast('error', 'Error', error.message);
@@ -502,6 +507,7 @@ export default function CoachProfilePage() {
     fetchCoachPlansData();
     fetchExercises();
     fetchBodyAreasData();
+
     fetchSubscriptionPlans();
     fetchRpeMethods();
     fetchClients();
@@ -510,6 +516,19 @@ export default function CoachProfilePage() {
     // eslint-disable-next-line
   }, [user.userId, showToast, navigate, refreshKey]);
 
+  useEffect(() => {
+    const fetchET = async () => {
+      try {
+        const { data } = await fetchExerciseTypes();
+        console.log('data', data);
+        setExerciseTypes(data);
+      } catch (error) {
+        console.log('error', error);
+        showToast('error', 'Error', error.message);
+      }
+    };
+    fetchET();
+  }, []);
   const handleViewPlanDetails = (workoutInstanceId) => {
     setLoading(true);
     setSelectedPlan(workoutInstanceId);
@@ -543,9 +562,9 @@ export default function CoachProfilePage() {
 
   const renderHeader = (text) => {
     return (
-      <div className="flex justify-content-between align-items-center">
+      <div className="flex justify-content-between align-items-center py-2">
         <div className="flex align-items-center gap-2">
-          <h2 className="text-xl font-bold">{text}</h2>
+          <h2 className="text-xl font-bold mb-0">{text}</h2>
           {text === intl.formatMessage({ id: 'coach.tabs.exercises' }) && missingExercises.length > 0 && (
             <Button
               icon="pi pi-exclamation-triangle"
@@ -582,21 +601,86 @@ export default function CoachProfilePage() {
                 }
               }}
               badge={missingExercises.length.toString()}
-              badgeClassName="p-badge-danger"
+              badgeClassName="p-badge-danger p-badge"
+              style={{
+                width: '5rem'
+              }}
             />
           )}
         </div>
         <div className="flex align-items-center gap-2">
-          <Button
-            label={intl.formatMessage({ id: 'common.add', defaultMessage: 'Add {item}' }, { item: text.slice(0, -1) })}
-            icon="pi pi-plus"
-            onClick={() =>
-              text === intl.formatMessage({ id: 'coach.tabs.exercises' })
-                ? openCreateExerciseDialog()
-                : text === intl.formatMessage({ id: 'coach.tabs.workouts' })
-                  ? navigate('/plans/create', { state: { changeToTemplate: false } })
-                  : openCreatePlanDialog()
-            }
+          {isEditingExercises ? (
+            <>
+              <Button
+                label={intl.formatMessage({ id: 'common.saveAll' })}
+                icon="pi pi-save"
+                className="p-button-success"
+                onClick={handleMassUpdateExercises}
+                disabled={Object.keys(modifiedExercises).length === 0}
+              />
+              <Button
+                label={intl.formatMessage({ id: 'common.cancel' })}
+                icon="pi pi-times"
+                className="p-button-outlined p-button-danger"
+                onClick={cancelMassUpdate}
+              />
+            </>
+          ) : (
+            <Button
+              label={intl.formatMessage({ id: 'common.edit' })}
+              icon="pi pi-pencil"
+              onClick={() => {
+                // Antes de entrar en modo edición, podrías guardar una copia del estado original de 'exercises'
+                // para poder revertir correctamente si el usuario cancela.
+                setOriginalExercisesForEdit(JSON.parse(JSON.stringify(exercises))); // Copia profunda
+                setIsEditingExercises(true);
+              }}
+            />
+          )}
+          {!isEditingExercises && (
+            <>
+              <Button
+                label={intl.formatMessage(
+                  { id: 'common.add', defaultMessage: 'Add {item}' },
+                  { item: intl.formatMessage({ id: 'coach.exercise.titleSingular' }) }
+                )}
+                icon="pi pi-plus"
+                onClick={openCreateExerciseDialog}
+              />
+              <Button
+                label={intl.formatMessage({ id: 'coach.importExercises' })}
+                icon="pi pi-upload"
+                onClick={() => fileInputRef.current.click()}
+                className="p-button-outlined"
+              />
+            </>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx, .xls"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                const files = { 0: e.target.files[0] };
+                onTemplateSelect({ files });
+                uploadHandler({ files });
+              }
+            }}
+          />
+          <FileUpload
+            ref={fileUploadRef}
+            customUpload
+            uploadHandler={uploadHandler}
+            onUpload={onTemplateUpload}
+            onSelect={onTemplateSelect}
+            onError={onTemplateError}
+            onClear={onTemplateClear}
+            multiple={false}
+            maxFileSize={1000000}
+            accept=".xlsx, .xls"
+            emptyTemplate={<p className="m-0">{intl.formatMessage({ id: 'coach.dragAndDropExercises' })}</p>}
+            style={{ display: 'none' }}
           />
         </div>
       </div>
@@ -1894,6 +1978,217 @@ export default function CoachProfilePage() {
     setRefreshKey((prev) => prev + 1);
   };
 
+  const exerciseTypeEditor = (options) => {
+    return (
+      <Dropdown
+        value={options.value || ''}
+        options={exerciseTypes.map((type) => ({
+          label: type.name,
+          value: type.id
+        }))}
+        onChange={(e) => options.editorCallback(e.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            saveEditedExercise(options);
+            e.preventDefault();
+          }
+          // Escape: cancelar y volver al valor original
+          if (e.key === 'Escape') {
+            options.editorCallback(options.rowData[options.field]);
+            e.preventDefault();
+          }
+        }}
+        placeholder={intl.formatMessage({ id: 'exercise.type' })}
+      />
+    );
+  };
+  const textEditor = (options) => {
+    return (
+      <InputText
+        type="text"
+        value={options.value || ''} // Asegurar que el valor no sea null/undefined
+        onChange={(e) => {
+          options.editorCallback(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          // Enter sin Shift: guardar y salir (PrimeReact lo maneja)
+          if (e.key === 'Enter' && !e.shiftKey) {
+            saveEditedExercise(options);
+            e.preventDefault();
+          }
+          // Escape: cancelar y volver al valor original
+          if (e.key === 'Escape') {
+            options.editorCallback(options.rowData[options.field]);
+            e.preventDefault();
+          }
+        }}
+        className="w-full" // Para que ocupe todo el ancho de la celda
+      />
+    );
+  };
+
+  const descriptionEditor = (options) => {
+    return (
+      <InputTextarea
+        value={options.value || ''}
+        onChange={(e) => options.editorCallback(e.target.value)}
+        rows={1}
+        autoResize
+        onKeyDown={(e) => {
+          // Enter sin Shift: guardar y salir (PrimeReact lo maneja)
+          if (e.key === 'Enter' && !e.shiftKey) {
+            saveEditedExercise(options);
+            e.preventDefault();
+          }
+          // Escape: cancelar y volver al valor original
+          if (e.key === 'Escape') {
+            options.editorCallback(options.rowData[options.field]);
+            e.preventDefault();
+          }
+        }}
+        className="w-full"
+      />
+    );
+  };
+
+  const saveEditedExercise = (options) => {
+    let { rowData, value: newValue, field } = options;
+    console.log('multimedia', field === 'multimedia', 'newValue', newValue, 'rowData', isValidYouTubeUrl(newValue));
+    if (field === 'multimedia' && newValue && !isValidYouTubeUrl(newValue)) {
+      showToast('error', 'URL Inválida', intl.formatMessage({ id: 'coach.exercise.error.video.invalid' }));
+      return; // Detener aquí para no guardar un valor inválido
+    } else if (field === 'description' && newValue && newValue.trim() !== '' && newValue.length > 1000) {
+      showToast(
+        'error',
+        'Descripción demasiado larga',
+        intl.formatMessage({ id: 'coach.exercise.error.description.tooLong' })
+      );
+      return; // Detener aquí para no guardar un valor inválido
+    } else if (field === 'equipmentNeeded' && newValue && newValue.trim() !== '' && newValue.length > 1000) {
+      showToast(
+        'error',
+        'Equipamiento demasiado largo',
+        intl.formatMessage({ id: 'coach.exercise.error.equipment.tooLong' })
+      );
+      return; // Detener aquí para no guardar un valor inválido
+    } else if (field === 'name' && newValue && newValue.trim() !== '' && newValue.length > 100) {
+      showToast('error', 'Nombre demasiado largo', intl.formatMessage({ id: 'coach.exercise.error.name.tooLong' }));
+      return; // Detener aquí para no guardar un valor inválido
+    } else if (field === 'exerciseType' && !newValue) {
+      showToast(
+        'error',
+        'Tipo de ejercicio requerido',
+        intl.formatMessage({ id: 'coach.exercise.error.exerciseType.required' })
+      );
+      return; // Detener aquí para no guardar un valor inválido
+    } else {
+      // Actualizar el estado local 'exercises'
+      let _exercises = exercises.map((ex) => {
+        if (ex.id === rowData.id) {
+          return { ...ex, [field]: newValue === null || newValue === undefined ? '' : newValue }; // Guardar string vacío si es null/undefined
+        }
+        return ex;
+      });
+      setExercises(_exercises);
+
+      // Rastrear el ejercicio modificado
+      const updatedExerciseInState = _exercises.find((ex) => ex.id === rowData.id);
+      if (updatedExerciseInState) {
+        // Buscar el ejercicio original para comparar si realmente hubo cambios
+        const originalExercise = originalExercisesForEdit.find((ex) => ex.id === rowData.id);
+
+        // Verificar si hay diferencias entre el ejercicio actualizado y el original
+        const hasChanged = originalExercise && originalExercise[field] !== updatedExerciseInState[field];
+
+        // Solo agregar al objeto de ejercicios modificados si realmente hubo cambios
+        if (hasChanged) {
+          setModifiedExercises((prev) => ({ ...prev, [rowData.id]: updatedExerciseInState }));
+        }
+      }
+    }
+  };
+
+  const onExerciseCellEditComplete = (e) => {
+    let { rowData, newValue, field, originalEvent } = e;
+
+    // Si originalEvent existe, es probable que venga de una interacción de teclado (Enter/Tab)
+    // y queremos que se aplique el cambio. Si no, es un blur y también queremos aplicar.
+
+    // Validaciones básicas
+    if (field === 'multimedia' && newValue && newValue.trim() !== '' && !isValidYouTubeUrl(newValue)) {
+      showToast('error', 'URL Inválida', intl.formatMessage({ id: 'coach.exercise.error.video.invalid' }));
+      // No actualizamos el estado local si la URL es inválida para forzar corrección o cancelación
+      // PrimeReact debería mantener el editor abierto o revertir si la validación falla en el editor mismo.
+      // Para forzar la reversión visual si el editor se cierra:
+      // let _exercises = [...exercises];
+      // _exercises[e.rowIndex][field] = rowData[field]; // Revertir al valor original
+      // setExercises(_exercises);
+      return; // Detener aquí para no guardar un valor inválido
+    }
+
+    // Actualizar el estado local 'exercises'
+    let _exercises = exercises.map((ex) => {
+      if (ex.id === rowData.id) {
+        return { ...ex, [field]: newValue === null || newValue === undefined ? '' : newValue }; // Guardar string vacío si es null/undefined
+      }
+      return ex;
+    });
+    setExercises(_exercises);
+
+    // Rastrear el ejercicio modificado
+    const updatedExerciseInState = _exercises.find((ex) => ex.id === rowData.id);
+    if (updatedExerciseInState) {
+      // Comprobar si realmente hubo un cambio respecto al original (antes de entrar en modo edición)
+      // Esto es un poco más complejo si no guardas el estado original de `exercises` al entrar en modo edición.
+      // Por simplicidad, asumimos que cualquier edición completada se marca como modificada.
+      setModifiedExercises((prev) => ({ ...prev, [rowData.id]: updatedExerciseInState }));
+    }
+  };
+
+  const handleMassUpdateExercises = async () => {
+    const exercisesToUpdateArray = Object.values(modifiedExercises);
+    console.log('exercisesToUpdateArray', exercisesToUpdateArray);
+    if (exercisesToUpdateArray.length === 0) {
+      showToast(
+        'info',
+        intl.formatMessage({ id: 'common.noChanges' }),
+        intl.formatMessage({ id: 'common.noChangesToSave' })
+      );
+      setIsEditingExercises(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data } = await massUpdateExercises(exercisesToUpdateArray);
+      console.log('data', data);
+
+      setLoading(false);
+
+      setModifiedExercises({});
+      setIsEditingExercises(false);
+      setRefreshKey((k) => k + 1); // Para refrescar los datos de la tabla
+    } catch (error) {
+      console.error('Error updating exercises', error);
+      showToast('error', 'Error', error.message || 'Error updating exercises');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelMassUpdate = () => {
+    setIsEditingExercises(false);
+    setModifiedExercises({});
+    // Para revertir los cambios visuales, necesitas recargar los datos originales.
+    // La forma más simple es forzar un refresh con refreshKey si tus useEffects ya recargan 'exercises'
+    setRefreshKey((k) => k + 1);
+    showToast(
+      'info',
+      intl.formatMessage({ id: 'common.editCanceled' }),
+      intl.formatMessage({ id: 'common.noChangesMade' })
+    );
+  };
+
   return (
     <div className="coach-profile-container">
       {/* Sección de cabecera del perfil */}
@@ -1947,6 +2242,7 @@ export default function CoachProfilePage() {
         <TabPanel header={intl.formatMessage({ id: 'coach.tabs.exercises' })} leftIcon="pi pi-heart">
           <div className="tab-content">
             <div className="action-buttons">
+              {/*
               <Button
                 label={intl.formatMessage(
                   { id: 'common.add' },
@@ -1989,6 +2285,7 @@ export default function CoachProfilePage() {
                 emptyTemplate={<p className="m-0">{intl.formatMessage({ id: 'coach.dragAndDropExercises' })}</p>}
                 style={{ display: 'none' }}
               />
+              */}
             </div>
 
             <Card className="section-card" title={intl.formatMessage({ id: 'coach.exercises.title' })}>
@@ -2003,17 +2300,19 @@ export default function CoachProfilePage() {
                 filters={filters}
                 filterDisplay="menu"
                 globalFilterFields={['name', 'exerciseType', 'description']}
-                header={renderHeader(intl.formatMessage({ id: 'coach.exerciseList' }))}
+                header={renderHeader(intl.formatMessage({ id: 'coach.tabs.exercises' }))}
                 globalFilter={filters.global.value}
-                responsiveLayout="stack"
                 breakpoint="960px"
                 dataKey="id"
                 scrollable
-                scrollHeight="600px"
+                scrollHeight="900px"
+                editMode={isEditingExercises ? 'cell' : null}
+                onCellEditComplete={onExerciseCellEditComplete}
               >
                 <Column
                   field="name"
                   header={intl.formatMessage({ id: 'exercise.name' })}
+                  editor={(options) => textEditor(options)}
                   filter
                   filterField="name"
                   filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByName' })}
@@ -2030,22 +2329,35 @@ export default function CoachProfilePage() {
                 <Column
                   field="multimedia"
                   header={intl.formatMessage({ id: 'exercise.video' })}
-                  body={videoBodyTemplate}
+                  editor={(options) => textEditor(options)}
+                  body={(rowData) => {
+                    if (isEditingExercises) {
+                      return <span>{rowData.multimedia || ''}</span>;
+                    }
+                    return videoBodyTemplate(rowData);
+                  }}
                   style={{ minWidth: '200px' }}
                 />
                 <Column
                   field="exerciseType"
                   header={intl.formatMessage({ id: 'exercise.type' })}
+                  editor={(options) => exerciseTypeEditor(options)}
                   filter
                   filterField="exerciseType"
                   filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByType' })}
                   filterElement={exerciseTypeFilterTemplate}
                   sortable
                   style={{ minWidth: '200px' }}
+                  body={(rowData) => (
+                    <div className="exercise-type-cell">
+                      <span className="exercise-type">{rowData.exerciseType?.name}</span>
+                    </div>
+                  )}
                 />
                 <Column
                   field="description"
                   header={intl.formatMessage({ id: 'exercise.description' })}
+                  editor={(options) => descriptionEditor(options)}
                   filter
                   filterField="description"
                   filterPlaceholder={intl.formatMessage({ id: 'exercise.searchByDescription' })}
@@ -2060,40 +2372,45 @@ export default function CoachProfilePage() {
                 <Column
                   field="equipmentNeeded"
                   header={intl.formatMessage({ id: 'exercise.equipment' })}
+                  editor={(options) => textEditor(options)}
                   style={{ minWidth: '200px' }}
                 />
-                <Column
-                  header={intl.formatMessage({ id: 'common.actions' })}
-                  body={(rowData) => (
-                    <div className="action-button-cell">
-                      <Button
-                        icon="pi pi-pencil"
-                        className="p-button-rounded p-button-outlined"
-                        onClick={() => openEditExerciseDialog(rowData)}
-                        tooltip={intl.formatMessage({ id: 'common.edit' })}
-                        tooltipOptions={{ position: 'top' }}
-                      />
-                      <Button
-                        icon="pi pi-trash"
-                        className="p-button-rounded p-button-outlined p-button-danger"
-                        onClick={() => {
-                          showConfirmationDialog({
-                            message: intl.formatMessage({
-                              id: 'deleteExercise.confirmation.message'
-                            }),
-                            header: intl.formatMessage({ id: 'common.confirmation' }),
-                            icon: 'pi pi-exclamation-triangle',
-                            accept: () => handleDeleteExercise(rowData.id),
-                            reject: () => console.log('Rejected')
-                          });
-                        }}
-                        tooltip={intl.formatMessage({ id: 'common.delete' })}
-                        tooltipOptions={{ position: 'top' }}
-                      />
-                    </div>
-                  )}
-                  style={{ minWidth: '150px' }}
-                />
+                {!isEditingExercises && (
+                  <Column
+                    header={intl.formatMessage({ id: 'common.actions' })}
+                    body={(rowData) => (
+                      <div className="action-button-cell">
+                        <Button
+                          icon="pi pi-pencil"
+                          className="p-button-rounded p-button-outlined"
+                          onClick={() => openEditExerciseDialog(rowData)}
+                          tooltip={intl.formatMessage({ id: 'common.edit' })}
+                          tooltipOptions={{ position: 'top' }}
+                          disabled={isEditingExercises}
+                        />
+                        <Button
+                          icon="pi pi-trash"
+                          className="p-button-rounded p-button-outlined p-button-danger"
+                          onClick={() => {
+                            showConfirmationDialog({
+                              message: intl.formatMessage({
+                                id: 'deleteExercise.confirmation.message'
+                              }),
+                              header: intl.formatMessage({ id: 'common.confirmation' }),
+                              icon: 'pi pi-exclamation-triangle',
+                              accept: () => handleDeleteExercise(rowData.id),
+                              reject: () => console.log('Rejected')
+                            });
+                          }}
+                          tooltip={intl.formatMessage({ id: 'common.delete' })}
+                          tooltipOptions={{ position: 'top' }}
+                          disabled={isEditingExercises}
+                        />
+                      </div>
+                    )}
+                    style={{ minWidth: '150px' }}
+                  />
+                )}
               </DataTable>
             </Card>
 
