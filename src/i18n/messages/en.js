@@ -694,6 +694,15 @@ const messages = {
   'home.header.contact': 'Contact',
   'home.header.login': 'Login',
 
+  'header.settings': 'Settings',
+  'header.logout': 'Logout',
+  'header.profile': 'Profile',
+  'header.clients': 'Clients',
+  'header.workouts': 'Workouts',
+  'header.progress': 'Progress',
+  'header.home': 'Home',
+  'header.plans': 'Plans',
+  'home.verification.resend': 'Resend Email Verification',
   'home.hero.title': 'Transform Your Fitness Journey with EaseTrain',
   'home.hero.subtitle': 'Empower trainers, motivate clients, and achieve fitness goals together.',
   'home.hero.getStarted': 'Get Started',
@@ -1185,7 +1194,27 @@ const messages = {
   'payment.error.enterTransferAmount': 'Please enter the transfer amount',
   'payment.mercadoPagoAccessToken': 'Mercado Pago Access Token',
   'payment.mercadoPagoPublicKey': 'Mercado Pago Public Key',
-  'payment.mercadoPagoUserId': 'Mercado Pago User ID'
+  'payment.mercadoPagoUserId': 'Mercado Pago User ID',
+
+  'settings.title': 'Settings',
+  'settings.general': 'General',
+  'settings.notifications': 'Notifications',
+  'settings.language': 'Language',
+  'settings.theme': 'Theme',
+  'settings.logout': 'Logout',
+  'settings.darkMode': 'Dark Mode',
+  'settings.lightMode': 'Light Mode',
+  'settings.system': 'System',
+  'settings.language.en': 'English',
+  'settings.language.es': 'Spanish',
+  'settings.language.pt': 'Portuguese',
+  'settings.theme.light': 'Light',
+  'settings.theme.dark': 'Dark',
+  'settings.theme.system': 'System',
+  'settings.unitConfiguration': 'Unit Configuration',
+
+  'createCycle.dialog.header': 'Create Cycle',
+  'createCycle.button.create': 'Create'
 };
 
 export default messages;

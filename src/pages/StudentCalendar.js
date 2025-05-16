@@ -17,7 +17,7 @@ import {
   fetchTrainingSessionWithNoWeekByClientId
 } from '../services/workoutService';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
-import { getDayMonthYear, formatRelativeDate } from '../utils/UtilFunctions';
+import { getDayMonthYear, formatRelativeDate, formatDateToApi } from '../utils/UtilFunctions';
 import { useIntl, FormattedMessage } from 'react-intl';
 import '../styles/StudentHome.css';
 import { fetchClientDailyStreak, fetchClientStreak } from '../services/usersService';
@@ -59,6 +59,7 @@ export default function StudentCalendar() {
         setLoading(true);
         const { data } = await fetchTrainingCyclesForClientByUserId(user.userId);
         const cycles = data;
+        console.log(cycles);
         const events = cycles.flatMap((cycle) =>
           cycle.trainingWeeks.flatMap((week) =>
             week.trainingSessions.flatMap((session) => {
@@ -66,9 +67,11 @@ export default function StudentCalendar() {
                 session.workoutInstances.length > 0
                   ? session.workoutInstances.map((workoutInstance) => {
                       workoutInstance.status = updateStatus(workoutInstance, session);
+                      const start = formatDateToApi(new Date(session.sessionDate));
+                      console.log(workoutInstance.workout.planName, start, session.sessionDate);
                       return {
                         title: workoutInstance.workout.planName,
-                        start: getDayMonthYear(session).toISOString().split('T')[0],
+                        start: start,
                         extendedProps: {
                           status: workoutInstance.status,
                           workoutInstanceId: workoutInstance.id,
@@ -281,6 +284,7 @@ export default function StudentCalendar() {
                 calendarApi.changeView('dayGridMonth');
               }
             }}
+            firstDay={1}
           />
         )}
       </Card>

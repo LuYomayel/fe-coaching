@@ -40,6 +40,8 @@ export default function CoachHomePage() {
   }).format(currentDate);
 
   useEffect(() => {
+    const date = new Date();
+    console.log(date);
     const fetchData = async () => {
       setLoading(true);
       try {

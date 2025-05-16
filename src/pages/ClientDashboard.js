@@ -110,6 +110,7 @@ export default function ClientDashboard() {
     setCalendarEvents([]);
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleOptions }) => {
+        console.log(events);
         setCycleOptions(cycleOptions);
         setCalendarEvents((e) => [...events, ...e]);
         const options = cycleOptions.map((cycle) => ({
@@ -128,11 +129,11 @@ export default function ClientDashboard() {
     fetchTrainingSessionWithNoWeekByClientId(clientId)
       .then(({ data }) => {
         const events = data.map((session) => {
-          const start = formatDateToApi(new Date(session.sessionDate));
           const workoutInstance = session.workoutInstances[0];
+
           return {
             title: workoutInstance?.instanceName ? workoutInstance.instanceName : workoutInstance?.workout?.planName,
-            start: start,
+            start: session.sessionDate,
             extendedProps: {
               sessionId: session.id,
               status: workoutInstance?.status,
@@ -736,14 +737,12 @@ export default function ClientDashboard() {
               initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
               events={calendarEvents}
               eventContent={renderEventContent}
-              dateClick={handleDateClick}
-              eventClick={handleEventClick}
+              //dateClick={handleDateClick}
+              //eventClick={handleEventClick}
               ref={calendarRef}
-              fixedWeekCount={false}
+              //fixedWeekCount={false}
               contentHeight="auto"
-              locales={allLocales}
-              locale={locale}
-              firstDay={1}
+              locale={intl.locale}
               dayCellContent={renderDayCellContent}
               headerToolbar={{
                 left: 'prev,next today',
@@ -755,8 +754,9 @@ export default function ClientDashboard() {
                 month: intl.formatMessage({ id: 'calendar.month' }, { defaultMessage: 'Mes' }),
                 list: intl.formatMessage({ id: 'calendar.list' }, { defaultMessage: 'Lista' })
               }}
-              dayMaxEvents={3}
-              moreLinkContent={({ num }) => (
+              //dayMaxEvents={3}
+
+              /*moreLinkContent={({ num }) => (
                 <Badge
                   value={`+${num}`}
                   severity="info"
@@ -765,7 +765,7 @@ export default function ClientDashboard() {
                     { num }
                   )}
                 />
-              )}
+              )}*/
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
                 if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
@@ -774,6 +774,7 @@ export default function ClientDashboard() {
                   calendarApi.changeView('dayGridMonth');
                 }
               }}
+              firstDay={1}
             />
           </Card>
 

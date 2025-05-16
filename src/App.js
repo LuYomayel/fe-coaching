@@ -34,9 +34,9 @@ import { NotificationProvider } from './utils/NotificationsContext.js';
 import Settings from './pages/Settings.js';
 import StudentCalendar from './pages/StudentCalendar';
 
-const stripePromise = await loadStripe(
-  'pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq'
-);
+//const stripePromise = await loadStripe(
+//  'pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq'
+//);
 
 const App = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -61,100 +61,97 @@ const App = () => {
               <NotificationProvider>
                 <ChatSidebarProvider>
                   <ConfirmationDialogProvider>
-                    <Elements stripe={stripePromise}>
-                      <Router>
-                        <div className="flex">
-                          <Sidebar onExpandChange={setSidebarExpanded} />
-                          <div
-                            className="flex-grow-1"
-                            style={{
-                              marginLeft: isMobile ? '0' : sidebarExpanded ? '250px' : '70px',
-                              transition: 'margin-left 0.3s ease',
-                              height: '100vh',
-                              overflow: 'auto'
-                            }}
-                          >
-                            <Routes>
-                              <Route path="/" element={<Home />} />
-                              <Route path="/login" element={<Home />} />
-                              <Route path="/unauthorized" element={<Unauthorized />} />
+                    {/*<Elements stripe={stripePromise}>*/}
+                    <Router>
+                      <div className="flex">
+                        <Sidebar onExpandChange={setSidebarExpanded} />
+                        <div
+                          className="flex-grow-1"
+                          style={{
+                            marginLeft: isMobile ? '0' : sidebarExpanded ? '250px' : '70px',
+                            transition: 'margin-left 0.3s ease',
+                            height: '100vh',
+                            overflow: 'auto'
+                          }}
+                        >
+                          <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/login" element={<Home />} />
+                            <Route path="/unauthorized" element={<Unauthorized />} />
 
-                              <Route
-                                path="/coach"
-                                element={<PrivateRoute element={CoachHome} requiredType="coach" />}
-                              />
-                              <Route
-                                path="/coach/profile"
-                                element={<PrivateRoute element={CoachProfile} requiredType="coach" />}
-                              />
-                              <Route
-                                path="/coach/plans"
-                                element={<PrivateRoute element={PlansPage} requiredType="coach" />}
-                              />
-                              <Route
-                                path="/plans/create"
-                                element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={false} />}
-                              />
-                              <Route
-                                path="/plans/create-and-assign"
-                                element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
-                              />
-                              <Route
-                                path="/plans/edit-template/:planId"
-                                element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
-                              />
-                              <Route
-                                path="/plans/edit/:planId"
-                                element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
-                              />
-                              <Route
-                                path="/plans/:planId/:studentId"
-                                element={<PrivateRoute element={PlanDetail} requiredType="coach" />}
-                              />
-                              <Route
-                                path="/students/:studentId/details"
-                                element={<PrivateRoute element={StudentDetails} requiredType="coach" />}
-                              />
-                              <Route
-                                path="/manage-students"
-                                element={<PrivateRoute element={ManageStudentsPage} requiredType="coach" />}
-                              />
-                              <Route
-                                path="/client-dashboard/:clientId"
-                                element={<PrivateRoute element={ClientDashboard} requiredType="coach" />}
-                              />
+                            <Route path="/coach" element={<PrivateRoute element={CoachHome} requiredType="coach" />} />
+                            <Route
+                              path="/coach/profile"
+                              element={<PrivateRoute element={CoachProfile} requiredType="coach" />}
+                            />
+                            <Route
+                              path="/coach/plans"
+                              element={<PrivateRoute element={PlansPage} requiredType="coach" />}
+                            />
+                            <Route
+                              path="/plans/create"
+                              element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={false} />}
+                            />
+                            <Route
+                              path="/plans/create-and-assign"
+                              element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
+                            />
+                            <Route
+                              path="/plans/edit-template/:planId"
+                              element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
+                            />
+                            <Route
+                              path="/plans/edit/:planId"
+                              element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
+                            />
+                            <Route
+                              path="/plans/:planId/:studentId"
+                              element={<PrivateRoute element={PlanDetail} requiredType="coach" />}
+                            />
+                            <Route
+                              path="/students/:studentId/details"
+                              element={<PrivateRoute element={StudentDetails} requiredType="coach" />}
+                            />
+                            <Route
+                              path="/manage-students"
+                              element={<PrivateRoute element={ManageStudentsPage} requiredType="coach" />}
+                            />
+                            <Route
+                              path="/client-dashboard/:clientId"
+                              element={<PrivateRoute element={ClientDashboard} requiredType="coach" />}
+                            />
 
-                              <Route
-                                path="/student"
-                                element={<PrivateRoute element={StudentHome} requiredType="client" />}
-                              />
-                              <Route
-                                path="/student/profile"
-                                element={<PrivateRoute element={ClientProfile} requiredType="client" />}
-                              />
-                              <Route
-                                path="/plans/start-session/:planId"
-                                element={<PrivateRoute element={TrainingPlanDetails} />}
-                              />
-                              <Route path="/student/calendar" element={<StudentCalendar />} />
+                            <Route
+                              path="/student"
+                              element={<PrivateRoute element={StudentHome} requiredType="client" />}
+                            />
+                            <Route
+                              path="/student/profile"
+                              element={<PrivateRoute element={ClientProfile} requiredType="client" />}
+                            />
+                            <Route
+                              path="/plans/start-session/:planId"
+                              element={<PrivateRoute element={TrainingPlanDetails} />}
+                            />
+                            <Route path="/student/calendar" element={<StudentCalendar />} />
 
-                              <Route path="/verify-email" element={<VerifyEmail />} />
-                              <Route
-                                path="/complete-coach-profile"
-                                element={<PrivateRoute element={CoachProfileForm} />}
-                              />
-                              <Route path="/forgot-password" element={<ForgotPassword />} />
-                              <Route path="/reset-password" element={<ResetPassword />} />
-                              <Route path="/not-subscribed" element={<NotSubscribed />} />
+                            <Route path="/verify-email" element={<VerifyEmail />} />
+                            <Route
+                              path="/complete-coach-profile"
+                              element={<PrivateRoute element={CoachProfileForm} />}
+                            />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
+                            <Route path="/reset-password" element={<ResetPassword />} />
+                            <Route path="/not-subscribed" element={<NotSubscribed />} />
 
-                              <Route path="/settings" element={<Settings />} />
+                            <Route path="/settings" element={<Settings />} />
 
-                              <Route path="*" element={<Navigate to="/" />} />
-                            </Routes>
-                          </div>
+                            <Route path="*" element={<Navigate to="/" />} />
+                          </Routes>
                         </div>
-                      </Router>
-                    </Elements>
+                      </div>
+                    </Router>
+                    {/*</Elements>*/}
                   </ConfirmationDialogProvider>
                 </ChatSidebarProvider>
               </NotificationProvider>

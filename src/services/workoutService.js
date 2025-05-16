@@ -1,3 +1,5 @@
+import { formatDateToApi } from '../utils/UtilFunctions';
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const getAuthHeaders = () => {
@@ -92,6 +94,8 @@ const fetchTrainingCyclesByClient = async (clientId) => {
             session.workoutInstances.length > 0
               ? session.workoutInstances.map((workoutInstance) => {
                   workoutInstance.status = updateStatusLocal(workoutInstance, session);
+
+                  console.log(workoutInstance.workout.planName, session.sessionDate);
                   if (session.notes) console.log(session);
                   return {
                     title: workoutInstance.instanceName
@@ -150,6 +154,7 @@ const fetchTrainingSessionWithNoWeekByClientId = async (clientId) => {
 
 const fetchTrainingCyclesForClientByUserId = async (userId) => {
   try {
+    console.log(userId);
     const url = `${apiUrl}/workout/training-cycles/client/userId/${userId}`;
     const response = await fetch(url, {
       headers: getAuthHeaders()
