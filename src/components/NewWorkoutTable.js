@@ -250,12 +250,12 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   };
 
   const tableStyles = {
-    //width: '100%',
+    width: '100%',
     borderCollapse: 'collapse',
-    tableLayout: 'fixed',
+    //
     marginBottom: '2rem',
     borderRadius: '8px',
-    overflow: 'hidden',
+
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
     minWidth: '800px' // Ancho mínimo para asegurar que la tabla no se comprima demasiado
   };
