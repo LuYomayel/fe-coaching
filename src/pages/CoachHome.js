@@ -30,13 +30,17 @@ export default function CoachHomePage() {
   // === Datos combinados para el dashboard ===
   const [combinedClientData, setCombinedClientData] = useState([]);
 
-  // Obtener la fecha actual para mostrarla en el dashboard
+  // Obtener la fecha y hora actual para mostrarla en el dashboard
   const currentDate = new Date();
   const formattedDate = new Intl.DateTimeFormat(intl.locale, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true
   }).format(currentDate);
 
   useEffect(() => {

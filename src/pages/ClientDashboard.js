@@ -40,6 +40,7 @@ import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { fetchTrainingCyclesTemplates, assignCycleTemplateToClient } from '../services/workoutService';
 import { Calendar } from 'primereact/calendar';
 import { contactMethodOptions } from '../utils/Options';
+import esLocale from '@fullcalendar/core/locales/es';
 // Estilos mejorados para el botón de agregar sesión en el calendario
 const addButtonStyle = `
   .fc-daygrid-day-frame {
@@ -107,12 +108,16 @@ export default function ClientDashboard() {
   // Fetch data when the component mounts or refreshKey changes
   useEffect(() => {
     setLoading(true);
+    console.log('Detected timezone at mount:', Intl.DateTimeFormat().resolvedOptions().timeZone);
     setCalendarEvents([]);
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleOptions }) => {
-        console.log(events);
+        // Add allDay: true to each event
+        const mappedEvents = events.map((ev) => ({ ...ev, allDay: true }));
         setCycleOptions(cycleOptions);
-        setCalendarEvents((e) => [...events, ...e]);
+        setCalendarEvents((e) => [...mappedEvents, ...e]);
+        console.log(mappedEvents);
+
         const options = cycleOptions.map((cycle) => ({
           label: cycle.name,
           value: cycle.id
@@ -129,11 +134,20 @@ export default function ClientDashboard() {
     fetchTrainingSessionWithNoWeekByClientId(clientId)
       .then(({ data }) => {
         const events = data.map((session) => {
+          console.log(
+            'Session raw date:',
+            session.sessionDate,
+            '| Parsed with Date():',
+            new Date(session.sessionDate).toString(),
+            '| getTimezoneOffset():',
+            new Date(session.sessionDate).getTimezoneOffset()
+          );
           const workoutInstance = session.workoutInstances[0];
 
           return {
             title: workoutInstance?.instanceName ? workoutInstance.instanceName : workoutInstance?.workout?.planName,
-            start: session.sessionDate,
+            start: session.sessionDate.split('T')[0],
+            allDay: true,
             extendedProps: {
               sessionId: session.id,
               status: workoutInstance?.status,
@@ -333,7 +347,7 @@ export default function ClientDashboard() {
     }
 
     const { title, extendedProps } = eventInfo.event;
-    const { status, workoutInstanceId, sessionId, cycle, trainingType, location, sessionTime, notes, contactMethod } =
+    const { status, workoutInstanceId, sessionId, trainingType, location, sessionTime, notes, contactMethod } =
       extendedProps || {};
 
     // Determinar la severidad según el estado
@@ -737,13 +751,17 @@ export default function ClientDashboard() {
               initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
               events={calendarEvents}
               eventContent={renderEventContent}
+              firstDay={1}
               //dateClick={handleDateClick}
               //eventClick={handleEventClick}
-              //timeZone="local"
+              timeZone="UTC"
+              eventDidMount={(info) => {
+                console.log(`${info.event.title}`, 'event.start ISO:', info.event.start.toString());
+              }}
               ref={calendarRef}
               fixedWeekCount={false}
               contentHeight="auto"
-              locale={intl.locale}
+              locale="es"
               dayCellContent={renderDayCellContent}
               headerToolbar={{
                 left: 'prev,next today',
@@ -774,7 +792,6 @@ export default function ClientDashboard() {
                   calendarApi.changeView('dayGridMonth');
                 }
               }}
-              firstDay={1}
             />
           </Card>
 

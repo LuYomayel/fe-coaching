@@ -95,13 +95,13 @@ const fetchTrainingCyclesByClient = async (clientId) => {
               ? session.workoutInstances.map((workoutInstance) => {
                   workoutInstance.status = updateStatusLocal(workoutInstance, session);
 
-                  console.log(workoutInstance.workout.planName, session.sessionDate);
                   if (session.notes) console.log(session);
                   return {
                     title: workoutInstance.instanceName
                       ? workoutInstance.instanceName
                       : workoutInstance.workout.planName,
-                    start: session.sessionDate,
+                    start: session.sessionDate.split('T')[0],
+                    allDay: true,
                     extendedProps: {
                       status: workoutInstance.status,
                       workoutInstanceId: workoutInstance.id,
@@ -117,7 +117,8 @@ const fetchTrainingCyclesByClient = async (clientId) => {
               : [
                   {
                     title: 'no title',
-                    start: session.sessionDate,
+                    start: session.sessionDate.split('T')[0],
+                    allDay: true,
                     extendedProps: {
                       sessionId: session.id,
                       cycle: cycle.name

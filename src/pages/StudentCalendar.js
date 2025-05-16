@@ -284,7 +284,12 @@ export default function StudentCalendar() {
                 calendarApi.changeView('dayGridMonth');
               }
             }}
-            firstDay={1}
+            firstDay={2}
+            timeZone="UTC"
+            eventDataTransform={(eventData) => {
+              eventData.start = `${eventData.start}T12:00:00Z`;
+              return eventData;
+            }}
           />
         )}
       </Card>
