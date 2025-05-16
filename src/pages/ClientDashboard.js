@@ -739,8 +739,9 @@ export default function ClientDashboard() {
               eventContent={renderEventContent}
               //dateClick={handleDateClick}
               //eventClick={handleEventClick}
+              //timeZone="local"
               ref={calendarRef}
-              //fixedWeekCount={false}
+              fixedWeekCount={false}
               contentHeight="auto"
               locale={intl.locale}
               dayCellContent={renderDayCellContent}
@@ -754,9 +755,8 @@ export default function ClientDashboard() {
                 month: intl.formatMessage({ id: 'calendar.month' }, { defaultMessage: 'Mes' }),
                 list: intl.formatMessage({ id: 'calendar.list' }, { defaultMessage: 'Lista' })
               }}
-              //dayMaxEvents={3}
-
-              /*moreLinkContent={({ num }) => (
+              dayMaxEvents={3}
+              moreLinkContent={({ num }) => (
                 <Badge
                   value={`+${num}`}
                   severity="info"
@@ -765,7 +765,7 @@ export default function ClientDashboard() {
                     { num }
                   )}
                 />
-              )}*/
+              )}
               windowResize={(arg) => {
                 const calendarApi = calendarRef.current.getApi();
                 if (arg.view.type === 'dayGridMonth' && window.innerWidth <= 768) {
