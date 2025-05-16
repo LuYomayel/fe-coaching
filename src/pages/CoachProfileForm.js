@@ -29,8 +29,8 @@ const trainingTypes = [
 
 const CoachProfileForm = () => {
   const intl = useIntl();
-  const stripe = useStripe();
-  const elements = useElements();
+  //const s = useStripe();
+  //const elements = useElements();
   const [activeStep, setActiveStep] = useState(0);
   const [name, setName] = useState('');
   const [trainingType, setTrainingType] = useState([]);
@@ -137,9 +137,9 @@ const CoachProfileForm = () => {
       return;
     }
 
-    if (!stripe || !elements) {
-      return;
-    }
+    //if (!stripe || !elements) {
+    //  return;
+    //}
 
     try {
       const token = localStorage.getItem('token');

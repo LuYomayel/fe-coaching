@@ -478,7 +478,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               { unit: propertyUnits.repetitions || '' }
                             )}
                             body={(rowData) => (
-                              <span className="p-inputgroup" style={{ width: '100%' }}>
+                              <div className="p-inputgroup" style={{ width: '100%' }}>
                                 <InputText
                                   value={rowData.repetitions || ''}
                                   onChange={(e) =>
@@ -489,11 +489,16 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                                       e.target.value
                                     )
                                   }
-                                  className="w-full p-inputtext-sm"
-                                  style={{ padding: '0.25rem' }}
+                                  className="p-inputtext-sm flex-grow-1"
+                                  style={{ padding: '0.25rem', width: '2rem' }}
                                 />
-                                <span className="p-inputgroup-addon">{propertyUnits.repetitions || ''}</span>
-                              </span>
+                                <div
+                                  className="p-inputgroup-addon"
+                                  style={{ minWidth: '0', padding: '0.15rem', margin: 0 }}
+                                >
+                                  {propertyUnits.repetitions || ''}
+                                </div>
+                              </div>
                             )}
                             style={{ padding: '0.5rem' }}
                           />
@@ -507,17 +512,22 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               { unit: propertyUnits.weight || 'kg' }
                             )}
                             body={(rowData) => (
-                              <span className="p-inputgroup" style={{ width: '100%' }}>
+                              <div className="p-inputgroup" style={{ width: '100%' }}>
                                 <InputText
                                   value={rowData.weight || ''}
                                   onChange={(e) =>
                                     handleExerciseChange(exercise.id, rowData.setNumber - 1, 'weight', e.target.value)
                                   }
                                   className="p-inputtext-sm"
-                                  style={{ width: '100%' }}
+                                  style={{ width: '2rem' }}
                                 />
-                                <span className="p-inputgroup-addon">{propertyUnits.weight}</span>
-                              </span>
+                                <div
+                                  className="p-inputgroup-addon"
+                                  style={{ minWidth: '0', padding: '0.15rem', margin: 0 }}
+                                >
+                                  {propertyUnits.weight}
+                                </div>
+                              </div>
                             )}
                             style={{ padding: '0.5rem' }}
                           />
@@ -531,7 +541,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               { unit: propertyUnits.difficulty || '' }
                             )}
                             body={(rowData) => (
-                              <span className="p-inputgroup" style={{ width: '100%' }}>
+                              <div className="p-inputgroup" style={{ width: '100%' }}>
                                 <InputText
                                   value={rowData.difficulty || ''}
                                   onChange={(e) =>
@@ -542,12 +552,17 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                                       e.target.value
                                     )
                                   }
-                                  className="w-full p-inputtext-sm"
-                                  style={{ padding: '0.25rem' }}
+                                  className="p-inputtext-sm flex-grow-1"
+                                  style={{ padding: '0.25rem', width: '2rem' }}
                                   suffix={propertyUnits.difficulty || ''}
                                 />
-                                <span className="p-inputgroup-addon">{propertyUnits.difficulty || ''}</span>
-                              </span>
+                                <div
+                                  className="p-inputgroup-addon"
+                                  style={{ minWidth: '0', padding: '0.15rem', margin: 0 }}
+                                >
+                                  {propertyUnits.difficulty || ''}
+                                </div>
+                              </div>
                             )}
                             style={{ padding: '0.5rem' }}
                           />
@@ -561,7 +576,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               { unit: propertyUnits.duration || 's' }
                             )}
                             body={(rowData) => (
-                              <span className="p-inputgroup" style={{ width: '100%' }}>
+                              <div className="p-inputgroup" style={{ width: '100%' }}>
                                 <InputText
                                   value={rowData.duration || ''}
                                   onChange={(e) =>
@@ -571,8 +586,13 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                                   style={{ padding: '0.25rem' }}
                                   suffix={propertyUnits.duration || 's'}
                                 />
-                                <span className="p-inputgroup-addon">{propertyUnits.duration || 's'}</span>
-                              </span>
+                                <div
+                                  className="p-inputgroup-addon"
+                                  style={{ minWidth: '0', padding: '0.15rem', margin: 0 }}
+                                >
+                                  {propertyUnits.duration || 's'}
+                                </div>
+                              </div>
                             )}
                             style={{ padding: '0.5rem' }}
                           />
@@ -586,18 +606,23 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               { unit: propertyUnits.time || 's' }
                             )}
                             body={(rowData) => (
-                              <span className="p-inputgroup" style={{ width: '100%' }}>
+                              <div className="p-inputgroup" style={{ width: '100%' }}>
                                 <InputText
                                   value={rowData.time || ''}
                                   onChange={(e) =>
                                     handleExerciseChange(exercise.id, rowData.setNumber - 1, 'time', e.target.value)
                                   }
-                                  className="w-full p-inputtext-sm"
-                                  style={{ padding: '0.25rem' }}
+                                  className="p-inputtext-sm flex-grow-1"
+                                  style={{ padding: '0.25rem', width: '2rem' }}
                                   suffix={propertyUnits.time || 's'}
                                 />
-                                <span className="p-inputgroup-addon">{propertyUnits.time || 's'}</span>
-                              </span>
+                                <div
+                                  className="p-inputgroup-addon"
+                                  style={{ minWidth: '0', padding: '0.15rem', margin: 0 }}
+                                >
+                                  {propertyUnits.time || 's'}
+                                </div>
+                              </div>
                             )}
                             style={{ padding: '0.5rem' }}
                           />
@@ -611,7 +636,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               { unit: propertyUnits.distance || 'km' }
                             )}
                             body={(rowData) => (
-                              <span className="p-inputgroup" style={{ width: '100%' }}>
+                              <div className="p-inputgroup" style={{ width: '100%' }}>
                                 <InputText
                                   value={rowData.distance || ''}
                                   onChange={(e) =>
@@ -621,8 +646,13 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                                   style={{ padding: '0.25rem' }}
                                   suffix={propertyUnits.distance || 'km'}
                                 />
-                                <span className="p-inputgroup-addon">{propertyUnits.distance || 'km'}</span>
-                              </span>
+                                <div
+                                  className="p-inputgroup-addon"
+                                  style={{ minWidth: '0', padding: '0.15rem', margin: 0 }}
+                                >
+                                  {propertyUnits.distance || 'km'}
+                                </div>
+                              </div>
                             )}
                             style={{ padding: '0.5rem' }}
                           />
@@ -636,7 +666,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                               { unit: propertyUnits.tempo || 's' }
                             )}
                             body={(rowData) => (
-                              <span className="p-inputgroup" style={{ width: '100%' }}>
+                              <div className="p-inputgroup" style={{ width: '100%' }}>
                                 <InputText
                                   value={rowData.tempo || ''}
                                   onChange={(e) =>
@@ -646,8 +676,13 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
                                   style={{ padding: '0.25rem' }}
                                   suffix={propertyUnits.tempo || 's'}
                                 />
-                                <span className="p-inputgroup-addon">{propertyUnits.tempo || 's'}</span>
-                              </span>
+                                <div
+                                  className="p-inputgroup-addon"
+                                  style={{ minWidth: '0', padding: '0.15rem', margin: 0 }}
+                                >
+                                  {propertyUnits.tempo || 's'}
+                                </div>
+                              </div>
                             )}
                             style={{ padding: '0.5rem' }}
                           />
