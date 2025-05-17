@@ -41,6 +41,8 @@ import { saveWorkoutChanges } from '../services/workoutService';
 import '../styles/WorkoutTable.css';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { Button } from 'primereact/button';
+import { getYouTubeThumbnail, extractYouTubeVideoId } from '../utils/UtilFunctions';
+import VideoDialog from '../dialogs/VideoDialog';
 // Our known exercise properties
 const properties = [
   'sets',
@@ -117,7 +119,6 @@ function SortableRowComponent({
         ref={setNodeRef}
         style={style}
         className={`${rowClassName(rowData)} ${isDragging ? 'dragging' : ''}`}
-        onDoubleClick={() => isEditing && handleAddExerciseAtPosition(index)}
         {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
       >
         {/* Área de hover y botón a la izquierda */}
@@ -633,24 +634,44 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         rowData.label || `Group ${rowData.groupNumber}`
       );
     }
-
     // Para ejercicios
-    if (isEditing) {
-      return (
-        <Dropdown
-          value={rowData.name}
-          options={coachExercises.map((ex) => ({ label: ex.name, value: ex.name }))}
-          onChange={(e) => handleExerciseNameChange(rowData, e.value)}
-          filter
-          showClear={false}
-          className="w-full"
-          style={{ width: '100%' }}
-          placeholder={intl.formatMessage({ id: 'exercise.selectExercise' })}
-        />
-      );
-    }
-
-    return rowData.name || '-';
+    const exerciseObj = coachExercises.find((ex) => ex.name === rowData.name);
+    const videoUrl = exerciseObj?.multimedia;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {videoUrl && (
+          <img
+            src={getYouTubeThumbnail(videoUrl)}
+            alt="Video thumbnail"
+            style={{
+              width: 48,
+              height: 27,
+              objectFit: 'cover',
+              borderRadius: 4,
+              cursor: 'pointer',
+              marginRight: 8,
+              border: '1px solid #ccc'
+            }}
+            onClick={() => handleVideoClick(videoUrl)}
+            title={intl.formatMessage({ id: 'exercise.video.view' })}
+          />
+        )}
+        {isEditing ? (
+          <Dropdown
+            value={rowData.name}
+            options={coachExercises.map((ex) => ({ label: ex.name, value: ex.name }))}
+            onChange={(e) => handleExerciseNameChange(rowData, e.value)}
+            filter
+            showClear={false}
+            className="w-full"
+            style={{ width: '100%' }}
+            placeholder={intl.formatMessage({ id: 'exercise.selectExercise' })}
+          />
+        ) : (
+          rowData.name || '-'
+        )}
+      </div>
+    );
   }
 
   /****************************************
@@ -1962,6 +1983,22 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     showToast('success', 'Éxito', 'Ejercicio eliminado correctamente');
   };
 
+  // Estado para el video
+  const [videoDialogVisible, setVideoDialogVisible] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState(null);
+
+  // Función para abrir el video
+  const handleVideoClick = (url) => {
+    try {
+      const videoId = extractYouTubeVideoId(url);
+      if (!videoId) return;
+      setSelectedVideoUrl(`https://www.youtube.com/embed/${videoId}`);
+      setVideoDialogVisible(true);
+    } catch (error) {
+      showToast('error', 'Error', error.message);
+    }
+  };
+
   return (
     <div className={`workout-table-container ${isDarkMode ? 'dark-mode' : ''}`}>
       {/* 1) Cycle & Day selection */}
@@ -2040,7 +2077,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
               <span>
                 <FormattedMessage
                   id="workoutTable.editModeActive"
-                  defaultMessage="Modo de edición activo. Arrastra para reorganizar y haz clic en Guardar cuando termines. Haz doble click en un ejercicio para agregar uno nuevo."
+                  defaultMessage="Modo de edición activo. Arrastra para reorganizar y haz clic en Guardar cuando termines."
                 />
               </span>
             </div>
@@ -2214,6 +2251,11 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           className="w-full"
         />
       </Dialog>
+      <VideoDialog
+        visible={videoDialogVisible}
+        onHide={() => setVideoDialogVisible(false)}
+        videoUrl={selectedVideoUrl}
+      />
     </div>
   );
 }
