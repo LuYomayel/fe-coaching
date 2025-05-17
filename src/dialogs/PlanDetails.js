@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
@@ -10,8 +9,6 @@ import {
   fetchWorkoutInstance,
   fetchWorkoutInstanceTemplate,
   deleteWorkoutPlan,
-  getRpeMethods,
-  getRpeAssignments,
   getRpeMethodAssigned,
   updateWorkoutInstance
 } from '../services/workoutService';
@@ -23,7 +20,6 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import VideoDialog from './VideoDialog';
 import { fetchClientByClientId } from '../services/usersService';
-import { contactMethodOptions } from '../utils/Options';
 export default function NewPlanDetailHorizontal({
   planId,
   setPlanDetailsVisible,
@@ -39,7 +35,7 @@ export default function NewPlanDetailHorizontal({
   const { showConfirmationDialog } = useConfirmationDialog();
   const showToast = useToast();
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
-  const [rpeMethods, setRpeMethods] = useState([]);
+  const [rpeMethod, setRpeMethod] = useState(null);
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState('');
   const [currentCycle, setCurrentCycle] = useState(null);
@@ -78,7 +74,7 @@ export default function NewPlanDetailHorizontal({
   useEffect(() => {
     const fetchClientData = async () => {
       const { data } = await fetchClientByClientId(clientId);
-      console.log('data', data);
+
       setClientData(data);
     };
     fetchClientData();
@@ -90,7 +86,6 @@ export default function NewPlanDetailHorizontal({
         setLoading(true);
         const { data } = isTemplate ? await fetchWorkoutInstanceTemplate(planId) : await fetchWorkoutInstance(planId);
         const trainingCycle = data.trainingSession?.trainingWeek?.trainingCycle || -1;
-        console.log(trainingCycle);
         setCurrentCycle(trainingCycle);
         // Sort groups by groupNumber
         data.groups.sort((a, b) => a.groupNumber - b.groupNumber);
@@ -136,21 +131,24 @@ export default function NewPlanDetailHorizontal({
     // Fetch RPE methods if not a template
     const fetchRpeMethods = async () => {
       try {
-        setLoading(true);
-        const { data } = await getRpeMethodAssigned(clientId, planId, currentCycle.id || -1);
-        console.log('data', data);
-        setRpeMethods(data.rpeMethod);
+        const { data } = await getRpeMethodAssigned(clientId, planId, currentCycle?.id || -1);
+
+        if (data) {
+          setRpeMethod(data);
+        } else {
+          console.warn('No RPE method found in response');
+          setRpeMethod(null);
+        }
       } catch (error) {
-        console.log('error', error);
+        console.error('Error fetching RPE method:', error);
         showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
-      } finally {
-        setLoading(false);
+        setRpeMethod(null);
       }
     };
     if (!isTemplate && currentCycle) {
       fetchRpeMethods();
     }
-  }, [isTemplate, client?.coach?.user?.id, user.userId, showToast, setLoading, currentCycle]);
+  }, [isTemplate, clientId, planId, currentCycle, showToast]);
 
   const handleEdit = () => {
     navigate(`/plans/edit/${planId}`, { state: { changeToTemplate: false } });
@@ -221,7 +219,7 @@ export default function NewPlanDetailHorizontal({
         trainingType: editedTrainingType
       };
 
-      console.log('updatedData', planId, updatedData);
+      //console.log('updatedData', planId, updatedData);
       // Llamar al servicio para actualizar el workoutInstance
       await updateWorkoutInstance(planId, updatedData);
 
@@ -548,9 +546,9 @@ export default function NewPlanDetailHorizontal({
               </span>
             </div>
           )}
-          {exercise.rpe && rpeMethods && (
+          {exercise.rpe && rpeMethod && (
             <div className="p-col-3">
-              {rpeMethods.name}: {exercise.rpe}
+              {rpeMethod.name}: {exercise.rpe}
             </div>
           )}
           {exercise.comments && (

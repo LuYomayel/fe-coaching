@@ -105,10 +105,13 @@ export default function ClientDashboard() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+  // Nuevo estado para el índice de hover
+  const [hoverRowIndex, setHoverRowIndex] = useState(null);
+
   // Fetch data when the component mounts or refreshKey changes
   useEffect(() => {
     setLoading(true);
-    console.log('Detected timezone at mount:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+
     setCalendarEvents([]);
     fetchTrainingCyclesByClient(clientId)
       .then(({ events, cycleOptions }) => {
@@ -116,14 +119,13 @@ export default function ClientDashboard() {
         const mappedEvents = events.map((ev) => ({ ...ev, allDay: true }));
         setCycleOptions(cycleOptions);
         setCalendarEvents((e) => [...mappedEvents, ...e]);
-        console.log(mappedEvents);
-
+        cycleOptions.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
         const options = cycleOptions.map((cycle) => ({
-          label: cycle.name,
+          label: `${cycle.name} - ${formatDate(cycle.startDate)} - ${formatDate(cycle.endDate)}`,
           value: cycle.id
         }));
         options.unshift({
-          label: intl.formatMessage({ id: 'clientDashboard.cycle.newCycle' }),
+          label: intl.formatMessage({ id: 'clientDashboard.cycle.createNewCycle' }),
           value: -1
         });
         setCycleDropdownOptions(options);
@@ -134,14 +136,6 @@ export default function ClientDashboard() {
     fetchTrainingSessionWithNoWeekByClientId(clientId)
       .then(({ data }) => {
         const events = data.map((session) => {
-          console.log(
-            'Session raw date:',
-            session.sessionDate,
-            '| Parsed with Date():',
-            new Date(session.sessionDate).toString(),
-            '| getTimezoneOffset():',
-            new Date(session.sessionDate).getTimezoneOffset()
-          );
           const workoutInstance = session.workoutInstances[0];
 
           return {
@@ -554,25 +548,37 @@ export default function ClientDashboard() {
     const isToday = dayInfo.isToday;
     const dayNumberClasses = isToday ? 'day-number today-day' : 'day-number';
 
+    // Verificar si hay eventos para este día
+    const hasEvents = calendarEvents.some((event) => {
+      const eventDate = new Date(event.start).toISOString().split('T')[0];
+      const dayDate = dayInfo.date.toISOString().split('T')[0];
+      return eventDate === dayDate;
+    });
+
     return (
       <>
         <div className={dayNumberClasses}>{dayInfo.dayNumberText}</div>
-        <Button
-          icon="pi pi-plus"
-          rounded
-          text
-          aria-label={intl.formatMessage({ id: 'dashboard.calendar.addSession' }, { defaultMessage: 'Añadir sesión' })}
-          tooltip={intl.formatMessage(
-            { id: 'dashboard.calendar.addSessionTooltip' },
-            { defaultMessage: 'Añadir nuevo entrenamiento a este día' }
-          )}
-          tooltipOptions={{ position: 'top' }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddDayWorkout(dayInfo.date);
-          }}
-        />
+        {!hasEvents && (
+          <Button
+            icon="pi pi-plus"
+            rounded
+            text
+            aria-label={intl.formatMessage(
+              { id: 'dashboard.calendar.addSession' },
+              { defaultMessage: 'Añadir sesión' }
+            )}
+            tooltip={intl.formatMessage(
+              { id: 'dashboard.calendar.addSessionTooltip' },
+              { defaultMessage: 'Añadir nuevo entrenamiento a este día' }
+            )}
+            tooltipOptions={{ position: 'top' }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddDayWorkout(dayInfo.date);
+            }}
+          />
+        )}
       </>
     );
   };

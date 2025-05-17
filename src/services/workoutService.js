@@ -796,9 +796,9 @@ const assignRpeToTarget = async (rpeMethodId, targetType, targetId, userId) => {
   }
 };
 
-const removeRpeAssignment = async (assignmentId, userId) => {
+const removeRpeAssignment = async (assignmentId, targetType, userId) => {
   try {
-    const response = await fetch(`${apiUrl}/workout/rpe/remove-assignment/${assignmentId}/${userId}`, {
+    const response = await fetch(`${apiUrl}/workout/rpe/remove-assignment/${assignmentId}/${targetType}/${userId}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });

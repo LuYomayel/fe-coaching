@@ -43,14 +43,17 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
     try {
       setLoading(true);
       setError(null);
-      //const { data } = await getRpeMethods(client.coach.user.id);
-      console.log('params', clientId, planId, cycleId);
-      const response = await getRpeMethodAssigned(clientId, planId || -1, cycleId || -1);
-      console.log('response', response);
-      setSelectedRpeMethod(response.data.rpeMethod);
-      //const rpeMethod = response.data.rpeMethod.find;
-      console.log('response', response);
+
+      const { data } = await getRpeMethodAssigned(clientId, planId || -1, cycleId || -1);
+
+      if (data) {
+        setSelectedRpeMethod(data);
+      } else {
+        console.warn('No se encontró un método RPE asignado');
+        setSelectedRpeMethod(null);
+      }
     } catch (error) {
+      console.error('Error al cargar los métodos RPE:', error);
       setError('Error al cargar los métodos RPE');
       showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
     } finally {

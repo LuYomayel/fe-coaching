@@ -11,8 +11,35 @@ const ExcelAnalysisDialog = ({ visible, onHide, analysisData, onConfirm, setAnal
   const [localAnalysisData, setLocalAnalysisData] = useState(analysisData);
 
   useEffect(() => {
-    console.log('ExcelAnalysisDialog - Received analysisData:', analysisData);
-    setLocalAnalysisData(analysisData);
+    //console.log('ExcelAnalysisDialog - Received analysisData:', analysisData);
+
+    // Solo inicializamos si no hay selectedChanges definidos
+    const hasInitializedChanges = analysisData?.exercisesToUpdate?.some(
+      (exercise) => exercise.selectedChanges && Object.keys(exercise.selectedChanges).length > 0
+    );
+
+    if (!hasInitializedChanges) {
+      // Crear una copia profunda del analysisData
+      const updatedAnalysisData = JSON.parse(JSON.stringify(analysisData));
+
+      // Inicializar selectedChanges como true para todos los campos en exercisesToUpdate
+      if (updatedAnalysisData?.exercisesToUpdate) {
+        updatedAnalysisData.exercisesToUpdate = updatedAnalysisData.exercisesToUpdate.map((exercise) => {
+          if (exercise.changes) {
+            exercise.selectedChanges = Object.keys(exercise.changes).reduce((acc, field) => {
+              acc[field] = true;
+              return acc;
+            }, {});
+          }
+          return exercise;
+        });
+      }
+
+      setLocalAnalysisData(updatedAnalysisData);
+      setAnalysisData(updatedAnalysisData);
+    } else {
+      setLocalAnalysisData(analysisData);
+    }
   }, [analysisData]);
 
   const renderFooter = () => {
@@ -28,7 +55,7 @@ const ExcelAnalysisDialog = ({ visible, onHide, analysisData, onConfirm, setAnal
           label={intl.formatMessage({ id: 'common.confirm' })}
           icon="pi pi-check"
           onClick={() => {
-            console.log('ExcelAnalysisDialog - Confirming with data:', localAnalysisData);
+            //console.log('ExcelAnalysisDialog - Confirming with data:', localAnalysisData);
             onConfirm();
           }}
           autoFocus
@@ -55,7 +82,7 @@ const ExcelAnalysisDialog = ({ visible, onHide, analysisData, onConfirm, setAnal
             <Checkbox
               checked={rowData.selectedChanges?.[field] !== false}
               onChange={(e) => {
-                console.log('Checkbox changed:', { field, checked: e.checked, rowData });
+                //console.log('Checkbox changed:', { field, checked: e.checked, rowData });
 
                 // Crear una copia profunda del estado local
                 const updatedAnalysisData = JSON.parse(JSON.stringify(localAnalysisData));
@@ -74,7 +101,7 @@ const ExcelAnalysisDialog = ({ visible, onHide, analysisData, onConfirm, setAnal
                   // Actualizar el estado del checkbox
                   updatedAnalysisData.exercisesToUpdate[exerciseIndex].selectedChanges[field] = e.checked;
 
-                  console.log('Updated exercise:', updatedAnalysisData.exercisesToUpdate[exerciseIndex]);
+                  //console.log('Updated exercise:', updatedAnalysisData.exercisesToUpdate[exerciseIndex]);
 
                   // Actualizar el estado local y el estado del padre
                   setLocalAnalysisData(updatedAnalysisData);

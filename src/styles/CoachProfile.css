@@ -813,3 +813,113 @@
   background: var(--surface-hover);
   transform: scale(1.2);
 }
+
+/* Estilos para el diálogo de asignación de RPE */
+.rpe-assignment-dialog .assignment-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.rpe-assignment-dialog .step {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: var(--surface-ground);
+  transition: all 0.3s ease;
+}
+
+.rpe-assignment-dialog .step.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.rpe-assignment-dialog .step.active {
+  background-color: var(--surface-hover);
+  border: 1px solid var(--primary-color);
+}
+
+.rpe-assignment-dialog .step.completed {
+  border: 1px solid var(--green-200);
+}
+
+.rpe-assignment-dialog .step-number {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.rpe-assignment-dialog .step.disabled .step-number {
+  background-color: var(--text-color-secondary);
+}
+
+.rpe-assignment-dialog .step.completed .step-number {
+  background-color: var(--green-500);
+}
+
+.rpe-assignment-dialog .step-content {
+  flex: 1;
+}
+
+.rpe-assignment-dialog .step-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.rpe-assignment-dialog .assignment-summary {
+  background-color: var(--surface-ground);
+  border: 1px solid var(--surface-border);
+}
+
+.rpe-assignment-dialog .summary-title {
+  color: var(--text-color);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.rpe-assignment-dialog .summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rpe-assignment-dialog .summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: var(--surface-card);
+  border-radius: 4px;
+}
+
+.rpe-assignment-dialog .summary-label {
+  color: var(--text-color-secondary);
+  font-weight: 500;
+}
+
+.rpe-assignment-dialog .summary-value {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .rpe-assignment-dialog .step {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rpe-assignment-dialog .step-number {
+    margin-bottom: 0.5rem;
+  }
+}

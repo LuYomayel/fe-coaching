@@ -74,7 +74,13 @@ function SortableRowComponent({
   handleAddGroup,
   rowClassName,
   isDarkMode,
-  intl
+  intl,
+  setHoverRowIndex,
+  setShowInsertButton,
+  isInsertButtonHovered,
+  setIsInsertButtonHovered,
+  insertPosition,
+  setInsertPosition
 }) {
   const rowKey =
     rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
@@ -102,22 +108,11 @@ function SortableRowComponent({
       : {})
   };
 
+  // Calcular el colSpan correcto: 1 (columna de nombre) + todas las columnas de propiedades
+  const totalColumns = 1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
+
   return (
     <>
-      {isEditing && showInsertButton && hoverRowIndex === index && (
-        <tr className="insert-row">
-          <td colSpan={1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0)}>
-            <div className="insert-buttons-container">
-              <button className="insert-button" onClick={() => handleAddExerciseAtPosition(index)}>
-                <FaPlus className="insert-icon" /> {intl.formatMessage({ id: 'workoutTable.insertExercise' })}
-              </button>
-              <button className="insert-button" onClick={() => handleAddGroup(index)}>
-                <FaPlus className="insert-icon" /> {intl.formatMessage({ id: 'plan.group.addGroup' })}
-              </button>
-            </div>
-          </td>
-        </tr>
-      )}
       <tr
         ref={setNodeRef}
         style={style}
@@ -125,6 +120,89 @@ function SortableRowComponent({
         onDoubleClick={() => isEditing && handleAddExerciseAtPosition(index)}
         {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
       >
+        {/* Área de hover y botón a la izquierda */}
+        <td
+          style={{
+            width: '32px',
+            minWidth: '32px',
+            maxWidth: '32px',
+            padding: 0,
+            position: 'relative',
+            background: 'transparent',
+            border: 'none',
+            zIndex: 2
+          }}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const y = e.clientY - rect.top;
+            if (y < rect.height / 2) {
+              setInsertPosition('above');
+            } else {
+              setInsertPosition('below');
+            }
+            if (isEditing) {
+              setHoverRowIndex(index);
+              setShowInsertButton(true);
+            }
+          }}
+          onMouseLeave={() => {
+            setTimeout(() => {
+              if (!isInsertButtonHovered) {
+                setHoverRowIndex(null);
+                setShowInsertButton(false);
+              }
+            }, 50);
+          }}
+        >
+          {isEditing && showInsertButton && hoverRowIndex === index && (
+            <Button
+              onMouseEnter={() => setIsInsertButtonHovered(true)}
+              onMouseLeave={() => {
+                setIsInsertButtonHovered(false);
+                setHoverRowIndex(null);
+                setShowInsertButton(false);
+              }}
+              onClick={() => handleAddExerciseAtPosition(index)}
+              style={{
+                position: 'absolute',
+                left: '-10px',
+                [insertPosition === 'above' ? 'top' : 'bottom']: '-12px',
+                transform: 'translateY(0%)',
+                zIndex: 10,
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--primary-color)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '50%',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                transition: 'background 0.2s, box-shadow 0.2s',
+                cursor: 'pointer',
+                outline: 'none',
+                padding: 0
+              }}
+              title={intl.formatMessage({
+                id: 'workoutTable.insertExercise',
+                defaultMessage: 'Insertar ejercicio aquí'
+              })}
+            >
+              <span
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  height: '100%'
+                }}
+              >
+                <FaPlus style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#fff' }} />
+              </span>
+            </Button>
+          )}
+        </td>
         <td ref={firstColumnRef} className={`name-column ${isEditing ? 'editable-column' : ''}`}>
           <div className="name-column-content">
             {isEditing && isDraggable && <FaGripVertical className="drag-handle" />}
@@ -225,6 +303,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   // Estados para manejar el botón de inserción dinámica
   const [hoverRowIndex, setHoverRowIndex] = useState(null);
   const [showInsertButton, setShowInsertButton] = useState(false);
+  const [isInsertButtonHovered, setIsInsertButtonHovered] = useState(false);
+  const [insertPosition, setInsertPosition] = useState('below'); // 'above' o 'below'
 
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -299,9 +379,9 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
 
     const fetchData = async () => {
       try {
-        const response = await getRpeMethodAssigned(clientData.id, workoutInstanceId, cycleId);
+        const { data } = await getRpeMethodAssigned(clientData.id, workoutInstanceId, cycleId);
 
-        setRpeMethods(response.data.rpeMethod);
+        setRpeMethods(data);
       } catch (err) {
         console.error('Error fetching rpe methods:', err);
       }
@@ -957,10 +1037,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     let targetGroupNumber;
 
     if (currentRow.rowType === 'group') {
-      // Si se está insertando en una fila de grupo, usar ese número de grupo
       targetGroupNumber = currentRow.groupNumber;
     } else {
-      // Si se está insertando en una fila de ejercicio, usar su número de grupo
       targetGroupNumber = currentRow.groupNumber;
     }
 
@@ -975,7 +1053,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       name: '',
       exerciseId: null,
       groupNumber: targetGroupNumber,
-      rowIndex: 0, // Inicialmente en 0, luego actualizaremos los índices
+      rowIndex: 0,
       weeksData: {},
       isNew: true
     };
@@ -984,17 +1062,18 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     const newTableData = [...tableData];
 
     // Determinar dónde insertar el nuevo ejercicio
-    let insertIndex;
+    let insertIndex = index + 1;
+    if (insertPosition === 'above') {
+      insertIndex = index;
+    }
 
     if (currentRow.rowType === 'group') {
-      // Si es una fila de grupo, insertar justo después del grupo
-      insertIndex = index + 1;
+      // Si es una fila de grupo, insertar justo después del grupo (o antes si es above)
+      insertIndex = insertPosition === 'above' ? index : index + 1;
     } else {
-      // Si es un ejercicio, insertar después de este ejercicio
-      insertIndex = index + 1;
-
-      // Asignar el rowIndex correcto relativo al ejercicio actual
-      newExercise.rowIndex = currentRow.rowIndex + 1;
+      // Si es un ejercicio, insertar después o antes según insertPosition
+      insertIndex = insertPosition === 'above' ? index : index + 1;
+      newExercise.rowIndex = insertPosition === 'above' ? currentRow.rowIndex : currentRow.rowIndex + 1;
     }
 
     // Insertar el nuevo ejercicio
@@ -1008,25 +1087,13 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
           row.rowIndex++;
         }
       } else if (row.rowType === 'group') {
-        // Cuando encontramos el siguiente grupo, terminamos
         break;
       }
     }
 
-    // Actualizar el estado
     setTableData(newTableData);
-
-    // Resetear los estados de inserción
     setHoverRowIndex(null);
     setShowInsertButton(false);
-
-    // Mostrar toast de confirmación
-    showToast(
-      'success',
-      intl.formatMessage({ id: 'common.success' }),
-      intl.formatMessage({ id: 'workoutTable.exerciseInserted' }),
-      { life: 3000 }
-    );
   };
 
   const handleAddGroup = (index, isNew = false) => {
@@ -1109,8 +1176,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     showToast(
       'success',
       intl.formatMessage({ id: 'common.success' }),
-      intl.formatMessage({ id: 'workoutTable.groupInserted' }),
-      { life: 3000 }
+      intl.formatMessage({ id: 'workoutTable.groupInserted' })
     );
   };
 
@@ -1584,10 +1650,21 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     const { headerGroup, usedProps } = buildHeaderGroup() || {};
     // If there's no data, bail out
     if (!headerGroup || !usedProps) return null;
-    console.log('rpeMethods', rpeMethods, usedProps);
+
     return (
       <thead>
         <tr className="table-header-row">
+          <th
+            style={{
+              width: '32px',
+              minWidth: '32px',
+              maxWidth: '32px',
+              padding: 0,
+              background: 'transparent',
+              border: 'none'
+            }}
+            rowSpan={2}
+          ></th>
           <th rowSpan={2} className="exercise-column">
             {intl.formatMessage({ id: 'workoutTable.exercise' })}
           </th>
@@ -1930,48 +2007,46 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
             {intl.formatMessage({ id: 'common.edit' })}
           </button>
         ) : (
-          <>
-            <button className="p-button p-component p-button-success" onClick={handleSaveChanges}>
-              <FaSave className="mr-2" />
-              {intl.formatMessage({ id: 'common.save' })}
-            </button>
+          <div className="flex justify-content-between">
+            <div className="flex align-items-center justify-content-between gap-1">
+              <button className="p-button p-component p-button-success" onClick={handleSaveChanges}>
+                <FaSave className="mr-2" />
+                {intl.formatMessage({ id: 'common.save' })}
+              </button>
 
-            <button
-              className="p-button p-component p-button-secondary"
-              onClick={() => handleAddExercise(tableData.length)}
-            >
-              <FaPlus className="mr-2" />
-              {intl.formatMessage({ id: 'plan.group.addExercise' })}
-            </button>
+              <button
+                className="p-button p-component p-button-secondary"
+                onClick={() => handleAddExercise(tableData.length)}
+              >
+                <FaPlus className="mr-2" />
+                {intl.formatMessage({ id: 'plan.group.addExercise' })}
+              </button>
 
-            <button
-              className="p-button p-component p-button-secondary"
-              onClick={() => handleAddGroup(tableData.length)}
-            >
-              <FaPlus className="mr-2" />
-              {intl.formatMessage({ id: 'plan.group.addGroup' })}
-            </button>
+              <button
+                className="p-button p-component p-button-secondary"
+                onClick={() => handleAddGroup(tableData.length)}
+              >
+                <FaPlus className="mr-2" />
+                {intl.formatMessage({ id: 'plan.group.addGroup' })}
+              </button>
 
-            <button className="p-button p-component p-button-outlined p-button-danger" onClick={handleCancelEdit}>
-              <i className="pi pi-times mr-2"></i>
-              {intl.formatMessage({ id: 'common.cancel' })}
-            </button>
-          </>
+              <button className="p-button p-component p-button-outlined p-button-danger" onClick={handleCancelEdit}>
+                <i className="pi pi-times mr-2"></i>
+                {intl.formatMessage({ id: 'common.cancel' })}
+              </button>
+            </div>
+            <div className="changes-indicator ml-2 flex align-items-center">
+              <i className="pi pi-info-circle"></i>
+              <span>
+                <FormattedMessage
+                  id="workoutTable.editModeActive"
+                  defaultMessage="Modo de edición activo. Arrastra para reorganizar y haz clic en Guardar cuando termines. Haz doble click en un ejercicio para agregar uno nuevo."
+                />
+              </span>
+            </div>
+          </div>
         )}
       </div>
-
-      {/* 3) Instructions for edit mode */}
-      {isEditing && (
-        <div className="changes-indicator">
-          <i className="pi pi-info-circle"></i>
-          <span>
-            <FormattedMessage
-              id="workoutTable.editModeActive"
-              defaultMessage="Modo de edición activo. Arrastra para reorganizar y haz clic en Guardar cuando termines. Haz doble click en un ejercicio para agregar uno nuevo."
-            />
-          </span>
-        </div>
-      )}
 
       {/* 4) Loading/Empty state */}
       {isLoading ? (
@@ -2018,6 +2093,8 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
                       handleDeleteExercise={handleDeleteExercise}
                       isEditing={isEditing}
                       isDraggingGroup={isDraggingGroup}
+                      isHoveringFirstColumn={isHoveringFirstColumn}
+                      propertiesUsedByWeek={propertiesUsedByWeek}
                       hoverRowIndex={hoverRowIndex}
                       showInsertButton={showInsertButton}
                       firstColumnRef={firstColumnRef}
@@ -2026,8 +2103,12 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
                       rowClassName={rowClassName}
                       isDarkMode={isDarkMode}
                       intl={intl}
-                      isHoveringFirstColumn={isHoveringFirstColumn}
-                      propertiesUsedByWeek={propertiesUsedByWeek}
+                      setHoverRowIndex={setHoverRowIndex}
+                      setShowInsertButton={setShowInsertButton}
+                      isInsertButtonHovered={isInsertButtonHovered}
+                      setIsInsertButtonHovered={setIsInsertButtonHovered}
+                      insertPosition={insertPosition}
+                      setInsertPosition={setInsertPosition}
                     />
                   ))}
                 </SortableContext>

@@ -600,7 +600,7 @@ const messages = {
   'dashboard.calendar.addSession': 'Add session',
   'dashboard.calendar.addSessionTooltip': 'Add new workout to this day',
   'dashboard.calendar.moreEvents': '{num} more workouts',
-  'clientDashboard.cycle.newCycle': 'New Cycle',
+  'clientDashboard.cycle.createNewCycle': 'Create New Cycle',
 
   'dashboard.table.set': 'Set',
   'dashboard.table.type': 'Type',
@@ -1216,7 +1216,15 @@ const messages = {
   'settings.unitConfiguration': 'Unit Configuration',
 
   'createCycle.dialog.header': 'Create Cycle',
-  'createCycle.button.create': 'Create'
+  'createCycle.button.create': 'Create',
+
+  'coach.exercise.titleSingular': 'Exercise',
+  'coach.rpe.assign.title': 'Assign RPE Method',
+  'coach.rpe.assign.step1': 'Select type',
+  'coach.rpe.assign.step2': 'Select target',
+  'coach.rpe.assign.step3': 'Select RPE method',
+  'coach.rpe.assign.summary': 'Assignment summary',
+  'coach.rpe.assign.target': 'Target'
 };
 
 export default messages;

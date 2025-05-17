@@ -331,6 +331,7 @@ export default function CoachProfilePage() {
   });
   const [selectedType, setSelectedType] = useState(null);
   const [selectedTarget, setSelectedTarget] = useState(null);
+  const [selectedTargetLabel, setSelectedTargetLabel] = useState(null);
   const [selectedRpe, setSelectedRpe] = useState(null);
   const [analysisData, setAnalysisData] = useState(null);
   const [pendingUploadFormData, setPendingUploadFormData] = useState(null);
@@ -339,7 +340,7 @@ export default function CoachProfilePage() {
   const typeOptions = [
     { label: 'Workout', value: 'workout' },
     { label: 'Training Cycle', value: 'trainingCycle' },
-    { label: 'User', value: 'user' }
+    { label: 'Client', value: 'client' }
   ];
 
   const renderTargetDropdown = () => {
@@ -351,11 +352,12 @@ export default function CoachProfilePage() {
         value: workout.id
       }));
     } else if (selectedType === 'trainingCycle') {
+      //console.log('trainingCycles', trainingCycles);
       options = trainingCycles.map((cycle) => ({
         label: cycle.name,
         value: cycle.id
       }));
-    } else if (selectedType === 'user') {
+    } else if (selectedType === 'client') {
       options = users.map((user) => ({
         label: `${user.name}`,
         value: user.id
@@ -366,7 +368,11 @@ export default function CoachProfilePage() {
       <Dropdown
         value={selectedTarget}
         options={options}
-        onChange={(e) => setSelectedTarget(e.value)}
+        onChange={(e) => {
+          const target = options.find((option) => option.value === e.value);
+          setSelectedTarget(e.value);
+          setSelectedTargetLabel(target.label);
+        }}
         placeholder={`Select ${selectedType}`}
         className="w-full"
       />
@@ -391,149 +397,130 @@ export default function CoachProfilePage() {
     }
   };
 
+  // Carga inicial crítica (datos necesarios para mostrar la página)
   useEffect(() => {
-    const fetchWorkouts = async () => {
+    const fetchInitialData = async () => {
       try {
-        const { data } = await findAllWorkoutTemplatesByCoachId(coach.id);
-        setWorkouts(data);
-      } catch (error) {
-        console.log('error', error);
-        showToast('error', 'Error', error.message);
-      }
-    };
+        setLoading(true);
+        // Cargar datos críticos en paralelo
+        const [coachInfoResponse, exercisesResponse] = await Promise.all([
+          fetchCoach(user.userId),
+          fetchCoachExercises(coach.id)
+        ]);
 
-    const fetchCoachInfo = async () => {
-      try {
-        const { data } = await fetchCoach(user.userId);
-        setCoachInfo(data);
-      } catch (error) {
-        if (error.message === 'Coach not found') {
+        // Procesar respuesta del coach
+        const coachData = coachInfoResponse.data;
+        if (coachData) {
+          setCoachInfo(coachData);
+        } else {
           navigate('/complete-coach-profile');
-        }
-        showToast('error', 'Error', error.message);
-      }
-    };
-
-    const fetchCoachSubscriptionData = async () => {
-      try {
-        const { data } = await fetchCoachSubscription(coach.id);
-        setCurrentPlanId(data.subscriptionPlan.id);
-      } catch (error) {
-        console.log('error', error);
-        showToast('error', 'Error', error.message);
-      }
-    };
-
-    const fetchCoachPlansData = async () => {
-      try {
-        const { data } = await fetchCoachPlans(user.userId);
-
-        setCoachPlans(data);
-      } catch (error) {
-        console.log('error', error);
-        showToast('error', 'Error', error.message);
-      }
-    };
-
-    const fetchExercises = async () => {
-      try {
-        const { data } = await fetchCoachExercises(coach.id);
-        if (data.error) {
-          throw new Error(data.message || 'Something went wrong');
+          return;
         }
 
-        const missingExercises = data.filter(
+        // Procesar respuesta de ejercicios
+        const exercisesData = exercisesResponse.data;
+        if (exercisesData.error) {
+          throw new Error(exercisesData.message || 'Something went wrong');
+        }
+
+        const missingExercises = exercisesData.filter(
           (exercise) =>
             !exercise.multimedia || !exercise.exerciseType || !exercise.description || !exercise.equipmentNeeded
         );
         setMissingExercises(missingExercises);
-        setExercises(data);
-        console.log('data', data);
+        setExercises(exercisesData);
       } catch (error) {
-        console.error('error', error);
+        console.error('Error fetching initial data:', error);
         showToast('error', 'Error', error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchBodyAreasData = async () => {
-      try {
-        const { data } = await fetchBodyAreas();
-        if (data.error) {
-          throw new Error(data.message || 'Something went wrong');
-        }
-        const formattedBodyAreas = data.map((bodyArea) => ({
-          label: bodyArea.name,
-          value: bodyArea.id
-        }));
-        setBodyAreas(formattedBodyAreas);
-      } catch (error) {
-        console.log('error', error);
-        showToast('error', 'Error', error.message);
-      }
-    };
+    fetchInitialData();
+  }, [user.userId, coach.id, navigate, showToast]);
 
-    const fetchSubscriptionPlans = async () => {
-      try {
-        const { data } = await fetchCoachSubscriptionPlans();
-        setSubscriptionPlans(data);
-      } catch (error) {
-        console.log('error', error);
-        showToast('error', 'Error', error.message);
-      }
-    };
-
-    const fetchClients = async () => {
-      try {
-        const { data } = await fetchCoachStudents(user.userId);
-        const activeClients = data.filter((client) => client.user.subscription.status === 'Active');
-        setUsers(activeClients);
-      } catch (error) {
-        console.error('Error fetching clients:', error);
-      }
-    };
-
-    const fetchTrainingPlans = async () => {
-      try {
-        const { data } = await fetchTrainingCyclesByCoachId(user.userId);
-        setTrainingCycles(data);
-      } catch (error) {
-        console.error('Error fetching training plans:', error);
-      }
-    };
-
-    fetchWorkouts();
-    fetchCoachInfo();
-    fetchCoachSubscriptionData();
-    fetchCoachPlansData();
-    fetchExercises();
-    fetchBodyAreasData();
-
-    fetchSubscriptionPlans();
-    fetchRpeMethods();
-    fetchClients();
-    fetchTrainingPlans();
-    console.log('Hola');
-    // eslint-disable-next-line
-  }, [user.userId, showToast, navigate, refreshKey]);
-
+  // Carga de datos secundarios (no críticos para la visualización inicial)
   useEffect(() => {
-    const fetchET = async () => {
+    const fetchSecondaryData = async () => {
       try {
-        const { data } = await fetchExerciseTypes();
-        console.log('data', data);
-        setExerciseTypes(data);
+        // Cargar datos secundarios en paralelo
+        const [workoutsResponse, subscriptionResponse, plansResponse, bodyAreasResponse, subscriptionPlansResponse] =
+          await Promise.all([
+            findAllWorkoutTemplatesByCoachId(coach.id),
+            fetchCoachSubscription(coach.id),
+            fetchCoachPlans(user.userId),
+            fetchBodyAreas(),
+            fetchCoachSubscriptionPlans()
+          ]);
+
+        setWorkouts(workoutsResponse.data);
+        setCurrentPlanId(subscriptionResponse.data.subscriptionPlan.id);
+        setCoachPlans(plansResponse.data);
+
+        const bodyAreasData = bodyAreasResponse.data;
+        if (!bodyAreasData.error) {
+          const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({
+            label: bodyArea.name,
+            value: bodyArea.id
+          }));
+          setBodyAreas(formattedBodyAreas);
+        }
+
+        setSubscriptionPlans(subscriptionPlansResponse.data);
       } catch (error) {
-        console.log('error', error);
+        console.error('Error fetching secondary data:', error);
         showToast('error', 'Error', error.message);
       }
     };
-    fetchET();
-  }, []);
-  const handleViewPlanDetails = (workoutInstanceId) => {
-    setLoading(true);
-    setSelectedPlan(workoutInstanceId);
-    setPlanDetailsVisible(true);
-  };
+
+    fetchSecondaryData();
+  }, [user.userId, coach.id, showToast]);
+
+  // Carga de datos de RPE (puede ser lazy loaded cuando se accede a la pestaña)
+  useEffect(() => {
+    const fetchRpeData = async () => {
+      try {
+        const [rpeMethodsResponse, rpeAssignmentsResponse] = await Promise.all([
+          getRpeMethods(user.userId),
+          getRpeAssignments(user.userId)
+        ]);
+
+        setRpeMethods(rpeMethodsResponse.data);
+        setRpeAssignments(rpeAssignmentsResponse.data);
+      } catch (error) {
+        console.error('Error fetching RPE data:', error);
+        showToast('error', 'Error', error.message);
+      }
+    };
+
+    // Solo cargar datos de RPE cuando se accede a la pestaña
+    if (activeIndex === 1) {
+      // Asumiendo que 1 es el índice de la pestaña RPE
+      fetchRpeData();
+    }
+  }, [user.userId, activeIndex, showToast]);
+
+  // Carga de datos de clientes y planes de entrenamiento (puede ser lazy loaded)
+  useEffect(() => {
+    const fetchClientAndTrainingData = async () => {
+      try {
+        const [clientsResponse, trainingPlansResponse] = await Promise.all([
+          fetchCoachStudents(user.userId),
+          fetchTrainingCyclesByCoachId(user.userId)
+        ]);
+
+        const activeClients = clientsResponse.data.filter((client) => client.user.subscription.status === 'Active');
+        setUsers(activeClients);
+        setTrainingCycles(trainingPlansResponse.data);
+      } catch (error) {
+        console.error('Error fetching client and training data:', error);
+        showToast('error', 'Error', error.message);
+      }
+    };
+
+    fetchClientAndTrainingData();
+  }, [user.userId, showToast]);
 
   // Handle save RPE method function
   const handleSaveRpeMethod = async () => {
@@ -787,134 +774,6 @@ export default function CoachProfilePage() {
     }
   };
 
-  const renderExerciseModal = () => {
-    return (
-      <Dialog
-        draggable={false}
-        resizable={false}
-        dismissableMask
-        header={
-          dialogMode === 'create'
-            ? intl.formatMessage({ id: 'coach.exercise.create' })
-            : intl.formatMessage({ id: 'coach.exercise.edit' })
-        }
-        className="responsive-dialog"
-        visible={exerciseDialogVisible}
-        style={{ width: '50vw' }}
-        onHide={closeExerciseDialog}
-      >
-        <div className="p-fluid">
-          <div className="p-field">
-            <label htmlFor="name">
-              {dialogMode === 'create'
-                ? intl.formatMessage({ id: 'coach.exercise.name' })
-                : intl.formatMessage({ id: 'coach.exercise.name' })}
-            </label>
-            <InputText
-              id="name"
-              value={newExercise.name}
-              onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })}
-            />
-          </div>
-          <div className="p-field">
-            <label htmlFor="description">{intl.formatMessage({ id: 'coach.exercise.description' })}</label>
-            <InputTextarea
-              id="description"
-              className="overflow-hidden text-overflow-ellipsis"
-              value={newExercise.description}
-              onChange={(e) => setNewExercise({ ...newExercise, description: e.target.value })}
-              rows={3}
-            />
-          </div>
-          <div className="p-field">
-            <label htmlFor="multimedia">{intl.formatMessage({ id: 'coach.exercise.video' })}</label>
-            <InputText
-              id="multimedia"
-              value={newExercise.multimedia}
-              onChange={(e) => setNewExercise({ ...newExercise, multimedia: e.target.value })}
-            />
-          </div>
-          <div className="p-field">
-            <label htmlFor="exerciseType">{intl.formatMessage({ id: 'coach.exercise.type' })}</label>
-            <InputText
-              id="exerciseType"
-              value={newExercise.exerciseType}
-              onChange={(e) => setNewExercise({ ...newExercise, exerciseType: e.target.value })}
-            />
-          </div>
-          <div className="p-field">
-            <label htmlFor="equipmentNeeded">{intl.formatMessage({ id: 'coach.exercise.equipment' })}</label>
-            <InputText
-              id="equipmentNeeded"
-              value={newExercise.equipmentNeeded}
-              onChange={(e) =>
-                setNewExercise({
-                  ...newExercise,
-                  equipmentNeeded: e.target.value
-                })
-              }
-            />
-          </div>
-          <div className="p-field">
-            <label htmlFor="equipmentNeeded">{intl.formatMessage({ id: 'coach.exercise.bodyArea' })}</label>
-            <MultiSelect
-              options={bodyAreas}
-              filter
-              showClear
-              required
-              placeholder="Select a body area"
-              value={selectedBodyAreas}
-              onChange={(e) => setSelectedBodyAreas(e.value)}
-            />
-          </div>
-          <div className="p-field">
-            <Button
-              label={
-                dialogMode === 'create'
-                  ? intl.formatMessage({ id: 'coach.exercise.create' })
-                  : intl.formatMessage({ id: 'coach.exercise.edit' })
-              }
-              icon="pi pi-check"
-              onClick={() => {
-                if (newExercise.name === '')
-                  return showToast(
-                    'error',
-                    'Error',
-                    intl.formatMessage({
-                      id: 'coach.exercise.error.name.empty'
-                    })
-                  );
-                if (!isValidYouTubeUrl(newExercise.multimedia)) {
-                  return showToast(
-                    'error',
-                    'Error',
-                    intl.formatMessage({
-                      id: 'coach.exercise.error.video.invalid'
-                    })
-                  );
-                }
-                showConfirmationDialog({
-                  message:
-                    dialogMode === 'create'
-                      ? intl.formatMessage({
-                          id: 'createExercise.confirmation.message'
-                        })
-                      : intl.formatMessage({
-                          id: 'updateExercise.confirmation.message'
-                        }),
-                  header: intl.formatMessage({ id: 'common.confirmation' }),
-                  icon: 'pi pi-exclamation-triangle',
-                  accept: () => handleSaveExercise(),
-                  reject: () => console.log('Rejected')
-                });
-              }}
-            />
-          </div>
-        </div>
-      </Dialog>
-    );
-  };
-
   const renderPlanModal = () => {
     return (
       <Dialog
@@ -1101,8 +960,7 @@ export default function CoachProfilePage() {
                         toast.current.show({
                           severity: 'warn',
                           summary: intl.formatMessage({ id: 'common.warning' }),
-                          detail: intl.formatMessage({ id: 'coach.rpe.error.invalidRange' }),
-                          life: 3000
+                          detail: intl.formatMessage({ id: 'coach.rpe.error.invalidRange' })
                         });
                       }
                     }}
@@ -1473,34 +1331,6 @@ export default function CoachProfilePage() {
     return message;
   };
 
-  const handleUpload = async (formData, files) => {
-    try {
-      setLoading(true);
-      const { data } = await importExercises(coach.id, formData);
-      console.log('data', data);
-      onTemplateUpload({ files });
-      setRefreshKey((old) => old + 1);
-      if (data.updatedExercises.length > 0) {
-        showToast(
-          'info',
-          `${intl.formatMessage({ id: 'coach.exercise.upload.success' })}: ${data.registeredExercisesCount}. ${intl.formatMessage({ id: 'coach.exercise.upload.updated' })}: ${data.updatedExercisesCount}`,
-          truncateMessage(`${data.updatedExercises.map((ex) => `${ex.name} at row ${ex.row}`)}`),
-          true
-        );
-      } else {
-        showToast('success', 'Success', `${data.registeredExercises.map((ex) => `${ex.name} at row ${ex.row}. `)}`);
-      }
-      fileUploadRef.current.clear();
-      setSelectedFile(null);
-      setTotalSize(0);
-    } catch (error) {
-      onTemplateError(error);
-      showToast('error', 'Error', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const uploadHandler = async ({ files }) => {
     const formData = new FormData();
     formData.append('file', files[0]);
@@ -1525,12 +1355,12 @@ export default function CoachProfilePage() {
     try {
       setLoading(true);
 
-      console.log('Analysis Data:', analysisData);
+      //console.log('Analysis Data:', analysisData);
 
       // Preparar los datos para el procesamiento
       const importData = {
         newExercises: analysisData.exercisesToCreate.map((exercise) => {
-          console.log('Processing new exercise:', exercise);
+          //console.log('Processing new exercise:', exercise);
           return {
             name: exercise.name,
             description: exercise.newData.description,
@@ -1542,7 +1372,7 @@ export default function CoachProfilePage() {
         }),
         updateExercises: analysisData.exercisesToUpdate
           .map((exercise) => {
-            console.log('Processing update exercise:', exercise);
+            //console.log('Processing update exercise:', exercise);
 
             // Si no hay cambios, no incluirlo
             if (!exercise.changes || Object.keys(exercise.changes).length === 0) {
@@ -1581,11 +1411,11 @@ export default function CoachProfilePage() {
           .filter(Boolean) // Eliminar los elementos null
       };
 
-      console.log('Import Data to be sent:', importData);
+      //console.log('Import Data to be sent:', importData);
 
       // Procesar la importación
       const { data } = await processImportExercises(coach.id, importData);
-
+      //console.log('data', data);
       setRefreshKey((old) => old + 1);
 
       if (data.updatedExercises?.length > 0) {
@@ -1625,26 +1455,6 @@ export default function CoachProfilePage() {
     fileUploadRef.current.clear();
     setSelectedFile(null);
     setTotalSize(0);
-  };
-
-  const readFile = (file) => {
-    console.log(file);
-    return new Promise((resolve, reject) => {
-      setLoading(true);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const sheetData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-        const sheetDataMapped = sheetData.filter((array) => array.length > 0);
-        setNumRows(sheetDataMapped.length - 1); // Assuming first row is header
-        resolve(sheetDataMapped.length - 1);
-      };
-      reader.onerror = (error) => reject(error);
-      reader.readAsArrayBuffer(file);
-      setLoading(false);
-    });
   };
 
   const handleVideoClick = (url) => {
@@ -1704,55 +1514,6 @@ export default function CoachProfilePage() {
     );
   };
 
-  const actionsBodyTemplate = (rowData) => {
-    return (
-      <>
-        <Button
-          icon="pi pi-pencil"
-          rounded
-          text
-          className=" p-button-success p-button-sm p-mr-2"
-          onClick={() => openEditExerciseDialog(rowData)}
-        />
-        <Button
-          icon="pi pi-trash"
-          rounded
-          text
-          className=" p-button-danger p-button-sm"
-          onClick={() => {
-            showConfirmationDialog({
-              message: intl.formatMessage({
-                id: 'deleteExercise.confirmation.message'
-              }),
-              header: intl.formatMessage({ id: 'common.confirmation' }),
-              icon: 'pi pi-exclamation-triangle',
-              accept: () => handleDeleteExercise(rowData.id),
-              reject: () => console.log('Rejected')
-            });
-          }}
-        />
-      </>
-    );
-  };
-
-  const rpeActionsBodyTemplate = (rowData) => (
-    <React.Fragment>
-      <Button
-        icon="pi pi-trash"
-        className="p-button-rounded p-button-danger p-button-text"
-        onClick={() =>
-          showConfirmationDialog({
-            message: intl.formatMessage({ id: 'coach.rpe.confirm.delete' }),
-            header: intl.formatMessage({ id: 'common.confirmation' }),
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => handleDeleteRpeMethod(rowData.id),
-            reject: () => console.log('Rejected')
-          })
-        }
-      />
-    </React.Fragment>
-  );
-
   const openEditRpeDialog = (rpeMethod) => {
     setDialogMode('edit');
     setNewRpe(rpeMethod);
@@ -1799,46 +1560,95 @@ export default function CoachProfilePage() {
     <Dialog
       draggable={false}
       resizable={false}
-      header="Assign RPE Method"
-      className="responsive-dialog"
+      header={intl.formatMessage({ id: 'coach.rpe.assign.title' })}
+      className="responsive-dialog rpe-assignment-dialog"
       dismissableMask
       visible={rpeAssignmentDialogVisible}
       style={{ width: '50vw' }}
       onHide={() => setRpeAssignmentDialogVisible(false)}
     >
       <div className="assign-rpe p-4">
-        <h2 className="text-2xl mb-4">Assign RPE Method</h2>
-        <div className="p-grid p-fluid">
-          <div className="p-col-12 p-md-4">
-            <Dropdown
-              value={selectedType}
-              options={typeOptions}
-              onChange={(e) => setSelectedType(e.value)}
-              placeholder={intl.formatMessage({ id: 'coach.rpe.assign.type' })}
-              className="w-full"
-            />
+        <div className="assignment-steps">
+          <div className={`step ${selectedType ? 'completed' : 'active'}`}>
+            <div className="step-number">1</div>
+            <div className="step-content">
+              <h3 className="step-title">{intl.formatMessage({ id: 'coach.rpe.assign.step1' })}</h3>
+              <Dropdown
+                value={selectedType}
+                options={typeOptions}
+                onChange={(e) => setSelectedType(e.value)}
+                placeholder={intl.formatMessage({ id: 'coach.rpe.assign.type' })}
+                className="w-full"
+                optionLabel="label"
+                optionValue="value"
+              />
+            </div>
           </div>
-          <div className="p-col-12 p-md-4">{selectedType && renderTargetDropdown()}</div>
-          <div className="p-col-12 p-md-4">
-            <Dropdown
-              value={selectedRpe}
-              options={rpeMethods.map((rpe) => ({
-                label: rpe.name,
-                value: rpe.id
-              }))}
-              onChange={(e) => setSelectedRpe(e.value)}
-              placeholder={intl.formatMessage({ id: 'coach.rpe.assign.rpe' })}
-              className="w-full"
-            />
+
+          <div className={`step ${selectedType ? (selectedTarget ? 'completed' : 'active') : 'disabled'}`}>
+            <div className="step-number">2</div>
+            <div className="step-content">
+              <h3 className="step-title">{intl.formatMessage({ id: 'coach.rpe.assign.step2' })}</h3>
+              {selectedType && renderTargetDropdown()}
+            </div>
+          </div>
+
+          <div className={`step ${selectedTarget ? (selectedRpe ? 'completed' : 'active') : 'disabled'}`}>
+            <div className="step-number">3</div>
+            <div className="step-content">
+              <h3 className="step-title">{intl.formatMessage({ id: 'coach.rpe.assign.step3' })}</h3>
+              <Dropdown
+                value={selectedRpe}
+                options={rpeMethods.map((rpe) => ({
+                  label: rpe.name,
+                  value: rpe.id
+                }))}
+                onChange={(e) => setSelectedRpe(e.value)}
+                placeholder={intl.formatMessage({ id: 'coach.rpe.assign.rpe' })}
+                className="w-full"
+                optionLabel="label"
+                optionValue="value"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="p-d-flex p-jc-end mt-4">
+        {selectedRpe && selectedType && selectedTarget && (
+          <div className="assignment-summary mt-4 p-3 border-round">
+            <h3 className="summary-title mb-3">
+              <i className="pi pi-check-circle mr-2" />
+              {intl.formatMessage({ id: 'coach.rpe.assign.summary' })}
+            </h3>
+            <div className="summary-content">
+              <div className="summary-item">
+                <span className="summary-label">{intl.formatMessage({ id: 'coach.rpe.assign.type' })}:</span>
+                <span className="summary-value">{typeOptions.find((t) => t.value === selectedType)?.label}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">{intl.formatMessage({ id: 'coach.rpe.assign.target' })}:</span>
+                <span className="summary-value">{selectedTargetLabel}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">{intl.formatMessage({ id: 'coach.rpe.assign.rpe' })}:</span>
+                <span className="summary-value">{rpeMethods.find((r) => r.id === selectedRpe)?.name}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-content-end mt-4 gap-2">
+          <Button
+            label={intl.formatMessage({ id: 'common.cancel' })}
+            icon="pi pi-times"
+            className="p-button-text"
+            onClick={() => setRpeAssignmentDialogVisible(false)}
+          />
           <Button
             label={intl.formatMessage({ id: 'coach.assignRpeMethod' })}
             icon="pi pi-check"
             onClick={handleConfirmAssign}
             disabled={!selectedRpe || !selectedType || !selectedTarget}
+            className="p-button-primary"
           />
         </div>
       </div>
@@ -1863,7 +1673,7 @@ export default function CoachProfilePage() {
     if (selectedType === 'exercise') {
       const exercise = exercises.find((e) => e.id === selectedTarget.id);
       targetName = exercise ? exercise.name : '';
-    } else if (selectedType === 'user') {
+    } else if (selectedType === 'client') {
       const user = users.find((u) => u.id === selectedTarget.id);
       targetName = user ? user.name : '';
     }
@@ -1921,8 +1731,8 @@ export default function CoachProfilePage() {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   // Función para obtener el nombre del RPE a partir de su ID
-  const getRpeNameById = (id) => {
-    const method = rpeMethods.find((method) => method.id === id);
+  const getRpeNameById = (rowData) => {
+    const method = rpeMethods.find((method) => method.id === rowData.rpeMethod.id);
     return method ? method.name : 'N/A';
   };
 
@@ -1939,7 +1749,7 @@ export default function CoachProfilePage() {
   };
 
   // Función para confirmar y eliminar una asignación de RPE
-  const confirmRemoveRpeAssignment = (assignmentId) => {
+  const confirmRemoveRpeAssignment = (rowData) => {
     showConfirmationDialog({
       message: intl.formatMessage({
         id: 'coach.rpe.confirm.removeAssignment',
@@ -1947,15 +1757,15 @@ export default function CoachProfilePage() {
       }),
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
-      accept: () => handleRemoveRpeAssignment(assignmentId),
+      accept: () => handleRemoveRpeAssignment(rowData.id, rowData.targetType, user.userId),
       reject: () => console.log('Assignment removal cancelled.')
     });
   };
 
   // Función para manejar la eliminación de asignaciones de RPE
-  const handleRemoveRpeAssignment = async (assignmentId) => {
+  const handleRemoveRpeAssignment = async (assignmentId, targetType, userId) => {
     try {
-      const response = await removeRpeAssignment(assignmentId, user.userId);
+      const response = await removeRpeAssignment(assignmentId, targetType, userId);
       if (!response) {
         showToast('error', 'Error', 'RPE Assignment could not be removed');
         return;
@@ -2053,7 +1863,7 @@ export default function CoachProfilePage() {
 
   const saveEditedExercise = (options) => {
     let { rowData, value: newValue, field } = options;
-    console.log('multimedia', field === 'multimedia', 'newValue', newValue, 'rowData', isValidYouTubeUrl(newValue));
+    //console.log('multimedia', field === 'multimedia', 'newValue', newValue, 'rowData', isValidYouTubeUrl(newValue));
     if (field === 'multimedia' && newValue && !isValidYouTubeUrl(newValue)) {
       showToast('error', 'URL Inválida', intl.formatMessage({ id: 'coach.exercise.error.video.invalid' }));
       return; // Detener aquí para no guardar un valor inválido
@@ -2108,46 +1918,9 @@ export default function CoachProfilePage() {
     }
   };
 
-  const onExerciseCellEditComplete = (e) => {
-    let { rowData, newValue, field, originalEvent } = e;
-
-    // Si originalEvent existe, es probable que venga de una interacción de teclado (Enter/Tab)
-    // y queremos que se aplique el cambio. Si no, es un blur y también queremos aplicar.
-
-    // Validaciones básicas
-    if (field === 'multimedia' && newValue && newValue.trim() !== '' && !isValidYouTubeUrl(newValue)) {
-      showToast('error', 'URL Inválida', intl.formatMessage({ id: 'coach.exercise.error.video.invalid' }));
-      // No actualizamos el estado local si la URL es inválida para forzar corrección o cancelación
-      // PrimeReact debería mantener el editor abierto o revertir si la validación falla en el editor mismo.
-      // Para forzar la reversión visual si el editor se cierra:
-      // let _exercises = [...exercises];
-      // _exercises[e.rowIndex][field] = rowData[field]; // Revertir al valor original
-      // setExercises(_exercises);
-      return; // Detener aquí para no guardar un valor inválido
-    }
-
-    // Actualizar el estado local 'exercises'
-    let _exercises = exercises.map((ex) => {
-      if (ex.id === rowData.id) {
-        return { ...ex, [field]: newValue === null || newValue === undefined ? '' : newValue }; // Guardar string vacío si es null/undefined
-      }
-      return ex;
-    });
-    setExercises(_exercises);
-
-    // Rastrear el ejercicio modificado
-    const updatedExerciseInState = _exercises.find((ex) => ex.id === rowData.id);
-    if (updatedExerciseInState) {
-      // Comprobar si realmente hubo un cambio respecto al original (antes de entrar en modo edición)
-      // Esto es un poco más complejo si no guardas el estado original de `exercises` al entrar en modo edición.
-      // Por simplicidad, asumimos que cualquier edición completada se marca como modificada.
-      setModifiedExercises((prev) => ({ ...prev, [rowData.id]: updatedExerciseInState }));
-    }
-  };
-
   const handleMassUpdateExercises = async () => {
     const exercisesToUpdateArray = Object.values(modifiedExercises);
-    console.log('exercisesToUpdateArray', exercisesToUpdateArray);
+    //console.log('exercisesToUpdateArray', exercisesToUpdateArray);
     if (exercisesToUpdateArray.length === 0) {
       showToast(
         'info',
@@ -2161,7 +1934,7 @@ export default function CoachProfilePage() {
     try {
       setLoading(true);
       const { data } = await massUpdateExercises(exercisesToUpdateArray);
-      console.log('data', data);
+      //console.log('data', data);
 
       setLoading(false);
 
@@ -2307,7 +2080,6 @@ export default function CoachProfilePage() {
                 scrollable
                 scrollHeight="900px"
                 editMode={isEditingExercises ? 'cell' : null}
-                onCellEditComplete={onExerciseCellEditComplete}
               >
                 <Column
                   field="name"
@@ -2605,7 +2377,7 @@ export default function CoachProfilePage() {
                   field="rpeId"
                   header={intl.formatMessage({ id: 'rpe.method' })}
                   sortable
-                  body={(rowData) => getRpeNameById(rowData.rpeId)}
+                  body={(rowData) => getRpeNameById(rowData)}
                   style={{ minWidth: '200px' }}
                 />
                 <Column
@@ -2639,7 +2411,7 @@ export default function CoachProfilePage() {
                     <Button
                       icon="pi pi-trash"
                       className="p-button-rounded p-button-outlined p-button-danger"
-                      onClick={() => confirmRemoveRpeAssignment(rowData.id)}
+                      onClick={() => confirmRemoveRpeAssignment(rowData)}
                       tooltip={intl.formatMessage({ id: 'common.delete' })}
                       tooltipOptions={{ position: 'top' }}
                     />

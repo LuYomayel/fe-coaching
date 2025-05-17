@@ -113,8 +113,7 @@ export default function StudentCalendar() {
         toast.current.show({
           severity: 'error',
           summary: 'Error',
-          detail: error.message,
-          life: 3000
+          detail: error.message
         });
       }
     };
