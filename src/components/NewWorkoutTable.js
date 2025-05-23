@@ -266,7 +266,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
   const [propertiesUsedByWeek, setPropertiesUsedByWeek] = useState([]);
 
   const [coachExercises, setCoachExercises] = useState([]);
-  const [rpeMethods, setRpeMethods] = useState([]);
+  const [rpeMethod, setrpeMethod] = useState([]);
   const [workoutInstanceId, setWorkoutInstanceId] = useState(null);
   const [isDraggingGroup, setIsDraggingGroup] = useState(false);
 
@@ -381,8 +381,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     const fetchData = async () => {
       try {
         const { data } = await getRpeMethodAssigned(clientData.id, workoutInstanceId, cycleId);
-
-        setRpeMethods(data);
+        setrpeMethod(data);
       } catch (err) {
         console.error('Error fetching rpe methods:', err);
       }
@@ -976,14 +975,18 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
     const movingExercise = { ...newData[activeIndex] };
 
     // Si estamos moviendo a un grupo diferente, actualizar el groupNumber
+    const exercisesInDestGroup = resetDragState.filter(
+      (row) => row.rowType === 'exercise' && row.groupNumber === overItem.groupNumber
+    ).length;
+
+    // Assign the new group and rowIndex
+    movingExercise.groupNumber = overItem.groupNumber;
     if (overItem.rowType === 'group') {
-      movingExercise.groupNumber = overItem.groupNumber;
-      // Ponerlo como primer ejercicio del grupo
-      movingExercise.rowIndex = 0;
-    } else if (overItem.groupNumber !== movingExercise.groupNumber) {
-      // Mover a otro grupo
-      movingExercise.groupNumber = overItem.groupNumber;
-      movingExercise.rowIndex = overItem.rowIndex + 1; // Ponerlo después del ejercicio destino
+      // Dropped on the group header → append at end
+      movingExercise.rowIndex = exercisesInDestGroup;
+    } else {
+      // Dropped on an exercise → insert right after its index
+      movingExercise.rowIndex = overItem.rowIndex + 1;
     }
 
     // Eliminar el ejercicio original
@@ -1610,8 +1613,37 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
       console.log('Enviando payload a la API:', JSON.stringify(payload, null, 2));
 
       // Llamar a la API
-      await saveWorkoutChanges(payload);
+      const response = await saveWorkoutChanges(payload);
 
+      console.log('Respuesta de la API:', response);
+
+      if (response.data.message === 'Changes saved successfully') {
+        showToast(
+          'success',
+          intl.formatMessage({ id: 'common.success' }),
+          intl.formatMessage({ id: 'workoutTable.changesSaved' })
+        );
+      } else {
+        // Verificar si hay cambios fallidos
+        if (
+          response.data.failedUpdatedProperties.length > 0 ||
+          response.data.failedNewExercises.length > 0 ||
+          response.data.failedMovedExercises.length > 0 ||
+          response.data.failedDeletedExercises.length > 0
+        ) {
+          showToast(
+            'info',
+            intl.formatMessage({ id: 'common.partialSuccess' }),
+            intl.formatMessage({ id: 'workoutTable.someChangesFailed' })
+          );
+        } else {
+          showToast(
+            'error',
+            intl.formatMessage({ id: 'common.error' }),
+            response.data.message || intl.formatMessage({ id: 'common.errorSaving' })
+          );
+        }
+      }
       // Actualizar originalData con los nuevos datos
       setOriginalData(JSON.parse(JSON.stringify(tableData)));
 
@@ -1706,7 +1738,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         </tr>
       </thead>
     );
-  }, [buildHeaderGroup, intl, rpeMethods, propertyLabels]);
+  }, [buildHeaderGroup, intl, rpeMethod, propertyLabels]);
 
   const selectHeaderName = (prop) => {
     if (prop === 'weight') {
@@ -1717,7 +1749,7 @@ export default function NewWorkoutTable({ cycleOptions, clientData }) {
         </div>
       );
     } else if (prop === 'rpe') {
-      return rpeMethods.name;
+      return rpeMethod ? rpeMethod.name : 'N/A';
     } else {
       return propertyLabels[prop] || prop;
     }
