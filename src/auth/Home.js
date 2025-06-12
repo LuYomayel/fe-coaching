@@ -17,6 +17,7 @@ import { fetchClient, fetchCoach, registerCoach, login } from '../services/users
 import { fetchCoachSubscriptionPlans } from '../services/subscriptionService';
 import { useIntl, FormattedMessage } from 'react-intl';
 import VerificationCodeDialog from '../dialogs/VerificationCodeDialog';
+import PWAInstallButton from '../components/PWAInstallButton';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 export default function HomePage() {
@@ -302,6 +303,11 @@ export default function HomePage() {
                   className="p-button-lg p-button-rounded p-button-outlined text-white border-white"
                   onClick={() => scrollToSection(featuresRef)}
                 />
+              </div>
+
+              {/* PWA Install Button */}
+              <div className="mt-4">
+                <PWAInstallButton />
               </div>
             </div>
             <div className="col-12 md:col-6">

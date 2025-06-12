@@ -34,6 +34,10 @@ import { NotificationProvider } from './utils/NotificationsContext.js';
 import Settings from './pages/Settings.js';
 import StudentCalendar from './pages/StudentCalendar';
 
+// PWA Components
+import PWAInstallButton from './components/PWAInstallButton.js';
+import OfflineIndicator from './components/OfflineIndicator.js';
+
 //const stripePromise = await loadStripe(
 //  'pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq'
 //);
@@ -64,6 +68,9 @@ const App = () => {
                     {/*<Elements stripe={stripePromise}>*/}
                     <Router>
                       <div className="flex">
+                        {/* PWA Components */}
+                        <OfflineIndicator />
+
                         <Sidebar onExpandChange={setSidebarExpanded} />
                         <div
                           className="flex-grow-1"

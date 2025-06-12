@@ -1,6 +1,7 @@
 {
   "short_name": "EaseTrain",
-  "name": "EaseTrain",
+  "name": "EaseTrain - Tu App de Entrenamiento Personal",
+  "description": "Aplicación completa para el entrenamiento personal y coaching fitness",
   "icons": [
     {
       "src": "icono.png",
@@ -8,18 +9,50 @@
       "type": "image/png"
     },
     {
-      "src": "icono.png",
+      "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "display_override": ["window-controls-overlay"],
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "categories": ["fitness", "health", "lifestyle", "sports"],
+  "shortcuts": [
+    {
+      "name": "Entrenamientos",
+      "short_name": "Entrenar",
+      "description": "Acceder a tus entrenamientos",
+      "url": "/workouts?source=pwa",
+      "icons": [{ "src": "/icono.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Calendario",
+      "short_name": "Calendario",
+      "description": "Ver tu calendario de entrenamientos",
+      "url": "/calendar?source=pwa",
+      "icons": [{ "src": "/icono.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "form_factor": "wide"
+    }
+  ]
 }
