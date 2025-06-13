@@ -14,6 +14,11 @@
   margin: 0 auto;
 }
 
+.p-inputtext-sm,
+.p-inputgroup-addon {
+  padding: 0.25rem;
+}
+
 /* Cabecera del Plan */
 .training-plan-header {
   border-radius: var(--card-border-radius);
@@ -208,7 +213,7 @@
 }
 
 .exercise-group-content {
-  padding: 0.5rem;
+  padding: 0;
   border-top: 1px solid var(--surface-border);
 }
 
@@ -319,7 +324,7 @@
 }
 
 .exercise-card .p-card-body {
-  padding: 0.25rem;
+  padding: 0;
 }
 
 .exercise-card.completed {
@@ -327,9 +332,6 @@
 }
 
 .exercise-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 0.5rem;
   border-bottom: 1px solid var(--surface-border);
 }
@@ -342,10 +344,9 @@
 }
 
 .exercise-inputs {
-  padding: 0.5rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
 
 .exercise-sets {
@@ -438,24 +439,6 @@
 .status-badge.partial {
   background-color: var(--blue-100);
   color: var(--blue-700);
-}
-
-/* Adaptaciones al RPE dropdown */
-.rpe-dropdown {
-  width: 100%;
-  max-width: 100%;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.rpe-dropdown-name {
-  margin-bottom: 0.25rem;
-}
-
-.rpe-dropdown-name label {
-  font-weight: 600;
-  color: var(--text-color-secondary);
-  font-size: 0.9rem;
 }
 
 /* Estilos para el diálogo de finalización */
@@ -675,18 +658,6 @@
 
   .exercise-group-header {
     padding: 0.5rem;
-  }
-
-  .exercise-group-content {
-    padding: 0.25rem;
-  }
-
-  .exercise-card-header {
-    padding: 0.5rem;
-  }
-
-  .exercise-inputs {
-    padding: 0.25rem;
   }
 
   .exercise-set {

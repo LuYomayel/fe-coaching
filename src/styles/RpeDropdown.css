@@ -1,9 +1,12 @@
+.p-inputnumber-input {
+  padding: 0.25rem;
+}
+
 .rpe-dropdown {
   width: 100%;
-  max-width: 300px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
 
 .rpe-option {

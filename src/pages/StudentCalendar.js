@@ -140,9 +140,6 @@ export default function StudentCalendar() {
     });
   };
 
-  useEffect(() => {
-    console.log(calendarEvents);
-  }, [calendarEvents, planDetailsVisible]);
   const renderEventContent = (eventInfo) => {
     const { title, extendedProps } = eventInfo.event;
     const { status, workoutInstanceId } = extendedProps || {};

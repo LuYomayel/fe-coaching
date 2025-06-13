@@ -458,6 +458,7 @@ const messages = {
   'studentDetails.tooltip.deletePlan': 'Delete Plan',
 
   // NewTrainingDetails
+  'training.comments.placeholder': 'Write your comments here...',
   'training.title': 'Training Plan',
   'training.status': 'Status',
   'training.group': 'Group {number}',
@@ -632,6 +633,8 @@ const messages = {
 
   'training.dialog.finishTitle': 'Finish Training',
   'training.dialog.videoTitle': 'Exercise Video',
+  'training.markAllCompleted': 'Mark all as completed',
+  'training.markAllSkipped': 'Mark all as skipped',
 
   // NewClientDashboard - Additional
   'dashboard.calendar.viewDetails': 'View Workout Details',

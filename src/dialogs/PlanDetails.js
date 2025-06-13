@@ -85,6 +85,7 @@ export default function NewPlanDetailHorizontal({
       try {
         setLoading(true);
         const { data } = isTemplate ? await fetchWorkoutInstanceTemplate(planId) : await fetchWorkoutInstance(planId);
+        console.log('data', data);
         const trainingCycle = data.trainingSession?.trainingWeek?.trainingCycle || -1;
         setCurrentCycle(trainingCycle);
         // Sort groups by groupNumber
@@ -273,7 +274,8 @@ export default function NewPlanDetailHorizontal({
       'notes',
       'difficulty',
       'duration',
-      'restInterval'
+      'restInterval',
+      'rating'
     ];
 
     // Determine which columns have at least one non-empty value
@@ -281,7 +283,7 @@ export default function NewPlanDetailHorizontal({
 
     return (
       <div className="p-datatable p-component" style={{ width: '100%', overflowX: 'auto' }}>
-        <table className="p-datatable-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table className="p-datatable-table" style={{ borderCollapse: 'collapse', textOverflow: 'ellipsis' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--surface-border)' }}>
               <th style={{ padding: '0.5rem', textAlign: 'left' }}>Set</th>
@@ -295,7 +297,7 @@ export default function NewPlanDetailHorizontal({
                     borderBottom: '1px solid var(--surface-border)'
                   }}
                 >
-                  {col}
+                  {col === 'rating' ? rpeMethod.name : col}
                 </th>
               ))}
             </tr>

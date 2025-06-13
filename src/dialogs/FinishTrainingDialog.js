@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -8,7 +8,7 @@ import { Calendar } from 'primereact/calendar';
 import { Checkbox } from 'primereact/checkbox';
 import { useIntl, FormattedMessage } from 'react-intl';
 
-const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
+const FinishTrainingDialog = ({ visible, onHide, submitFeedback, sessionTimer }) => {
   const intl = useIntl();
   const [sessionTime, setSessionTime] = useState(new Date(0, 0, 0, 0, 0));
   const [generalFeedback, setGeneralFeedback] = useState('');
@@ -31,6 +31,17 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback }) => {
     const seconds = date.getSeconds().toString().padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
   };
+
+  useEffect(() => {
+    if (sessionTimer && sessionTimer > 0) {
+      const hours = Math.floor(sessionTimer / 3600);
+      const minutes = Math.floor((sessionTimer % 3600) / 60);
+      const seconds = sessionTimer % 60;
+
+      const timeDate = new Date(0, 0, 0, hours, minutes, seconds);
+      setSessionTime(timeDate);
+    }
+  }, [sessionTimer, visible]);
 
   const handleSubmit = () => {
     submitFeedback({

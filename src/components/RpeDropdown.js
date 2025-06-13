@@ -4,7 +4,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
 import { useParams } from 'react-router-dom';
 import { useToast } from '../utils/ToastContext';
-import { fetchWorkoutInstance, getRpeMethods, getRpeMethodAssigned } from '../services/workoutService';
+import { fetchWorkoutInstance, getRpeMethodAssigned } from '../services/workoutService';
 import { UserContext } from '../utils/UserContext';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
@@ -117,10 +117,33 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
 
   const handleChange = useCallback(
     (e) => {
-      const value = typeof e.value === 'number' ? e.value : parseFloat(e.value);
+      let value = e.value;
+
+      // Si es undefined, null, string vacío, o NaN, enviar null
+      if (value === undefined || value === null || value === '' || (typeof value === 'number' && isNaN(value))) {
+        onChange({ value: null });
+        return;
+      }
+
+      // Si es un string, intentar convertir a número
+      if (typeof value === 'string') {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue)) {
+          onChange({ value: null });
+          return;
+        }
+        value = numValue;
+      }
+
+      // Verificar que el valor esté dentro del rango permitido
+      if (selectedRpeMethod && (value < selectedRpeMethod.minValue || value > selectedRpeMethod.maxValue)) {
+        onChange({ value: null });
+        return;
+      }
+
       onChange({ value });
     },
-    [onChange]
+    [onChange, selectedRpeMethod]
   );
 
   // Plantilla personalizada para cada ítem del dropdown
@@ -130,8 +153,8 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
 
   // Plantilla para la opción seleccionada
   const selectedItemTemplate = (option) => {
-    if (!option) {
-      return <span>Seleccione valor RPE</span>;
+    if (!option || option.value === null || option.value === undefined) {
+      return <span className="text-500">Seleccione valor RPE</span>;
     }
     return <RpeOption color={option.color} value={option.value} emoji={option.emoji} />;
   };
@@ -151,11 +174,11 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
   const shouldUseInputNumber = selectedRpeMethod.valuesMeta.length > 10 || getRpeOptions.length > 10;
 
   return (
-    <div className="rpe-dropdown">
-      <div className="rpe-dropdown-name">
-        <label className="block mb-1"> {selectedRpeMethod.name}: </label>
-      </div>
+    <div className="rpe-dropdown w-full">
       <div>
+        <label className=""> {selectedRpeMethod.name}: </label>
+      </div>
+      <div className="w-full">
         {shouldUseInputNumber ? (
           <InputNumber
             value={selectedRpe}
@@ -164,13 +187,14 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
             step={selectedRpeMethod.step}
             onValueChange={handleChange}
             placeholder="Ingrese valor RPE"
-            className="p-inputnumber-sm"
+            className="p-inputnumber-sm p-inputtext-sm w-full"
             showButtons
             buttonLayout="horizontal"
-            decrementButtonClassName="p-button-secondary"
-            incrementButtonClassName="p-button-secondary"
+            decrementButtonClassName="p-button-secondary p-button-sm"
+            incrementButtonClassName="p-button-secondary p-button-sm"
             incrementButtonIcon="pi pi-plus"
             decrementButtonIcon="pi pi-minus"
+            allowEmpty={true}
           />
         ) : (
           <Dropdown
@@ -182,6 +206,8 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
             className="w-full"
             itemTemplate={itemTemplate}
             valueTemplate={selectedItemTemplate}
+            showClear={true}
+            emptyMessage="No hay opciones disponibles"
           />
         )}
       </div>

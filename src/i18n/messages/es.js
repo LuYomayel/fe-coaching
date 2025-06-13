@@ -469,6 +469,7 @@ const messages = {
   'studentDetails.tooltip.deletePlan': 'Eliminar Plan',
 
   // NewTrainingDetails
+  'training.comments.placeholder': 'Escribe tus comentarios aquí...',
   'training.title': 'Plan de Entrenamiento',
   'training.status': 'Estado',
   'training.group': 'Grupo {number}',
@@ -1372,6 +1373,8 @@ const messages = {
   'training.finish.challenging': 'Desafiante',
   'training.finish.additionalNotes': 'Notas Adicionales',
   'training.finish.additionalNotes.placeholder': '¿Algo más que quieras anotar sobre esta sesión?',
+  'training.markAllCompleted': 'Completar todo',
+  'training.markAllSkipped': 'Saltar todo',
 
   'coach.exercise.upload.updated': 'Ejercicios actualizados',
   'exercise.exerciseType': 'Tipo de Ejercicio',

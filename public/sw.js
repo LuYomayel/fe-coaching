@@ -9,6 +9,13 @@ const urlsToCache = [
   '/logo512.png'
 ];
 
+// Detectar si estamos en localhost
+const isLocalhost = Boolean(
+  self.location.hostname === 'localhost' ||
+    self.location.hostname === '[::1]' ||
+    self.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+);
+
 // Instalación del service worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -37,6 +44,12 @@ self.addEventListener('activate', (event) => {
 
 // Interceptar peticiones de red
 self.addEventListener('fetch', (event) => {
+  // En localhost, no usar cache para permitir hot reloading
+  if (isLocalhost) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
       // Cache hit - devolver respuesta del cache
