@@ -614,3 +614,238 @@ tr.improved-row:hover {
     gap: 0.5rem;
   }
 }
+
+/* Estilos específicos para el arrastre de grupos */
+.group-drag-active {
+  transition: all 0.3s ease;
+  /* Agregamos un filtro muy sutil para indicar que está en modo de arrastre de grupo */
+  filter: brightness(0.98);
+}
+
+.dark-mode .group-drag-active {
+  filter: brightness(1.02);
+}
+
+.group-being-dragged {
+  background: rgba(66, 153, 225, 0.12) !important;
+  border: 2px solid #4299e1 !important;
+  border-radius: 6px;
+  box-shadow: 0 6px 12px rgba(66, 153, 225, 0.25);
+  z-index: 1000;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+.dark-mode .group-being-dragged {
+  background: rgba(52, 73, 94, 0.8) !important;
+  border: 2px solid #3498db !important;
+  box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
+}
+
+.group-placeholder {
+  opacity: 0.4;
+  background: rgba(66, 153, 225, 0.05) !important;
+  transition: all 0.3s ease;
+}
+
+.dark-mode .group-placeholder {
+  background: rgba(52, 73, 94, 0.1) !important;
+  opacity: 0.4;
+}
+
+/* Indicador visual de que un grupo completo se está moviendo */
+.group-drag-indicator {
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 80%;
+  background: linear-gradient(to bottom, #4299e1, #63b3ed);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.dark-mode .group-drag-indicator {
+  background: linear-gradient(to bottom, #3498db, #5dade2);
+}
+
+/* Animación para el grupo que se está arrastrando */
+.group-dragging-animation {
+  animation: groupPulse 1.5s infinite;
+}
+
+@keyframes groupPulse {
+  0% {
+    box-shadow: 0 8px 16px rgba(66, 153, 225, 0.3);
+  }
+  50% {
+    box-shadow: 0 12px 24px rgba(66, 153, 225, 0.5);
+  }
+  100% {
+    box-shadow: 0 8px 16px rgba(66, 153, 225, 0.3);
+  }
+}
+
+/* Estilos para el overlay de arrastre de grupos */
+.drag-overlay-table.group-drag {
+  border: 2px solid #4299e1;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .drag-overlay-table.group-drag {
+  border: 2px solid #3498db;
+  background: rgba(30, 30, 30, 0.95);
+}
+
+/* Indicador de posición válida para drop de grupos - más sutil */
+.group-drop-zone {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+/* Cambiamos el indicador de arriba por un hover más sutil */
+.group-drop-zone:hover {
+  background: rgba(66, 153, 225, 0.08) !important;
+  border-left: 3px solid #4299e1;
+}
+
+.dark-mode .group-drop-zone:hover {
+  border-left: 3px solid #63b3ed;
+  background-color: rgba(99, 179, 237, 0.1);
+}
+
+/* Estilos para el modo pantalla completa */
+.workout-table-container.fullscreen-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  margin: 0;
+  border-radius: 0;
+  background-color: var(--surface-ground, #f8f9fa);
+  padding: 1rem;
+  overflow: auto;
+  box-shadow: none;
+  /* Asegurar que no bloquee los dropdowns */
+  pointer-events: auto;
+}
+
+.dark-mode.workout-table-container.fullscreen-mode {
+  background-color: var(--surface-ground, #1a1a1a);
+}
+
+/* Header interno para el modo Excel */
+.excel-internal-header {
+  background: linear-gradient(135deg, var(--primary-500, #3b82f6), var(--primary-600, #2563eb));
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.excel-internal-header h3 {
+  color: white !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.excel-internal-header i {
+  font-size: 1.1rem;
+}
+
+/* Ajustes para el selector en modo pantalla completa */
+.fullscreen-mode .cycle-day-selector {
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--surface-border, #e5e7eb);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.dark-mode.fullscreen-mode .cycle-day-selector {
+  background: var(--surface-card, #2d2d2d);
+  border: 1px solid var(--surface-border, #374151);
+}
+
+/* Asegurar que los campos del selector tengan el z-index correcto */
+.fullscreen-mode .cycle-day-selector .field {
+  position: relative;
+  z-index: 3;
+}
+
+.fullscreen-mode .cycle-day-selector .p-dropdown-trigger {
+  z-index: 10000 !important;
+}
+
+/* Asegurar que los dropdowns tengan z-index alto en modo pantalla completa */
+.fullscreen-mode .p-dropdown-panel {
+  z-index: 10001 !important;
+}
+
+.fullscreen-mode .p-dropdown {
+  z-index: 10000 !important;
+}
+
+/* Botón flotante interno */
+.excel-toggle-button-internal {
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--surface-border) !important;
+}
+
+.excel-toggle-button-internal:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ajustes para la tabla en modo pantalla completa */
+.fullscreen-mode .workout-table-wrapper {
+  max-height: calc(100vh - 200px);
+  padding: 0 1rem 0.5rem 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsive para modo pantalla completa */
+@media screen and (max-width: 768px) {
+  .workout-table-container.fullscreen-mode {
+    padding: 0.5rem;
+  }
+
+  .excel-internal-header {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .excel-internal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .fullscreen-mode .cycle-day-selector {
+    padding: 0.75rem;
+    gap: 1rem;
+  }
+
+  .fullscreen-mode .workout-table-wrapper {
+    max-height: calc(100vh - 180px);
+    padding: 0 0.5rem 0.5rem 1rem;
+  }
+}

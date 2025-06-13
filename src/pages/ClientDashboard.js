@@ -108,6 +108,9 @@ export default function ClientDashboard() {
   // Nuevo estado para el índice de hover
   const [hoverRowIndex, setHoverRowIndex] = useState(null);
 
+  // Estado para controlar el modo "solo Excel"
+  const [isExcelOnlyMode, setIsExcelOnlyMode] = useState(false);
+
   // Fetch data when the component mounts or refreshKey changes
   useEffect(() => {
     setLoading(true);
@@ -845,7 +848,11 @@ export default function ClientDashboard() {
         </TabPanel>
 
         <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.excelView' })}>
-          <NewWorkoutTable cycleOptions={cycleDropdownOptions} clientData={clientData} />
+          <NewWorkoutTable
+            cycleOptions={cycleDropdownOptions}
+            clientData={clientData}
+            onToggleExcelMode={() => setIsExcelOnlyMode(true)}
+          />
         </TabPanel>
 
         <TabPanel
@@ -1084,9 +1091,54 @@ export default function ClientDashboard() {
   return (
     <div className="client-dashboard p-1">
       <style>{addButtonStyle}</style>
-      <Panel headerTemplate={headerTemplate} className="panel-client-dashboard">
-        {renderTabView()}
-      </Panel>
+
+      {isExcelOnlyMode ? (
+        // Modo solo Excel - pantalla completa sin header
+        <div className="excel-fullscreen-mode">
+          {cycleDropdownOptions.length > 0 && clientData ? (
+            <NewWorkoutTable
+              cycleOptions={cycleDropdownOptions}
+              clientData={clientData}
+              isExcelOnlyMode={true}
+              clientName={clientData?.name}
+              onToggleExcelMode={() => setIsExcelOnlyMode(false)}
+            />
+          ) : (
+            <div className="flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+              <div className="text-center">
+                <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem', marginBottom: '1rem' }}></i>
+                <p>{intl.formatMessage({ id: 'common.loading' }, { defaultMessage: 'Cargando...' })}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        // Modo dashboard completo
+        <>
+          {/* Botón flotante para alternar modo Excel */}
+          <Button
+            icon="pi pi-table"
+            className="p-button-rounded p-button-info excel-toggle-button"
+            onClick={() => setIsExcelOnlyMode(true)}
+            tooltip={intl.formatMessage(
+              { id: 'clientDashboard.showExcelOnly' },
+              { defaultMessage: 'Mostrar solo vista Excel' }
+            )}
+            tooltipOptions={{ position: 'left' }}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              zIndex: 1000,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }}
+          />
+
+          <Panel headerTemplate={headerTemplate} className="panel-client-dashboard">
+            {renderTabView()}
+          </Panel>
+        </>
+      )}
 
       <Dialog
         header={intl.formatMessage({ id: 'students.dialog.editProfile' })}

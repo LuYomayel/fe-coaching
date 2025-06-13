@@ -914,6 +914,8 @@ const messages = {
   'clientDashboard.comingSoon.dashboard': 'We are working on a dashboard with statistics and progress metrics.',
   'clientDashboard.comingSoon.medicalHistory': "Soon you will be able to manage your clients' medical history.",
   'clientDashboard.comingSoon.userData': 'Soon you will be able to view and edit all user data from here.',
+  'clientDashboard.showExcelOnly': 'Show only Excel view',
+  'clientDashboard.showFullDashboard': 'Show full dashboard',
 
   'coach.rpe.basicInfo': 'Basic Information',
   'coach.rpe.name.tooltip': 'Name of the RPE method',

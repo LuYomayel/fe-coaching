@@ -171,6 +171,8 @@ const messages = {
   'clientDashboard.table.type': 'Tipo',
   'clientDashboard.table.expected': 'Esperado',
   'clientDashboard.table.completed': 'Completado',
+  'clientDashboard.showExcelOnly': 'Mostrar solo vista Excel',
+  'clientDashboard.showFullDashboard': 'Mostrar dashboard completo',
 
   // NewClientProfile
   'profile.title': 'Perfil del Cliente',

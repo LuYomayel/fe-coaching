@@ -624,3 +624,102 @@
     font-size: 1.2rem;
   }
 }
+
+/* Estilos para el modo "solo Excel" */
+.excel-only-mode {
+  min-height: 100vh;
+  background-color: var(--surface-ground);
+}
+
+.excel-only-mode .excel-header {
+  background-color: var(--surface-card);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--surface-border);
+}
+
+.excel-only-mode .excel-header h3 {
+  color: var(--text-color);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.excel-only-mode .excel-header h3::before {
+  content: '📊';
+  font-size: 1.2em;
+}
+
+/* Modo pantalla completa para Excel */
+.excel-fullscreen-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background-color: var(--surface-ground);
+  overflow: auto;
+  padding: 0;
+}
+
+/* Ocultar el layout principal cuando está en modo pantalla completa */
+.client-dashboard:has(.excel-fullscreen-mode) {
+  overflow: hidden;
+}
+
+/* Botón flotante para alternar modo Excel */
+.excel-toggle-button {
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--surface-border) !important;
+}
+
+.excel-toggle-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ajustes para el modo Excel en pantalla completa */
+.excel-only-mode .workout-table-container {
+  background-color: var(--surface-card);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--surface-border);
+}
+
+/* Mejorar la visibilidad en modo Excel */
+.excel-only-mode .workout-table {
+  font-size: 0.9rem;
+}
+
+.excel-only-mode .workout-table th,
+.excel-only-mode .workout-table td {
+  padding: 0.75rem 0.5rem;
+}
+
+/* Responsive para el modo Excel */
+@media screen and (max-width: 768px) {
+  .excel-toggle-button {
+    top: 10px !important;
+    right: 10px !important;
+  }
+
+  .excel-only-mode {
+    padding: 0.5rem !important;
+  }
+
+  .excel-only-mode .excel-header {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .excel-only-mode .excel-header h3 {
+    font-size: 1.1rem;
+  }
+}
