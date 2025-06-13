@@ -75,7 +75,13 @@ const App = () => {
                         <div
                           className="flex-grow-1"
                           style={{
-                            marginLeft: isMobile ? '0' : sidebarExpanded ? '250px' : '70px',
+                            marginLeft: isMobile
+                              ? '0'
+                              : window.location.pathname === '/'
+                                ? '0'
+                                : sidebarExpanded
+                                  ? '250px'
+                                  : '70px',
                             transition: 'margin-left 0.3s ease',
                             height: '100vh',
                             overflow: 'auto'

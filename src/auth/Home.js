@@ -226,7 +226,7 @@ export default function HomePage() {
           <Dumbbell className="mr-2 text-primary" size={24} />
           <span className="font-bold text-xl">EaseTrain</span>
         </div>
-        <div className="flex flex-wrap">
+        <div className="hidden md:flex flex-wrap">
           <Button
             label={intl.formatMessage({ id: 'home.header.features' })}
             className="p-button-text p-button-rounded mr-2"
@@ -250,6 +250,13 @@ export default function HomePage() {
           <Button
             label={intl.formatMessage({ id: 'home.header.login' })}
             className="p-button-rounded ml-2"
+            onClick={() => setLoginVisible(true)}
+          />
+        </div>
+        <div className="md:hidden">
+          <Button
+            label={intl.formatMessage({ id: 'home.header.login' })}
+            className="p-button-rounded p-button-sm"
             onClick={() => setLoginVisible(true)}
           />
         </div>
@@ -283,43 +290,46 @@ export default function HomePage() {
             }}
           />
         </div>
-        <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32" style={{ maxWidth: '1200px' }}>
+        <div
+          className="relative mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8 md:py-12 lg:py-24"
+          style={{ maxWidth: '1200px' }}
+        >
           <div className="grid align-items-center">
-            <div className="col-12 md:col-6 text-center md:text-left mb-6 md:mb-0">
-              <h1 className="text-0 font-extrabold mb-4 text-white text-6xl">
+            <div className="col-12 md:col-6 text-center md:text-left mb-4 md:mb-0">
+              <h1 className="text-0 font-extrabold mb-3 md:mb-4 text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl line-height-2">
                 <FormattedMessage id="home.hero.title" />
               </h1>
-              <p className="text-0 mb-5 text-white opacity-80 text-xl line-height-3">
+              <p className="text-0 mb-4 md:mb-5 text-white opacity-80 text-lg sm:text-xl line-height-3 px-2 sm:px-0">
                 <FormattedMessage id="home.hero.subtitle" />
               </p>
-              <div className="flex flex-wrap justify-content-center md:justify-content-start gap-3 mb-4">
+              <div className="flex flex-column sm:flex-row justify-content-center md:justify-content-start gap-3 mb-4 px-2 sm:px-0">
                 <Button
                   onClick={() => setSignUpVisible(true)}
                   label={intl.formatMessage({ id: 'home.hero.getStarted' })}
-                  className="p-button-lg p-button-rounded shadow-5"
+                  className="p-button-lg p-button-rounded shadow-5 w-full sm:w-auto"
                 />
                 <Button
                   label={intl.formatMessage({ id: 'home.hero.learnMore' })}
-                  className="p-button-lg p-button-rounded p-button-outlined text-white border-white"
+                  className="p-button-lg p-button-rounded p-button-outlined text-white border-white w-full sm:w-auto"
                   onClick={() => scrollToSection(featuresRef)}
                 />
               </div>
 
               {/* PWA Install Button */}
-              <div className="mt-4">
+              <div className="mt-4 px-2 sm:px-0">
                 <PWAInstallButton />
               </div>
             </div>
-            <div className="col-12 md:col-6">
+            <div className="col-12 md:col-6 px-3 sm:px-4 md:px-3">
               <div className="relative">
-                <div className="surface-card p-5 shadow-8 border-round-xl">
-                  <div className="flex align-items-center justify-content-center bg-primary border-circle w-4rem h-4rem mb-4">
-                    <Dumbbell className="text-white" size={32} />
+                <div className="surface-card p-4 sm:p-5 shadow-8 border-round-xl">
+                  <div className="flex align-items-center justify-content-center bg-primary border-circle w-3rem h-3rem sm:w-4rem sm:h-4rem mb-3 sm:mb-4 mx-auto sm:mx-0">
+                    <Dumbbell className="text-white" size={24} />
                   </div>
-                  <h3 className="text-900 text-2xl font-medium mb-3">
+                  <h3 className="text-900 text-xl sm:text-2xl font-medium mb-2 sm:mb-3 text-center sm:text-left">
                     <FormattedMessage id="home.features.customPlans" />
                   </h3>
-                  <p className="text-700 line-height-3">
+                  <p className="text-700 line-height-3 text-center sm:text-left">
                     <FormattedMessage id="home.features.customPlansDesc" />
                   </p>
                 </div>
@@ -367,19 +377,19 @@ export default function HomePage() {
     ];
 
     return (
-      <div className="surface-ground py-8" ref={featuresRef}>
-        <div className="max-w-screen-lg mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-900 mb-8">
+      <div className="surface-ground py-6 sm:py-8" ref={featuresRef}>
+        <div className="max-w-screen-lg mx-auto px-3 sm:px-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-900 mb-6 sm:mb-8 px-2">
             <FormattedMessage id="home.features.title" />
           </h2>
           <div className="grid">
             {features.map((feature, index) => (
-              <div key={index} className="col-12 md:col-6 lg:col-4">
+              <div key={index} className="col-12 sm:col-6 lg:col-4">
                 <Card className="m-2 p-3 h-full shadow-3 border-round-2xl">
-                  <div className="flex flex-column align-items-center">
+                  <div className="flex flex-column align-items-center text-center">
                     <div className="mb-3">{feature.icon}</div>
-                    <h3 className="text-xl font-bold mt-3 mb-2 text-900">{feature.title}</h3>
-                    <p className="text-center text-700 line-height-3">{feature.description}</p>
+                    <h3 className="text-lg sm:text-xl font-bold mt-3 mb-2 text-900 px-2">{feature.title}</h3>
+                    <p className="text-700 line-height-3 px-2">{feature.description}</p>
                   </div>
                 </Card>
               </div>
@@ -392,17 +402,17 @@ export default function HomePage() {
 
   const renderPricing = () => {
     return (
-      <div className="surface-section py-8" ref={pricingRef}>
-        <h2 className="text-4xl font-bold text-center text-900 mb-8">
+      <div className="surface-section py-6 sm:py-8" ref={pricingRef}>
+        <h2 className="text-3xl sm:text-4xl font-bold text-center text-900 mb-6 sm:mb-8 px-2">
           <FormattedMessage id="home.pricing.title" />
         </h2>
-        <div className="grid max-w-screen-lg mx-auto px-4">
+        <div className="grid max-w-screen-lg mx-auto px-3 sm:px-4">
           {subscriptionPlans.map((plan) => (
-            <div key={plan.id} className="col-12 md:col-3 lg:col-3 p-3">
+            <div key={plan.id} className="col-12 sm:col-6 md:col-4 lg:col-3 p-2 sm:p-3">
               <Card
                 title={<span className="text-900">{plan.name}</span>}
                 subTitle={<span className="text-primary font-bold">${plan.price} / month</span>}
-                className="h-20rem shadow-5 border-round-2xl"
+                className="h-full shadow-5 border-round-2xl"
                 header={<div className="bg-primary h-1rem"></div>}
               >
                 <ul className="list-none p-0 m-0">
@@ -413,7 +423,7 @@ export default function HomePage() {
                     </span>
                   </li>
                 </ul>
-                <div className="mt-5">
+                <div className="mt-4 sm:mt-5">
                   <Button
                     label={intl.formatMessage({ id: 'home.pricing.subscribe' })}
                     className="p-button-rounded p-button-outlined w-full"
@@ -444,19 +454,19 @@ export default function HomePage() {
     ];
 
     return (
-      <div ref={aboutRef} className="surface-card py-8">
-        <div className="max-w-screen-lg mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center text-900 mb-8">
+      <div ref={aboutRef} className="surface-card py-6 sm:py-8">
+        <div className="max-w-screen-lg mx-auto px-3 sm:px-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-900 mb-6 sm:mb-8 px-2">
             <FormattedMessage id="home.testimonials.title" />
           </h2>
           <div className="grid">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="col-12 md:col-4 p-3">
-                <Card className="shadow-3 border-round-2xl p-4 h-full">
-                  <div className="flex flex-column h-full">
-                    <i className="pi pi-quote-left text-primary text-4xl mb-3"></i>
-                    <p className="text-700 line-height-3 flex-grow-1">{testimonial.text}</p>
-                    <p className="text-900 font-medium mt-3">{testimonial.author}</p>
+              <div key={index} className="col-12 sm:col-6 md:col-4 p-2 sm:p-3">
+                <Card className="shadow-3 border-round-2xl p-3 sm:p-4 h-full">
+                  <div className="flex flex-column h-full text-center sm:text-left">
+                    <i className="pi pi-quote-left text-primary text-3xl sm:text-4xl mb-3 mx-auto sm:mx-0"></i>
+                    <p className="text-700 line-height-3 flex-grow-1 px-2 sm:px-0">{testimonial.text}</p>
+                    <p className="text-900 font-medium mt-3 px-2 sm:px-0">{testimonial.author}</p>
                   </div>
                 </Card>
               </div>
@@ -469,27 +479,27 @@ export default function HomePage() {
 
   const renderFooter = () => {
     return (
-      <div ref={contactRef} className="surface-ground py-6">
-        <div className="max-w-screen-lg mx-auto px-4 flex justify-content-between align-items-center flex-wrap">
-          <div className="mb-3 md:mb-0">
-            <div className="flex align-items-center">
+      <div ref={contactRef} className="surface-ground py-4 sm:py-6">
+        <div className="max-w-screen-lg mx-auto px-3 sm:px-4 flex flex-column sm:flex-row justify-content-between align-items-center gap-3">
+          <div className="text-center sm:text-left">
+            <div className="flex align-items-center justify-content-center sm:justify-content-start">
               <Dumbbell className="mr-2 text-primary" size={20} />
               <span className="font-medium text-lg text-900">EaseTrain</span>
             </div>
             <p className="text-sm text-600 mt-2">© 2023 EaseTrain. All rights reserved.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-column sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               label={intl.formatMessage({ id: 'home.footer.terms' })}
-              className="p-button-text p-button-rounded"
+              className="p-button-text p-button-rounded p-button-sm"
             />
             <Button
               label={intl.formatMessage({ id: 'home.footer.privacy' })}
-              className="p-button-text p-button-rounded"
+              className="p-button-text p-button-rounded p-button-sm"
             />
             <Button
               label={intl.formatMessage({ id: 'home.footer.contact' })}
-              className="p-button-text p-button-rounded"
+              className="p-button-text p-button-rounded p-button-sm"
             />
           </div>
         </div>
@@ -505,7 +515,7 @@ export default function HomePage() {
         draggable={false}
         dismissableMask
         resizable={false}
-        style={{ width: '90%', maxWidth: '400px' }}
+        style={{ width: '95%', maxWidth: '400px' }}
         className="border-round-2xl"
         modal
         onHide={() => setLoginVisible(false)}
@@ -564,7 +574,7 @@ export default function HomePage() {
         draggable={false}
         dismissableMask
         resizable={false}
-        style={{ width: '90%', maxWidth: '400px' }}
+        style={{ width: '95%', maxWidth: '400px' }}
         className="border-round-2xl"
         modal
         onHide={() => setSignUpVisible(false)}
@@ -633,7 +643,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-column min-h-screen h-full">
-      <header className="p-4">{renderHeader()}</header>
+      <header className="">{renderHeader()}</header>
       <main className="flex-grow-1">
         {renderHero()}
         {renderFeatures()}
