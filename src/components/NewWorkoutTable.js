@@ -2,12 +2,11 @@ import React, { useState, useEffect, useContext, useRef, useCallback, memo } fro
 import { useIntl, FormattedMessage } from 'react-intl';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
-import { DataTable } from 'primereact/datatable';
+
 import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { Row } from 'primereact/row';
 import { InputText } from 'primereact/inputtext';
-import { InputNumber } from 'primereact/inputnumber';
 
 import { fetchExcelViewByCycleAndDay, getRpeMethodAssigned } from '../services/workoutService';
 import { fetchCoachExercises } from '../services/exercisesService';
@@ -26,7 +25,6 @@ import {
   DragOverlay
 } from '@dnd-kit/core';
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
@@ -68,13 +66,11 @@ function SortableRowComponent({
   isEditing,
   isDraggingGroup,
   activeGroup,
-  isHoveringFirstColumn,
   propertiesUsedByWeek,
   hoverRowIndex,
   showInsertButton,
   firstColumnRef,
   handleAddExerciseAtPosition,
-  handleAddGroup,
   rowClassName,
   isDarkMode,
   intl,
@@ -991,8 +987,9 @@ export default function NewWorkoutTable({
       newData.map((row) => `${row.rowType}-${row.groupNumber}${row.rowType === 'exercise' ? `-${row.name}` : ''}`)
     );
 
-    // Actualizar el estado
-    setTableData(newData);
+    // Al final de la función, antes de setTableData
+    const normalizedData = normalizeGroupNumbers(newData);
+    setTableData(normalizedData);
   };
 
   // Función para actualizar los índices de fila de los ejercicios
@@ -1139,7 +1136,7 @@ export default function NewWorkoutTable({
     // Actualizar los índices de fila dentro de cada grupo afectado
     updateRowIndices(newData);
 
-    setTableData(newData);
+    updateTableDataWithNormalization(newData);
   };
 
   const handleCancelEdit = () => {
@@ -1222,7 +1219,7 @@ export default function NewWorkoutTable({
       }
     }
 
-    setTableData(newTableData);
+    updateTableDataWithNormalization(newTableData);
     setHoverRowIndex(null);
     setShowInsertButton(false);
   };
@@ -1297,7 +1294,7 @@ export default function NewWorkoutTable({
     newTableData.splice(insertAfterIndex + 1, 0, newGroup, newExercise);
 
     // Actualizar el estado
-    setTableData(newTableData);
+    updateTableDataWithNormalization(newTableData);
 
     // Resetear los estados de inserción
     setHoverRowIndex(null);
@@ -1362,7 +1359,7 @@ export default function NewWorkoutTable({
 
     // Insertar el nuevo ejercicio
     newTableData.splice(insertIndex + 1, 0, newExercise);
-    setTableData(newTableData);
+    updateTableDataWithNormalization(newTableData);
   };
 
   /****************************************
@@ -1380,6 +1377,14 @@ export default function NewWorkoutTable({
       };
     }
 
+    const normalizedTableData = normalizeGroupNumbers(tableData);
+
+    const normalizedOriginalData = normalizeGroupNumbers(originalData);
+
+    // Usar los datos normalizados en lugar de los originales
+    // Cambiar todas las referencias de 'tableData' por 'normalizedTableData'
+    // Cambiar todas las referencias de 'originalData' por 'normalizedOriginalData'
+
     const newChanges = {
       newExercises: [],
       movedExercises: [],
@@ -1389,7 +1394,7 @@ export default function NewWorkoutTable({
     };
 
     // 1. Detectar ejercicios nuevos y asignar exerciseId si es necesario
-    tableData.forEach((row) => {
+    normalizedTableData.forEach((row) => {
       if (row.rowType === 'exercise' && (row.isNew || !row.exerciseInstanceId)) {
         // Asegurarse de que el ejercicio tenga un exerciseId válido
         if (!row.exerciseId && row.name) {
@@ -1419,8 +1424,8 @@ export default function NewWorkoutTable({
     });
 
     // 2. Detectar grupos movidos
-    const originalGroups = originalData.filter((row) => row.rowType === 'group');
-    const currentGroups = tableData.filter((row) => row.rowType === 'group');
+    const originalGroups = normalizedOriginalData.filter((row) => row.rowType === 'group');
+    const currentGroups = normalizedTableData.filter((row) => row.rowType === 'group');
 
     console.log(
       'Grupos originales:',
@@ -1464,8 +1469,8 @@ export default function NewWorkoutTable({
     }
 
     // 3. Detectar ejercicios movidos (solo si no son parte de un grupo movido)
-    const originalExercises = originalData.filter((row) => row.rowType === 'exercise');
-    const currentExercises = tableData.filter((row) => row.rowType === 'exercise' && row.exerciseInstanceId);
+    const originalExercises = normalizedOriginalData.filter((row) => row.rowType === 'exercise');
+    const currentExercises = normalizedTableData.filter((row) => row.rowType === 'exercise' && row.exerciseInstanceId);
 
     // Crear un mapa de exerciseInstanceId para búsqueda más eficiente
     const originalExercisesMap = new Map();
@@ -1477,24 +1482,47 @@ export default function NewWorkoutTable({
     currentExercises.forEach((currentExercise) => {
       const originalExercise = originalExercisesMap.get(currentExercise.exerciseInstanceId);
       if (originalExercise) {
-        // Verificar si el ejercicio es parte de un grupo movido
-        const isPartOfMovedGroup = newChanges.movedGroups.some(
-          (movedGroup) => movedGroup.groupNumber === currentExercise.groupNumber
-        );
+        // Verificar si el ejercicio se movió
+        const exerciseMoved =
+          currentExercise.groupNumber !== originalExercise.groupNumber ||
+          currentExercise.rowIndex !== originalExercise.rowIndex;
 
-        if (!isPartOfMovedGroup) {
-          // Si el ejercicio no es parte de un grupo movido, verificar si se movió individualmente
-          if (
-            currentExercise.groupNumber !== originalExercise.groupNumber ||
-            currentExercise.rowIndex !== originalExercise.rowIndex
-          ) {
+        if (exerciseMoved) {
+          // Verificar si el movimiento fue SOLO debido al movimiento de su grupo original
+          const originalGroupMoved = newChanges.movedGroups.some(
+            (movedGroup) => movedGroup.groupNumber === originalExercise.groupNumber
+          );
+
+          const changedGroup = currentExercise.groupNumber !== originalExercise.groupNumber;
+
+          // Solo excluir si:
+          // 1. El ejercicio NO cambió de grupo Y
+          // 2. Su grupo original se movió
+          // Si cambió de grupo, SIEMPRE debe incluirse en movedExercises
+          const shouldExclude = !changedGroup && originalGroupMoved;
+
+          if (!shouldExclude) {
+            console.log(`Ejercicio ${currentExercise.name} movido individualmente:`, {
+              de: `Grupo ${originalExercise.groupNumber}, Índice ${originalExercise.rowIndex}`,
+              a: `Grupo ${currentExercise.groupNumber}, Índice ${currentExercise.rowIndex}`,
+              cambióGrupo: changedGroup,
+              grupoOriginalMovido: originalGroupMoved,
+              debeIncluirse: !shouldExclude
+            });
+
             newChanges.movedExercises.push({
               exerciseInstanceId: currentExercise.exerciseInstanceId,
-              name: currentExercise.name, // Añadido el nombre del ejercicio
+              name: currentExercise.name,
               oldGroupNumber: originalExercise.groupNumber,
               newGroupNumber: currentExercise.groupNumber,
               oldRowIndex: originalExercise.rowIndex,
               newRowIndex: currentExercise.rowIndex
+            });
+          } else {
+            console.log(`Ejercicio ${currentExercise.name} excluido de movedExercises (movido solo por grupo):`, {
+              grupoOriginal: originalExercise.groupNumber,
+              grupoActual: currentExercise.groupNumber,
+              grupoOriginalMovido: originalGroupMoved
             });
           }
         }
@@ -2112,7 +2140,7 @@ export default function NewWorkoutTable({
       }
     });
 
-    setTableData(newTableData);
+    updateTableDataWithNormalization(newTableData);
     showToast('success', 'Éxito', 'Ejercicio eliminado correctamente');
   };
 
@@ -2130,6 +2158,36 @@ export default function NewWorkoutTable({
     } catch (error) {
       showToast('error', 'Error', error.message);
     }
+  };
+
+  const normalizeGroupNumbers = (data) => {
+    const normalizedData = [...data];
+    let currentGroupNumber = 1;
+
+    for (let i = 0; i < normalizedData.length; i++) {
+      const row = normalizedData[i];
+      if (row.rowType === 'group') {
+        const oldGroupNumber = row.groupNumber;
+        row.groupNumber = currentGroupNumber;
+
+        // Actualizar todos los ejercicios de este grupo
+        for (let j = i + 1; j < normalizedData.length; j++) {
+          const nextRow = normalizedData[j];
+          if (nextRow.rowType === 'group') break;
+          if (nextRow.rowType === 'exercise' && nextRow.groupNumber === oldGroupNumber) {
+            nextRow.groupNumber = currentGroupNumber;
+          }
+        }
+        currentGroupNumber++;
+      }
+    }
+    return normalizedData;
+  };
+
+  // Helper para actualizar tableData con normalización
+  const updateTableDataWithNormalization = (newData) => {
+    const normalizedData = normalizeGroupNumbers(newData);
+    setTableData(normalizedData);
   };
 
   return (
