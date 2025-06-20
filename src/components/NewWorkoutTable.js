@@ -436,7 +436,6 @@ export default function NewWorkoutTable({
           if (workoutInstanceId) break;
         }
         setWorkoutInstanceId(workoutInstanceId);
-        console.log('workoutInstanceId', workoutInstanceId);
         setNumWeeks(response.data.weeks.length);
         setExcelData(response.data);
       } catch (error) {
@@ -1034,14 +1033,14 @@ export default function NewWorkoutTable({
         return;
       }
     }
-
+    console.log('handleExerciseDrag', activeItem, overItem);
     // REGLA 2: No permitir mover por encima del primer grupo
     if (overItem.rowType === 'group' && overItem.groupNumber === 1) {
       // Si se intenta hacer drop sobre el header del grupo 1, permitir solo al final del grupo
       const targetPosition = 'end';
     } else if (overItem.rowType === 'exercise' && overItem.groupNumber === 1) {
       // Permitir mover dentro del grupo 1, pero no antes del primer ejercicio si viene de otro grupo
-      if (activeItem.groupNumber !== 1 && overItem.rowIndex === 0) {
+      if (activeItem.groupNumber !== 1 && overItem.rowIndex === 0 && overItem.rowType === 'group') {
         showToast(
           'error',
           intl.formatMessage({ id: 'common.error' }),
@@ -1062,7 +1061,7 @@ export default function NewWorkoutTable({
         item.groupNumber === activeItem.groupNumber &&
         item.rowIndex === activeItem.rowIndex
     );
-
+    console.log('activeIndex', activeIndex);
     if (activeIndex === -1) {
       console.error('No se encontró el ejercicio activo');
       setTableData(resetDragState);
@@ -1081,8 +1080,16 @@ export default function NewWorkoutTable({
 
     if (overItem.rowType === 'group') {
       // Drop sobre header de grupo - insertar al final del grupo
-      const groupIndex = newData.findIndex((item) => item.rowType === 'group' && item.groupNumber === newGroupNumber);
 
+      // Si vengo de activeItem.groupNumber > overItem.groupNumber, entonces tengo que insertar el ejercicio en el grupo anterior.
+      if (activeItem.groupNumber >= newGroupNumber && activeItem.groupNumber !== 1) {
+        newGroupNumber = newGroupNumber - 1;
+      } else if (activeItem.groupNumber < newGroupNumber && activeItem.groupNumber !== 1) {
+        newGroupNumber = newGroupNumber + 1;
+      }
+
+      const groupIndex = newData.findIndex((item) => item.rowType === 'group' && item.groupNumber === newGroupNumber);
+      console.log('groupIndex', groupIndex);
       insertIndex = groupIndex + 1;
       // Avanzar hasta el final de los ejercicios de este grupo
       while (
@@ -1229,7 +1236,6 @@ export default function NewWorkoutTable({
 
     // Encontrar el máximo número de grupo existente
     const maxGroupNumber = tableData.reduce((max, row) => {
-      console.log('row', row);
       if (row.rowType === 'group' && row.groupNumber > max) {
         return row.groupNumber;
       }
@@ -1259,7 +1265,6 @@ export default function NewWorkoutTable({
 
     // Determinar dónde insertar el nuevo grupo
     // Vamos a insertarlo después del grupo actual o del grupo al que pertenece el ejercicio actual
-    console.log('index', index);
     const currentRow = tableData[index] || tableData[tableData.length - 1];
     let insertAfterIndex;
 
@@ -1367,7 +1372,6 @@ export default function NewWorkoutTable({
    ****************************************/
   const detectChanges = () => {
     if (!originalData || !tableData) {
-      console.log('No hay datos originales o de tabla');
       return {
         newExercises: [],
         movedExercises: [],
@@ -1406,12 +1410,6 @@ export default function NewWorkoutTable({
 
         // Solo añadir a newExercises si tiene un nombre
         if (row.name) {
-          console.log('Detectado ejercicio nuevo:', {
-            nombre: row.name,
-            exerciseId: row.exerciseId,
-            groupNumber: row.groupNumber
-          });
-
           newChanges.newExercises.push({
             name: row.name,
             exerciseId: row.exerciseId,
@@ -1427,15 +1425,6 @@ export default function NewWorkoutTable({
     const originalGroups = normalizedOriginalData.filter((row) => row.rowType === 'group');
     const currentGroups = normalizedTableData.filter((row) => row.rowType === 'group');
 
-    console.log(
-      'Grupos originales:',
-      originalGroups.map((g) => ({ groupNumber: g.groupNumber, index: originalGroups.indexOf(g) }))
-    );
-    console.log(
-      'Grupos actuales:',
-      currentGroups.map((g) => ({ groupNumber: g.groupNumber, index: currentGroups.indexOf(g) }))
-    );
-
     // Crear un mapa de groupNumber para búsqueda más eficiente
     const originalGroupsMap = new Map();
     originalGroups.forEach((group, index) => {
@@ -1449,9 +1438,6 @@ export default function NewWorkoutTable({
         // Verificar si el grupo ha cambiado de posición
         if (originalGroupInfo.originalIndex !== currentIndex) {
           // El grupo se ha movido
-          console.log(
-            `Grupo ${currentGroup.groupNumber} movido: ${originalGroupInfo.originalIndex} -> ${currentIndex}`
-          );
 
           newChanges.movedGroups.push({
             groupNumber: currentGroup.groupNumber,
@@ -1463,10 +1449,6 @@ export default function NewWorkoutTable({
         console.log(`Grupo ${currentGroup.groupNumber} no encontrado en datos originales`);
       }
     });
-
-    if (newChanges.movedGroups.length > 0) {
-      console.log('Grupos movidos detectados:', newChanges.movedGroups);
-    }
 
     // 3. Detectar ejercicios movidos (solo si no son parte de un grupo movido)
     const originalExercises = normalizedOriginalData.filter((row) => row.rowType === 'exercise');
@@ -1502,14 +1484,6 @@ export default function NewWorkoutTable({
           const shouldExclude = !changedGroup && originalGroupMoved;
 
           if (!shouldExclude) {
-            console.log(`Ejercicio ${currentExercise.name} movido individualmente:`, {
-              de: `Grupo ${originalExercise.groupNumber}, Índice ${originalExercise.rowIndex}`,
-              a: `Grupo ${currentExercise.groupNumber}, Índice ${currentExercise.rowIndex}`,
-              cambióGrupo: changedGroup,
-              grupoOriginalMovido: originalGroupMoved,
-              debeIncluirse: !shouldExclude
-            });
-
             newChanges.movedExercises.push({
               exerciseInstanceId: currentExercise.exerciseInstanceId,
               name: currentExercise.name,
@@ -1517,12 +1491,6 @@ export default function NewWorkoutTable({
               newGroupNumber: currentExercise.groupNumber,
               oldRowIndex: originalExercise.rowIndex,
               newRowIndex: currentExercise.rowIndex
-            });
-          } else {
-            console.log(`Ejercicio ${currentExercise.name} excluido de movedExercises (movido solo por grupo):`, {
-              grupoOriginal: originalExercise.groupNumber,
-              grupoActual: currentExercise.groupNumber,
-              grupoOriginalMovido: originalGroupMoved
             });
           }
         }
@@ -1543,13 +1511,6 @@ export default function NewWorkoutTable({
               exerciseId = selectedExercise.id;
             }
           }
-
-          console.log('Cambio detectado en nombre de ejercicio:', {
-            de: originalExercise.name,
-            a: currentExercise.name,
-            exerciseId: exerciseId,
-            exerciseInstanceId: currentExercise.exerciseInstanceId
-          });
 
           if (exerciseId) {
             newChanges.updatedProperties.push({
@@ -1587,14 +1548,6 @@ export default function NewWorkoutTable({
                 (!isCurrentValueNull && !isOriginalValueNull && currentValue !== originalValue);
 
               if (hasChanged) {
-                console.log(`Cambio detectado en propiedad ${prop} para ${currentExercise.name}:`, {
-                  ejercicio: currentExercise.name,
-                  semana: weekNumber,
-                  propiedad: prop,
-                  valorAnterior: originalValue,
-                  valorNuevo: currentValue
-                });
-
                 newChanges.updatedProperties.push({
                   exerciseInstanceId: currentExercise.exerciseInstanceId,
                   name: currentExercise.name,
@@ -1609,25 +1562,12 @@ export default function NewWorkoutTable({
       }
     });
 
-    console.log('Cambios detectados:', newChanges);
     return newChanges;
   };
 
   const buildSavePayload = (changesObj) => {
     if (!changesObj) {
-      console.error('No se recibieron cambios para construir el payload');
       return null;
-    }
-
-    // Mostrar un resumen del payload antes de enviarlo
-    if (changesObj.movedGroups && changesObj.movedGroups.length > 0) {
-      console.log(
-        'Payload de grupos movidos:',
-        changesObj.movedGroups.map((g) => ({
-          groupNumber: g.groupNumber,
-          newOrder: g.newOrder
-        }))
-      );
     }
 
     const payload = {
@@ -1677,7 +1617,6 @@ export default function NewWorkoutTable({
       }
     };
 
-    console.log('Payload completo:', JSON.stringify(payload, null, 2));
     return payload;
   };
 
@@ -1696,9 +1635,8 @@ export default function NewWorkoutTable({
           if (selectedExercise) {
             row.exerciseId = selectedExercise.id;
             exerciseIdsUpdated = true;
-            console.log(`Asignado exerciseId ${selectedExercise.id} a ejercicio ${row.name}`);
           } else {
-            console.warn(`No se pudo encontrar exerciseId para "${row.name}"`);
+            console.error(`No se pudo encontrar exerciseId para "${row.name}"`);
           }
         }
       });
@@ -1708,7 +1646,6 @@ export default function NewWorkoutTable({
         if (row.rowType === 'exercise' && !row.exerciseInstanceId && !row.isNew) {
           row.isNew = true;
           exerciseIdsUpdated = true;
-          console.log(`Marcando ejercicio ${row.name} como nuevo porque no tiene exerciseInstanceId`);
         }
       });
 
@@ -1719,7 +1656,6 @@ export default function NewWorkoutTable({
 
       // Detectar cambios
       const changesObj = detectChanges();
-      console.log('Objeto de cambios:', changesObj);
 
       // Si no hay cambios y no hay ejercicios eliminados, mostrar mensaje y salir
       if (
@@ -1745,12 +1681,8 @@ export default function NewWorkoutTable({
         throw new Error('No se pudo construir el payload para guardar los cambios');
       }
 
-      console.log('Enviando payload a la API:', JSON.stringify(payload, null, 2));
-
       // Llamar a la API
       const response = await saveWorkoutChanges(payload);
-
-      console.log('Respuesta de la API:', response);
 
       if (response.data.message === 'Changes saved successfully') {
         showToast(
@@ -1967,29 +1899,20 @@ export default function NewWorkoutTable({
 
   const handleExerciseNameChange = (rowData, newName) => {
     // Actualizar el nombre en el objeto de datos
-    const oldName = rowData.name;
+    //const oldName = rowData.name;
     rowData.name = newName;
 
     // Actualizar el exerciseId siempre que cambie el nombre del ejercicio
     // independientemente de si es nuevo o existente
     const selectedExercise = coachExercises.find((ex) => ex.name === newName);
     if (selectedExercise) {
-      const oldExerciseId = rowData.exerciseId;
+      //const oldExerciseId = rowData.exerciseId;
       rowData.exerciseId = selectedExercise.id; // Asumiendo que cada ejercicio en coachExercises tiene un id
-
-      console.log('Ejercicio cambiado:', {
-        de: oldName,
-        a: newName,
-        deId: oldExerciseId,
-        aId: selectedExercise.id,
-        exerciseInstanceId: rowData.exerciseInstanceId
-      });
 
       // Si es un ejercicio que no existía previamente (sin exerciseInstanceId),
       // asegurarnos de marcarlo como nuevo para que se cree correctamente
       if (!rowData.exerciseInstanceId && !rowData.isNew) {
         rowData.isNew = true;
-        console.log('Marcando ejercicio como nuevo:', rowData.name);
       }
     } else {
       // Si no se encuentra el ejercicio, establecer exerciseId a null para evitar referencias incorrectas
@@ -2016,7 +1939,6 @@ export default function NewWorkoutTable({
 
   // Efecto para manejar el botón de inserción cuando el mouse está sobre la primera columna
   useEffect(() => {
-    console.log('isHoveringFirstColumn', isHoveringFirstColumn);
     if (isEditing && isHoveringFirstColumn) {
       setShowInsertButton(true);
     }
@@ -2025,91 +1947,6 @@ export default function NewWorkoutTable({
       // No eliminamos el estado al desmontar para evitar parpadeos
     };
   }, [isHoveringFirstColumn, isEditing]);
-
-  /*
-  const SortableRow = ({ rowData, index }) => {
-    const rowKey =
-      rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
-
-    const isDraggable =
-      isEditing &&
-      (rowData.rowType === 'group' || (rowData.rowType === 'exercise' && !isDraggingGroup && !rowData.isDragDisabled));
-
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-      id: rowKey,
-      disabled: !isDraggable
-    });
-
-    const style = {
-      transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-      transition,
-      ...(isDragging || (isDraggingGroup && rowData.isBeingDragged)
-        ? {
-            background: isDarkMode ? 'rgba(52, 73, 94, 0.95)' : 'rgba(248, 249, 250, 0.95)',
-            boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
-            borderRadius: '8px',
-            border: isDarkMode ? '2px solid #3498db' : '2px solid #4299e1',
-            zIndex: 1000
-          }
-        : {})
-    };
-
-    return (
-      <>
-        {isEditing && showInsertButton && isHoveringFirstColumn && index === hoverRowIndex && (
-          <tr className="insert-row">
-            <td colSpan={1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0)}>
-              <div className="insert-buttons-container">
-                <button className="insert-button" onClick={() => handleAddExerciseAtPosition(index)}>
-                  <FaPlus className="insert-icon" />
-                  {intl.formatMessage({ id: 'workoutTable.insertExercise' })}
-                </button>
-                <button className="insert-button" onClick={() => handleAddGroup(index)}>
-                  <FaPlus className="insert-icon" />
-                  {intl.formatMessage({ id: 'plan.group.addGroup' })}
-                </button>
-              </div>
-            </td>
-          </tr>
-        )}
-        <tr
-          ref={setNodeRef}
-          style={style}
-          className={`${rowClassName(rowData)} ${isDragging ? 'dragging' : ''}`}
-          onDoubleClick={() => isEditing && handleAddExerciseAtPosition(index)}
-          {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
-        >
-          <td className={`name-column ${isEditing ? 'editable-column' : ''}`} ref={firstColumnRef}>
-            <div className="name-column-content">
-              {isEditing && isDraggable && <FaGripVertical className="drag-handle" />}
-              {isEditing && rowData.rowType === 'exercise' && (
-                <FaTrash
-                  className="delete-icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteExercise(rowData);
-                  }}
-                />
-              )}
-              <div className="name-value">
-                {rowData.rowType === 'group' && (
-                  <div
-                    className="group-indicator"
-                    style={{
-                      backgroundColor: `hsl(${(rowData.groupNumber * 35) % 360}, 70%, ${isDarkMode ? '45%' : '60%'})`
-                    }}
-                  ></div>
-                )}
-                {renderNameColumn(rowData)}
-              </div>
-            </div>
-          </td>
-          {renderDataCells(rowData)}
-        </tr>
-      </>
-    );
-  };
-  */
 
   // Modificar el itemTemplate para el dropdown de días
   const dayItemTemplate = (option) => {
