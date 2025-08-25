@@ -3,12 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
-import { Checkbox } from 'primereact/checkbox';
+
 import { RadioButton } from 'primereact/radiobutton';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useIntl, FormattedMessage } from 'react-intl';
@@ -22,7 +20,6 @@ import VideoDialog from '../dialogs/VideoDialog';
 import { extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctions';
 import RpeDropdownComponent from '../components/RpeDropdown';
 import '../styles/TrainingPlanStyle.css';
-import { InputNumber } from 'primereact/inputnumber';
 
 export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshKey, isTraining = true }) {
   const { planId } = useParams();
@@ -436,7 +433,6 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
 
       if (saved) {
         try {
-          const parsedSaved = JSON.parse(saved);
           showToast('success', 'Éxito', intl.formatMessage({ id: 'training.success.saved' }));
         } catch (parseError) {
           console.error('Error al parsear datos guardados:', parseError);
@@ -507,7 +503,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
           showToast('error', 'Error', intl.formatMessage({ id: 'training.error.exerciseNotFound' }));
           return null;
         }
-        const originalExercise = group.exercises.find((ex) => ex.id === parseInt(exerciseId));
+        group.exercises.find((ex) => ex.id === parseInt(exerciseId));
 
         return {
           exerciseId: parseInt(exerciseId),

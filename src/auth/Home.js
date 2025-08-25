@@ -19,7 +19,6 @@ import { useIntl, FormattedMessage } from 'react-intl';
 import VerificationCodeDialog from '../dialogs/VerificationCodeDialog';
 import PWAInstallButton from '../components/PWAInstallButton';
 
-const apiUrl = process.env.REACT_APP_API_URL;
 export default function HomePage() {
   const intl = useIntl();
   const [loginVisible, setLoginVisible] = useState(false);

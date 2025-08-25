@@ -5,7 +5,7 @@ import { ThemeProvider } from './utils/ThemeContext';
 import { ToastProvider } from './utils/ToastContext';
 import { UserProvider } from './utils/UserContext.js';
 import { ConfirmationDialogProvider } from './utils/ConfirmationDialogContext.js';
-import { SpinnerProvider, useSpinner } from './utils/GlobalSpinner.js';
+import { SpinnerProvider } from './utils/GlobalSpinner.js';
 import Sidebar from './components/Sidebar.js';
 import Unauthorized from './components/Unauthorized.js';
 import PrivateRoute from './auth/PrivateRoute.js';
@@ -28,14 +28,11 @@ import ClientProfile from './pages/ClientProfile.js';
 import TrainingPlanDetails from './pages/TrainingPlanDetails.js';
 import PlanDetail from './dialogs/PlanDetails.js';
 
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 import { NotificationProvider } from './utils/NotificationsContext.js';
 import Settings from './pages/Settings.js';
 import StudentCalendar from './pages/StudentCalendar';
 
 // PWA Components
-import PWAInstallButton from './components/PWAInstallButton.js';
 import OfflineIndicator from './components/OfflineIndicator.js';
 
 //const stripePromise = await loadStripe(

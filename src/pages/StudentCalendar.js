@@ -3,7 +3,7 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
-import { ProgressSpinner } from 'primereact/progressspinner';
+
 import { Dropdown } from 'primereact/dropdown';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
@@ -17,10 +17,10 @@ import {
   fetchTrainingSessionWithNoWeekByClientId
 } from '../services/workoutService';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
-import { getDayMonthYear, formatRelativeDate, formatDateToApi } from '../utils/UtilFunctions';
+import { getDayMonthYear, formatDateToApi } from '../utils/UtilFunctions';
 import { useIntl, FormattedMessage } from 'react-intl';
 import '../styles/StudentHome.css';
-import { fetchClientDailyStreak, fetchClientStreak } from '../services/usersService';
+import { fetchClientStreak } from '../services/usersService';
 
 export default function StudentCalendar() {
   const intl = useIntl();
@@ -32,7 +32,6 @@ export default function StudentCalendar() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [today] = useState(new Date());
   const toast = useRef(null);
   const calendarRef = useRef(null);

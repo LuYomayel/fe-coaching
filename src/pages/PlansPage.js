@@ -73,7 +73,7 @@ export default function PlansPage() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  const [datesOfWeek, setDatesOfWeek] = useState([
+  const datesOfWeek = [
     { label: intl.formatMessage({ id: 'plansPage.monday' }), value: 1 },
     { label: intl.formatMessage({ id: 'plansPage.tuesday' }), value: 2 },
     { label: intl.formatMessage({ id: 'plansPage.wednesday' }), value: 3 },
@@ -81,7 +81,7 @@ export default function PlansPage() {
     { label: intl.formatMessage({ id: 'plansPage.friday' }), value: 5 },
     { label: intl.formatMessage({ id: 'plansPage.saturday' }), value: 6 },
     { label: intl.formatMessage({ id: 'plansPage.sunday' }), value: 7 }
-  ]);
+  ];
 
   useEffect(() => {
     const fetchDeletedWorkoutTemplates = async () => {

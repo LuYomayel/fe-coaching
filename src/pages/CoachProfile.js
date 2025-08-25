@@ -11,7 +11,7 @@ import { InputNumber } from 'primereact/inputnumber';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Checkbox } from 'primereact/checkbox';
 import { FileUpload } from 'primereact/fileupload';
-import { classNames } from 'primereact/utils';
+
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useToast } from '../utils/ToastContext';
@@ -35,21 +35,19 @@ import {
 } from '../services/subscriptionService';
 import { useSpinner } from '../utils/GlobalSpinner'; // <- spinner context
 import { extractYouTubeVideoId, formatDate, getYouTubeThumbnail, isValidYouTubeUrl } from '../utils/UtilFunctions';
-import { MultiSelect } from 'primereact/multiselect';
+
 import { FilterMatchMode } from 'primereact/api';
-import * as XLSX from 'xlsx';
-import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
+
+import { useIntl } from 'react-intl'; // Agregar este import
 import {
   createExercise,
   deleteExercise,
   fetchBodyAreas,
   fetchCoachExercises,
-  importExercises,
   updateExercise,
   analyzeExcelFile,
   processImportExercises,
-  massUpdateExercises,
-  fetchExerciseTypes
+  massUpdateExercises
 } from '../services/exercisesService';
 import { ProgressBar } from 'primereact/progressbar';
 import { Tooltip } from 'primereact/tooltip';

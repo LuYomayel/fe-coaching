@@ -21,8 +21,7 @@ import { InputIcon } from 'primereact/inputicon';
 import { IconField } from 'primereact/iconfield';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { Tooltip } from 'primereact/tooltip';
-import { Tag } from 'primereact/tag';
-import { TabView, TabPanel } from 'primereact/tabview';
+
 import { Dropdown } from 'primereact/dropdown';
 import '../styles/Students.css';
 
@@ -49,7 +48,6 @@ export default function ManageStudentsPage() {
   const toast = useRef(null);
 
   const { setLoading } = useSpinner();
-  const [isSendingVerification, setIsSendingVerification] = useState(false);
   const navigate = useNavigate();
 
   const intl = useIntl();

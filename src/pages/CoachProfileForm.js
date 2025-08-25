@@ -9,7 +9,6 @@ import { Button } from 'primereact/button';
 import { RadioButton } from 'primereact/radiobutton';
 import { Steps } from 'primereact/steps';
 import { Dialog } from 'primereact/dialog';
-import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
@@ -29,8 +28,6 @@ const trainingTypes = [
 
 const CoachProfileForm = () => {
   const intl = useIntl();
-  //const s = useStripe();
-  //const elements = useElements();
   const [activeStep, setActiveStep] = useState(0);
   const [name, setName] = useState('');
   const [trainingType, setTrainingType] = useState([]);
