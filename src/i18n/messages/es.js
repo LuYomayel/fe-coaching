@@ -810,6 +810,8 @@ const messages = {
   'home.login.password': 'Contraseña',
   'home.login.passwordPlaceholder': 'Ingresa tu contraseña',
   'home.login.forgotPassword': '¿Olvidaste tu contraseña?',
+  'home.login.noAccount': '¿No tienes una cuenta?',
+  'home.login.signUp': 'Regístrate',
 
   'home.signup.title': 'Registrarse',
   'home.signup.email': 'Correo electrónico',
@@ -818,6 +820,8 @@ const messages = {
   'home.signup.passwordPlaceholder': 'Crea una contraseña segura',
   'home.signup.confirmPassword': 'Confirmar contraseña',
   'home.signup.confirmPasswordPlaceholder': 'Confirma tu contraseña',
+  'home.signup.haveAccount': '¿Ya tienes una cuenta?',
+  'home.signup.login': 'Inicia sesión',
   'home.pricing.subscribe': 'Suscribirse',
 
   'home.toast.verifyEmail': '¡Verifica tu correo antes de iniciar sesión!',

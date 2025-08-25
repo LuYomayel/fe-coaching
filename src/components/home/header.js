@@ -48,12 +48,12 @@ const Header = ({
           <div className="flex align-items-center gap-4">
             <Button
               label={intl.formatMessage({ id: 'home.header.login' })}
-              className="p-button-text hidden sm:inline-flex text-600 hover:text-900"
+              className="p-button-text text-800 hover:text-900 "
               onClick={onLoginClick}
             />
             <Button
               label={intl.formatMessage({ id: 'home.hero.getStarted' })}
-              className="bg-primary hover:bg-primary-600 text-0 border-none shadow-2  animate-pulse-glow"
+              className="bg-primary hover:bg-primary-600 text-0 border-none shadow-2  animate-pulse-glow hidden sm:inline-flex"
               onClick={onSignUpClick}
             />
           </div>

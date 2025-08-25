@@ -223,12 +223,12 @@ export default function HomePage() {
         draggable={false}
         dismissableMask
         resizable={false}
-        style={{ width: '95%', maxWidth: '400px' }}
-        className="border-round-2xl"
+        className="border-round-2xl w-4/5 sm:w-11/12"
+        style={{ width: 500 }}
         modal
         onHide={() => setLoginVisible(false)}
       >
-        <form onSubmit={handleLogin} className="p-fluid">
+        <form onSubmit={handleLogin} className="p-fluid p-4">
           <div className="field">
             <label htmlFor="email" className="block text-900 font-medium mb-2">
               <FormattedMessage id="home.login.email" />
@@ -269,6 +269,19 @@ export default function HomePage() {
               <FormattedMessage id="home.login.forgotPassword" />
             </a>
           </div>
+          <div className="text-center mt-3">
+            <span className="text-600">
+              <FormattedMessage id="home.login.noAccount" />
+            </span>
+            <Button
+              label={intl.formatMessage({ id: 'home.login.signUp' })}
+              className="p-button-text p-button-sm text-primary font-medium ml-1"
+              onClick={() => {
+                setLoginVisible(false);
+                setSignUpVisible(true);
+              }}
+            />
+          </div>
         </form>
       </Dialog>
     );
@@ -282,12 +295,12 @@ export default function HomePage() {
         draggable={false}
         dismissableMask
         resizable={false}
-        style={{ width: '95%', maxWidth: '400px' }}
-        className="border-round-2xl"
+        className="border-round-2xl w-4/5 sm:w-11/12"
+        style={{ width: 500 }}
         modal
         onHide={() => setSignUpVisible(false)}
       >
-        <form onSubmit={handleSignUp} className="p-fluid">
+        <form onSubmit={handleSignUp} className="p-fluid p-4">
           <div className="field">
             <label htmlFor="signUpEmail" className="block text-900 font-medium mb-2">
               <FormattedMessage id="home.signup.email" />
@@ -344,6 +357,19 @@ export default function HomePage() {
             className="p-button-lg w-full mt-4"
             loading={loading}
           />
+          <div className="text-center mt-3">
+            <span className="text-600">
+              <FormattedMessage id="home.signup.haveAccount" />
+            </span>
+            <Button
+              label={intl.formatMessage({ id: 'home.signup.login' })}
+              className="p-button-text p-button-sm text-primary font-medium ml-1"
+              onClick={() => {
+                setSignUpVisible(false);
+                setLoginVisible(true);
+              }}
+            />
+          </div>
         </form>
       </Dialog>
     );

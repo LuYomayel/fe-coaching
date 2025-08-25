@@ -814,6 +814,8 @@ const messages = {
   'home.login.password': 'Password',
   'home.login.passwordPlaceholder': 'Enter your password',
   'home.login.forgotPassword': 'Forgot your password?',
+  'home.login.noAccount': "Don't have an account?",
+  'home.login.signUp': 'Sign Up',
 
   'home.signup.title': 'Sign Up',
   'home.signup.email': 'Email',
@@ -822,6 +824,8 @@ const messages = {
   'home.signup.passwordPlaceholder': 'Create a secure password',
   'home.signup.confirmPassword': 'Confirm Password',
   'home.signup.confirmPasswordPlaceholder': 'Confirm your password',
+  'home.signup.haveAccount': 'Already have an account?',
+  'home.signup.login': 'Log In',
   'home.pricing.subscribe': 'Subscribe',
 
   'home.toast.verifyEmail': 'Verify your email prior to logging in!',

@@ -77,11 +77,14 @@ const VerificationCodeDialog = ({ visible, onHide, email, onVerificationSuccess 
       header={intl.formatMessage({ id: 'verification.title' })}
       visible={visible}
       onHide={onHide}
-      style={{ width: '90%', maxWidth: '400px' }}
-      className="border-round-2xl"
+      draggable={false}
+      dismissableMask
+      resizable={false}
+      className="border-round-2xl w-4/5 sm:w-11/12"
+      style={{ width: 500 }}
       modal
     >
-      <div className="p-fluid">
+      <div className="p-fluid p-4">
         <div className="field">
           <p className="mb-3">
             <FormattedMessage
