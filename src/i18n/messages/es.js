@@ -750,11 +750,15 @@ const messages = {
 
   'home.hero.title': 'Transforma Tu Viaje Fitness con EaseTrain',
   'home.hero.subtitle': 'Empodera a los entrenadores, motiva a los clientes y alcanza metas de fitness juntos.',
+
   'home.hero.getStarted': 'Comenzar',
   'home.hero.learnMore': 'Aprender Más',
-  'home.transformYour': 'Transforma Tu',
-  'home.fitnessJourney': 'Viaje Fitness',
-  'home.withEaseTrain': 'con EaseTrain',
+  'home.hero.transformYour': 'Transforma Tu',
+  'home.hero.fitnessJourney': 'Viaje Fitness',
+  'home.hero.withEaseTrain': 'con EaseTrain',
+  'home.hero.easyToUse': 'Fácil de usar',
+  'home.hero.safeAndReliable': 'Seguro y confiable',
+  'home.hero.support': 'Soporte 24/7',
 
   'home.features.title': 'Características Clave',
   'home.features.manageClients': 'Gestionar Clientes',

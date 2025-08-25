@@ -757,9 +757,13 @@ const messages = {
   'home.hero.subtitle': 'Empower trainers, motivate clients, and achieve fitness goals together.',
   'home.hero.getStarted': 'Get Started',
   'home.hero.learnMore': 'Learn More',
-  'home.transformYour': 'Transform Your',
-  'home.fitnessJourney': 'Fitness Journey',
-  'home.withEaseTrain': 'with EaseTrain',
+  'home.hero.transformYour': 'Transform Your',
+  'home.hero.fitnessJourney': 'Fitness Journey',
+  'home.hero.withEaseTrain': 'with EaseTrain',
+
+  'home.hero.easyToUse': 'Easy to use',
+  'home.hero.safeAndReliable': 'Safe and reliable',
+  'home.hero.support': '24/7 Support',
 
   'home.features.title': 'Key Features',
   'home.features.manageClients': 'Manage Clients',

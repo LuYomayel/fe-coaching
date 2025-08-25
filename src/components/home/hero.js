@@ -18,26 +18,27 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }) => {
           {/* Left Content */}
           <div className="animate-fade-in-up">
             <h1 className="hero-title text-gray-900 mb-4 line-height-1 text-left">
-              Transform Your
-              <span className="block text-primary">Fitness Journey</span>
-              with EaseTrain
+              <FormattedMessage id="home.hero.transformYour" />
+              <span className="block text-primary">
+                <FormattedMessage id="home.hero.fitnessJourney" />
+              </span>
+              <FormattedMessage id="home.hero.withEaseTrain" />
             </h1>
 
             <p className="text-xl text-gray-600 mb-6 line-height-3 max-w-30rem">
-              Empower trainers, motivate clients, and achieve fitness goals together with our comprehensive platform
-              designed for success.
+              <FormattedMessage id="home.hero.subtitle" />
             </p>
 
             <div className="flex flex-column sm:flex-row gap-3 mb-6">
               <Button
-                label="Get Started Free"
+                label={<FormattedMessage id="home.hero.getStarted" />}
                 icon="pi pi-arrow-right"
                 iconPos="right"
                 className="p-button-lg p-button-primary"
                 onClick={onSignUpClick}
               />
               <Button
-                label="Watch Demo"
+                label={<FormattedMessage id="home.hero.watchDemo" />}
                 icon="pi pi-play"
                 className="p-button-lg p-button-outlined"
                 onClick={onScrollToFeatures}
@@ -47,15 +48,15 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }) => {
             <div className="flex align-items-center gap-4 text-sm text-gray-600">
               <div className="flex align-items-center">
                 <i className="pi pi-check text-green-300 mr-1"></i>
-                Easy to use
+                <FormattedMessage id="home.hero.easyToUse" />
               </div>
               <div className="flex align-items-center">
                 <i className="pi pi-check text-green-300 mr-1"></i>
-                Safe and reliable
+                <FormattedMessage id="home.hero.safeAndReliable" />
               </div>
               <div className="flex align-items-center">
                 <i className="pi pi-check text-green-300 mr-1"></i>
-                24/7 Support
+                <FormattedMessage id="home.hero.support" />
               </div>
             </div>
           </div>
@@ -102,13 +103,6 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }) => {
                   <span className="text-sm font-medium text-gray-900">
                     <FormattedMessage id="home.hero.feature3" />
                   </span>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-3 border-top-1 surface-border">
-                <div className="flex align-items-center justify-content-between text-sm">
-                  <span className="text-color-secondary">Trusted by</span>
-                  <span className="font-semibold text-primary">1000+ Coaches</span>
                 </div>
               </div>
             </div>
