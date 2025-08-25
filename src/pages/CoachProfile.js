@@ -9,6 +9,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { MultiSelect } from 'primereact/multiselect';
 import { Checkbox } from 'primereact/checkbox';
 import { FileUpload } from 'primereact/fileupload';
 
@@ -33,6 +34,7 @@ import {
   fetchCoachSubscription,
   fetchCoachSubscriptionPlans
 } from '../services/subscriptionService';
+import { fetchExerciseTypes } from '../services/exercisesService';
 import { useSpinner } from '../utils/GlobalSpinner'; // <- spinner context
 import { extractYouTubeVideoId, formatDate, getYouTubeThumbnail, isValidYouTubeUrl } from '../utils/UtilFunctions';
 
@@ -272,6 +274,7 @@ export default function CoachProfilePage() {
 
   // eslint-disable-next-line
   const [exerciseTypes, setExerciseTypes] = useState([]); // <- state for exercise types
+  const [bodyAreas, setBodyAreas] = useState([]); // <- state for body areas
   const [originalExercisesForEdit, setOriginalExercisesForEdit] = useState([]); // <- state for original exercises for edit
   // Current plan
   const [currentPlanId, setCurrentPlanId] = useState(null);
@@ -336,6 +339,7 @@ export default function CoachProfilePage() {
   // eslint-disable-next-line
   const [pendingUploadFormData, setPendingUploadFormData] = useState(null);
   const [modifiedExercises, setModifiedExercises] = useState({}); // Para rastrear cambios individuales
+  const [saveTimeouts, setSaveTimeouts] = useState({}); // Para debounce de guardado
 
   const typeOptions = [
     { label: 'Workout', value: 'workout' },
@@ -352,7 +356,6 @@ export default function CoachProfilePage() {
         value: workout.id
       }));
     } else if (selectedType === 'trainingCycle') {
-      //console.log('trainingCycles', trainingCycles);
       options = trainingCycles.map((cycle) => ({
         label: cycle.name,
         value: cycle.id
@@ -428,6 +431,7 @@ export default function CoachProfilePage() {
             !exercise.multimedia || !exercise.exerciseType || !exercise.description || !exercise.equipmentNeeded
         );
         setMissingExercises(missingExercises);
+
         setExercises(exercisesData);
       } catch (error) {
         console.error('Error fetching initial data:', error);
@@ -445,26 +449,34 @@ export default function CoachProfilePage() {
     const fetchSecondaryData = async () => {
       try {
         // Cargar datos secundarios en paralelo
-        const [workoutsResponse, subscriptionResponse, plansResponse, bodyAreasResponse, subscriptionPlansResponse] =
-          await Promise.all([
-            findAllWorkoutTemplatesByCoachId(coach.id),
-            fetchCoachSubscription(coach.id),
-            fetchCoachPlans(user.userId),
-            fetchBodyAreas(),
-            fetchCoachSubscriptionPlans()
-          ]);
+        const [
+          workoutsResponse,
+          subscriptionResponse,
+          plansResponse,
+          bodyAreasResponse,
+          subscriptionPlansResponse,
+          exerciseTypesResponse
+        ] = await Promise.all([
+          findAllWorkoutTemplatesByCoachId(coach.id),
+          fetchCoachSubscription(coach.id),
+          fetchCoachPlans(user.userId),
+          fetchBodyAreas(),
+          fetchCoachSubscriptionPlans(),
+          fetchExerciseTypes()
+        ]);
 
         setWorkouts(workoutsResponse.data);
-        setCurrentPlanId(subscriptionResponse.data.subscriptionPlan.id);
+        setCurrentPlanId(subscriptionResponse.data.id);
         setCoachPlans(plansResponse.data);
 
         const bodyAreasData = bodyAreasResponse.data;
         if (!bodyAreasData.error) {
-          const formattedBodyAreas = bodyAreasData.map((bodyArea) => ({
-            label: bodyArea.name,
-            value: bodyArea.id
-          }));
-          //setBodyAreas(formattedBodyAreas);
+          setBodyAreas(bodyAreasData);
+        }
+
+        // Procesar exercise types
+        if (!exerciseTypesResponse.error) {
+          setExerciseTypes(exerciseTypesResponse.data);
         }
 
         setSubscriptionPlans(subscriptionPlansResponse.data);
@@ -725,8 +737,8 @@ export default function CoachProfilePage() {
   const openEditExerciseDialog = (exercise) => {
     setDialogMode('edit');
     setNewExercise(exercise);
-    const arrayBodyAreas = exercise.exerciseBodyAreas.map((exerciseBodyArea) => exerciseBodyArea.bodyArea.id);
-    setSelectedBodyAreas(arrayBodyAreas);
+
+    setSelectedBodyAreas();
     setExerciseDialogVisible(true);
   };
 
@@ -1311,17 +1323,11 @@ export default function CoachProfilePage() {
   const onTemplateError = (e) => {
     setTotalSize(0);
     console.error('Error during upload:', e);
-    console.log({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'File Upload Failed'
-    });
   };
 
   const onTemplateClear = () => {
     setSelectedFile(null);
     setTotalSize(0);
-    console.log('FileUpload cleared');
   };
 
   const truncateMessage = (message, maxLength = 150) => {
@@ -1359,21 +1365,31 @@ export default function CoachProfilePage() {
 
       // Preparar los datos para el procesamiento
       const importData = {
-        newExercises: analysisData.exercisesToCreate.map((exercise) => {
+        newExercises: (analysisData.exercisesToCreate || []).map((exercise) => {
           //console.log('Processing new exercise:', exercise);
+          // Si el ejercicio tiene newData, usarlo; si no, usar los datos directos del ejercicio
+          const sourceData = exercise.newData || exercise;
+
+          // Buscar el ID del tipo de ejercicio basado en el nombre
+          let exerciseTypeId = null;
+          if (sourceData.exerciseType) {
+            const matchingType = exerciseTypes.find(
+              (type) => type.name.toLowerCase() === sourceData.exerciseType.toLowerCase()
+            );
+            exerciseTypeId = matchingType ? matchingType.id : null;
+          }
+
           return {
-            name: exercise.name,
-            description: exercise.newData.description,
-            multimedia: exercise.newData.multimedia,
-            exerciseType: exercise.newData.exerciseType,
-            equipmentNeeded: exercise.newData.equipmentNeeded,
-            bodyArea: exercise.newData.bodyArea || []
+            name: exercise.name || '',
+            description: sourceData.description || '',
+            multimedia: sourceData.multimedia || '',
+            exerciseType: exerciseTypeId, // Usar el ID en lugar del string
+            equipmentNeeded: sourceData.equipmentNeeded || '',
+            bodyArea: sourceData.bodyArea || []
           };
         }),
-        updateExercises: analysisData.exercisesToUpdate
+        updateExercises: (analysisData.exercisesToUpdate || [])
           .map((exercise) => {
-            //console.log('Processing update exercise:', exercise);
-
             // Si no hay cambios, no incluirlo
             if (!exercise.changes || Object.keys(exercise.changes).length === 0) {
               return null;
@@ -1382,18 +1398,37 @@ export default function CoachProfilePage() {
             // Filtrar solo los campos que fueron seleccionados para actualizar
             const selectedUpdates = {};
 
+            // Determinar la fuente de datos (newData o el ejercicio directamente)
+            const sourceData = exercise.newData || exercise;
+
             // Si no hay selectedChanges, asumimos que todos los cambios están seleccionados
             if (!exercise.selectedChanges) {
               Object.entries(exercise.changes).forEach(([field, value]) => {
-                if (exercise.newData[field] !== undefined) {
-                  selectedUpdates[field] = exercise.newData[field];
+                if (sourceData[field] !== undefined) {
+                  // Manejar exerciseType especialmente
+                  if (field === 'exerciseType') {
+                    const matchingType = exerciseTypes.find(
+                      (type) => type.name.toLowerCase() === sourceData[field].toLowerCase()
+                    );
+                    selectedUpdates[field] = matchingType ? matchingType.id : null;
+                  } else {
+                    selectedUpdates[field] = sourceData[field];
+                  }
                 }
               });
             } else {
               // Si hay selectedChanges, solo incluir los campos seleccionados
               Object.entries(exercise.selectedChanges).forEach(([field, isSelected]) => {
-                if (isSelected !== false && exercise.newData[field] !== undefined) {
-                  selectedUpdates[field] = exercise.newData[field];
+                if (isSelected !== false && sourceData[field] !== undefined) {
+                  // Manejar exerciseType especialmente
+                  if (field === 'exerciseType') {
+                    const matchingType = exerciseTypes.find(
+                      (type) => type.name.toLowerCase() === sourceData[field].toLowerCase()
+                    );
+                    selectedUpdates[field] = matchingType ? matchingType.id : null;
+                  } else {
+                    selectedUpdates[field] = sourceData[field];
+                  }
                 }
               });
             }
@@ -1411,11 +1446,9 @@ export default function CoachProfilePage() {
           .filter(Boolean) // Eliminar los elementos null
       };
 
-      //console.log('Import Data to be sent:', importData);
-
       // Procesar la importación
       const { data } = await processImportExercises(coach.id, importData);
-      //console.log('data', data);
+
       setRefreshKey((old) => old + 1);
 
       if (data.updatedExercises?.length > 0) {
@@ -1789,14 +1822,33 @@ export default function CoachProfilePage() {
   };
 
   const exerciseTypeEditor = (options) => {
+    // Si exerciseTypes no está disponible, usar un InputText temporal
+
     return (
       <Dropdown
-        value={options.value || ''}
+        value={options.value?.id || options.value || ''}
         options={exerciseTypes.map((type) => ({
           label: type.name,
           value: type.id
         }))}
-        onChange={(e) => options.editorCallback(e.value)}
+        onChange={(e) => {
+          console.log('=== EXERCISE TYPE DROPDOWN CHANGE ===');
+          console.log('Exercise ID:', options.rowData.id);
+          console.log('Exercise Name:', options.rowData.name);
+          console.log('Previous value:', options.value.id);
+          console.log('New selected value:', e.value);
+          console.log('Available options:', exerciseTypes);
+          console.log(
+            'Selected option details:',
+            exerciseTypes.find((type) => type.id === e.value)
+          );
+
+          options.editorCallback(e.value);
+          // Crear un options actualizado con el nuevo valor
+          const updatedOptions = { ...options, value: exerciseTypes.find((type) => type.id === e.value) };
+          console.log('Updated options object:', updatedOptions);
+          debouncedSaveExercise(updatedOptions);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             saveEditedExercise(options);
@@ -1809,6 +1861,8 @@ export default function CoachProfilePage() {
           }
         }}
         placeholder={intl.formatMessage({ id: 'exercise.type' })}
+        //showClear
+        //filter
       />
     );
   };
@@ -1819,6 +1873,9 @@ export default function CoachProfilePage() {
         value={options.value || ''} // Asegurar que el valor no sea null/undefined
         onChange={(e) => {
           options.editorCallback(e.target.value);
+          // Crear un options actualizado con el nuevo valor
+          const updatedOptions = { ...options, value: e.target.value };
+          debouncedSaveExercise(updatedOptions);
         }}
         onKeyDown={(e) => {
           // Enter sin Shift: guardar y salir (PrimeReact lo maneja)
@@ -1841,7 +1898,12 @@ export default function CoachProfilePage() {
     return (
       <InputTextarea
         value={options.value || ''}
-        onChange={(e) => options.editorCallback(e.target.value)}
+        onChange={(e) => {
+          options.editorCallback(e.target.value);
+          // Crear un options actualizado con el nuevo valor
+          const updatedOptions = { ...options, value: e.target.value };
+          debouncedSaveExercise(updatedOptions);
+        }}
         rows={1}
         autoResize
         onKeyDown={(e) => {
@@ -1861,9 +1923,121 @@ export default function CoachProfilePage() {
     );
   };
 
+  const bodyAreasEditor = (options) => {
+    const currentBodyAreas = options.value || [];
+    const selectedBodyAreaIds = currentBodyAreas.map((exerciseBodyArea) => exerciseBodyArea.bodyArea.id);
+
+    console.log('=== BODY AREAS EDITOR RENDER ===');
+    console.log('Current body areas:', currentBodyAreas);
+    console.log('Selected body area IDs:', selectedBodyAreaIds);
+    console.log('Options value:', options.value);
+
+    return (
+      <MultiSelect
+        value={selectedBodyAreaIds}
+        options={bodyAreas.map((bodyArea) => ({
+          label: bodyArea.name,
+          value: bodyArea.id
+        }))}
+        onChange={(e) => {
+          console.log('=== BODY AREAS MULTISELECT CHANGE ===');
+          console.log('Exercise ID:', options.rowData.id);
+          console.log('Exercise Name:', options.rowData.name);
+          console.log('Previous value:', options.value);
+          console.log('New selected body area IDs:', e.value);
+          console.log('New selected body area IDs type:', typeof e.value);
+          console.log('New selected body area IDs is array:', Array.isArray(e.value));
+          console.log('Available body areas:', bodyAreas);
+
+          // Asegurar que e.value sea siempre un array
+          const selectedIds = Array.isArray(e.value) ? e.value : [e.value].filter(Boolean);
+          console.log('Processed selected IDs:', selectedIds);
+
+          const selectedBodyAreas = selectedIds.map((bodyAreaId) => {
+            const bodyArea = bodyAreas.find((ba) => ba.id === bodyAreaId);
+            console.log('Mapping body area ID:', bodyAreaId, 'to body area:', bodyArea);
+            return {
+              bodyArea: bodyArea
+            };
+          });
+
+          console.log('Final selected body areas structure:', selectedBodyAreas);
+          options.editorCallback(selectedBodyAreas);
+          // Crear un options actualizado con el nuevo valor
+          const updatedOptions = { ...options, value: selectedBodyAreas };
+          console.log('Updated options object:', updatedOptions);
+          debouncedSaveExercise(updatedOptions);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            saveEditedExercise(options);
+            e.preventDefault();
+          }
+          if (e.key === 'Escape') {
+            options.editorCallback(options.rowData[options.field]);
+            e.preventDefault();
+          }
+        }}
+        placeholder={intl.formatMessage({ id: 'exercise.bodyAreas' })}
+        className="w-full"
+        showClear
+        filter
+      />
+    );
+  };
+
+  const debouncedSaveExercise = (options, delay = 300) => {
+    const exerciseId = options.rowData.id;
+
+    // Limpiar timeout anterior si existe
+    if (saveTimeouts[exerciseId]) {
+      clearTimeout(saveTimeouts[exerciseId]);
+    }
+
+    // Crear nuevo timeout
+    const timeoutId = setTimeout(() => {
+      saveEditedExercise(options);
+      setSaveTimeouts((prev) => {
+        const newTimeouts = { ...prev };
+        delete newTimeouts[exerciseId];
+        return newTimeouts;
+      });
+    }, delay);
+
+    setSaveTimeouts((prev) => ({ ...prev, [exerciseId]: timeoutId }));
+  };
+
   const saveEditedExercise = (options) => {
     let { rowData, value: newValue, field } = options;
-    //console.log('multimedia', field === 'multimedia', 'newValue', newValue, 'rowData', isValidYouTubeUrl(newValue));
+
+    console.log('=== SAVE EDITED EXERCISE ===');
+    console.log(`Exercise: ${rowData.id} (${rowData.name})`);
+    console.log(`Field: ${field}`);
+    console.log(`New Value:`, newValue);
+    console.log(`New Value Type:`, typeof newValue);
+    console.log(`Is Array:`, Array.isArray(newValue));
+    if (Array.isArray(newValue)) {
+      console.log(`Array Length:`, newValue.length);
+      console.log(`Array Contents:`, newValue);
+    }
+
+    // Evitar procesar si no hay cambios reales
+    const currentValue = rowData[field];
+    console.log('=== EARLY CHANGE CHECK ===');
+    console.log('Field:', field);
+    console.log('Current value:', currentValue);
+    console.log('New value:', newValue);
+    console.log('Direct comparison (newValue === currentValue):', newValue === currentValue);
+    console.log('Empty string check:', (newValue === '' && !currentValue) || (!newValue && currentValue === ''));
+
+    // Para arrays y objetos complejos, no hacer comparación directa
+    if (field === 'exerciseBodyAreas' || field === 'exerciseType') {
+      console.log('Skipping early comparison for complex field:', field);
+    } else if (newValue === currentValue || (newValue === '' && !currentValue) || (!newValue && currentValue === '')) {
+      console.log(`No change detected for ${field}, skipping save`);
+      return;
+    }
+
     if (field === 'multimedia' && newValue && !isValidYouTubeUrl(newValue)) {
       showToast('error', 'URL Inválida', intl.formatMessage({ id: 'coach.exercise.error.video.invalid' }));
       return; // Detener aquí para no guardar un valor inválido
@@ -1907,12 +2081,102 @@ export default function CoachProfilePage() {
         // Buscar el ejercicio original para comparar si realmente hubo cambios
         const originalExercise = originalExercisesForEdit.find((ex) => ex.id === rowData.id);
 
+        // Función para comparar valores (maneja arrays y objetos)
+        const hasValueChanged = (original, current) => {
+          console.log('=== COMPARING VALUES ===');
+          console.log('Original:', original);
+          console.log('Current:', current);
+          console.log('Field:', field);
+          console.log('Original type:', typeof original, 'isArray:', Array.isArray(original));
+          console.log('Current type:', typeof current, 'isArray:', Array.isArray(current));
+
+          // Caso especial para exerciseBodyAreas
+          if (field === 'exerciseBodyAreas') {
+            console.log('=== EXERCISE BODY AREAS COMPARISON ===');
+            console.log('Original is array:', Array.isArray(original));
+            console.log('Current is array:', Array.isArray(current));
+            console.log('Original length:', original?.length || 0);
+            console.log('Current length:', current?.length || 0);
+
+            if (!Array.isArray(original) && !Array.isArray(current)) {
+              console.log('Both are not arrays, returning false');
+              return false;
+            }
+            if (!Array.isArray(original) || !Array.isArray(current)) {
+              console.log('One is array, one is not, returning true');
+              return true;
+            }
+            if (original.length !== current.length) {
+              console.log('Different lengths, returning true');
+              return true;
+            }
+
+            // Comparar por IDs de bodyArea
+            const originalIds = original.map((item) => item.bodyArea?.id || item.id).sort();
+            const currentIds = current.map((item) => item.bodyArea?.id || item.id).sort();
+
+            console.log('Original IDs:', originalIds);
+            console.log('Current IDs:', currentIds);
+            console.log('Are they different?', JSON.stringify(originalIds) !== JSON.stringify(currentIds));
+
+            return JSON.stringify(originalIds) !== JSON.stringify(currentIds);
+          }
+
+          // Caso especial para exerciseType
+          if (field === 'exerciseType') {
+            const originalId = original?.id || original;
+            const currentId = current?.id || current;
+            console.log('ExerciseType comparison:', originalId, 'vs', currentId);
+            return originalId !== currentId;
+          }
+
+          // Caso general para arrays
+          if (Array.isArray(original) && Array.isArray(current)) {
+            if (original.length !== current.length) return true;
+            return original.some((item, index) => {
+              if (typeof item === 'object' && typeof current[index] === 'object') {
+                return JSON.stringify(item) !== JSON.stringify(current[index]);
+              }
+              return item !== current[index];
+            });
+          }
+
+          // Caso general para objetos
+          if (typeof original === 'object' && typeof current === 'object') {
+            return JSON.stringify(original) !== JSON.stringify(current);
+          }
+
+          // Caso general para valores primitivos
+          return original !== current;
+        };
+
         // Verificar si hay diferencias entre el ejercicio actualizado y el original
-        const hasChanged = originalExercise && originalExercise[field] !== updatedExerciseInState[field];
+        console.log('=== CHECKING FOR CHANGES ===');
+        console.log('Exercise ID:', rowData.id);
+        console.log('Field:', field);
+        console.log('Original exercise exists:', !!originalExercise);
+        console.log('Original exercise:', originalExercise);
+        console.log('Updated exercise in state:', updatedExerciseInState);
+        console.log('Original field value:', originalExercise?.[field]);
+        console.log('Updated field value:', updatedExerciseInState[field]);
+
+        const hasChanged = originalExercise && hasValueChanged(originalExercise[field], updatedExerciseInState[field]);
+        console.log('Has changed result:', hasChanged);
 
         // Solo agregar al objeto de ejercicios modificados si realmente hubo cambios
         if (hasChanged) {
+          console.log(`Exercise ${rowData.id} (${rowData.name}) - Field "${field}" changed:`, {
+            original: originalExercise[field],
+            current: updatedExerciseInState[field]
+          });
           setModifiedExercises((prev) => ({ ...prev, [rowData.id]: updatedExerciseInState }));
+        } else {
+          // Si no hay cambios, remover del objeto de modificados
+          setModifiedExercises((prev) => {
+            const newModified = { ...prev };
+            delete newModified[rowData.id];
+            return newModified;
+          });
         }
       }
     }
@@ -1920,7 +2184,55 @@ export default function CoachProfilePage() {
 
   const handleMassUpdateExercises = async () => {
     const exercisesToUpdateArray = Object.values(modifiedExercises);
-    //console.log('exercisesToUpdateArray', exercisesToUpdateArray);
+    console.log('Modified exercises to save:', exercisesToUpdateArray.length, exercisesToUpdateArray);
+
+    // Preparar los datos en el formato correcto para el backend
+    const formattedExercises = exercisesToUpdateArray.map((exercise) => {
+      console.log('Processing exercise for update:', exercise.id, exercise.name);
+      console.log('Original exercise data:', exercise);
+
+      // Formatear exerciseType - asegurar que sea solo el ID
+      let exerciseTypeId = null;
+      if (exercise.exerciseType) {
+        if (typeof exercise.exerciseType === 'object' && exercise.exerciseType.id) {
+          exerciseTypeId = exercise.exerciseType.id;
+        } else if (typeof exercise.exerciseType === 'number') {
+          exerciseTypeId = exercise.exerciseType;
+        }
+      }
+
+      // Formatear bodyAreas - extraer solo los IDs
+      let bodyAreaIds = [];
+      if (exercise.exerciseBodyAreas && Array.isArray(exercise.exerciseBodyAreas)) {
+        bodyAreaIds = exercise.exerciseBodyAreas
+          .map((eba) => {
+            if (eba.bodyArea && eba.bodyArea.id) {
+              return eba.bodyArea.id;
+            } else if (eba.id) {
+              return eba.id;
+            }
+            return null;
+          })
+          .filter(Boolean);
+      }
+
+      // Crear objeto con solo los campos necesarios para la actualización
+      const updateData = {
+        id: exercise.id,
+        name: exercise.name || '',
+        description: exercise.description || '',
+        multimedia: exercise.multimedia || '',
+        exerciseType: exerciseTypeId,
+        equipmentNeeded: exercise.equipmentNeeded || '',
+        bodyArea: bodyAreaIds // Usar bodyArea en lugar de exerciseBodyAreas
+      };
+
+      console.log('Formatted exercise data:', updateData);
+      return updateData;
+    });
+
+    console.log('Final formatted exercises to send:', formattedExercises);
+
     if (exercisesToUpdateArray.length === 0) {
       showToast(
         'info',
@@ -1933,13 +2245,14 @@ export default function CoachProfilePage() {
 
     try {
       setLoading(true);
-      const { data } = await massUpdateExercises(exercisesToUpdateArray);
-      //console.log('data', data);
+      const { data } = await massUpdateExercises(formattedExercises);
 
       setLoading(false);
 
       setModifiedExercises({});
       setIsEditingExercises(false);
+      // Actualizar el estado original con los nuevos datos
+      setOriginalExercisesForEdit(exercises);
       setRefreshKey((k) => k + 1); // Para refrescar los datos de la tabla
     } catch (error) {
       console.error('Error updating exercises', error);
@@ -1952,9 +2265,8 @@ export default function CoachProfilePage() {
   const cancelMassUpdate = () => {
     setIsEditingExercises(false);
     setModifiedExercises({});
-    // Para revertir los cambios visuales, necesitas recargar los datos originales.
-    // La forma más simple es forzar un refresh con refreshKey si tus useEffects ya recargan 'exercises'
-    setRefreshKey((k) => k + 1);
+    // Restaurar los ejercicios a su estado original
+    setExercises(originalExercisesForEdit);
     showToast(
       'info',
       intl.formatMessage({ id: 'common.editCanceled' }),
@@ -1962,6 +2274,13 @@ export default function CoachProfilePage() {
     );
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data } = await fetchCoachExercises(coach.id);
+      setExercises(data);
+    };
+    fetchData();
+  }, [refreshKey]);
   return (
     <div className="coach-profile-container">
       {/* Sección de cabecera del perfil */}
@@ -2067,7 +2386,7 @@ export default function CoachProfilePage() {
                 className="coach-table"
                 stripedRows
                 paginator
-                rows={10}
+                rows={5}
                 rowsPerPageOptions={[5, 10, 25, 50]}
                 emptyMessage={intl.formatMessage({ id: 'coach.noExercisesFound' })}
                 filters={filters}
@@ -2146,6 +2465,27 @@ export default function CoachProfilePage() {
                   header={intl.formatMessage({ id: 'exercise.equipment' })}
                   editor={(options) => textEditor(options)}
                   style={{ minWidth: '200px' }}
+                />
+                <Column
+                  field="exerciseBodyAreas"
+                  header={intl.formatMessage({ id: 'exercise.bodyAreas' })}
+                  editor={(options) => bodyAreasEditor(options)}
+                  style={{ minWidth: '200px' }}
+                  body={(rowData) => (
+                    <div className="body-areas-cell">
+                      {rowData.exerciseBodyAreas && rowData.exerciseBodyAreas.length > 0 ? (
+                        <div className="body-areas-tags">
+                          {rowData.exerciseBodyAreas.map((exerciseBodyArea, index) => (
+                            <span key={index} className="body-area-tag">
+                              {exerciseBodyArea.bodyArea.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-500">Sin áreas</span>
+                      )}
+                    </div>
+                  )}
                 />
                 {!isEditingExercises && (
                   <Column

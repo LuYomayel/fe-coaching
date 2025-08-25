@@ -13,6 +13,11 @@ const ExcelAnalysisDialog = ({ visible, onHide, analysisData, onConfirm, setAnal
   useEffect(() => {
     //console.log('ExcelAnalysisDialog - Received analysisData:', analysisData);
 
+    if (!analysisData) {
+      setLocalAnalysisData(null);
+      return;
+    }
+
     // Solo inicializamos si no hay selectedChanges definidos
     const hasInitializedChanges = analysisData?.exercisesToUpdate?.some(
       (exercise) => exercise.selectedChanges && Object.keys(exercise.selectedChanges).length > 0
@@ -36,7 +41,7 @@ const ExcelAnalysisDialog = ({ visible, onHide, analysisData, onConfirm, setAnal
       }
 
       setLocalAnalysisData(updatedAnalysisData);
-      setAnalysisData(updatedAnalysisData);
+      // REMOVIDO: setAnalysisData(updatedAnalysisData); - Esto causaba el bucle infinito
     } else {
       setLocalAnalysisData(analysisData);
     }
@@ -56,6 +61,8 @@ const ExcelAnalysisDialog = ({ visible, onHide, analysisData, onConfirm, setAnal
           icon="pi pi-check"
           onClick={() => {
             //console.log('ExcelAnalysisDialog - Confirming with data:', localAnalysisData);
+            // Actualizar el analysisData del padre con los datos locales antes de confirmar
+            setAnalysisData(localAnalysisData);
             onConfirm();
           }}
           autoFocus

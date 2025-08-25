@@ -19,7 +19,7 @@ const fetchBodyAreas = async () => {
 };
 
 const fetchExerciseTypes = async () => {
-  const response = await fetch(`${apiUrl}/exercise/exercise-type`);
+  const response = await fetch(`${apiUrl}/exercise/exercise-types`);
   const data = await response.json();
   if (data.error) {
     throw new Error(data.error);
@@ -78,6 +78,7 @@ const massUpdateExercises = async (exercises) => {
     return data;
   } catch (error) {
     console.error('Error updating exercises', error);
+
     throw error;
   }
 };

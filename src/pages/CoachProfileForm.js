@@ -114,7 +114,7 @@ const CoachProfileForm = () => {
 
   const handleSubmit = async () => {
     const selectedPlanId =
-      subscriptionType === 'freeTrial' ? plans.find((plan) => plan.name === 'Free Trial')?.id : userPayment?.id;
+      subscriptionType === 'freeTrial' ? plans.find((plan) => plan.name.includes('Free'))?.id : userPayment?.id;
 
     console.log('selectedPlanId', selectedPlanId);
     if (!selectedPlanId) {

@@ -923,3 +923,27 @@
     margin-bottom: 0.5rem;
   }
 }
+
+/* Estilos para las etiquetas de body areas */
+.body-areas-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.body-areas-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.body-area-tag {
+  background-color: var(--primary-50);
+  color: var(--primary-700);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--primary-200);
+  white-space: nowrap;
+}

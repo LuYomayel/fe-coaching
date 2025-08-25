@@ -25,6 +25,7 @@ const messages = {
   'common.useAsTemplate': 'Usar como Plantilla',
   'common.edit': 'Editar',
   'common.save': 'Guardar',
+  'common.saveAll': 'Guardar Todo',
   'common.copy': 'Copiar',
   'common.close': 'Cerrar',
   'common.search': 'Buscar',
@@ -97,6 +98,7 @@ const messages = {
   'coach.workoutsPerWeek': 'Entrenamientos por semana',
   'coach.exercise.upload.success': 'Ejercicios subidos',
   'coach.exercise.upload.duplicated': 'Ejercicios duplicados',
+  'coach.exercise.selectType': 'Seleccionar Tipo de Ejercicio',
   'coach.rpe.assign.type': 'Seleccionar Tipo de Asignación',
   'coach.rpe.assign.rpe': 'Seleccionar RPE',
 
@@ -1351,6 +1353,7 @@ const messages = {
   'exercise.multimedia': 'Multimedia',
   'exercise.count': 'Cantidad',
   'exercise.equipmentNeeded': 'Equipamiento Necesario',
+  'exercise.bodyAreas': 'Áreas del cuerpo',
 
   // Plan
   'plan.details': 'Detalles del Plan',

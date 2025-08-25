@@ -17,6 +17,7 @@ const messages = {
   'common.delete': 'Delete',
   'common.edit': 'Edit',
   'common.save': 'Save',
+  'common.saveAll': 'Save All',
   'common.copy': 'Copy',
   'common.template': 'Template',
   'common.useAsTemplate': 'Use as Template',
@@ -94,6 +95,7 @@ const messages = {
 
   'coach.exercise.success.created': 'Exercise created successfully',
   'coach.exercise.success.updated': 'Exercise updated successfully',
+  'coach.exercise.selectType': 'Select Exercise Type',
 
   'coach.rpe.confirm.delete': 'Are you sure you want to delete this RPE Method?',
   'coach.rpe.confirm.assign': 'Are you sure you want to assign {rpe} to the selected {type}?',
@@ -777,7 +779,7 @@ const messages = {
     'Access a comprehensive library of exercise videos and create custom workout demonstrations.',
 
   'home.pricing.title': 'Pricing Plans',
-  'home.pricing.maxClients': 'Max Clients: {max}',
+  'home.pricing.maxClients': 'Max Clients',
 
   'home.footer.contact': 'Contact',
   'home.footer.contactWhatsApp': 'Contact via WhatsApp',
@@ -1068,6 +1070,7 @@ const messages = {
   'exercise.multimedia': 'Multimedia',
   'exercise.count': 'Count',
   'exercise.equipmentNeeded': 'Equipment Needed',
+  'exercise.bodyAreas': 'Body Areas',
 
   // Plan
   'plan.details': 'Plan Details',

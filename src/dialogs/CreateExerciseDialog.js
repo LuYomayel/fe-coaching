@@ -3,13 +3,14 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { MultiSelect } from 'primereact/multiselect';
+import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { useIntl } from 'react-intl';
 import { createExercise, updateExercise } from '../services/exercisesService';
 import { useToast } from '../utils/ToastContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { isValidYouTubeUrl } from '../utils/UtilFunctions';
-import { fetchBodyAreas } from '../services/exercisesService';
+import { fetchBodyAreas, fetchExerciseTypes } from '../services/exercisesService';
 import { useSpinner } from '../utils/GlobalSpinner';
 
 // Función auxiliar para truncar mensajes largos
@@ -38,20 +39,37 @@ export const CreateExerciseDialog = React.memo(
 
     const [selectedBodyAreas, setSelectedBodyAreas] = useState([]);
     const [bodyAreas, setBodyAreas] = useState([]);
+    const [exerciseTypes, setExerciseTypes] = useState([]);
 
     useEffect(() => {
-      const fetchBodyAreasData = async () => {
+      const fetchData = async () => {
         try {
           setLoading(true);
-          const { data } = await fetchBodyAreas();
-          if (data.error) {
-            throw new Error(data.message || 'Something went wrong');
+          const [bodyAreasResponse, exerciseTypesResponse] = await Promise.all([
+            fetchBodyAreas(),
+            fetchExerciseTypes()
+          ]);
+
+          // Procesar body areas
+          if (bodyAreasResponse.data.error) {
+            throw new Error(bodyAreasResponse.data.message || 'Something went wrong');
           }
-          const formattedBodyAreas = data.map((bodyArea) => ({
+          const formattedBodyAreas = bodyAreasResponse.data.map((bodyArea) => ({
             label: bodyArea.name,
             value: bodyArea.id
           }));
           setBodyAreas(formattedBodyAreas);
+
+          // Procesar exercise types
+          const { data } = await exerciseTypesResponse.json();
+          if (data.error) {
+            throw new Error(data.message || 'Something went wrong');
+          }
+          const formattedExerciseTypes = data.map((type) => ({
+            label: type.name,
+            value: type.id
+          }));
+          setExerciseTypes(formattedExerciseTypes);
         } catch (error) {
           console.log('error', error);
           showToast('error', 'Error', truncateMessage(error.message));
@@ -60,7 +78,7 @@ export const CreateExerciseDialog = React.memo(
         }
       };
 
-      fetchBodyAreasData();
+      fetchData();
     }, []);
 
     useEffect(() => {
@@ -69,6 +87,16 @@ export const CreateExerciseDialog = React.memo(
         setSelectedBodyAreas(arrayBodyAreas);
       }
     }, [bodyAreas]);
+
+    useEffect(() => {
+      if (exerciseTypes.length > 0 && dialogMode === 'edit' && newExercise.exerciseType) {
+        // Si el ejercicio ya tiene un tipo, buscar su ID correspondiente
+        const exerciseType = exerciseTypes.find((type) => type.value === newExercise.exerciseType.id);
+        if (exerciseType) {
+          setNewExercise((prev) => ({ ...prev, exerciseType: exerciseType.value }));
+        }
+      }
+    }, [exerciseTypes, dialogMode]);
 
     const handleSaveExercise = async () => {
       const body = {
@@ -153,10 +181,14 @@ export const CreateExerciseDialog = React.memo(
             </div>
             <div className="p-field">
               <label htmlFor="exerciseType">{intl.formatMessage({ id: 'coach.exercise.type' })}</label>
-              <InputText
+              <Dropdown
                 id="exerciseType"
                 value={newExercise.exerciseType}
-                onChange={(e) => setNewExercise({ ...newExercise, exerciseType: e.target.value })}
+                options={exerciseTypes}
+                onChange={(e) => setNewExercise({ ...newExercise, exerciseType: e.value })}
+                placeholder={intl.formatMessage({ id: 'coach.exercise.selectType' })}
+                showClear
+                filter
               />
             </div>
             <div className="p-field">
@@ -203,6 +235,17 @@ export const CreateExerciseDialog = React.memo(
                         })
                       )
                     );
+                  if (!newExercise.exerciseType) {
+                    return showToast(
+                      'error',
+                      'Error',
+                      truncateMessage(
+                        intl.formatMessage({
+                          id: 'coach.exercise.error.type.required'
+                        })
+                      )
+                    );
+                  }
                   if (!isValidYouTubeUrl(newExercise.multimedia)) {
                     return showToast(
                       'error',
