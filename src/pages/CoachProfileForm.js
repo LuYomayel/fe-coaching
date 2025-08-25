@@ -45,6 +45,10 @@ const CoachProfileForm = () => {
   const [plans, setPlans] = useState([]);
 
   useEffect(() => {
+    console.log('subscriptionType', subscriptionType);
+  }, [subscriptionType]);
+
+  useEffect(() => {
     const fetchPlans = async () => {
       try {
         const { data } = await fetchCoachSubscriptionPlans();
@@ -85,6 +89,7 @@ const CoachProfileForm = () => {
       return false;
     }
     if (activeStep === 2 && !subscriptionType) {
+      console.log('subscriptionType', subscriptionType);
       showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), 'Subscription type is required.');
       return false;
     }
@@ -109,9 +114,9 @@ const CoachProfileForm = () => {
 
   const handleSubmit = async () => {
     const selectedPlanId =
-      subscriptionType === 'freeTrial' ? plans.find((plan) => plan.name === 'Free')?.id : userPayment?.id;
+      subscriptionType === 'freeTrial' ? plans.find((plan) => plan.name === 'Free Trial')?.id : userPayment?.id;
 
-    console.log(subscriptionType, plans);
+    console.log('selectedPlanId', selectedPlanId);
     if (!selectedPlanId) {
       showToast('error', intl.formatMessage({ id: 'coachProfileForm.error.selectPlan' }));
       return;

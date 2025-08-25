@@ -25,8 +25,8 @@ const VerificationCodeDialog = ({ visible, onHide, email, onVerificationSuccess 
         {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
+            'Content-Type': 'application/json'
+            //Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         }
       );
@@ -37,10 +37,11 @@ const VerificationCodeDialog = ({ visible, onHide, email, onVerificationSuccess 
         showToast('success', 'Success', intl.formatMessage({ id: 'verification.success' }));
         onVerificationSuccess();
         onHide();
-      } else {
-        throw new Error(data.message || 'Verification failed');
+      } else if (data.message === 'error') {
+        showToast('error', 'Error', data.message);
       }
     } catch (error) {
+      console.log(error);
       showToast('error', 'Error', error.message);
     } finally {
       setLoading(false);
