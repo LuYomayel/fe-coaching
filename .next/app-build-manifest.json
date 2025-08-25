@@ -1,0 +1,34 @@
+{
+  "pages": {
+    "/client-dashboard/[clientId]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/client-dashboard/[clientId]/page.css",
+      "static/chunks/app/client-dashboard/[clientId]/page.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
+    "/plans/edit/[planId]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/plans/edit/[planId]/page.css",
+      "static/chunks/app/plans/edit/[planId]/page.js"
+    ],
+    "/coach/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/coach/page.css",
+      "static/chunks/app/coach/page.js"
+    ],
+    "/coach/plans/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/coach/plans/page.css",
+      "static/chunks/app/coach/plans/page.js"
+    ]
+  }
+}

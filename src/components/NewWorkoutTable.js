@@ -79,7 +79,10 @@ function SortableRowComponent({
   isInsertButtonHovered,
   setIsInsertButtonHovered,
   insertPosition,
-  setInsertPosition
+  setInsertPosition,
+  hoveredGroupNumber,
+  setHoveredGroupNumber,
+  getGroupPreviewOffset
 }) {
   const rowKey =
     rowData.rowType === 'group' ? `group-${rowData.groupNumber}` : `ex-${rowData.groupNumber}-${rowData.rowIndex}`;
@@ -113,8 +116,17 @@ function SortableRowComponent({
           background: isDarkMode ? 'rgba(52, 73, 94, 0.3)' : 'rgba(248, 249, 250, 0.3)',
           border: isDarkMode ? '1px dashed #3498db' : '1px dashed #4299e1'
         }
-      : {})
+      : {}),
+    ...(hoveredGroupNumber === rowData.groupNumber ? { border: '2px dashed #ff7b7b' } : {})
   };
+
+  // Aplicar offset de preview para grupos durante arrastre EN TIEMPO REAL
+  const previewOffset = getGroupPreviewOffset(rowData.groupNumber);
+  if (previewOffset !== 0) {
+    style.transform = `translate3d(0px, ${previewOffset}px, 0)`;
+    style.transition = 'transform 0.3s ease';
+    console.log(`🎨 Aplicando transform a grupo ${rowData.groupNumber}: ${previewOffset}px`);
+  }
 
   // Calcular el colSpan correcto: 1 (columna de nombre) + todas las columnas de propiedades
   const totalColumns = 1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
@@ -130,13 +142,23 @@ function SortableRowComponent({
             ? 'group-being-dragged'
             : isDraggingGroup && rowData.groupNumber === activeGroup && !rowData.isBeingDragged
               ? 'group-placeholder'
-              : isDraggingGroup && rowData.rowType === 'group' && rowData.groupNumber !== activeGroup
-                ? 'group-drop-zone'
+              : isDraggingGroup && rowData.groupNumber !== activeGroup
+                ? `group-drop-zone ${hoveredGroupNumber === rowData.groupNumber ? 'group-hover-active' : ''}`
                 : isDraggingGroup
                   ? 'group-drag-active'
                   : ''
         }`}
         {...(isEditing && isDraggable ? { ...attributes, ...listeners } : {})}
+        onMouseEnter={() => {
+          if (isDraggingGroup && rowData.groupNumber !== activeGroup) {
+            setHoveredGroupNumber(rowData.groupNumber);
+          }
+        }}
+        onMouseLeave={() => {
+          if (isDraggingGroup) {
+            setHoveredGroupNumber(null);
+          }
+        }}
       >
         {/* Área de hover y botón a la izquierda */}
         <td
@@ -311,6 +333,21 @@ export default function NewWorkoutTable({
     })
   );
 
+  // Modificador personalizado para desactivar auto-sorting durante arrastre de grupos
+  const customModifier = ({ transform, draggingNodeRect, overlayNodeRect }) => {
+    if (isDraggingGroup) {
+      // Durante arrastre de grupo, NO permitir auto-sorting
+      // Solo permitir el movimiento del cursor, sin reordenar elementos
+      return {
+        ...transform,
+        scaleX: 1,
+        scaleY: 1
+      };
+    }
+    // Para arrastre de ejercicios individuales, usar el comportamiento normal
+    return restrictToVerticalAxis({ transform, draggingNodeRect, overlayNodeRect });
+  };
+
   // Añadir estos estados para seguimiento de cambios
   const [originalData, setOriginalData] = useState(null);
   const [changes, setChanges] = useState({
@@ -329,6 +366,9 @@ export default function NewWorkoutTable({
   const [showInsertButton, setShowInsertButton] = useState(false);
   const [isInsertButtonHovered, setIsInsertButtonHovered] = useState(false);
   const [insertPosition, setInsertPosition] = useState('below'); // 'above' o 'below'
+
+  // NUEVO: Estado para hover de grupo completo
+  const [hoveredGroupNumber, setHoveredGroupNumber] = useState(null);
 
   const dayOptions = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
@@ -2027,6 +2067,80 @@ export default function NewWorkoutTable({
     setTableData(normalizedData);
   };
 
+  const filterItems = () => {
+    if (isDraggingGroup) {
+      // Incluir TODOS los elementos para que @dnd-kit pueda hacer preview correcto
+      // pero marcaremos los ejercicios como "dependientes" de su grupo
+      const allItems = tableData.map((row) =>
+        row.rowType === 'group' ? `group-${row.groupNumber}` : `ex-${row.groupNumber}-${row.rowIndex}`
+      );
+      console.log('isDraggingGroup - Todos los elementos:', allItems);
+      return allItems;
+    } else {
+      // Para arrastre de ejercicios individuales, incluir todos
+      const allItems = tableData.map((row) =>
+        row.rowType === 'group' ? `group-${row.groupNumber}` : `ex-${row.groupNumber}-${row.rowIndex}`
+      );
+      console.log('isDraggingExercise - Todos los elementos:', allItems);
+      return allItems;
+    }
+  };
+
+  // Función para calcular cuántas filas ocupa un grupo (header + ejercicios)
+  const getGroupRowCount = (groupNumber) => {
+    const groupRows = tableData.filter((row) => row.groupNumber === groupNumber);
+    return groupRows.length; // header + todos los ejercicios del grupo
+  };
+
+  // Estrategia de sorting personalizada - solo para el ordenamiento final
+  const customSortingStrategy = (args) => {
+    // Durante el arrastre de grupos, el preview se maneja con getGroupPreviewOffset
+    // Esta función solo se usa para el ordenamiento final
+    return verticalListSortingStrategy(args);
+  };
+
+  // Función para calcular el desplazamiento Y que necesita un grupo durante el preview EN TIEMPO REAL
+  const getGroupPreviewOffset = (groupNumber) => {
+    // Solo funciona durante arrastre de grupos
+    if (!isDraggingGroup || !activeGroup || !hoveredGroupNumber) {
+      return 0;
+    }
+
+    // No mover el grupo que se está arrastrando (está en DragOverlay)
+    if (groupNumber === activeGroup) {
+      return 0;
+    }
+
+    console.log(
+      `🎯 Calculando offset para grupo ${groupNumber} | Activo: ${activeGroup} | Hover: ${hoveredGroupNumber}`
+    );
+
+    // Obtener el tamaño del grupo que se está arrastrando
+    const draggedGroupSize = getGroupRowCount(activeGroup);
+    const rowHeight = 70;
+    const totalOffset = draggedGroupSize * rowHeight;
+
+    // CASO 1: Arrastrando hacia ARRIBA (activeGroup > hoveredGroupNumber)
+    if (activeGroup > hoveredGroupNumber) {
+      // Todos los grupos desde hoveredGroupNumber hasta antes de activeGroup se mueven ABAJO
+      if (groupNumber >= hoveredGroupNumber && groupNumber < activeGroup) {
+        console.log(`📍 Grupo ${groupNumber} se mueve ABAJO ${totalOffset}px`);
+        return totalOffset;
+      }
+    }
+
+    // CASO 2: Arrastrando hacia ABAJO (activeGroup < hoveredGroupNumber)
+    if (activeGroup < hoveredGroupNumber) {
+      // Todos los grupos desde después de activeGroup hasta hoveredGroupNumber se mueven ARRIBA
+      if (groupNumber > activeGroup && groupNumber <= hoveredGroupNumber) {
+        console.log(`📍 Grupo ${groupNumber} se mueve ARRIBA ${-totalOffset}px`);
+        return -totalOffset;
+      }
+    }
+
+    return 0;
+  };
+
   return (
     <div
       className={`workout-table-container ${isDarkMode ? 'dark-mode' : ''} ${isExcelOnlyMode ? 'fullscreen-mode' : ''}`}
@@ -2146,24 +2260,13 @@ export default function NewWorkoutTable({
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          modifiers={[restrictToVerticalAxis]}
+          modifiers={[customModifier]}
         >
           <div className="workout-table-wrapper">
             <table className="workout-table" style={tableStyles}>
               {renderTableHeader()}
               <tbody>
-                <SortableContext
-                  items={
-                    isDraggingGroup
-                      ? // Cuando arrastramos un grupo, solo los grupos son válidos como destinos
-                        tableData.filter((row) => row.rowType === 'group').map((row) => `group-${row.groupNumber}`)
-                      : // Cuando arrastramos ejercicios, todos los elementos son válidos
-                        tableData.map((row) =>
-                          row.rowType === 'group' ? `group-${row.groupNumber}` : `ex-${row.groupNumber}-${row.rowIndex}`
-                        )
-                  }
-                  strategy={verticalListSortingStrategy}
-                >
+                <SortableContext items={filterItems()} strategy={customSortingStrategy}>
                   {tableData.map((rowData, index) => (
                     <SortableRow
                       key={
@@ -2195,6 +2298,9 @@ export default function NewWorkoutTable({
                       setIsInsertButtonHovered={setIsInsertButtonHovered}
                       insertPosition={insertPosition}
                       setInsertPosition={setInsertPosition}
+                      hoveredGroupNumber={hoveredGroupNumber}
+                      setHoveredGroupNumber={setHoveredGroupNumber}
+                      getGroupPreviewOffset={getGroupPreviewOffset}
                     />
                   ))}
                 </SortableContext>

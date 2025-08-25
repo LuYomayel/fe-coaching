@@ -627,19 +627,11 @@ tr.improved-row:hover {
 }
 
 .group-being-dragged {
-  background: rgba(66, 153, 225, 0.12) !important;
-  border: 2px solid #4299e1 !important;
-  border-radius: 6px;
-  box-shadow: 0 6px 12px rgba(66, 153, 225, 0.25);
-  z-index: 1000;
-  transform: scale(1.02);
+  /* Ocultar completamente las filas del grupo que se está arrastrando */
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
   transition: all 0.2s ease;
-}
-
-.dark-mode .group-being-dragged {
-  background: rgba(52, 73, 94, 0.8) !important;
-  border: 2px solid #3498db !important;
-  box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
 }
 
 .group-placeholder {
@@ -701,21 +693,71 @@ tr.improved-row:hover {
   background: rgba(30, 30, 30, 0.95);
 }
 
-/* Indicador de posición válida para drop de grupos - más sutil */
+/* Indicador de posición válida para drop de grupos - grupos completos */
 .group-drop-zone {
   position: relative;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  background: rgba(66, 153, 225, 0.25) !important;
+  border-left: 4px solid #4299e1 !important;
+  box-shadow: inset 0 0 0 2px rgba(66, 153, 225, 0.3) !important;
+  border-radius: 4px !important;
 }
 
-/* Cambiamos el indicador de arriba por un hover más sutil */
+/* Efecto hover más prominente para grupos drop zone */
 .group-drop-zone:hover {
-  background: rgba(66, 153, 225, 0.08) !important;
-  border-left: 3px solid #4299e1;
+  background: rgba(66, 153, 225, 0.12) !important;
+  border-left: 4px solid #4299e1;
+  box-shadow: inset 0 0 0 1px rgba(66, 153, 225, 0.2);
+  transform: translateX(2px);
+}
+
+/* Estilos para modo oscuro */
+.dark-mode .group-drop-zone {
+  background: rgba(99, 179, 237, 0.3) !important;
+  border-left: 4px solid #63b3ed !important;
+  box-shadow: inset 0 0 0 2px rgba(99, 179, 237, 0.4) !important;
+  border-radius: 4px !important;
 }
 
 .dark-mode .group-drop-zone:hover {
-  border-left: 3px solid #63b3ed;
-  background-color: rgba(99, 179, 237, 0.1);
+  background: rgba(99, 179, 237, 0.15) !important;
+  border-left: 4px solid #63b3ed;
+  box-shadow: inset 0 0 0 1px rgba(99, 179, 237, 0.25);
+  transform: translateX(2px);
+}
+
+/* NUEVO: Efecto hover de grupo completo */
+/* Cuando se hace hover sobre cualquier fila de un grupo, iluminar todo el grupo */
+.workout-table tbody:hover .group-drop-zone[data-group-hover] {
+  background: rgba(66, 153, 225, 0.12) !important;
+  border-left: 4px solid #4299e1;
+  box-shadow: inset 0 0 0 1px rgba(66, 153, 225, 0.2);
+  transform: translateX(2px);
+}
+
+.dark-mode .workout-table tbody:hover .group-drop-zone[data-group-hover] {
+  background: rgba(99, 179, 237, 0.15) !important;
+  border-left: 4px solid #63b3ed;
+  box-shadow: inset 0 0 0 1px rgba(99, 179, 237, 0.25);
+  transform: translateX(2px);
+}
+
+/* Efecto de hover de grupo activo - todas las filas del grupo en hover */
+.group-hover-active {
+  background: rgba(66, 153, 225, 0.4) !important;
+  border-left: 6px solid #4299e1 !important;
+  box-shadow: inset 0 0 0 3px rgba(66, 153, 225, 0.5) !important;
+  transform: translateX(4px) !important;
+  z-index: 5 !important;
+  border-radius: 6px !important;
+}
+
+.dark-mode .group-hover-active {
+  background: rgba(99, 179, 237, 0.45) !important;
+  border-left: 6px solid #63b3ed !important;
+  box-shadow: inset 0 0 0 3px rgba(99, 179, 237, 0.5) !important;
+  transform: translateX(4px) !important;
+  border-radius: 6px !important;
 }
 
 /* Estilos para el modo pantalla completa */

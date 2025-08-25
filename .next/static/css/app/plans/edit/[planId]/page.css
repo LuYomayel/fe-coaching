@@ -1,0 +1,280 @@
+/*!***************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./src/components/LogoLoader.css ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************/
+.logo-loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.logo-loader {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: pulseAndSpin 5s linear infinite;
+}
+
+@keyframes pulseAndSpin {
+  0%,
+  95% {
+    transform: scale(0.8) rotate(0deg);
+    opacity: 0.7;
+  }
+  47.5% {
+    transform: scale(1.1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8) rotate(360deg);
+    opacity: 0.7;
+  }
+}
+
+/*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./src/styles/CoachProfileForm.css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************/
+.coach-profile-form-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100vh;
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+.coach-profile-form .p-field {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.coach-profile-form .p-field label {
+  flex: 0 0 150px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.coach-profile-form .p-field input,
+.coach-profile-form .p-field textarea,
+.coach-profile-form .p-field .p-multiselect {
+  flex: 1 1;
+}
+
+.coach-profile-form .p-field .p-checkbox-label {
+  margin-left: 5px;
+}
+
+.coach-profile-form .p-button {
+  width: 100%;
+  margin-top: 20px;
+}
+
+/*!***********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./src/styles/CreatePlan.css ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************/
+.create-plan-container {
+  display: flex;
+  /* max-height: calc(100vh - 12rem); */
+  padding: 2rem;
+  gap: 1rem;
+  color: #fff;
+}
+
+.form-section {
+  flex: 1 1 15%;
+  overflow-y: auto;
+}
+
+.groups-section {
+  flex: 2 1 85%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 1rem;
+}
+
+.exercise-groups-card {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.groups-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.create-plan-card {
+  border-radius: 5px;
+  overflow-y: auto;
+  width: 100%;
+  width: 33rem;
+}
+
+.tabview-container {
+  width: 100%;
+}
+
+.fieldset-scroll {
+  height: 32rem;
+  overflow-y: auto;
+  width: 30rem;
+}
+
+.exercises-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.p-field {
+  margin-bottom: 0.5rem;
+}
+
+.input-icon-button {
+  cursor: pointer;
+}
+
+.actions-section {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  h1 {
+    margin: 0;
+  }
+  .create-plan-container {
+    flex-direction: column;
+    /* height: calc(100vh - 130px); */
+    padding: 0.5rem;
+  }
+
+  .form-section,
+  .groups-section {
+    width: 100%;
+  }
+
+  .form-section {
+    flex-basis: 20%;
+  }
+
+  .groups-container {
+    grid-template-columns: 1fr;
+  }
+
+  .create-plan-card {
+    max-width: 100%; /* Usar todo el ancho disponible en pantallas pequeñas */
+    min-width: 100%; /* Asegurar que la tarjeta ocupe todo el ancho en pantallas pequeñas */
+  }
+
+  .actions-section {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .responsive-container {
+    padding: 0.25rem;
+  }
+
+  .responsive-section {
+    width: 100%;
+  }
+
+  .responsive-card {
+    width: 100%;
+    padding: 0.25rem;
+  }
+
+  .responsive-card .p-card-body {
+    padding: 0.1rem;
+  }
+  .responsive-groups-container {
+    grid-template-columns: 1fr;
+  }
+
+  .responsive-fieldset-scroll {
+    width: 100%;
+  }
+  .responsive-actions-section {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .responsive-button .p-button-label {
+    display: none;
+  }
+  .responsive-button .p-button {
+    margin: 0;
+  }
+  .responsive-button {
+    flex: 1 1 auto;
+    max-width: 2rem; /* Adjust the size to make the buttons circular */
+    height: 3rem; /* Adjust the height to make the buttons circular */
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    border-radius: 50%;
+  }
+
+  .responsive-button .pi {
+    text-align: center;
+    font-size: 1.25rem; /* Adjust icon size if needed */
+    margin: 0;
+  }
+}
+
+h1,
+h2,
+h3 {
+  text-align: center;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+}
+
+input,
+.p-inputtext,
+.p-dropdown,
+.p-inputnumber {
+  width: 100%;
+}
+
+.p-inputnumber {
+  width: 100%;
+}
+
+.exercise-group,
+.exercise {
+  padding: 0.5rem;
+  background-color: #2b2b2b;
+  border-radius: 5px;
+}
+

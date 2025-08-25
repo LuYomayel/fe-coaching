@@ -1,105 +1,49 @@
-import { Type } from 'class-transformer';
-import { IsArray, IsNumber, IsObject, IsString, ValidateNested } from 'class-validator';
+// Frontend DTO interfaces for workout excel view changes
 
-class WeeksDataDto {
+export interface WeeksDataDto {
   [weekNumber: number]: { [prop: string]: any };
 }
 
-class NewExerciseDto {
-  @IsNumber()
+export interface NewExerciseDto {
   exerciseId: number;
-
-  @IsString()
   name: string;
-
-  @IsNumber()
   groupNumber: number;
-
-  @IsNumber()
   rowIndex: number;
-
-  @IsObject()
   weeksData: WeeksDataDto;
 }
 
-class MovedExerciseDto {
-  @IsString()
+export interface MovedExerciseDto {
   name: string;
-
-  @IsNumber()
   exerciseInstanceId: number;
-
-  @IsNumber()
   oldGroupNumber: number;
-
-  @IsNumber()
   newGroupNumber: number;
-
-  @IsNumber()
   oldRowIndex: number;
-
-  @IsNumber()
   newRowIndex: number;
 }
 
-class MovedGroupDto {
-  @IsNumber()
+export interface MovedGroupDto {
   groupNumber: number;
-
-  @IsNumber()
   newOrder: number;
 }
 
-class UpdatedPropertyDto {
-  @IsString()
+export interface UpdatedPropertyDto {
   name: string;
-
-  @IsNumber()
   exerciseInstanceId: number;
-
-  @IsNumber()
   weekNumber: number;
-
-  @IsString()
   property: string;
-
   value: any;
 }
 
-class ChangesDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => NewExerciseDto)
+export interface ChangesDto {
   newExercises: NewExerciseDto[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MovedExerciseDto)
   movedExercises: MovedExerciseDto[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MovedGroupDto)
   movedGroups: MovedGroupDto[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => UpdatedPropertyDto)
   updatedProperties: UpdatedPropertyDto[];
-
-  @IsArray()
-  @Type(() => Number)
   deletedExercises: number[];
 }
 
-export class SaveChangesFromExcelViewDto {
-  @IsNumber()
+export interface SaveChangesFromExcelViewDto {
   cycleId: number;
-
-  @IsNumber()
   dayNumber: number;
-
-  @ValidateNested()
-  @Type(() => ChangesDto)
   changes: ChangesDto;
 }
