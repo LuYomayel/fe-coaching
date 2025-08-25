@@ -10,7 +10,7 @@ import { fetchCoachPlans } from '../services/usersService';
 import { assignSubscription } from '../services/subscriptionService';
 import { useIntl, FormattedMessage } from 'react-intl';
 
-const AssignSubscriptionDialog = ({ studentId, coachId, onClose }) => {
+const AssignSubscriptionDialog = ({ studentId, onClose }) => {
   const intl = useIntl();
   const { user, coach } = useContext(UserContext);
   const showToast = useToast();

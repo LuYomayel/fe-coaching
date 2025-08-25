@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { TabView, TabPanel } from 'primereact/tabview';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Accordion, AccordionTab } from 'primereact/accordion';
+
 import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -30,17 +28,15 @@ import { formatDate, formatDateToApi } from '../utils/UtilFunctions';
 import NewWorkoutTable from '../components/NewWorkoutTable';
 import { Badge } from 'primereact/badge';
 import { useIntl, FormattedMessage } from 'react-intl';
-import allLocales from '@fullcalendar/core/locales-all';
-import { Avatar } from 'primereact/avatar';
+
 import { Panel } from 'primereact/panel';
-import { useLanguage } from '../i18n/LanguageContext';
 import NewStudentDialog from '../dialogs/NewStudentDialog';
 import { Tooltip } from 'primereact/tooltip';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { fetchTrainingCyclesTemplates, assignCycleTemplateToClient } from '../services/workoutService';
 import { Calendar } from 'primereact/calendar';
 import { contactMethodOptions } from '../utils/Options';
-import esLocale from '@fullcalendar/core/locales/es';
+
 // Estilos mejorados para el botón de agregar sesión en el calendario
 const addButtonStyle = `
   .fc-daygrid-day-frame {
@@ -60,7 +56,6 @@ export default function ClientDashboard() {
   const [clientData, setClientData] = useState(null);
   const showToast = useToast();
   const { setLoading } = useSpinner();
-  const { locale } = useLanguage();
   const intl = useIntl();
   const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
   const navigate = useNavigate();
@@ -68,7 +63,6 @@ export default function ClientDashboard() {
   // State variables
   const [dialogVisible, setDialogVisible] = useState(false);
   const [workouts, setWorkouts] = useState([]);
-  const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   // eslint-disable-next-line
   const [selectedExercise, setSelectedExercise] = useState(null);
@@ -78,8 +72,7 @@ export default function ClientDashboard() {
 
   // eslint-disable-next-line
   const [chartData, setChartData] = useState(null);
-  const [workoutOptions, setWorkoutOptions] = useState([]);
-  const [filteredWorkouts, setFilteredWorkouts] = useState([]);
+
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [assignCycleVisible, setAssignCycleVisible] = useState(false);
 
@@ -95,7 +88,7 @@ export default function ClientDashboard() {
   const [actionType, setActionType] = useState('assign');
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(1);
-  const [cycleOptions, setCycleOptions] = useState([]);
+
   const [cycleDropdownOptions, setCycleDropdownOptions] = useState([]);
 
   // Estados para asignar ciclos de entrenamiento
@@ -104,9 +97,6 @@ export default function ClientDashboard() {
   const [selectedCycleTemplate, setSelectedCycleTemplate] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-
-  // Nuevo estado para el índice de hover
-  const [hoverRowIndex, setHoverRowIndex] = useState(null);
 
   // Estado para controlar el modo "solo Excel"
   const [isExcelOnlyMode, setIsExcelOnlyMode] = useState(false);
@@ -120,7 +110,7 @@ export default function ClientDashboard() {
       .then(({ events, cycleOptions }) => {
         // Add allDay: true to each event
         const mappedEvents = events.map((ev) => ({ ...ev, allDay: true }));
-        setCycleOptions(cycleOptions);
+
         setCalendarEvents((e) => [...mappedEvents, ...e]);
         cycleOptions.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
         const options = cycleOptions.map((cycle) => ({
@@ -179,14 +169,6 @@ export default function ClientDashboard() {
         ].map((entry) => entry[1]);
 
         setExerciseOptions(exercises.map((ex) => ({ label: ex.name, value: ex.id })));
-
-        const uniqueWorkouts = [...new Map(data.map((workout) => [workout.workout.id, workout.workout])).values()];
-        setWorkoutOptions(
-          uniqueWorkouts.map((workout) => ({
-            label: workout.planName,
-            value: workout.id
-          }))
-        );
       })
       .catch((error) => {
         showToast('error', 'Error fetching client workouts', error.message);
@@ -307,30 +289,11 @@ export default function ClientDashboard() {
     }
   }, [selectedExercise, workouts]);
 
-  // Update filtered workouts when selectedWorkout changes
-  useEffect(() => {
-    if (selectedWorkout) {
-      const filtered = workouts.filter(
-        (workout) => workout.workout.id === selectedWorkout && workout.status === 'completed'
-      );
-      const sortedWorkouts = [...filtered].sort((a, b) => new Date(b.realEndDate) - new Date(a.realEndDate));
-
-      setFilteredWorkouts(sortedWorkouts);
-    }
-  }, [selectedWorkout, workouts]);
-
   // Handlers
   const handleViewWorkoutDetails = (workoutInstanceId) => {
     setLoading(true);
     setSelectedPlan(workoutInstanceId);
     setPlanDetailsVisible(true);
-  };
-
-  const handleDateClick = (arg) => {
-    // Solo proceder si es un clic en un día, no en un evento
-    if (arg.view.type.includes('dayGrid') || arg.view.type.includes('timeGrid')) {
-      handleAddDayWorkout(arg.date);
-    }
   };
 
   const hidePlanDetails = () => {
@@ -614,113 +577,6 @@ export default function ClientDashboard() {
 
   const handleNewStudentDialogShow = () => {
     setIsNewStudentDialogVisible(true);
-  };
-
-  const renderPlanName = (rowData) => (
-    <div>
-      <p className="font-bold">{rowData.workout.planName}</p>
-      <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.completedOn" />: {formatDate(rowData.realEndDate)}
-      </p>
-      <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.sessionTime" />: {rowData.sessionTime}
-      </p>
-      <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.feedback" />: {rowData.generalFeedback}
-      </p>
-      <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.mood" />: {rowData.mood ? `${rowData.mood}/10` : '-'}
-      </p>
-      <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.energy" />:{' '}
-        {rowData.energyLevel ? `${rowData.energyLevel}/10` : '-'}
-      </p>
-      <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.difficulty" />:{' '}
-        {rowData.perceivedDifficulty ? `${rowData.perceivedDifficulty}/10` : '-'}
-      </p>
-      <p className="text-sm">
-        <FormattedMessage id="clientDashboard.workout.notes" />: {rowData.feedback}
-      </p>
-    </div>
-  );
-
-  const renderWorkoutDetails = (rowData) => {
-    return (
-      <Accordion>
-        {rowData.groups.flatMap((group) =>
-          group.exercises.map((exercise) => {
-            const allProperties = [
-              'repetitions',
-              'weight',
-              'rpe',
-              'time',
-              'distance',
-              'tempo',
-              'notes',
-              'difficulty',
-              'duration',
-              'restInterval',
-              'comments'
-            ];
-            const availableProperties = allProperties.filter((prop) => {
-              return (
-                exercise[prop] != null && exercise[prop] !== ''
-                // && exercise.setLogs.some(log => log[prop] != null)
-              );
-            });
-            const tableData = exercise.setLogs.length > 0 ? exercise.setLogs : [{ setNumber: 1 }];
-            const expandedData = tableData.flatMap((setLog) => {
-              return [
-                {
-                  setNumber: setLog.setNumber,
-                  type: 'Expected',
-                  ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: exercise[prop] || '-' }), {}),
-                  rpe: '-'
-                },
-                {
-                  setNumber: setLog.setNumber,
-                  type: 'Completed',
-                  ...availableProperties.reduce((acc, prop) => ({ ...acc, [prop]: setLog[prop] || '-' }), {}),
-                  rpe: exercise.rpe || '-',
-                  notCompleted: !exercise.completed && !exercise.completedNotAsPlanned
-                }
-              ];
-            });
-            return (
-              <AccordionTab
-                key={exercise.id}
-                header={
-                  <>
-                    {exercise.exercise.name}
-                    <Badge
-                      value={expandedData.some((data) => data.notCompleted) ? '✘' : '✔'}
-                      className="ml-2"
-                      severity={expandedData.some((data) => data.notCompleted) ? 'danger' : 'success'}
-                    />
-                  </>
-                }
-              >
-                <DataTable
-                  value={expandedData}
-                  rowGroupMode="subheader"
-                  groupRowsBy="setNumber"
-                  sortMode="single"
-                  sortField="setNumber"
-                  sortOrder={1}
-                >
-                  <Column field="setNumber" header="Set" body={(rowData) => `Set ${rowData.setNumber}`} />
-                  <Column field="type" header="Type" />
-                  {availableProperties.map((prop) => (
-                    <Column key={prop} field={prop} header={prop.charAt(0).toUpperCase() + prop.slice(1)} />
-                  ))}
-                </DataTable>
-              </AccordionTab>
-            );
-          })
-        )}
-      </Accordion>
-    );
   };
 
   const renderTabView = () => {
@@ -1076,16 +932,6 @@ export default function ClientDashboard() {
     setSelectedClient(clientId);
     setSelectedSessionId(null);
     setAssignSessionVisible(true);
-  };
-
-  const handleEventClick = (arg) => {
-    const { extendedProps } = arg.event;
-    const { workoutInstanceId } = extendedProps || {};
-
-    // Solo proceder si hay un ID de instancia de entrenamiento
-    if (workoutInstanceId) {
-      handleViewWorkoutDetails(workoutInstanceId);
-    }
   };
 
   return (

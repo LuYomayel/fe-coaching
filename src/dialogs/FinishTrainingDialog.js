@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { InputNumber } from 'primereact/inputnumber';
 import { Slider } from 'primereact/slider';
 import { Calendar } from 'primereact/calendar';
 import { Checkbox } from 'primereact/checkbox';

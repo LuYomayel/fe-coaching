@@ -1,9 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { UserContext } from './UserContext';
-import io from 'socket.io-client';
-import { useToast } from './ToastContext';
+//import io from 'socket.io-client';
+//import { useToast } from './ToastContext';
 
-const apiUrl = process.env.REACT_APP_API_URL;
+//const apiUrl = process.env.REACT_APP_API_URL;
 
 const ChatSidebarContext = createContext();
 
@@ -17,17 +17,17 @@ export const ChatSidebarProvider = ({ children }) => {
   const closeChatSidebar = () => setIsChatSidebarOpen(false);
   const { user } = useContext(UserContext);
   // eslint-disable-next-line
-  const [socket, setSocket] = useState(null);
+  //const [socket, setSocket] = useState(null);
   // eslint-disable-next-line
-  const [isConnected, setIsConnected] = useState(false); // Estado de conexión del socket
-  const showToast = useToast();
+  //const [isConnected, setIsConnected] = useState(false); // Estado de conexión del socket
+  //const showToast = useToast();
+  /*
   useEffect(() => {
     // Establecer conexión con el socket
     const newSocket = io(apiUrl, {
       auth: { token: localStorage.getItem('token') }
     });
     setSocket(newSocket);
-
     // Manejar conexión y desconexión
     newSocket.on('connect', () => setIsConnected(true));
     newSocket.on('disconnect', () => setIsConnected(false));
@@ -52,9 +52,9 @@ export const ChatSidebarProvider = ({ children }) => {
           );
         }
     });
-
     return () => newSocket.disconnect();
   }, [selectedChat]);
+  */
 
   useEffect(() => {
     const fetchMessages = async () => {

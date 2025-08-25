@@ -19,7 +19,7 @@ import {
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
+import { v4 as uuidv4 } from 'uuid';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl'; // Agregar este import
 import '../styles/CreatePlan.css';

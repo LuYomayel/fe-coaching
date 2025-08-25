@@ -1,23 +1,25 @@
-import React, { useRef } from 'react';
+import React, { useRef, useContext, useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
-import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { classNames } from 'primereact/utils';
-import { Dumbbell, Users, LineChart, MessageCircle, Video } from 'lucide-react';
 
-import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { jwtDecode } from 'jwt-decode';
 import { fetchClient, fetchCoach, registerCoach, login } from '../services/usersService';
-import { fetchCoachSubscriptionPlans } from '../services/subscriptionService';
 import { useIntl, FormattedMessage } from 'react-intl';
 import VerificationCodeDialog from '../dialogs/VerificationCodeDialog';
-import PWAInstallButton from '../components/PWAInstallButton';
+
+import Header from '../components/home/header';
+import Footer from '../components/home/footer';
+import Hero from '../components/home/hero';
+import Features from '../components/home/features';
+import Subscriptions from '../components/home/subscriptions';
+import './Home.css';
 
 export default function HomePage() {
   const intl = useIntl();
@@ -38,7 +40,6 @@ export default function HomePage() {
     password: '',
     confirmPassword: ''
   });
-  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   const { setLoading, loading } = useSpinner();
   const { setUser, setClient, setCoach } = useContext(UserContext);
   const showToast = useToast();
@@ -46,11 +47,11 @@ export default function HomePage() {
 
   const featuresRef = useRef(null);
   const pricingRef = useRef(null);
-  const aboutRef = useRef(null);
   const contactRef = useRef(null);
 
   const [verificationDialogVisible, setVerificationDialogVisible] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -75,16 +76,12 @@ export default function HomePage() {
   }, [navigate, setUser, showToast]);
 
   useEffect(() => {
-    const fetchSubscriptionPlans = async () => {
-      try {
-        const { data } = await fetchCoachSubscriptionPlans();
-        setSubscriptionPlans(data);
-      } catch (error) {
-        showToast('error', 'Error', error.message);
-      }
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
     };
-    fetchSubscriptionPlans();
-  }, [showToast]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const validateLoginForm = () => {
     let isValid = true;
@@ -216,294 +213,6 @@ export default function HomePage() {
     if (sectionRef && sectionRef.current) {
       sectionRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const renderHeader = () => {
-    return (
-      <div className="flex align-items-center justify-content-between surface-card p-3 shadow-2 border-round">
-        <div className="flex align-items-center">
-          <Dumbbell className="mr-2 text-primary" size={24} />
-          <span className="font-bold text-xl">EaseTrain</span>
-        </div>
-        <div className="hidden md:flex flex-wrap">
-          <Button
-            label={intl.formatMessage({ id: 'home.header.features' })}
-            className="p-button-text p-button-rounded mr-2"
-            onClick={() => scrollToSection(featuresRef)}
-          />
-          <Button
-            label={intl.formatMessage({ id: 'home.header.pricing' })}
-            className="p-button-text p-button-rounded mr-2"
-            onClick={() => scrollToSection(pricingRef)}
-          />
-          <Button
-            label={intl.formatMessage({ id: 'home.header.about' })}
-            className="p-button-text p-button-rounded mr-2"
-            onClick={() => scrollToSection(aboutRef)}
-          />
-          <Button
-            label={intl.formatMessage({ id: 'home.header.contact' })}
-            className="p-button-text p-button-rounded mr-2"
-            onClick={() => scrollToSection(contactRef)}
-          />
-          <Button
-            label={intl.formatMessage({ id: 'home.header.login' })}
-            className="p-button-rounded ml-2"
-            onClick={() => setLoginVisible(true)}
-          />
-        </div>
-        <div className="md:hidden">
-          <Button
-            label={intl.formatMessage({ id: 'home.header.login' })}
-            className="p-button-rounded p-button-sm"
-            onClick={() => setLoginVisible(true)}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  const renderHero = () => {
-    return (
-      <div className="relative overflow-hidden bg-primary">
-        <div className="absolute inset-0">
-          <svg
-            className="absolute"
-            style={{
-              bottom: 0,
-              left: 0,
-              marginBottom: '2rem',
-              transform: 'scale(1.5)',
-              opacity: 0.1
-            }}
-            viewBox="0 0 375 283"
-            fill="none"
-          >
-            <rect x="159.52" y="175" width="152" height="152" rx="8" transform="rotate(-45 159.52 175)" fill="white" />
-            <rect y="107.48" width="152" height="152" rx="8" transform="rotate(-45 0 107.48)" fill="white" />
-          </svg>
-          <div
-            className="absolute inset-0 bg-primary-600"
-            style={{
-              opacity: 0.4
-            }}
-          />
-        </div>
-        <div
-          className="relative mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8 md:py-12 lg:py-24"
-          style={{ maxWidth: '1200px' }}
-        >
-          <div className="grid align-items-center">
-            <div className="col-12 md:col-6 text-center md:text-left mb-4 md:mb-0">
-              <h1 className="text-0 font-extrabold mb-3 md:mb-4 text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl line-height-2">
-                <FormattedMessage id="home.hero.title" />
-              </h1>
-              <p className="text-0 mb-4 md:mb-5 text-white opacity-80 text-lg sm:text-xl line-height-3 px-2 sm:px-0">
-                <FormattedMessage id="home.hero.subtitle" />
-              </p>
-              <div className="flex flex-column sm:flex-row justify-content-center md:justify-content-start gap-3 mb-4 px-2 sm:px-0">
-                <Button
-                  onClick={() => setSignUpVisible(true)}
-                  label={intl.formatMessage({ id: 'home.hero.getStarted' })}
-                  className="p-button-lg p-button-rounded shadow-5 w-full sm:w-auto"
-                />
-                <Button
-                  label={intl.formatMessage({ id: 'home.hero.learnMore' })}
-                  className="p-button-lg p-button-rounded p-button-outlined text-white border-white w-full sm:w-auto"
-                  onClick={() => scrollToSection(featuresRef)}
-                />
-              </div>
-
-              {/* PWA Install Button */}
-              <div className="mt-4 px-2 sm:px-0">
-                <PWAInstallButton />
-              </div>
-            </div>
-            <div className="col-12 md:col-6 px-3 sm:px-4 md:px-3">
-              <div className="relative">
-                <div className="surface-card p-4 sm:p-5 shadow-8 border-round-xl">
-                  <div className="flex align-items-center justify-content-center bg-primary border-circle w-3rem h-3rem sm:w-4rem sm:h-4rem mb-3 sm:mb-4 mx-auto sm:mx-0">
-                    <Dumbbell className="text-white" size={24} />
-                  </div>
-                  <h3 className="text-900 text-xl sm:text-2xl font-medium mb-2 sm:mb-3 text-center sm:text-left">
-                    <FormattedMessage id="home.features.customPlans" />
-                  </h3>
-                  <p className="text-700 line-height-3 text-center sm:text-left">
-                    <FormattedMessage id="home.features.customPlansDesc" />
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderFeatures = () => {
-    const features = [
-      {
-        icon: <Users size={32} className="text-primary" />,
-        title: intl.formatMessage({ id: 'home.features.manageClients' }),
-        description: intl.formatMessage({
-          id: 'home.features.manageClientsDesc'
-        })
-      },
-      {
-        icon: <Dumbbell size={32} className="text-primary" />,
-        title: intl.formatMessage({ id: 'home.features.customPlans' }),
-        description: intl.formatMessage({ id: 'home.features.customPlansDesc' })
-      },
-      {
-        icon: <LineChart size={32} className="text-primary" />,
-        title: intl.formatMessage({ id: 'home.features.trackProgress' }),
-        description: intl.formatMessage({
-          id: 'home.features.trackProgressDesc'
-        })
-      },
-      {
-        icon: <MessageCircle size={32} className="text-primary" />,
-        title: intl.formatMessage({ id: 'home.features.messaging' }),
-        description: intl.formatMessage({ id: 'home.features.messagingDesc' })
-      },
-      {
-        icon: <Video size={32} className="text-primary" />,
-        title: intl.formatMessage({ id: 'home.features.videoTutorials' }),
-        description: intl.formatMessage({
-          id: 'home.features.videoTutorialsDesc'
-        })
-      }
-    ];
-
-    return (
-      <div className="surface-ground py-6 sm:py-8" ref={featuresRef}>
-        <div className="max-w-screen-lg mx-auto px-3 sm:px-4">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-900 mb-6 sm:mb-8 px-2">
-            <FormattedMessage id="home.features.title" />
-          </h2>
-          <div className="grid">
-            {features.map((feature, index) => (
-              <div key={index} className="col-12 sm:col-6 lg:col-4">
-                <Card className="m-2 p-3 h-full shadow-3 border-round-2xl">
-                  <div className="flex flex-column align-items-center text-center">
-                    <div className="mb-3">{feature.icon}</div>
-                    <h3 className="text-lg sm:text-xl font-bold mt-3 mb-2 text-900 px-2">{feature.title}</h3>
-                    <p className="text-700 line-height-3 px-2">{feature.description}</p>
-                  </div>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderPricing = () => {
-    return (
-      <div className="surface-section py-6 sm:py-8" ref={pricingRef}>
-        <h2 className="text-3xl sm:text-4xl font-bold text-center text-900 mb-6 sm:mb-8 px-2">
-          <FormattedMessage id="home.pricing.title" />
-        </h2>
-        <div className="grid max-w-screen-lg mx-auto px-3 sm:px-4">
-          {subscriptionPlans.map((plan) => (
-            <div key={plan.id} className="col-12 sm:col-6 md:col-4 lg:col-3 p-2 sm:p-3">
-              <Card
-                title={<span className="text-900">{plan.name}</span>}
-                subTitle={<span className="text-primary font-bold">${plan.price} / month</span>}
-                className="h-full shadow-5 border-round-2xl"
-                header={<div className="bg-primary h-1rem"></div>}
-              >
-                <ul className="list-none p-0 m-0">
-                  <li className="flex align-items-center mb-2">
-                    <i className="pi pi-check-circle mr-2 text-green-500"></i>
-                    <span className="text-700">
-                      <FormattedMessage id="home.pricing.maxClients" values={{ max: plan.max_clients }} />
-                    </span>
-                  </li>
-                </ul>
-                <div className="mt-4 sm:mt-5">
-                  <Button
-                    label={intl.formatMessage({ id: 'home.pricing.subscribe' })}
-                    className="p-button-rounded p-button-outlined w-full"
-                  />
-                </div>
-              </Card>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderTestimonials = () => {
-    const testimonials = [
-      {
-        text: intl.formatMessage({ id: 'home.testimonials.sarah' }),
-        author: 'Sarah J., Personal Trainer'
-      },
-      {
-        text: intl.formatMessage({ id: 'home.testimonials.mike' }),
-        author: 'Mike T., Client'
-      },
-      {
-        text: intl.formatMessage({ id: 'home.testimonials.emily' }),
-        author: 'Emily R., Fitness Coach'
-      }
-    ];
-
-    return (
-      <div ref={aboutRef} className="surface-card py-6 sm:py-8">
-        <div className="max-w-screen-lg mx-auto px-3 sm:px-4">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-900 mb-6 sm:mb-8 px-2">
-            <FormattedMessage id="home.testimonials.title" />
-          </h2>
-          <div className="grid">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="col-12 sm:col-6 md:col-4 p-2 sm:p-3">
-                <Card className="shadow-3 border-round-2xl p-3 sm:p-4 h-full">
-                  <div className="flex flex-column h-full text-center sm:text-left">
-                    <i className="pi pi-quote-left text-primary text-3xl sm:text-4xl mb-3 mx-auto sm:mx-0"></i>
-                    <p className="text-700 line-height-3 flex-grow-1 px-2 sm:px-0">{testimonial.text}</p>
-                    <p className="text-900 font-medium mt-3 px-2 sm:px-0">{testimonial.author}</p>
-                  </div>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderFooter = () => {
-    return (
-      <div ref={contactRef} className="surface-ground py-4 sm:py-6">
-        <div className="max-w-screen-lg mx-auto px-3 sm:px-4 flex flex-column sm:flex-row justify-content-between align-items-center gap-3">
-          <div className="text-center sm:text-left">
-            <div className="flex align-items-center justify-content-center sm:justify-content-start">
-              <Dumbbell className="mr-2 text-primary" size={20} />
-              <span className="font-medium text-lg text-900">EaseTrain</span>
-            </div>
-            <p className="text-sm text-600 mt-2">© 2023 EaseTrain. All rights reserved.</p>
-          </div>
-          <div className="flex flex-column sm:flex-row gap-2 w-full sm:w-auto">
-            <Button
-              label={intl.formatMessage({ id: 'home.footer.terms' })}
-              className="p-button-text p-button-rounded p-button-sm"
-            />
-            <Button
-              label={intl.formatMessage({ id: 'home.footer.privacy' })}
-              className="p-button-text p-button-rounded p-button-sm"
-            />
-            <Button
-              label={intl.formatMessage({ id: 'home.footer.contact' })}
-              className="p-button-text p-button-rounded p-button-sm"
-            />
-          </div>
-        </div>
-      </div>
-    );
   };
 
   const renderLoginDialog = () => {
@@ -641,15 +350,21 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-column min-h-screen h-full">
-      <header className="">{renderHeader()}</header>
+    <div className="min-h-screen bg-background">
+      <Header
+        isScrolled={isScrolled}
+        onLoginClick={() => setLoginVisible(true)}
+        onSignUpClick={() => setSignUpVisible(true)}
+        onScrollToFeatures={() => scrollToSection(featuresRef)}
+        onScrollToPricing={() => scrollToSection(pricingRef)}
+        onScrollToContact={() => scrollToSection(contactRef)}
+      />
       <main className="flex-grow-1">
-        {renderHero()}
-        {renderFeatures()}
-        {renderPricing()}
-        {renderTestimonials()}
+        <Hero onSignUpClick={() => setSignUpVisible(true)} onScrollToFeatures={() => scrollToSection(featuresRef)} />
+        <Features featuresRef={featuresRef} />
+        <Subscriptions pricingRef={pricingRef} onSignUpClick={() => setSignUpVisible(true)} />
       </main>
-      <footer>{renderFooter()}</footer>
+      <Footer contactRef={contactRef} />
       {renderLoginDialog()}
       {renderSignUpDialog()}
       <VerificationCodeDialog

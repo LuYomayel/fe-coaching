@@ -6,7 +6,6 @@ import { Dropdown } from 'primereact/dropdown';
 import { useIntl } from 'react-intl';
 import { useToast } from '../utils/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import {
   createMercadoPagoPayment,
   checkMercadoPagoPaymentStatus,
@@ -20,7 +19,6 @@ export default function PaymentDialog({ visible, onHide, subscription, clientId,
   const showToast = useToast();
   const { client } = useContext(UserContext);
   const { setLoading } = useSpinner();
-  const { showConfirmationDialog } = useConfirmationDialog();
 
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [amount, setAmount] = useState('');

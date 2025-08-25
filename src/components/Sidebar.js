@@ -1,5 +1,4 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import { UserContext } from '../utils/UserContext';
 import { useIntl } from 'react-intl';
 import { Button } from 'primereact/button';
@@ -7,12 +6,10 @@ import { Sidebar as PrimeSidebar } from 'primereact/sidebar';
 import { Avatar } from 'primereact/avatar';
 import { Menu } from 'primereact/menu';
 import { useNavigate } from 'react-router-dom';
-import { Tooltip } from 'primereact/tooltip';
 
 const Sidebar = ({ onExpandChange }) => {
   const intl = useIntl();
   const { user, client, setUser } = useContext(UserContext);
-  const location = useLocation();
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);

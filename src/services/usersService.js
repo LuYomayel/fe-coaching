@@ -25,6 +25,7 @@ const registerCoach = async (body) => {
 
 const login = async (body) => {
   try {
+    console.log(apiUrl);
     const response = await fetch(`${apiUrl}/auth/login`, {
       method: 'POST',
       headers: getAuthHeaders(),

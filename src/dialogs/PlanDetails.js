@@ -5,6 +5,7 @@ import { Toast } from 'primereact/toast';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
+import { formatDate } from '../utils/UtilFunctions';
 import {
   fetchWorkoutInstance,
   fetchWorkoutInstanceTemplate,
@@ -13,7 +14,7 @@ import {
   updateWorkoutInstance
 } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
-import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
+import { getYouTubeThumbnail, extractYouTubeVideoId } from '../utils/UtilFunctions';
 import { useToast } from '../utils/ToastContext';
 import { UserContext } from '../utils/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
@@ -31,7 +32,7 @@ export default function NewPlanDetailHorizontal({
   const intl = useIntl();
   const toast = useRef(null);
   const navigate = useNavigate();
-  const { user, client } = useContext(UserContext);
+  const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
   const showToast = useToast();
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));

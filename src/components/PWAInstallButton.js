@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
-import { showInstallPrompt, installPWA, requestNotificationPermission } from '../serviceWorkerRegistration';
+import { installPWA, requestNotificationPermission } from '../serviceWorkerRegistration';
 
 const PWAInstallButton = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);

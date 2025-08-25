@@ -5,6 +5,7 @@ const ThemeContext = createContext();
 export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
+
     return savedTheme ? JSON.parse(savedTheme) : false;
   });
   const { setLoading } = useSpinner();

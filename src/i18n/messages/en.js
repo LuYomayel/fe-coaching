@@ -753,10 +753,13 @@ const messages = {
   'header.home': 'Home',
   'header.plans': 'Plans',
   'home.verification.resend': 'Resend Email Verification',
-  'home.hero.title': 'Transform Your Fitness Journey with EaseTrain',
+
   'home.hero.subtitle': 'Empower trainers, motivate clients, and achieve fitness goals together.',
   'home.hero.getStarted': 'Get Started',
   'home.hero.learnMore': 'Learn More',
+  'home.transformYour': 'Transform Your',
+  'home.fitnessJourney': 'Fitness Journey',
+  'home.withEaseTrain': 'with EaseTrain',
 
   'home.features.title': 'Key Features',
   'home.features.manageClients': 'Manage Clients',
@@ -765,25 +768,41 @@ const messages = {
   'home.features.customPlansDesc': "Create personalized workout routines tailored to each client's needs.",
   'home.features.trackProgress': 'Track Progress',
   'home.features.trackProgressDesc': 'Visualize client progress with data-driven charts and reports.',
-  'home.features.messaging': 'In-App Messaging',
-  'home.features.messagingDesc': 'Stay connected with clients through direct messaging.',
   'home.features.videoTutorials': 'Video Tutorials',
-  'home.features.videoTutorialsDesc': 'Share video tutorials to guide clients through exercises.',
+  'home.features.videoTutorialsDesc':
+    'Access a comprehensive library of exercise videos and create custom workout demonstrations.',
 
   'home.pricing.title': 'Pricing Plans',
   'home.pricing.maxClients': 'Max Clients: {max}',
 
-  'home.testimonials.title': 'What Our Users Say',
-  'home.testimonials.sarah':
-    "EaseTrain has revolutionized how I manage my clients. It's a game-changer for personal trainers!",
-  'home.testimonials.mike':
-    'The progress tracking feature keeps me motivated. I love seeing my improvements over time.',
-  'home.testimonials.emily':
-    'The custom training plans and video tutorials have helped me provide better service to my clients.',
-
-  'home.footer.terms': 'Terms of Service',
-  'home.footer.privacy': 'Privacy',
   'home.footer.contact': 'Contact',
+  'home.footer.contactWhatsApp': 'Contact via WhatsApp',
+
+  'home.hero.platform': 'Professional Fitness Platform',
+  'home.hero.trustIndicator1': 'Easy to use',
+  'home.hero.trustIndicator2': 'Safe and reliable',
+  'home.hero.trustIndicator3': '24/7 Support',
+  'home.hero.feature1': 'Client management',
+  'home.hero.feature2': 'Progress tracking',
+  'home.hero.feature3': 'Video tutorials',
+
+  'home.features.subtitle': 'Discover the tools that will transform your way of training and managing clients',
+  'home.pricing.subtitle': 'Choose the plan that best fits your needs and start transforming your business',
+  'home.pricing.perMonth': 'per month',
+  'home.pricing.customPlans': 'Custom plans',
+  'home.pricing.progressTracking': 'Progress tracking',
+  'home.pricing.support': '24/7 Support',
+  'home.footer.description':
+    'Transform your fitness business with the most complete platform for professional trainers.',
+  'home.footer.copyright': '© 2024 EaseTrain. All rights reserved.',
+
+  'home.hero.rating': '5.0 Rating',
+  'home.hero.coaches': '1000+ Coaches',
+  'home.hero.watchDemo': 'Watch Demo',
+  'home.hero.customTrainingPlans': 'Custom Training Plans',
+  'home.hero.customTrainingPlansDesc':
+    "Create personalized workout routines tailored to each client's needs and goals.",
+  'home.hero.trustedBy': 'Trusted by',
 
   'home.login.title': 'Log In',
   'home.login.email': 'Email',

@@ -21,7 +21,7 @@ import { extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctio
 import RpeDropdownComponent from '../components/RpeDropdown';
 import '../styles/TrainingPlanStyle.css';
 
-export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshKey, isTraining = true }) {
+export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshKey }) {
   const { planId } = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -36,8 +36,8 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
   const [currentVideoUrl, setCurrentVideoUrl] = useState('');
   const [finishDialogVisible, setFinishDialogVisible] = useState(false);
-  const [completedGroups, setCompletedGroups] = useState([]);
-  const [isClientTraining, setIsClientTraining] = useState(isTraining);
+  //const [completedGroups, setCompletedGroups] = useState([]);
+
   const [currentCycle, setCurrentCycle] = useState(null);
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
   const [sessionTimer, setSessionTimer] = useState(0); // tiempo en segundos
@@ -111,7 +111,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
       try {
         setLoading(true);
         const { data } = await fetchWorkoutInstance(planId);
-        if (data.status === 'completed') setIsClientTraining(false);
+
         data.groups.sort((groupA, groupB) => groupA.groupNumber - groupB.groupNumber);
         setPlan(data);
 
@@ -384,9 +384,10 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
       newProgress[exerciseId].completed = allSetsCompleted;
 
       // Verificar si todos los ejercicios del grupo están completados
-      const allExercisesCompleted = group.exercises.every((ex) => newProgress[ex.id]?.completed);
+      //const allExercisesCompleted = group.exercises.every((ex) => newProgress[ex.id]?.completed);
 
       // Actualizar el estado del grupo
+      /*
       setCompletedGroups((prevCompletedGroups) => {
         const newCompletedGroups = [...prevCompletedGroups];
         const groupIndex = newCompletedGroups.findIndex((g) => g.id === group.id);
@@ -399,7 +400,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
 
         return newCompletedGroups;
       });
-
+      */
       return newProgress;
     });
   };

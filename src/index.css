@@ -1,7 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 body {
   margin: 0;
-  font-family: "Kanit", sans-serif;
+  font-family: 'Kanit', sans-serif;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -9,11 +9,11 @@ body {
 }
 
 * {
-  font-family: "Kanit", sans-serif;
+  font-family: 'Kanit', sans-serif;
 }
 
 code {
-  font-family: "Kanit", sans-serif;
+  font-family: 'Kanit', sans-serif;
 }
 
 h1 {
@@ -53,9 +53,7 @@ p {
 }
 
 .p-calendar-w-btn .p-datepicker-trigger.p-button {
-  background-color: var(
-    --primary-color
-  ) !important; /* Usa la variable de color primario de tu tema */
+  background-color: var(--primary-color) !important; /* Usa la variable de color primario de tu tema */
 }
 
 .login-container {
@@ -188,4 +186,67 @@ p {
 
 .group-odd-dark {
   background-color: #34495e;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(var(--primary-color-rgb), 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(var(--primary-color-rgb), 0.8),
+      0 0 30px rgba(var(--primary-color-rgb), 0.6);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+/* Transform utilities */
+.group:hover .group-hover\:translate-x-1 {
+  transform: translateX(0.25rem);
+}
+
+.group:hover .group-hover\:scale-110 {
+  transform: scale(1.1);
+}
+
+.hover\:-translate-y-1:hover {
+  transform: translateY(-0.25rem);
+}
+
+/* Backdrop blur */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
 }

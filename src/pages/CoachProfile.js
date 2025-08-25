@@ -255,6 +255,7 @@ export default function CoachProfilePage() {
   const { setLoading } = useSpinner(); // <- spinner function
 
   // State variables
+  // eslint-disable-next-line
   const [refreshKey, setRefreshKey] = useState(0);
   const [isEditingExercises, setIsEditingExercises] = useState(false);
   // Coach info
@@ -268,7 +269,8 @@ export default function CoachProfilePage() {
   const [subscriptionPlans, setSubscriptionPlans] = useState([]); // <- state for subscription plans
   const [exercises, setExercises] = useState([]); // <- state for exercises
   const [missingExercises, setMissingExercises] = useState([]); // <- state for missing exercises
-  const [bodyAreas, setBodyAreas] = useState([]); // <- state for body areas
+
+  // eslint-disable-next-line
   const [exerciseTypes, setExerciseTypes] = useState([]); // <- state for exercise types
   const [originalExercisesForEdit, setOriginalExercisesForEdit] = useState([]); // <- state for original exercises for edit
   // Current plan
@@ -297,8 +299,7 @@ export default function CoachProfilePage() {
     exerciseType: { value: null, matchMode: FilterMatchMode.CONTAINS },
     description: { value: null, matchMode: FilterMatchMode.CONTAINS }
   });
-  // eslint-disable-next-line
-  const [numRows, setNumRows] = useState(0);
+
   const [dialogMode, setDialogMode] = useState('create'); // 'create' or 'edit'
   const [newExercise, setNewExercise] = useState({
     name: '',
@@ -332,6 +333,7 @@ export default function CoachProfilePage() {
   const [selectedTargetLabel, setSelectedTargetLabel] = useState(null);
   const [selectedRpe, setSelectedRpe] = useState(null);
   const [analysisData, setAnalysisData] = useState(null);
+  // eslint-disable-next-line
   const [pendingUploadFormData, setPendingUploadFormData] = useState(null);
   const [modifiedExercises, setModifiedExercises] = useState({}); // Para rastrear cambios individuales
 
@@ -462,7 +464,7 @@ export default function CoachProfilePage() {
             label: bodyArea.name,
             value: bodyArea.id
           }));
-          setBodyAreas(formattedBodyAreas);
+          //setBodyAreas(formattedBodyAreas);
         }
 
         setSubscriptionPlans(subscriptionPlansResponse.data);

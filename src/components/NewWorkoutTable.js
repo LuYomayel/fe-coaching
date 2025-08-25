@@ -66,7 +66,7 @@ function SortableRowComponent({
   isEditing,
   isDraggingGroup,
   activeGroup,
-  propertiesUsedByWeek,
+  //propertiesUsedByWeek,
   hoverRowIndex,
   showInsertButton,
   firstColumnRef,
@@ -117,7 +117,7 @@ function SortableRowComponent({
   };
 
   // Calcular el colSpan correcto: 1 (columna de nombre) + todas las columnas de propiedades
-  const totalColumns = 1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
+  //const totalColumns = 1 + propertiesUsedByWeek.reduce((acc, list) => acc + list.length, 0);
 
   return (
     <>
@@ -283,7 +283,7 @@ export default function NewWorkoutTable({
 
   // Single array for both group rows and exercise rows
   const [tableData, setTableData] = useState([]);
-  const [editedData, setEditedData] = useState({});
+
   const [refreshTable, setRefreshTable] = useState(0);
   // We'll store the used properties per week if needed
   const [propertiesUsedByWeek, setPropertiesUsedByWeek] = useState([]);
@@ -313,12 +313,6 @@ export default function NewWorkoutTable({
 
   // Añadir estos estados para seguimiento de cambios
   const [originalData, setOriginalData] = useState(null);
-  const [changes, setChanges] = useState({
-    newExercises: [],
-    movedExercises: [],
-    movedGroups: [],
-    updatedProperties: []
-  });
 
   const [deletedExercises, setDeletedExercises] = useState([]);
 
@@ -1037,7 +1031,7 @@ export default function NewWorkoutTable({
     // REGLA 2: No permitir mover por encima del primer grupo
     if (overItem.rowType === 'group' && overItem.groupNumber === 1) {
       // Si se intenta hacer drop sobre el header del grupo 1, permitir solo al final del grupo
-      const targetPosition = 'end';
+      //const targetPosition = 'end';
     } else if (overItem.rowType === 'exercise' && overItem.groupNumber === 1) {
       // Permitir mover dentro del grupo 1, pero no antes del primer ejercicio si viene de otro grupo
       if (activeItem.groupNumber !== 1 && overItem.rowIndex === 0 && overItem.rowType === 'group') {
@@ -1152,13 +1146,6 @@ export default function NewWorkoutTable({
     setDeletedExercises([]);
     setHoverRowIndex(null);
     setShowInsertButton(false);
-    setChanges({
-      newExercises: [],
-      movedExercises: [],
-      movedGroups: [],
-      updatedProperties: [],
-      deletedExercises: []
-    });
   };
 
   /****************************************
@@ -1178,9 +1165,9 @@ export default function NewWorkoutTable({
     }
 
     // Contar cuántos ejercicios hay en el grupo destino para el índice
-    const exercisesInGroup = tableData.filter(
-      (row) => row.rowType === 'exercise' && row.groupNumber === targetGroupNumber
-    ).length;
+    //const exercisesInGroup = tableData.filter(
+    //  (row) => row.rowType === 'exercise' && row.groupNumber === targetGroupNumber
+    //).length;
 
     // Crear un nuevo ejercicio vacío
     const newExercise = {
@@ -1231,7 +1218,7 @@ export default function NewWorkoutTable({
     setShowInsertButton(false);
   };
 
-  const handleAddGroup = (index, isNew = false) => {
+  const handleAddGroup = (index) => {
     if (!isEditing) return;
 
     // Encontrar el máximo número de grupo existente
@@ -1715,12 +1702,7 @@ export default function NewWorkoutTable({
       setOriginalData(JSON.parse(JSON.stringify(tableData)));
 
       // Resetear todos los estados de cambios
-      setChanges({
-        newExercises: [],
-        movedExercises: [],
-        movedGroups: [],
-        updatedProperties: []
-      });
+
       setDeletedExercises([]); // Limpiar el estado de ejercicios eliminados
 
       // Mostrar mensaje de éxito
@@ -1756,7 +1738,7 @@ export default function NewWorkoutTable({
   }, []);
 
   const handlePropertyBlur = useCallback(
-    (rowData, prop, weekNum, newValue) => {
+    (rowData, prop, weekNum) => {
       if (oldValue !== rowData.weeksData[weekNum][prop]) {
         // trigger a full re-render of tableData so detectChanges sees the update
         setTableData((prev) => [...prev]);
@@ -1935,6 +1917,7 @@ export default function NewWorkoutTable({
   // Referencia para la primera columna
   const firstColumnRef = useRef(null);
   // Estado para controlar si el mouse está sobre la primera columna
+  // eslint-disable-next-line
   const [isHoveringFirstColumn, setIsHoveringFirstColumn] = useState(false);
 
   // Efecto para manejar el botón de inserción cuando el mouse está sobre la primera columna
