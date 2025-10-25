@@ -1,75 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useIntl, FormattedMessage } from 'react-intl';
-import { useToast } from '../utils/ToastContext';
+import { useVerificationCodeForm } from '../hooks/dialogs/useVerificationCodeForm';
 
 const VerificationCodeDialog = ({ visible, onHide, email, onVerificationSuccess }) => {
   const intl = useIntl();
-  const showToast = useToast();
-  const [verificationCode, setVerificationCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
+  const { code, handleCodeChange, isVerifying, isResending, verifyCode, resendCode, reset } = useVerificationCodeForm({
+    email,
+    onSuccess: onVerificationSuccess
+  });
+
+  useEffect(() => {
+    if (!visible) {
+      reset();
+    }
+  }, [visible, reset]);
 
   const handleVerification = async () => {
-    if (!verificationCode) {
-      showToast('error', 'Error', intl.formatMessage({ id: 'verification.error.codeRequired' }));
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/auth/verify-email?email=${email}&code=${verificationCode}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-            //Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.message === 'success') {
-        showToast('success', 'Success', intl.formatMessage({ id: 'verification.success' }));
-        onVerificationSuccess();
-        onHide();
-      } else if (data.message === 'error') {
-        showToast('error', 'Error', data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      showToast('error', 'Error', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    setResendLoading(true);
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/send-verification-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.message || 'Error resending verification code');
-      } else {
-        showToast('success', 'Success', intl.formatMessage({ id: 'home.verification.resendSuccess' }));
-      }
-    } catch (error) {
-      showToast('error', 'Error', intl.formatMessage({ id: 'home.verification.resendError' }));
-    } finally {
-      setResendLoading(false);
+    const success = await verifyCode();
+    if (success) {
+      onHide();
     }
   };
 
@@ -100,8 +52,8 @@ const VerificationCodeDialog = ({ visible, onHide, email, onVerificationSuccess 
           </label>
           <InputText
             id="verificationCode"
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
+            value={code}
+            onChange={handleCodeChange}
             className="w-full p-inputtext-lg"
             placeholder={intl.formatMessage({ id: 'verification.codePlaceholder' })}
           />
@@ -111,13 +63,13 @@ const VerificationCodeDialog = ({ visible, onHide, email, onVerificationSuccess 
             label={intl.formatMessage({ id: 'verification.verify' })}
             className="p-button-lg w-full"
             onClick={handleVerification}
-            loading={loading}
+            loading={isVerifying}
           />
           <Button
             label={intl.formatMessage({ id: 'home.verification.resend' })}
             className="p-button-outlined p-button-secondary w-full"
-            onClick={handleResendCode}
-            loading={resendLoading}
+            onClick={resendCode}
+            loading={isResending}
           />
         </div>
       </div>

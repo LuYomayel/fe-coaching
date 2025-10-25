@@ -7,7 +7,7 @@ import { useToast } from '../utils/ToastContext';
 import { fetchCoachSubscriptionPlans, makePayment, updateCoachSubscription } from '../services/subscriptionService';
 import { UserContext } from '../utils/UserContext';
 
-export default function SubscriptionPaymentPage({ setUserPayment, setIsPlanDialogVisible }) {
+export default function SubscriptionPaymentPage({ onPlanConfirmed, onClose }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [plans, setPlans] = useState([]);
   const toast = useRef(null);
@@ -65,8 +65,12 @@ export default function SubscriptionPaymentPage({ setUserPayment, setIsPlanDialo
           userId: user.userId,
           planId: selectedPlan.id
         });
-        setUserPayment(selectedPlan);
-        setIsPlanDialogVisible(false);
+        if (onPlanConfirmed) {
+          onPlanConfirmed(selectedPlan);
+        }
+        if (onClose) {
+          onClose();
+        }
         showToast('success', 'Payment Successful', `Your payment for ${selectedPlan.name} plan has been processed.`);
       } else {
         showToast('error', 'Error', data.error || 'Payment failed');

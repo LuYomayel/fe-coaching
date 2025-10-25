@@ -585,6 +585,12 @@ export default function ClientDashboard() {
         <TabPanel header={intl.formatMessage({ id: 'clientDashboard.tabs.calendar' })}>
           <div className="action-buttons">
             <Button
+              label={intl.formatMessage({ id: 'clientDashboard.buttons.createCycle' })}
+              icon="pi pi-plus"
+              className="p-button-secondary"
+              onClick={showCreateCycleDialog}
+            />
+            <Button
               label={intl.formatMessage({ id: 'clientDashboard.buttons.assign' })}
               icon="pi pi-refresh"
               className="p-button-success"
@@ -595,18 +601,6 @@ export default function ClientDashboard() {
               icon="pi pi-trash"
               className="p-button-danger"
               onClick={() => handleOpenAssignCycle('unassign')}
-            />
-            <Button
-              label={intl.formatMessage({ id: 'clientDashboard.buttons.createCycle' })}
-              icon="pi pi-plus"
-              className="p-button-secondary"
-              onClick={showCreateCycleDialog}
-            />
-            <Button
-              label={intl.formatMessage({ id: 'clientDashboard.buttons.assignCycleTemplate' })}
-              icon="pi pi-clone"
-              className="p-button-info"
-              onClick={openAssignCycleTemplateDialog}
             />
           </div>
 
