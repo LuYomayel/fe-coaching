@@ -17,8 +17,8 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { useIntl, FormattedMessage } from 'react-intl';
 
-import { UserContext } from '../utils/UserContext';
-import { useToast } from '../utils/ToastContext';
+import { UserContext } from '../contexts/UserContext';
+import { useToast } from '../contexts/ToastContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { fetchClient, fetchClientActivitiesByUserId, updatePersonalInfo } from '../services/usersService';
@@ -28,7 +28,7 @@ import PaymentDialog from '../dialogs/PaymentDialog';
 
 export default function ClientProfile() {
   const { user, client } = useContext(UserContext);
-  const showToast = useToast();
+  const { showToast } = useToast();
   const { showConfirmationDialog } = useConfirmationDialog();
   const { setLoading } = useSpinner();
   const toast = useRef(null);
@@ -161,7 +161,9 @@ export default function ClientProfile() {
           setLoading(false);
         }
       },
-      reject: () => {}
+      reject: () => {
+        console.log('reject');
+      }
     });
   };
 

@@ -5,7 +5,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
-import { useToast } from '../utils/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 import { validateDates } from '../utils/UtilFunctions';
 import { assignWorkout } from '../services/workoutService';
 import { useIntl } from 'react-intl';
@@ -15,7 +15,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   const [currentPlans, setCurrentPlans] = useState(selectedPlans);
   const [activeIndex, setActiveIndex] = useState(0);
   const { showConfirmationDialog } = useConfirmationDialog();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const [assignmentData, setAssignmentData] = useState(
     selectedPlans.map((plan) => ({
       planId: plan.id,
@@ -46,11 +46,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
       ...assignmentData[index]
     };
 
-    const { isValid, message } = validateDates(
-      data.expectedStartDate,
-      data.expectedEndDate,
-      intl
-    );
+    const { isValid, message } = validateDates(data.expectedStartDate, data.expectedEndDate, intl);
     if (!isValid) {
       showToast('error', 'Error', message);
       return;
@@ -85,39 +81,28 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
   return (
     <div>
       {/* {loading && <ProgressSpinner />} */}
-      <TabView
-        activeIndex={activeIndex}
-        onTabChange={(e) => setActiveIndex(e.index)}
-      >
+      <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         {currentPlans.map((plan, index) => (
           <TabPanel key={index} header={plan.planName}>
             <div className="p-grid">
               <div className="p-col-6">
-                <label htmlFor={`expectedStartDate-${index}`}>
-                  Expected Start Date*
-                </label>
+                <label htmlFor={`expectedStartDate-${index}`}>Expected Start Date*</label>
                 <Calendar
                   id={`expectedStartDate-${index}`}
                   locale={intl.locale}
                   dateFormat="dd/mm/yy"
                   value={assignmentData[index].expectedStartDate}
-                  onChange={(e) =>
-                    handleInputChange(index, 'expectedStartDate', e.value)
-                  }
+                  onChange={(e) => handleInputChange(index, 'expectedStartDate', e.value)}
                 />
               </div>
               <div className="p-col-6">
-                <label htmlFor={`expectedEndDate-${index}`}>
-                  Expected End Date*
-                </label>
+                <label htmlFor={`expectedEndDate-${index}`}>Expected End Date*</label>
                 <Calendar
                   id={`expectedEndDate-${index}`}
                   locale={intl.locale}
                   dateFormat="dd/mm/yy"
                   value={assignmentData[index].expectedEndDate}
-                  onChange={(e) =>
-                    handleInputChange(index, 'expectedEndDate', e.value)
-                  }
+                  onChange={(e) => handleInputChange(index, 'expectedEndDate', e.value)}
                 />
               </div>
               <div className="p-col-12">
@@ -125,9 +110,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
                 <InputTextarea
                   id={`notes-${index}`}
                   value={assignmentData[index].instanceName}
-                  onChange={(e) =>
-                    handleInputChange(index, 'instanceName', e.target.value)
-                  }
+                  onChange={(e) => handleInputChange(index, 'instanceName', e.target.value)}
                   rows={3}
                 />
               </div>
@@ -136,9 +119,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
                 <InputTextarea
                   id={`notes-${index}`}
                   value={assignmentData[index].notes}
-                  onChange={(e) =>
-                    handleInputChange(index, 'notes', e.target.value)
-                  }
+                  onChange={(e) => handleInputChange(index, 'notes', e.target.value)}
                   rows={3}
                 />
               </div>
@@ -153,12 +134,7 @@ const AssignPlanDialog = ({ selectedStudent, selectedPlans, onClose }) => {
               </div>
             </div>
             <div className="p-d-flex p-jc-between">
-              <Button
-                label="Cancel"
-                icon="pi pi-times"
-                className="p-button-danger"
-                onClick={onClose}
-              />
+              <Button label="Cancel" icon="pi pi-times" className="p-button-danger" onClick={onClose} />
               <Button
                 label="Assign"
                 icon="pi pi-check"

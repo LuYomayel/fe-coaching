@@ -11,7 +11,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useToast } from '../utils/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import AssignWorkoutToCycleDialog from '../dialogs/AssignWorkoutToCycleDialog';
 import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialog';
@@ -22,7 +22,6 @@ import {
   fetchTrainingSessionWithNoWeekByClientId
 } from '../services/workoutService';
 import { fetchClientByClientId } from '../services/usersService';
-import '../styles/ClientDashboard.css';
 import { formatDate, formatDateToApi } from '../utils/UtilFunctions';
 // import WorkoutTable from '../components/WorkoutTable';
 import NewWorkoutTable from '../components/NewWorkoutTable';
@@ -30,12 +29,12 @@ import { Badge } from 'primereact/badge';
 import { useIntl, FormattedMessage } from 'react-intl';
 
 import { Panel } from 'primereact/panel';
-import NewStudentDialog from '../dialogs/NewStudentDialog';
+import StudentDialog from '../dialogs/StudentDialog';
 import { Tooltip } from 'primereact/tooltip';
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { fetchTrainingCyclesTemplates, assignCycleTemplateToClient } from '../services/workoutService';
 import { Calendar } from 'primereact/calendar';
-import { contactMethodOptions } from '../utils/Options';
+import { contactMethodOptions } from '../types/coach/dropdown-options';
 
 // Estilos mejorados para el botón de agregar sesión en el calendario
 const addButtonStyle = `
@@ -54,7 +53,7 @@ const addButtonStyle = `
 export default function ClientDashboard() {
   const { clientId } = useParams();
   const [clientData, setClientData] = useState(null);
-  const showToast = useToast();
+  const { showToast } = useToast();
   const { setLoading } = useSpinner();
   const intl = useIntl();
   const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
@@ -791,14 +790,16 @@ export default function ClientDashboard() {
 
   // Header personalizado para el panel principal
   const headerTemplate = (options) => {
-    const className = `${options.className} justify-content-space-between`;
+    const className = `${options.className} flex justify-content-start align-items-center`;
     return (
       <div className={className}>
-        <div className="profile-info">
-          <div className="profile-image">
+        <div className="flex align-items-center gap-3">
+          <div className="relative">
             <img
-              src={clientData?.profilePicture || '/image.webp'}
+              src={clientData?.profileImage || '/image.webp'}
               alt={clientData?.name || 'Profile'}
+              className="w-4rem h-4rem border-circle"
+              style={{ objectFit: 'cover' }}
               onError={(e) => {
                 e.target.src =
                   'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg';
@@ -818,45 +819,32 @@ export default function ClientDashboard() {
                 <>
                   <Tooltip target=".missing-data-indicator" />
                   <div
-                    className="missing-data-indicator"
-                    style={{
-                      position: 'absolute',
-                      bottom: '0',
-                      right: '0',
-                      background: 'white',
-                      borderRadius: '50%',
-                      width: '1rem',
-                      height: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '1px solid var(--red-500)'
-                    }}
+                    className="missing-data-indicator absolute bottom-0 right-0 bg-white border-circle w-1rem h-1rem flex align-items-center justify-content-center border-1 border-red-500"
                     data-pr-tooltip={intl.formatMessage({ id: 'common.missingData' })}
                     data-pr-position="bottom"
                   >
-                    <i className="pi pi-exclamation-triangle text-red-500" style={{ fontSize: '0.7rem' }}></i>
+                    <i className="pi pi-exclamation-triangle text-red-500 text-xs"></i>
                   </div>
                 </>
               )}
           </div>
-          <div className="profile-details">
-            <h4>{clientData?.name}</h4>
+          <div className="flex flex-column">
+            <h4 className="m-0 text-xl font-bold">{clientData?.name}</h4>
             {clientData?.birthdate && (
-              <p>
+              <p className="m-0 text-600 text-sm">
                 {intl.formatMessage({ id: 'common.age' })}:&nbsp;
                 {calculateAge(clientData.birthdate)}&nbsp;
                 {intl.formatMessage({ id: 'common.years' })}
               </p>
             )}
           </div>
-          <Button
-            icon="pi pi-pencil"
-            className="p-button-rounded p-button-text p-button-sm"
-            onClick={() => handleNewStudentDialogShow(clientData?.email)}
-            tooltip={intl.formatMessage({ id: 'students.actions.editProfile' })}
-          />
         </div>
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-text p-button-sm"
+          onClick={() => handleNewStudentDialogShow(clientData?.email)}
+          tooltip={intl.formatMessage({ id: 'students.actions.editProfile' })}
+        />
       </div>
     );
   };
@@ -990,7 +978,7 @@ export default function ClientDashboard() {
         className="responsive-dialog"
         style={{ width: '50vw' }}
       >
-        <NewStudentDialog onClose={handleNewStudentDialogHide} setRefreshKey={setRefreshKey} studentData={clientData} />
+        <StudentDialog onClose={handleNewStudentDialogHide} setRefreshKey={setRefreshKey} studentData={clientData} />
       </Dialog>
 
       {/* Diálogo para asignar plantillas de ciclos de entrenamiento */}

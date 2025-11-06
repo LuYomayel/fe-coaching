@@ -1,9 +1,24 @@
 import { getAuthHeaders } from '../utils/UtilFunctions';
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const findAllWorkoutTemplatesByCoachId = async (coachId) => {
+const fetchWorkoutTemplate = async (workoutTemplateId) => {
   try {
-    const response = await fetch(`${apiUrl}/workout/workout-template/coachId/${coachId}`, {
+    const response = await fetch(`${apiUrl}/workout/workout-template/id/${workoutTemplateId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching plan:', error);
+    throw error;
+  }
+};
+const findAllWorkoutTemplatesByCoachId = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/workout-template`, {
       headers: getAuthHeaders()
     });
     const data = await response.json();
@@ -17,9 +32,9 @@ const findAllWorkoutTemplatesByCoachId = async (coachId) => {
   }
 };
 
-const fetchTrainingCyclesTemplates = async (coachId) => {
+const fetchTrainingCyclesTemplates = async () => {
   try {
-    const response = await fetch(`${apiUrl}/workout/training-cycle-templates/coachId/${coachId}`, {
+    const response = await fetch(`${apiUrl}/workout/training-cycle-templates`, {
       headers: getAuthHeaders()
     });
     const data = await response.json();
@@ -162,9 +177,9 @@ const fetchTrainingCyclesForClientByUserId = async (userId) => {
   }
 };
 
-const fetchTrainingCyclesByCoachId = async (coachId) => {
+const fetchTrainingCyclesByCoachId = async () => {
   try {
-    const response = await fetch(`${apiUrl}/workout/training-cycles/coachId/${coachId}`, {
+    const response = await fetch(`${apiUrl}/workout/training-cycles`, {
       headers: getAuthHeaders()
     });
     const data = await response.json();
@@ -357,6 +372,25 @@ const submitPlan = async (plan, planId, isEdit, isTemplate) => {
 
     const response = await fetch(endpoint, {
       method: requestMethod,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(plan)
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error submitting plan:', error);
+    throw error;
+  }
+};
+
+const submitPlanTemplate = async (plan) => {
+  try {
+    const response = await fetch(`${apiUrl}/workout/workout-template/last-try`, {
+      method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(plan)
     });
@@ -954,6 +988,7 @@ const updateWorkoutInstance = async (workoutInstanceId, body) => {
 };
 
 export {
+  fetchWorkoutTemplate,
   fetchTrainingCyclesByCoachId,
   findAllWorkoutTemplatesByCoachId,
   fetchWorkoutInstanceTemplate,
@@ -964,6 +999,7 @@ export {
   createTrainingCycle,
   updateExercisesInstace,
   updatePlanName,
+  submitPlanTemplate,
   submitPlan,
   submitFeedback,
   assignWorkout,

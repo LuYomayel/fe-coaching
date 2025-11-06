@@ -114,7 +114,7 @@ const fetchClientByClientId = async (clientId) => {
 
 const fetchCoachPlans = async (userId) => {
   try {
-    const response = await fetch(`${apiUrl}/users/coach/coachPlan/${userId}`, {
+    const response = await fetch(`${apiUrl}/users/coach/coachPlan`, {
       headers: getAuthHeaders()
     });
     const data = await response.json();

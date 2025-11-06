@@ -1,7 +1,7 @@
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const fetchCoachExercises = async (coachId) => {
-  const response = await fetch(`${apiUrl}/exercise/coach/${coachId}`);
+const fetchCoachExercises = async () => {
+  const response = await fetch(`${apiUrl}/exercise`);
   const data = await response.json();
   if (data.error) {
     throw new Error(data.error);
@@ -119,8 +119,8 @@ const analyzeExcelFile = async (coachId, file) => {
   return data;
 };
 
-const processImportExercises = async (coachId, importData) => {
-  const response = await fetch(`${apiUrl}/exercise/process-import/${coachId}`, {
+const processImportExercises = async (importData) => {
+  const response = await fetch(`${apiUrl}/exercise/process-import`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(importData)

@@ -4,14 +4,14 @@ import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
-import { useToast } from '../utils/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 import { validateStudentDetails } from '../utils/UtilFunctions';
 import { useIntl } from 'react-intl';
 import { updateClient } from '../services/usersService';
 
 const StudentDetailDialog = ({ student, onClose }) => {
   const intl = useIntl();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const [name, setName] = useState(student.name);
   const [email, setEmail] = useState(student.email);
   const [fitnessGoal, setFitnessGoal] = useState(student.fitnessGoal ? student.fitnessGoal.split(',') : []);

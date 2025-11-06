@@ -1,39 +1,37 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
-import { LanguageProvider } from './i18n/LanguageContext.js';
-import { ThemeProvider } from './utils/ThemeContext';
-import { ToastProvider } from './utils/ToastContext';
-import { UserProvider } from './utils/UserContext.js';
-import { ConfirmationDialogProvider } from './utils/ConfirmationDialogContext.js';
+import { LanguageProvider } from './i18n/LanguageContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { UserProvider } from './contexts/UserContext';
+import { ConfirmationDialogProvider } from './utils/ConfirmationDialogContext';
 import { SpinnerProvider } from './utils/GlobalSpinner.js';
-import Sidebar from './components/Sidebar.js';
-import Unauthorized from './components/Unauthorized.js';
-import PrivateRoute from './auth/PrivateRoute.js';
-import VerifyEmail from './auth/VerifyEmail.js';
-import CoachProfileForm from './pages/CoachProfileForm.js';
-import ForgotPassword from './auth/ForgotPassword.js';
-import ResetPassword from './auth/ResetPassword.js';
-import NotSubscribed from './components/NotSubscribed.js';
-import Home from './auth/Home.js';
-import CoachHome from './pages/CoachHome.js';
-import PlansPage from './pages/PlansPage.js';
-import CoachProfile from './pages/CoachProfile.js';
-import ManageStudentsPage from './pages/ManageStudents.js';
-import ClientDashboard from './pages/ClientDashboard.js';
-import CreatePlan from './pages/CreatePlan.js';
-import { ChatSidebarProvider } from './utils/ChatSideBarContext.js';
-import StudentDetails from './pages/StudentDetails.js';
-import StudentHome from './pages/StudentHome.js';
-import ClientProfile from './pages/ClientProfile.js';
-import TrainingPlanDetails from './pages/TrainingPlanDetails.js';
-import PlanDetail from './dialogs/PlanDetails.js';
-
-import { NotificationProvider } from './utils/NotificationsContext.js';
-import Settings from './pages/Settings.js';
+import Sidebar from './components/Sidebar';
+import Unauthorized from './components/Unauthorized';
+import PrivateRoute from './auth/PrivateRoute';
+import CoachProfileForm from './pages/CoachProfileForm';
+import ForgotPassword from './auth/ForgotPassword';
+import ResetPassword from './auth/ResetPassword';
+import NotSubscribed from './components/NotSubscribed';
+import Home from './auth/Home';
+import CoachHome from './pages/CoachHome';
+import PlansPage from './pages/coach/PlansPage';
+import CoachProfile from './pages/CoachProfile';
+import ManageStudentsPage from './pages/ManageStudents';
+import ClientDashboard from './pages/ClientDashboard';
+import { ChatSidebarProvider } from './utils/ChatSideBarContext';
+import StudentDetails from './pages/StudentDetails';
+import StudentHome from './pages/StudentHome';
+import ClientProfile from './pages/ClientProfile';
+import TrainingPlanDetails from './pages/TrainingPlanDetails';
+import PlanDetail from './dialogs/PlanDetails';
+import { NotificationProvider } from './utils/NotificationsContext';
+import Settings from './pages/Settings';
 import StudentCalendar from './pages/StudentCalendar';
+import { NewCreatePlan } from './pages/coach/NewCreatePlan';
 
 // PWA Components
-import OfflineIndicator from './components/OfflineIndicator.js';
+import OfflineIndicator from './components/OfflineIndicator';
 
 //const stripePromise = await loadStripe(
 //  'pk_live_51Q3CfT05I9O02RUndo8xGIDJT1MmuvSmA3wekj223dWpi4VTsqzGtvnVYTjbDv2yqjoOkBXu9w8npwTM1eK1aZmM00mLXrhiSq'
@@ -67,21 +65,19 @@ const AppContent = ({ sidebarExpanded, setSidebarExpanded, isMobile }) => {
           <Route path="/coach" element={<PrivateRoute element={CoachHome} requiredType="coach" />} />
           <Route path="/coach/profile" element={<PrivateRoute element={CoachProfile} requiredType="coach" />} />
           <Route path="/coach/plans" element={<PrivateRoute element={PlansPage} requiredType="coach" />} />
-          <Route
-            path="/plans/create"
-            element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={false} />}
-          />
+          <Route path="/plans/create" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" />} />
+          <Route path="/plans/create/:planId" element={<PrivateRoute element={NewCreatePlan} requiredType="coach" />} />
           <Route
             path="/plans/create-and-assign"
-            element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
+            element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />}
           />
           <Route
             path="/plans/edit-template/:planId"
-            element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
+            element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />}
           />
           <Route
             path="/plans/edit/:planId"
-            element={<PrivateRoute element={CreatePlan} requiredType="coach" isEdit={true} />}
+            element={<PrivateRoute element={NewCreatePlan} requiredType="coach" isEdit={true} />}
           />
           <Route
             path="/plans/:planId/:studentId"
@@ -102,7 +98,6 @@ const AppContent = ({ sidebarExpanded, setSidebarExpanded, isMobile }) => {
           <Route path="/plans/start-session/:planId" element={<PrivateRoute element={TrainingPlanDetails} />} />
           <Route path="/student/calendar" element={<StudentCalendar />} />
 
-          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/complete-coach-profile" element={<PrivateRoute element={CoachProfileForm} />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

@@ -11,9 +11,9 @@ import { InputText } from 'primereact/inputtext';
 import { fetchExcelViewByCycleAndDay, getRpeMethodAssigned } from '../services/workoutService';
 import { fetchCoachExercises } from '../services/exercisesService';
 
-import { UserContext } from '../utils/UserContext';
-import { useToast } from '../utils/ToastContext';
-import { useTheme } from '../utils/ThemeContext';
+import { UserContext } from '../contexts/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 import {
   DndContext,
@@ -36,7 +36,6 @@ import { FaSave } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa';
 import { FaTrash } from 'react-icons/fa';
 import { saveWorkoutChanges } from '../services/workoutService';
-import '../styles/WorkoutTable.css';
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycle';
 import { Button } from 'primereact/button';
 import { getYouTubeThumbnail, extractYouTubeVideoId } from '../utils/UtilFunctions';
@@ -261,7 +260,7 @@ export default function NewWorkoutTable({
   onToggleExcelMode
 }) {
   const { user, coach } = useContext(UserContext);
-  const showToast = useToast();
+  const { showToast } = useToast();
   const intl = useIntl();
   const { isDarkMode } = useTheme();
 

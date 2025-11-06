@@ -3,9 +3,9 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { useToast } from '../utils/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 import { fetchCoachSubscriptionPlans, makePayment, updateCoachSubscription } from '../services/subscriptionService';
-import { UserContext } from '../utils/UserContext';
+import { UserContext } from '../contexts/UserContext';
 
 export default function SubscriptionPaymentPage({ onPlanConfirmed, onClose }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -13,7 +13,7 @@ export default function SubscriptionPaymentPage({ onPlanConfirmed, onClose }) {
   const toast = useRef(null);
   const stripe = useStripe();
   const elements = useElements();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const { user } = useContext(UserContext);
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { useIntl, FormattedMessage } from 'react-intl';
-import { useTheme } from '../utils/ThemeContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 

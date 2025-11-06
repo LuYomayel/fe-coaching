@@ -4,8 +4,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
-import { useToast } from '../utils/ToastContext';
-import { UserContext } from '../utils/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { UserContext } from '../contexts/UserContext';
 import {
   assignSession,
   assignTrainingSessionToClient,
@@ -16,9 +16,9 @@ import { useIntl } from 'react-intl';
 import { useNavigate } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { contactMethodOptions, trainingTypeOptions } from '../utils/Options';
+import { contactMethodOptions, trainingTypeOptions } from '../types/coach/dropdown-options';
 const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey, selectedDate }) => {
-  const showToast = useToast();
+  const { showToast } = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [loading, setLoading] = useState(false);

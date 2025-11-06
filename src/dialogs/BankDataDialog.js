@@ -4,14 +4,14 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { useIntl } from 'react-intl';
-import { useToast } from '../utils/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { getCoachBankData, updateCoachBankData } from '../services/mercadoPagoService';
 import { Checkbox } from 'primereact/checkbox';
 
 export default function BankDataDialog({ visible, onHide, coachId }) {
   const intl = useIntl();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const { setLoading } = useSpinner();
 
   const [bankData, setBankData] = useState({

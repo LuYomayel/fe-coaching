@@ -15,12 +15,13 @@ import {
 } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
 import { getYouTubeThumbnail, extractYouTubeVideoId } from '../utils/UtilFunctions';
-import { useToast } from '../utils/ToastContext';
-import { UserContext } from '../utils/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { UserContext } from '../contexts/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import VideoDialog from './VideoDialog';
 import { fetchClientByClientId } from '../services/usersService';
+import { contactMethodOptions, trainingTypeOptions } from '../types/coach/dropdown-options';
 export default function NewPlanDetailHorizontal({
   planId,
   setPlanDetailsVisible,
@@ -34,7 +35,7 @@ export default function NewPlanDetailHorizontal({
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
   const [rpeMethod, setRpeMethod] = useState(null);
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
@@ -59,18 +60,6 @@ export default function NewPlanDetailHorizontal({
   const [editedNotes, setEditedNotes] = useState('');
   const [editedSessionTime, setEditedSessionTime] = useState(null);
   const [editedTrainingType, setEditedTrainingType] = useState('');
-  const [contactMethodOptions] = useState([
-    { label: 'Zoom', value: 'zoom' },
-    { label: 'WhatsApp', value: 'whatsapp' },
-    { label: 'Google Meet', value: 'google_meet' },
-    { label: 'Skype', value: 'skype' }
-  ]);
-  const [trainingTypeOptions] = useState([
-    { label: 'Presencial', value: 'presencial' },
-    { label: 'Virtual Sincrónico', value: 'virtual_sincronico' },
-    { label: 'Virtual Asincrónico', value: 'virtual_asincronico' },
-    { label: 'Híbrido', value: 'hibrido' }
-  ]);
 
   useEffect(() => {
     const fetchClientData = async () => {
@@ -164,18 +153,24 @@ export default function NewPlanDetailHorizontal({
       accept: async () => {
         try {
           const response = await deleteWorkoutPlan(planId, workoutPlan.isTemplate);
+          console.log('response', response, response.message === 'success');
           if (response.message === 'success') {
+            setPlanDetailsVisible(false);
+
             showToast(
               'success',
               intl.formatMessage({ id: 'coach.plan.success.deleted' }),
-              intl.formatMessage({ id: 'coach.plan.success.deleted.message' }, { name: workoutPlan.workout.planName })
+              intl.formatMessage(
+                { id: 'coach.plan.success.deleted.message' },
+                { name: workoutPlan.workoutTemplate.planName }
+              )
             );
-            setPlanDetailsVisible(false);
-            setRefreshKey((old) => old + 1);
           } else {
+            console.log('error aca ', response.error);
             showToast('error', 'Error', response.error);
           }
         } catch (error) {
+          console.log('error aca 2', error);
           showToast('error', 'Error', error.message);
         }
       }

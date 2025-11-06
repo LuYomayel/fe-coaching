@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
-import { useToast } from '../utils/ToastContext';
-import { UserContext } from '../utils/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { UserContext } from '../contexts/UserContext';
 import { Dropdown } from 'primereact/dropdown';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { formatDateToApi, validateDates } from '../utils/UtilFunctions';
@@ -13,7 +13,7 @@ import { useIntl } from 'react-intl';
 const RegisterPaymentDialog = ({ studentId, coachId, onClose, oldSubscription, oldCoachPlan }) => {
   const intl = useIntl();
   const { user } = useContext(UserContext);
-  const showToast = useToast();
+  const { showToast } = useToast();
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [paymentDate, setPaymentDate] = useState(null);

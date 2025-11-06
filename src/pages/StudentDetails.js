@@ -12,7 +12,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useIntl, FormattedMessage } from 'react-intl';
 
-import { useToast } from '../utils/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import PlanDetails from '../dialogs/PlanDetails';
 import { formatDate } from '../utils/UtilFunctions';
@@ -20,7 +20,7 @@ import { useSpinner } from '../utils/GlobalSpinner';
 import { deleteWorkoutPlan } from '../services/workoutService';
 import { fetchClientActivitiesByUserId } from '../services/usersService';
 import { fetchSubscriptionForStudent } from '../services/subscriptionService';
-import { UserContext } from '../utils/UserContext';
+import { UserContext } from '../contexts/UserContext';
 
 export default function StudentDetails() {
   const intl = useIntl();
@@ -39,7 +39,7 @@ export default function StudentDetails() {
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const showToast = useToast();
+  const { showToast } = useToast();
   const { showConfirmationDialog } = useConfirmationDialog();
 
   useEffect(() => {
@@ -109,7 +109,9 @@ export default function StudentDetails() {
       header: intl.formatMessage({ id: 'common.confirmation' }),
       icon: 'pi pi-exclamation-triangle',
       accept: () => deletePlan(plan),
-      reject: () => {}
+      reject: () => {
+        console.log('reject');
+      }
     });
   };
 

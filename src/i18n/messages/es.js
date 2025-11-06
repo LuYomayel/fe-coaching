@@ -996,7 +996,7 @@ const messages = {
   'coachProfileForm.validation.subscriptionType': 'El tipo de suscripción es obligatorio.',
   'coachProfileForm.validation.plan': 'Selecciona un plan para continuar.',
 
-  // NewStudentDialog
+  // StudentDialog
   'gender.male': 'Masculino',
   'gender.female': 'Femenino',
   'gender.other': 'Otro',
@@ -1387,6 +1387,18 @@ const messages = {
   'exercise.count': 'Cantidad',
   'exercise.equipmentNeeded': 'Equipamiento Necesario',
   'exercise.bodyAreas': 'Áreas del cuerpo',
+
+  'exercises.field.category': 'Categoría',
+  'exercises.field.variant': 'Variante',
+  'exercises.field.contractionType': 'Tipo de Contracción',
+  'exercises.field.difficultyLevel': 'Dificultad',
+  'exercises.field.movementPlane': 'Plano de Movimiento',
+  'exercises.field.unilateralType': 'Tipo de Unilateral',
+  'exercises.field.movementPattern': 'Patrón de Movimiento',
+  'exercises.field.regressionExercise': 'Ejercicio de Regresión',
+  'exercises.field.progressionExercise': 'Ejercicio de Progresión',
+  'exercises.field.equipment': 'Equipamiento',
+  'exercises.field.muscles': 'Músculos',
 
   // Plan
   'plan.details': 'Detalles del Plan',

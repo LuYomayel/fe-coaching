@@ -13,7 +13,7 @@ import { classNames } from 'primereact/utils';
 import { useIntl, FormattedMessage } from 'react-intl';
 
 import SubscriptionPaymentPage from './SubscriptionPayment';
-import { useCoachProfileForm, trainingTypeOptions } from '../hooks/useCoachProfileForm';
+import { useCoachProfileForm, trainingTypeOptions } from '../hooks/coach/useCoachProfileForm';
 
 const CoachProfileForm = () => {
   const intl = useIntl();
@@ -110,23 +110,23 @@ const CoachProfileForm = () => {
         subtitleId="coachProfileForm.subtitle.trainingDetails"
       />
       <div className="flex flex-column gap-2">
-        <label htmlFor="trainingTypes" className="flex align-items-center justify-content-between">
+        <label htmlFor="trainingSpecialties" className="flex align-items-center justify-content-between">
           <span>
             <FormattedMessage id="coachProfileForm.trainingType" />
           </span>
           <Tag value={<FormattedMessage id="coachProfileForm.helper.training" />} severity="info" />
         </label>
         <MultiSelect
-          id="trainingTypes"
-          value={formValues.trainingTypes}
+          id="trainingSpecialties"
+          value={formValues.trainingSpecialties}
           options={trainingTypeOptions}
           optionLabel="label"
           onChange={handleTrainingTypeChange}
-          className={classNames({ 'p-invalid': formErrors.trainingTypes })}
+          className={classNames({ 'p-invalid': formErrors.trainingSpecialties })}
           placeholder={intl.formatMessage({ id: 'coachProfileForm.selectTrainingTypes' })}
           display="chip"
         />
-        {renderError('trainingTypes')}
+        {renderError('trainingSpecialties')}
       </div>
       <div className="flex align-items-center gap-2">
         <Checkbox inputId="hasGym" checked={formValues.hasGym} onChange={handleGymToggle} />

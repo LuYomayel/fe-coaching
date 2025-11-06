@@ -6,7 +6,7 @@ import { Toast } from 'primereact/toast';
 
 import { Dropdown } from 'primereact/dropdown';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../utils/UserContext';
+import { UserContext } from '../contexts/UserContext';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -19,7 +19,7 @@ import {
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
 import { getDayMonthYear, formatDateToApi } from '../utils/UtilFunctions';
 import { useIntl, FormattedMessage } from 'react-intl';
-import '../styles/StudentHome.css';
+
 import { fetchClientStreak } from '../services/usersService';
 
 export default function StudentCalendar() {

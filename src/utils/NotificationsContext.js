@@ -1,15 +1,15 @@
 // NotificationContext.tsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getUserNotifications, markNotificationAsRead } from '../services/notificationsService';
-import { UserContext } from './UserContext';
-import { useToast } from './ToastContext';
+import { UserContext } from '../contexts/UserContext';
+import { useToast } from '../contexts/ToastContext';
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useContext(UserContext);
-  const showToast = useToast();
+  const { showToast } = useToast();
   useEffect(() => {
     // Cargar notificaciones al iniciar la aplicación
     // eslint-disable-next-line

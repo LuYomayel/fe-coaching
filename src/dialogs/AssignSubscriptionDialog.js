@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
-import { useToast } from '../utils/ToastContext';
-import { UserContext } from '../utils/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { UserContext } from '../contexts/UserContext';
 import { Dropdown } from 'primereact/dropdown';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { formatDateToApi, validateDates } from '../utils/UtilFunctions';
@@ -13,7 +13,7 @@ import { useIntl, FormattedMessage } from 'react-intl';
 const AssignSubscriptionDialog = ({ studentId, onClose }) => {
   const intl = useIntl();
   const { user, coach } = useContext(UserContext);
-  const showToast = useToast();
+  const { showToast } = useToast();
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -89,32 +89,36 @@ const AssignSubscriptionDialog = ({ studentId, onClose }) => {
   };
 
   return (
-    <div className="assign-subscription-dialog">
-      <div className="p-field">
-        <label htmlFor="startDate">
-          <FormattedMessage id="startDate" />
-        </label>
-        <Calendar
-          id="startDate"
-          locale={intl.locale}
-          dateFormat="dd/mm/yy"
-          value={startDate}
-          onChange={(e) => setStartDate(e.value)}
-          showIcon
-        />
-      </div>
-      <div className="p-field">
-        <label htmlFor="endDate">
-          <FormattedMessage id="endDate" />
-        </label>
-        <Calendar
-          id="endDate"
-          locale={intl.locale}
-          dateFormat="dd/mm/yy"
-          value={endDate}
-          onChange={(e) => setEndDate(e.value)}
-          showIcon
-        />
+    <div className="p-3">
+      <div className="flex flex-row gap-2">
+        <div className="p-field w-full">
+          <label htmlFor="startDate">
+            <FormattedMessage id="startDate" />
+          </label>
+          <Calendar
+            id="startDate"
+            locale={intl.locale}
+            dateFormat="dd/mm/yy"
+            value={startDate}
+            onChange={(e) => setStartDate(e.value)}
+            showIcon
+            className="w-full"
+          />
+        </div>
+        <div className="p-field w-full">
+          <label htmlFor="endDate">
+            <FormattedMessage id="endDate" />
+          </label>
+          <Calendar
+            id="endDate"
+            locale={intl.locale}
+            dateFormat="dd/mm/yy"
+            value={endDate}
+            onChange={(e) => setEndDate(e.value)}
+            showIcon
+            className="w-full"
+          />
+        </div>
       </div>
       <div className="p-field">
         <label htmlFor="coachPlan">
@@ -127,14 +131,18 @@ const AssignSubscriptionDialog = ({ studentId, onClose }) => {
           optionValue="id"
           value={selectedCoachPlan}
           onChange={(e) => setSelectedCoachPlan(e.value)}
+          className="w-full"
         />
       </div>
-      <Button
-        label={intl.formatMessage({ id: 'common.save' })}
-        icon="pi pi-check"
-        loading={loading}
-        onClick={assingSubscription}
-      />
+      <div className="flex justify-content-end">
+        <Button
+          label={intl.formatMessage({ id: 'common.save' })}
+          icon="pi pi-check"
+          loading={loading}
+          onClick={assingSubscription}
+          className=""
+        />
+      </div>
     </div>
   );
 };

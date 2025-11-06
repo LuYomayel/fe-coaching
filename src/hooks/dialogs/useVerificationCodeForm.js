@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useIntl } from 'react-intl';
 
-import { useToast } from '../../utils/ToastContext';
+import { useToast } from '../../contexts/ToastContext';
 
 export const useVerificationCodeForm = ({ email, onSuccess } = {}) => {
   const intl = useIntl();
-  const showToast = useToast();
+  const { showToast } = useToast();
 
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);

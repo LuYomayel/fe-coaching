@@ -7,11 +7,11 @@ import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { deleteClient, fetchClientsSubscribed, fetchCoachPlans } from '../services/usersService';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { useToast } from '../utils/ToastContext';
-import { UserContext } from '../utils/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { UserContext } from '../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
-import NewStudentDialog from '../dialogs/NewStudentDialog';
+import StudentDialog from '../dialogs/StudentDialog';
 import AssignSubscriptionDialog from '../dialogs/AssignSubscriptionDialog';
 import RegisterPaymentDialog from '../dialogs/RegisterPaymentDialog';
 import StudentDetailDialog from '../dialogs/StudentDetailDialog';
@@ -23,14 +23,13 @@ import { useIntl, FormattedMessage } from 'react-intl';
 import { Tooltip } from 'primereact/tooltip';
 
 import { Dropdown } from 'primereact/dropdown';
-import '../styles/Students.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function ManageStudentsPage() {
   const { user, coach } = useContext(UserContext);
   const [students, setStudents] = useState([]);
-  const showToast = useToast();
+  const { showToast } = useToast();
 
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isNewStudentDialogVisible, setIsNewStudentDialogVisible] = useState(false);
@@ -555,18 +554,12 @@ export default function ManageStudentsPage() {
       <div className="students-content">{renderStudentCards()}</div>
 
       {/* Diálogos */}
-      <Dialog
-        header={intl.formatMessage({ id: 'students.dialog.newStudent' })}
+
+      <StudentDialog
+        onClose={handleNewStudentDialogHide}
+        setRefreshKey={setRefreshKey}
         visible={isNewStudentDialogVisible}
-        onHide={handleNewStudentDialogHide}
-        draggable={false}
-        resizable={false}
-        dismissableMask
-        className="responsive-dialog"
-        style={{ width: '50vw' }}
-      >
-        <NewStudentDialog onClose={handleNewStudentDialogHide} setRefreshKey={setRefreshKey} />
-      </Dialog>
+      />
 
       <Dialog
         draggable={false}

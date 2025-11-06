@@ -5,8 +5,8 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { RadioButton } from 'primereact/radiobutton';
 import { Checkbox } from 'primereact/checkbox';
-import { useToast } from '../utils/ToastContext';
-import { UserContext } from '../utils/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { UserContext } from '../contexts/UserContext';
 import {
   assignWorkoutsToCycle,
   fetchAssignedWorkoutsForCycleDay,
@@ -16,11 +16,10 @@ import {
   verifyTrainingCycleDeletion
 } from '../services/workoutService';
 import { useIntl } from 'react-intl';
-import '../styles/AssignWorkoutToCycleDialog.css';
 
 const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, cycleOptions, actionType }) => {
   const intl = useIntl();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [assignments, setAssignments] = useState([{ workoutId: null, dayOfWeek: null }]);
   const [cycle, setCycle] = useState(-1);
@@ -393,6 +392,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
               placeholder={intl.formatMessage({
                 id: 'assignWorkoutToCycleDialog.selectCycle'
               })}
+              className="w-full"
             />
           </div>
         </div>
@@ -433,8 +433,8 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
         )}
 
         {actionType === 'unassign' && cycle !== -1 && unassignOption === 'day' && (
-          <div className="p-field grid mt-3">
-            <div className="col-6">
+          <div className="flex flex-row gap-2 mt-3">
+            <div className="p-field">
               <label>
                 {intl.formatMessage({
                   id: 'assignWorkoutToCycleDialog.dayOfWeek'
@@ -451,9 +451,10 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
                 placeholder={intl.formatMessage({
                   id: 'assignWorkoutToCycleDialog.selectDayOfWeek'
                 })}
+                className="w-full"
               />
             </div>
-            <div className="col-6">
+            <div className="p-field">
               <label>
                 {intl.formatMessage({
                   id: 'assignWorkoutToCycleDialog.selectWorkout'
@@ -471,6 +472,7 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
                   id: 'assignWorkoutToCycleDialog.selectWorkoutToUnassign'
                 })}
                 disabled={selectedDay === null}
+                className="w-full"
               />
             </div>
           </div>
@@ -483,8 +485,8 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
               title={`${intl.formatMessage({ id: 'assignWorkoutToCycleDialog.assignment' })} ${index + 1}`}
               className="mb-2"
             >
-              <div className="p-field grid">
-                <div className="col-6">
+              <div className="flex flex-row gap-2">
+                <div className="p-field w-full">
                   <Dropdown
                     value={assignment.workoutId}
                     options={workouts.map((workout) => ({
@@ -495,9 +497,10 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
                     placeholder={intl.formatMessage({
                       id: 'assignWorkoutToCycleDialog.selectWorkout'
                     })}
+                    className="w-full"
                   />
                 </div>
-                <div className="col-5">
+                <div className="p-field w-full">
                   <Dropdown
                     value={assignment.dayOfWeek}
                     options={daysOfWeek}
@@ -506,9 +509,10 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
                     placeholder={intl.formatMessage({
                       id: 'assignWorkoutToCycleDialog.selectDayOfWeek'
                     })}
+                    className="w-full"
                   />
                 </div>
-                <div className="col-1">
+                <div className="p-field">
                   <Button icon="pi pi-times" onClick={() => removeAssignment(index)} />
                 </div>
               </div>

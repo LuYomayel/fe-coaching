@@ -12,8 +12,8 @@ import {
 } from '../services/workoutService';
 import { useNavigate } from 'react-router-dom';
 import { getYouTubeThumbnail, extractYouTubeVideoId, formatDate } from '../utils/UtilFunctions';
-import { useToast } from '../utils/ToastContext';
-import { UserContext } from '../utils/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { UserContext } from '../contexts/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import VideoDialog from './VideoDialog';
@@ -26,7 +26,7 @@ export default function NewPlanDetail({ planId, setPlanDetailsVisible, setRefres
   const navigate = useNavigate();
   const { user, client } = useContext(UserContext);
   const { showConfirmationDialog } = useConfirmationDialog();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
   const [rpeMethods, setRpeMethods] = useState([]);
   const [workoutPlan, setWorkoutPlan] = useState({

@@ -3,13 +3,11 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../utils/UserContext';
+import { UserContext } from '../contexts/UserContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { fetchAmIWorkingOutToday, fetchClientStreak } from '../services/usersService';
 
 import NewPlanDetailHorizontal from '../dialogs/PlanDetails';
-
-import '../styles/StudentHome.css';
 
 export default function StudentHome() {
   const intl = useIntl();

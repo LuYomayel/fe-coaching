@@ -4,7 +4,7 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { useIntl } from 'react-intl';
-import { useToast } from '../utils/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import {
   createMercadoPagoPayment,
@@ -12,11 +12,11 @@ import {
   notifyBankTransfer,
   getCoachBankData
 } from '../services/mercadoPagoService';
-import { UserContext } from '../utils/UserContext';
+import { UserContext } from '../contexts/UserContext';
 
 export default function PaymentDialog({ visible, onHide, subscription, clientId, coachId, coachPlanId }) {
   const intl = useIntl();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const { client } = useContext(UserContext);
   const { setLoading } = useSpinner();
 

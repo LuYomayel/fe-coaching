@@ -11,15 +11,14 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { useIntl, FormattedMessage } from 'react-intl';
 
-import { UserContext } from '../utils/UserContext';
-import { useToast } from '../utils/ToastContext';
+import { UserContext } from '../contexts/UserContext';
+import { useToast } from '../contexts/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { fetchWorkoutInstance, submitFeedback } from '../services/workoutService';
 import FinishTrainingDialog from '../dialogs/FinishTrainingDialog';
 import VideoDialog from '../dialogs/VideoDialog';
 import { extractYouTubeVideoId, getYouTubeThumbnail } from '../utils/UtilFunctions';
 import RpeDropdownComponent from '../components/RpeDropdown';
-import '../styles/TrainingPlanStyle.css';
 
 export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshKey }) {
   const { planId } = useParams();
@@ -27,7 +26,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
   const { state } = useLocation();
   const { clientId } = state;
   const { user, client, coach } = useContext(UserContext);
-  const showToast = useToast();
+  const { showToast } = useToast();
   const { loading, setLoading } = useSpinner();
   const intl = useIntl();
 

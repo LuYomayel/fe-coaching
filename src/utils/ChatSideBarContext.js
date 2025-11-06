@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { UserContext } from './UserContext';
+import { UserContext } from '../contexts/UserContext';
 //import io from 'socket.io-client';
 //import { useToast } from './ToastContext';
 
@@ -20,7 +20,7 @@ export const ChatSidebarProvider = ({ children }) => {
   //const [socket, setSocket] = useState(null);
   // eslint-disable-next-line
   //const [isConnected, setIsConnected] = useState(false); // Estado de conexión del socket
-  //const showToast = useToast();
+  //const { showToast } = useToast();
   /*
   useEffect(() => {
     // Establecer conexión con el socket

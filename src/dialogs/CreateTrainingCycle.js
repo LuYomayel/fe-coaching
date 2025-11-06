@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { UserContext } from '../utils/UserContext';
-import { useToast } from '../utils/ToastContext';
+import { UserContext } from '../contexts/UserContext';
+import { useToast } from '../contexts/ToastContext';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
@@ -19,12 +19,11 @@ import {
 import { fetchCoachStudents } from '../services/usersService';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { TabPanel, TabView } from 'primereact/tabview';
-import '../styles/CreateTrainingCycle.css';
 import { formatDateToApi } from '../utils/UtilFunctions';
 const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey }) => {
   const { user, coach } = useContext(UserContext);
   const intl = useIntl();
-  const showToast = useToast();
+  const { showToast } = useToast();
   const [cycleName, setCycleName] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [durationInMonths, setDurationInMonths] = useState(null);
@@ -319,13 +318,18 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
   const renderTabPanelCycle = () => {
     return (
       <TabPanel header={intl.formatMessage({ id: 'createCycle.dialog.header' })}>
-        <div className="p-field">
-          <label htmlFor="cycleName">
-            <FormattedMessage id="createCycle.cycleName" />
-          </label>
-          <InputText id="cycleName" value={cycleName} onChange={(e) => setCycleName(e.target.value)} />
-        </div>
-        <div className="flex flex-row gap-2 w-full justify-content-between">
+        <div className="flex flex-row gap-2">
+          <div className="p-field">
+            <label htmlFor="cycleName">
+              <FormattedMessage id="createCycle.cycleName" />
+            </label>
+            <InputText
+              id="cycleName"
+              value={cycleName}
+              onChange={(e) => setCycleName(e.target.value)}
+              className="w-full"
+            />
+          </div>
           <div className="p-field">
             <label htmlFor="startDate">
               <FormattedMessage id="startDate" />
@@ -337,8 +341,11 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
               dateFormat="dd/mm/yy"
               onChange={(e) => setStartDate(e.value)}
               showIcon
+              className="w-full"
             />
           </div>
+        </div>
+        <div className="flex flex-row gap-2 w-full justify-content-between">
           <div className="p-field">
             <label htmlFor="durationInMonths">
               <FormattedMessage id="createCycle.durationInMonths" />
@@ -350,7 +357,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
               mode="decimal"
               min={1}
               max={12}
-              className={durationInWeeks ? 'p-inputtext-muted' : ''}
+              className={`${durationInWeeks ? 'p-inputtext-muted' : ''} w-full`}
             />
           </div>
           <div className="p-field">
@@ -364,7 +371,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
               mode="decimal"
               min={1}
               max={52}
-              className={durationInMonths ? 'p-inputtext-muted' : ''}
+              className={`${durationInMonths ? 'p-inputtext-muted' : ''} w-full`}
             />
           </div>
         </div>
@@ -413,6 +420,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
                   placeholder={intl.formatMessage({
                     id: 'assignWorkoutToCycleDialog.selectWorkout'
                   })}
+                  className="w-full"
                 />
               </div>
               <div className="col-5">
@@ -424,6 +432,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
                   placeholder={intl.formatMessage({
                     id: 'assignWorkoutToCycleDialog.selectDayOfWeek'
                   })}
+                  className="w-full"
                 />
               </div>
               <div className="col-1">
@@ -496,7 +505,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
               className="w-full"
             />
             {selectedCycleTemplate && (
-              <p className="mt-2 text-sm">
+              <p className="mt-2 text-sm w-full">
                 {selectedCycleTemplate.duration}{' '}
                 {selectedCycleTemplate.isDurationInMonths
                   ? intl.formatMessage({ id: 'common.months', defaultMessage: 'meses' })
