@@ -3,12 +3,13 @@ import { useUser } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api-client';
 
+export type PaymentFrequency = 'monthly' | 'weekly' | 'per_session';
+
 export type CoachPlanForm = {
   id?: number;
   name: string;
   price: number;
-  workoutsPerWeek: number;
-  includeMealPlan: boolean;
+  paymentFrequency: PaymentFrequency;
   coachId: number;
 };
 
@@ -21,8 +22,7 @@ export function useCoachPlanDialog(onSaved?: () => void) {
   const [form, setForm] = useState<CoachPlanForm>({
     name: '',
     price: 0,
-    workoutsPerWeek: 0,
-    includeMealPlan: false,
+    paymentFrequency: 'monthly',
     coachId: user?.id ?? 0
   });
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export function useCoachPlanDialog(onSaved?: () => void) {
   const openCreate = useCallback(() => {
     if (!user) return;
     setMode('create');
-    setForm({ name: '', price: 0, workoutsPerWeek: 0, includeMealPlan: false, coachId: user.id });
+    setForm({ name: '', price: 0, paymentFrequency: 'monthly', coachId: user.id });
     setVisible(true);
   }, [user]);
 
@@ -42,8 +42,7 @@ export function useCoachPlanDialog(onSaved?: () => void) {
         id: plan.id,
         name: plan.name,
         price: Number(plan.price) || 0,
-        workoutsPerWeek: plan.workoutsPerWeek,
-        includeMealPlan: !!plan.includeMealPlan,
+        paymentFrequency: plan.paymentFrequency || 'monthly',
         coachId: user.id
       });
       setVisible(true);
@@ -59,7 +58,7 @@ export function useCoachPlanDialog(onSaved?: () => void) {
 
   const save = useCallback(async () => {
     if (!user) return { success: false };
-    if (!form.name || form.price <= 0 || form.workoutsPerWeek <= 0) {
+    if (!form.name || form.price <= 0 || !form.paymentFrequency) {
       showToast('error', 'Error', 'Completa los campos obligatorios');
       return { success: false };
     }

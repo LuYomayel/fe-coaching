@@ -212,6 +212,7 @@ export const useCalendarTab = ({ clientId, clientData, refreshKey, setRefreshKey
     setSelectedClient(clientId);
     setActionType(action);
     setAssignCycleVisible(true);
+    console.log('handleOpenAssignCycle', action);
   };
 
   const openAssignCycleTemplateDialog = () => {

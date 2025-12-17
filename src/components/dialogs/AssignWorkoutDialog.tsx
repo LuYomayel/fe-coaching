@@ -2,6 +2,7 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { useIntl } from 'react-intl';
+import { IRpeMethod } from '../../types/rpe/rpe-method-assigned';
 
 interface AssignWorkoutDialogProps {
   visible: boolean;
@@ -10,6 +11,9 @@ interface AssignWorkoutDialogProps {
   selectedClient: any;
   setSelectedClient: (client: any) => void;
   students: any[];
+  rpeMethods: IRpeMethod[];
+  selectedRpeMethod: IRpeMethod | null;
+  setSelectedRpeMethod: (method: IRpeMethod | null) => void;
   onAssign: () => void;
 }
 
@@ -20,6 +24,9 @@ export function AssignWorkoutDialog({
   selectedClient,
   setSelectedClient,
   students,
+  rpeMethods,
+  selectedRpeMethod,
+  setSelectedRpeMethod,
   onAssign
 }: AssignWorkoutDialogProps) {
   const intl = useIntl();
@@ -55,6 +62,22 @@ export function AssignWorkoutDialog({
             onChange={(e) => setSelectedClient(e.value)}
             optionLabel="name"
             placeholder={intl.formatMessage({ id: 'coach.assign.selectClient' })}
+            className="w-full"
+          />
+        </div>
+        <div>
+          <label className="block mb-2">
+            {intl.formatMessage({ id: 'coach.assign.selectRpeMethod', defaultMessage: 'Método de Medición RPE' })}
+          </label>
+          <Dropdown
+            value={selectedRpeMethod}
+            options={rpeMethods}
+            onChange={(e) => setSelectedRpeMethod(e.value)}
+            optionLabel="name"
+            placeholder={intl.formatMessage({
+              id: 'coach.assign.selectRpeMethodPlaceholder',
+              defaultMessage: 'Seleccionar método RPE'
+            })}
             className="w-full"
           />
         </div>

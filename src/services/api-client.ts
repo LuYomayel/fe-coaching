@@ -328,10 +328,11 @@ export const api = {
       clientId: number;
       startDate: string;
       endDate: string;
+      rpeMethodId?: number;
     }) => apiClient.post<any>(`/workout/assign-cycle-template-to-client`, data),
 
-    assignWorkoutToClient: (clientId: number, workoutIds: number[]) =>
-      apiClient.post<any>(`/workout/assign-workout-to-client/${clientId}`, workoutIds),
+    assignWorkoutToClient: (clientId: number, workoutIds: number[], rpeMethodId?: number) =>
+      apiClient.post<any>(`/workout/assign-workout-to-client/${clientId}`, { workoutIds, rpeMethodId }),
 
     unassignWorkoutFromClient: (clientId: number, workoutIds: number[]) =>
       apiClient.delete<any>(`/workout/unassign-workout-from-client/${clientId}`, workoutIds)
@@ -343,7 +344,7 @@ export const api = {
     fetchCoachSubscriptionPlans: () => apiClient.get<any[]>('/subscription/coach-subscription-plans'),
     fetchCoachPlans: () => apiClient.get<ICoachPlan[]>(`/users/coach/coachPlan`),
     createOrUpdateCoachPlan: (
-      plan: { name: string; price: number; workoutsPerWeek: number; includeMealPlan: boolean; coachId: number },
+      plan: { name: string; price: number; paymentFrequency: 'monthly' | 'weekly' | 'per_session'; coachId: number },
       planId: number | undefined,
       mode: 'create' | 'edit'
     ) => {

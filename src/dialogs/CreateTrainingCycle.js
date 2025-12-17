@@ -7,6 +7,7 @@ import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
+import { Checkbox } from 'primereact/checkbox';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { InputNumber } from 'primereact/inputnumber';
 import {
@@ -18,6 +19,7 @@ import { useIntl, FormattedMessage } from 'react-intl';
 import { TabPanel, TabView } from 'primereact/tabview';
 import { formatDateToApi } from '../utils/UtilFunctions';
 import { api } from 'services/api-client';
+import { useRpeMethods } from 'hooks/coach/useRpeMethods';
 const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey }) => {
   const { user, coach } = useContext(UserContext);
   const intl = useIntl();
@@ -46,6 +48,19 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
   const [templateStartDate, setTemplateStartDate] = useState(null);
   const [templateEndDate, setTemplateEndDate] = useState(null);
 
+  // Estados para RPE methods
+  const { rpeMethods, defaultRpeMethod } = useRpeMethods();
+  const [globalRpeMethod, setGlobalRpeMethod] = useState(null);
+  const [useGlobalRpe, setUseGlobalRpe] = useState(true);
+  const [templateRpeMethod, setTemplateRpeMethod] = useState(null);
+
+  useEffect(() => {
+    if (defaultRpeMethod) {
+      setGlobalRpeMethod(defaultRpeMethod);
+      setTemplateRpeMethod(defaultRpeMethod);
+    }
+  }, [defaultRpeMethod]);
+
   const daysOfWeek = [
     { label: intl.formatMessage({ id: 'workoutTable.monday' }), value: 1 },
     { label: intl.formatMessage({ id: 'workoutTable.tuesday' }), value: 2 },
@@ -57,12 +72,15 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
   ];
 
   useEffect(() => {
-    setAssignments([{ workoutId: null, dayOfWeek: null }]);
+    setAssignments([{ workoutId: null, dayOfWeek: null, rpeMethodId: null }]);
     setSelectedDay(null);
     setAssignedWorkouts([]);
     setTemplateStartDate(null);
     setTemplateEndDate(null);
     setSelectedCycleTemplate(null);
+    setGlobalRpeMethod(null);
+    setUseGlobalRpe(true);
+    setTemplateRpeMethod(null);
   }, []);
 
   useEffect(() => {
@@ -186,7 +204,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
           id: 'assignWorkoutToCycleDialog.error.selectWorkoutAndDay'
         })
       );
-    setAssignments([...assignments, { workoutId: null, dayOfWeek: null }]);
+    setAssignments([...assignments, { workoutId: null, dayOfWeek: null, rpeMethodId: null }]);
   };
 
   const handleAssignmentChange = (index, field, value) => {
@@ -210,11 +228,19 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
   };
 
   const handleAction = async () => {
+    // Preparar assignments con RPE
+    const processedAssignments = assignments
+      .filter((assignment) => assignment.dayOfWeek !== null && assignment.workoutId !== null)
+      .map((assignment) => ({
+        ...assignment,
+        rpeMethodId: useGlobalRpe ? globalRpeMethod?.id : assignment.rpeMethodId
+      }));
+
     const body = {
       clientId: parseInt(clientId),
       createCycleDto: bodyCycle,
       assignWorkoutsToCycleDTO: {
-        assignments: assignments.filter((assignment) => assignment.dayOfWeek !== null && assignment.workoutId !== null)
+        assignments: processedAssignments
       }
     };
     if (body.assignWorkoutsToCycleDTO.assignments.length === 0)
@@ -270,6 +296,18 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
       return;
     }
 
+    if (!templateRpeMethod) {
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'error' }),
+        intl.formatMessage({
+          id: 'createCycle.error.selectRpeMethod',
+          defaultMessage: 'Por favor seleccione un método RPE.'
+        })
+      );
+      return;
+    }
+
     setLoading(true);
     const startDateNewDate = new Date(templateStartDate);
     const endDateNewDate = new Date(templateEndDate);
@@ -279,7 +317,8 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
         cycleTemplateId: selectedCycleTemplate.id,
         clientId: parseInt(clientId),
         startDate: formatDateToApi(startDateNewDate),
-        endDate: formatDateToApi(endDateNewDate)
+        endDate: formatDateToApi(endDateNewDate),
+        rpeMethodId: templateRpeMethod.id
       };
 
       await assignCycleTemplateToClient(payload);
@@ -397,6 +436,43 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
         })}
         disabled={activeIndex !== 1}
       >
+        <div className="field-checkbox mb-3 flex align-items-center">
+          <Checkbox
+            inputId="useGlobalRpe"
+            checked={useGlobalRpe}
+            onChange={(e) => setUseGlobalRpe(e.checked)}
+            className="mr-2"
+          />
+          <label htmlFor="useGlobalRpe" className="mb-0">
+            {intl.formatMessage({
+              id: 'createCycle.useGlobalRpe',
+              defaultMessage: 'Usar el mismo método RPE para todas las sesiones'
+            })}
+          </label>
+        </div>
+
+        {useGlobalRpe && (
+          <div className="field mb-3">
+            <label className="block mb-2">
+              {intl.formatMessage({
+                id: 'createCycle.globalRpeMethod',
+                defaultMessage: 'Método RPE para todas las sesiones'
+              })}
+            </label>
+            <Dropdown
+              value={globalRpeMethod}
+              options={rpeMethods}
+              onChange={(e) => setGlobalRpeMethod(e.value)}
+              optionLabel="name"
+              placeholder={intl.formatMessage({
+                id: 'createCycle.selectRpeMethod',
+                defaultMessage: 'Seleccionar método RPE'
+              })}
+              className="w-full"
+            />
+          </div>
+        )}
+
         {assignments.map((assignment, index) => (
           <Card
             key={index}
@@ -404,7 +480,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
             className="mb-2"
           >
             <div className="p-field grid">
-              <div className="col-6">
+              <div className={useGlobalRpe ? 'col-6' : 'col-4'}>
                 <Dropdown
                   value={assignment.workoutId}
                   options={workouts.map((workout) => ({
@@ -418,7 +494,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
                   className="w-full"
                 />
               </div>
-              <div className="col-5">
+              <div className={useGlobalRpe ? 'col-5' : 'col-3'}>
                 <Dropdown
                   value={assignment.dayOfWeek}
                   options={daysOfWeek}
@@ -430,6 +506,22 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
                   className="w-full"
                 />
               </div>
+              {!useGlobalRpe && (
+                <div className="col-4">
+                  <Dropdown
+                    value={assignment.rpeMethodId}
+                    options={rpeMethods}
+                    onChange={(e) => handleAssignmentChange(index, 'rpeMethodId', e.value?.id || e.value)}
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder={intl.formatMessage({
+                      id: 'createCycle.selectRpeMethod',
+                      defaultMessage: 'Método RPE'
+                    })}
+                    className="w-full"
+                  />
+                </div>
+              )}
               <div className="col-1">
                 <Button icon="pi pi-times" onClick={() => removeAssignment(index)} />
               </div>
@@ -511,6 +603,34 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
                   : selectedCycleTemplate.duration}{' '}
                 {intl.formatMessage({ id: 'common.weeks', defaultMessage: 'semanas' })})
               </p>
+            )}
+          </div>
+
+          <div className="field">
+            <label className="block mb-2">
+              {intl.formatMessage({
+                id: 'createCycle.selectRpeMethod',
+                defaultMessage: 'Método de Medición RPE'
+              })}
+            </label>
+            <Dropdown
+              value={templateRpeMethod}
+              options={rpeMethods}
+              onChange={(e) => setTemplateRpeMethod(e.value)}
+              optionLabel="name"
+              placeholder={intl.formatMessage({
+                id: 'createCycle.selectRpeMethodPlaceholder',
+                defaultMessage: 'Seleccionar método RPE'
+              })}
+              className="w-full"
+            />
+            {!templateRpeMethod && (
+              <small className="p-error">
+                {intl.formatMessage({
+                  id: 'createCycle.error.selectRpeMethod',
+                  defaultMessage: 'Por favor selecciona un método RPE'
+                })}
+              </small>
             )}
           </div>
 

@@ -17,6 +17,9 @@ export function TrainingSessionsTab() {
     setSelectedWorkouts,
     selectedClient,
     setSelectedClient,
+    selectedRpeMethod,
+    setSelectedRpeMethod,
+    rpeMethods,
     isDialogVisible,
     setDialogVisible,
     students,
@@ -150,6 +153,9 @@ export function TrainingSessionsTab() {
         selectedClient={selectedClient}
         setSelectedClient={setSelectedClient}
         students={students}
+        rpeMethods={rpeMethods}
+        selectedRpeMethod={selectedRpeMethod}
+        setSelectedRpeMethod={setSelectedRpeMethod}
         onAssign={handleAssignToClient}
       />
     </>

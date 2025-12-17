@@ -233,7 +233,7 @@ const messages = {
   'coach.biography': 'Biografía',
 
   'coach.tabs.workouts': 'Entrenamientos',
-  'coach.tabs.plans': 'Planes',
+  'coach.tabs.plans': 'Mis Servicios',
   'coach.tabs.exercises': 'Ejercicios',
   'coach.tabs.subscription': 'Planes de Suscripción',
   'coach.tabs.rpe': 'Medición de Carga Subjetiva',
@@ -1089,8 +1089,11 @@ const messages = {
   'coach.plan.edit': 'Editar Plan de Entrenador',
   'coach.plan.name': 'Nombre del Plan',
   'coach.plan.price': 'Precio',
-  'coach.plan.workoutsPerWeek': 'Entrenamientos por Semana',
-  'coach.plan.includeMealPlan': 'Incluir Plan de Alimentación',
+  'coach.plan.paymentFrequency': 'Frecuencia de Pago',
+  'coach.plan.paymentFrequency.placeholder': 'Seleccionar frecuencia de pago',
+  'coach.plan.paymentFrequency.monthly': 'Mensual',
+  'coach.plan.paymentFrequency.weekly': 'Semanal',
+  'coach.plan.paymentFrequency.perSession': 'Por Sesión',
   'coach.plan.description':
     'Aquí puedes crear y gestionar tanto planes de entrenamiento generales como planes personalizados asignados a tus clientes/alumnos.',
   'coach.assign.success': 'Entrenamiento asignado exitosamente',
@@ -1108,6 +1111,10 @@ const messages = {
   'coach.assign.dialog.selectedCycle.weeks': 'Semanas',
   'coach.assign.dialog.selectedCycle.days': 'Días',
   'coach.assign.dialog.selectedCycle.workouts': 'Entrenamientos',
+  'coach.assign.selectRpeMethod': 'Método de Medición RPE',
+  'coach.assign.selectRpeMethodPlaceholder': 'Seleccionar método RPE',
+  'coach.assign.error.rpeRequired': 'Debes seleccionar un método RPE',
+  'coach.assign.error.detail': 'Por favor selecciona un cliente y al menos un entrenamiento',
 
   // RPE Method
 
@@ -1173,6 +1180,11 @@ const messages = {
   'createCycle.button.create.confirm':
     '¿Estás seguro de que deseas crear este ciclo sin ningún entrenamiento asignado? Puedes agregar entrenamientos asignados más tarde.',
   'createCycle.fromTemplate': 'Desde Plantilla',
+  'createCycle.useGlobalRpe': 'Usar el mismo método RPE para todas las sesiones',
+  'createCycle.globalRpeMethod': 'Método RPE para todas las sesiones',
+  'createCycle.selectRpeMethod': 'Método de Medición RPE',
+  'createCycle.selectRpeMethodPlaceholder': 'Seleccionar método RPE',
+  'createCycle.error.selectRpeMethod': 'Por favor selecciona un método RPE',
   'error.fetchingStudents': 'Error al obtener estudiantes',
   'success.cycleCreated': '¡Ciclo de entrenamiento creado exitosamente!',
   'error.allFieldsRequired': 'Todos los campos son obligatorios',
@@ -1512,6 +1524,9 @@ const messages = {
   'assignWorkout.selectDatePlaceholder': 'Seleccionar una fecha',
   'assignWorkout.selectTime': 'Seleccionar Hora',
   'assignWorkout.selectTimePlaceholder': 'Seleccionar una hora',
+  'assignWorkout.selectRpeMethod': 'Método de Medición RPE',
+  'assignWorkout.selectRpeMethodPlaceholder': 'Seleccionar método RPE',
+  'assignWorkout.error.rpeRequired': 'Por favor selecciona un método RPE',
   'assignWorkout.selectLocation': 'Seleccionar Ubicación',
   'assignWorkout.selectLocationPlaceholder': 'Seleccionar una ubicación',
   'assignWorkout.selectTrainingType': 'Seleccionar Tipo de Entrenamiento',

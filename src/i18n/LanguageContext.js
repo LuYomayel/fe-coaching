@@ -12,19 +12,19 @@ const messages = {
 const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
-  const [locale, setLocale] = useState(getBrowserLanguage());
+  const [locale, setLocale] = useState('es'); // Por defecto: español
   useEffect(() => {
     addLocale('es', esLocale);
   }, []);
 
   function getBrowserLanguage() {
     const browserLang = navigator.language.split(/[-_]/)[0];
-    return messages[browserLang] ? browserLang : 'en';
+    return messages[browserLang] ? browserLang : 'es'; // Por defecto: español
   }
 
   const getSavedLocale = () => {
     const savedLocale = localStorage.getItem('locale');
-    return savedLocale ? savedLocale : 'en';
+    return savedLocale ? savedLocale : 'es'; // Por defecto: español
   };
 
   const switchLanguage = (newLocale) => {
@@ -35,6 +35,9 @@ export const LanguageProvider = ({ children }) => {
     const savedLocale = getSavedLocale();
     if (savedLocale && messages[savedLocale]) {
       setLocale(savedLocale);
+    } else {
+      // Si no hay locale guardado, usar español por defecto
+      setLocale('es');
     }
   }, []);
 

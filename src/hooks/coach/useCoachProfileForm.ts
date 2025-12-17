@@ -12,12 +12,12 @@ import { ISubscriptionPlan } from '../../types/models';
 import { ZodError, ZodSchema } from 'zod';
 
 export const trainingTypeOptions = [
-  { label: 'Strength Training', value: 'strength' },
+  { label: 'Entrenamiento de Fuerza', value: 'strength' },
   { label: 'Cardio', value: 'cardio' },
-  { label: 'Calisthenics', value: 'calisthenics' },
+  { label: 'Calistenia', value: 'calisthenics' },
   { label: 'Cross Fit', value: 'cross fit' },
-  { label: 'General Fitness', value: 'general fitness' },
-  { label: 'Conditioning', value: 'conditioning' }
+  { label: 'Fitness General', value: 'general fitness' },
+  { label: 'Condicionamiento', value: 'conditioning' }
 ];
 
 const initialValues = {

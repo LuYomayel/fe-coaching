@@ -58,17 +58,19 @@ export function CoachPlansTab() {
                 </div>
                 <div className="flex flex-column gap-2 mb-3">
                   <div className="flex align-items-center gap-2 text-600">
-                    <i className="pi pi-calendar"></i>
+                    <i className="pi pi-credit-card"></i>
                     <span>
-                      {intl.formatMessage({ id: 'coach.workoutsPerWeek' })}: <strong>{plan.workoutsPerWeek}</strong>
+                      {intl.formatMessage({ id: 'coach.plan.paymentFrequency' })}:{' '}
+                      <strong>
+                        {plan.paymentFrequency === 'monthly' &&
+                          intl.formatMessage({ id: 'coach.plan.paymentFrequency.monthly' })}
+                        {plan.paymentFrequency === 'weekly' &&
+                          intl.formatMessage({ id: 'coach.plan.paymentFrequency.weekly' })}
+                        {plan.paymentFrequency === 'per_session' &&
+                          intl.formatMessage({ id: 'coach.plan.paymentFrequency.perSession' })}
+                      </strong>
                     </span>
                   </div>
-                  {plan.includeMealPlan && (
-                    <div className="flex align-items-center gap-2 text-green-600">
-                      <i className="pi pi-check-circle"></i>
-                      <span>{intl.formatMessage({ id: 'coach.includeMealPlan' })}</span>
-                    </div>
-                  )}
                   <div className="flex align-items-center gap-2 text-600">
                     <i className="pi pi-clock"></i>
                     <span>
@@ -102,12 +104,6 @@ export function CoachPlansTab() {
               <div className="flex flex-column align-items-center justify-content-center p-5 text-center">
                 <i className="pi pi-info-circle text-5xl mb-3 text-500"></i>
                 <p className="text-600 mb-3">{intl.formatMessage({ id: 'coach.noPlans' })}</p>
-                <Button
-                  label={intl.formatMessage({ id: 'coach.createFirstPlan' })}
-                  icon="pi pi-plus-circle"
-                  onClick={() => dialog.openCreate()}
-                  className="p-button-outlined"
-                />
               </div>
             </div>
           )}

@@ -270,8 +270,8 @@ export default function ManageStudentsPage() {
               <div key={student.id} className="col-12 md:col-6 xl:col-4 p-2">
                 <div className="student-card border-1 border-round surface-card shadow-2 p-0 h-full">
                   {/* Header de la tarjeta */}
-                  <div className="student-card-header p-3 border-bottom-1 surface-border flex align-items-center">
-                    <div className="profile-image border-circle overflow-hidden flex-shrink-0 mr-3 position-relative">
+                  <div className="student-card-header p-3 border-bottom-1 surface-border flex flex-column md:flex-row align-items-start md:align-items-center gap-3">
+                    <div className="profile-image border-circle overflow-hidden flex-shrink-0 position-relative">
                       <img
                         src={student.avatar || 'defaultAvatar.png'}
                         alt={student.name}
@@ -279,7 +279,7 @@ export default function ManageStudentsPage() {
                           e.target.src =
                             'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg';
                         }}
-                        className="w-4rem h-4rem"
+                        className="w-4rem h-4rem md:w-5rem md:h-5rem"
                       />
                       {!isVerified && (
                         <div className="verification-indicator">
@@ -287,11 +287,13 @@ export default function ManageStudentsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex-grow-1">
-                      <h3 className="text-lg font-semibold m-0">{student.name}</h3>
-                      <p className="text-color-secondary mb-0">{student.user?.email}</p>
+                    <div className="flex-grow-1 min-w-0">
+                      <h3 className="text-lg font-semibold m-0 text-ellipsis white-space-nowrap overflow-hidden md:overflow-visible md:whitespace-normal">
+                        {student.name}
+                      </h3>
+                      <p className="text-color-secondary mb-0 break-all md:break-normal">{student.user?.email}</p>
                     </div>
-                    <div className="status-indicators flex flex-column align-items-center gap-2">
+                    <div className="status-indicators flex flex-row md:flex-column align-items-start md:align-items-center gap-2 flex-wrap">
                       {student.user?.subscription && (
                         <span
                           className={`status-badge border-round-2xl py-1 px-2 text-sm font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}
@@ -320,9 +322,11 @@ export default function ManageStudentsPage() {
                   {/* Cuerpo de la tarjeta con información clave */}
                   <div className="student-card-body p-3">
                     <div className="mb-2 flex align-items-center">
-                      <i className="pi pi-flag text-primary mr-2"></i>
-                      <span className="font-medium mr-1">{intl.formatMessage({ id: 'students.fitnessGoal' })}:</span>
-                      <span className="text-sm">{student.fitnessGoal || 'No definido'}</span>
+                      <i className="pi pi-flag text-primary mr-2 flex-shrink-0"></i>
+                      <span className="font-medium mr-1 flex-shrink-0">
+                        {intl.formatMessage({ id: 'students.fitnessGoal' })}:
+                      </span>
+                      <span className="text-sm break-words">{student.fitnessGoal || 'No definido'}</span>
                     </div>
 
                     {student.user?.subscription && (
@@ -369,10 +373,12 @@ export default function ManageStudentsPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="mb-2 flex align-items-center">
-                          <i className="pi pi-credit-card text-primary mr-2"></i>
-                          <span className="font-medium mr-1">{intl.formatMessage({ id: 'students.table.plan' })}:</span>
-                          <span className="text-sm plan-chip border-round-sm py-1 px-2 bg-primary-50 text-primary-700">
+                        <div className="mb-2 flex align-items-center flex-wrap gap-1">
+                          <i className="pi pi-credit-card text-primary mr-2 flex-shrink-0"></i>
+                          <span className="font-medium mr-1 flex-shrink-0">
+                            {intl.formatMessage({ id: 'students.table.plan' })}:
+                          </span>
+                          <span className="text-sm plan-chip border-round-sm py-1 px-2 bg-primary-50 text-primary-700 break-all md:break-normal">
                             {student.user.subscription.clientSubscription
                               ? student.user.subscription.clientSubscription.coachPlan.name
                               : 'N/A'}
@@ -383,8 +389,8 @@ export default function ManageStudentsPage() {
                   </div>
 
                   {/* Footer con botones de acción */}
-                  <div className="student-card-footer p-3 pt-0 flex flex-wrap justify-content-between align-items-center">
-                    <div className="action-buttons flex gap-2">
+                  <div className="student-card-footer p-3 pt-0 flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div className="action-buttons flex gap-2 flex-wrap">
                       <Button
                         icon="pi pi-user"
                         tooltip={intl.formatMessage({ id: 'students.viewProfile' })}

@@ -2,9 +2,9 @@ import { ComponentType } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import CoachProfileForm from '../pages/CoachProfileForm';
-import NotSubscribed from '../components/NotSubscribed';
+//import NotSubscribed from '../components/NotSubscribed';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { ESubscriptionStatus } from 'types/enums/subscription-status';
+//import { ESubscriptionStatus } from 'types/enums/subscription-status';
 
 const PrivateRoute = ({
   element: Component,
@@ -14,7 +14,7 @@ const PrivateRoute = ({
   element: ComponentType;
   requiredType: 'coach' | 'client';
 }) => {
-  const { user, coach, client, isInitialized } = useUser();
+  const { user, coach, isInitialized } = useUser();
   const { isLoading } = useSpinner();
 
   // Si el contexto no está inicializado o está cargando, mostramos nada
@@ -38,9 +38,9 @@ const PrivateRoute = ({
   }
 
   // Si es cliente y no está suscrito
-  if (user.userType === 'client' && client?.user?.subscription?.status === ESubscriptionStatus.INACTIVE) {
-    return <NotSubscribed />;
-  }
+  //if (user.userType === 'client' && client?.user?.subscription?.status === ESubscriptionStatus.INACTIVE) {
+  //return <NotSubscribed />;
+  //}
 
   // Si todo está bien, renderizamos el componente
   return <Component {...rest} />;

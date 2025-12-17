@@ -1,7 +1,7 @@
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
-import { Checkbox } from 'primereact/checkbox';
+import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { useIntl } from 'react-intl';
 import { CoachPlanForm } from '../../hooks/coach/useCoachPlanDialog';
@@ -18,6 +18,12 @@ interface Props {
 
 export function CoachPlanDialog({ visible, loading, mode, form, onHide, onChange, onSave }: Props) {
   const intl = useIntl();
+
+  const paymentFrequencyOptions = [
+    { label: intl.formatMessage({ id: 'coach.plan.paymentFrequency.monthly' }), value: 'monthly' },
+    { label: intl.formatMessage({ id: 'coach.plan.paymentFrequency.weekly' }), value: 'weekly' },
+    { label: intl.formatMessage({ id: 'coach.plan.paymentFrequency.perSession' }), value: 'per_session' }
+  ];
 
   return (
     <Dialog
@@ -59,20 +65,14 @@ export function CoachPlanDialog({ visible, loading, mode, form, onHide, onChange
           <InputNumber id="price" value={form.price} onValueChange={(e) => onChange('price', Number(e.value) || 0)} />
         </div>
         <div className="p-field">
-          <label htmlFor="workoutsPerWeek">{intl.formatMessage({ id: 'coach.plan.workoutsPerWeek' })}</label>
-          <InputNumber
-            id="workoutsPerWeek"
-            value={form.workoutsPerWeek}
-            onValueChange={(e) => onChange('workoutsPerWeek', Number(e.value) || 0)}
+          <label htmlFor="paymentFrequency">{intl.formatMessage({ id: 'coach.plan.paymentFrequency' })}</label>
+          <Dropdown
+            id="paymentFrequency"
+            value={form.paymentFrequency}
+            options={paymentFrequencyOptions}
+            onChange={(e) => onChange('paymentFrequency', e.value)}
+            placeholder={intl.formatMessage({ id: 'coach.plan.paymentFrequency.placeholder' })}
           />
-        </div>
-        <div className="p-field-checkbox">
-          <Checkbox
-            inputId="includeMealPlan"
-            checked={form.includeMealPlan}
-            onChange={(e) => onChange('includeMealPlan', !!e.checked)}
-          />
-          <label htmlFor="includeMealPlan">{intl.formatMessage({ id: 'coach.plan.includeMealPlan' })}</label>
         </div>
       </div>
     </Dialog>

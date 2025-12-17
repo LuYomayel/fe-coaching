@@ -70,11 +70,13 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
       command: () => navigate('/coach/plans'),
       visible: user?.userType === 'coach'
     },
+    /*
     {
       label: intl.formatMessage({ id: 'header.settings' }),
       icon: 'pi pi-cog',
       command: () => navigate('/settings')
     },
+    */
     {
       label: intl.formatMessage({ id: 'header.logout' }),
       icon: 'pi pi-power-off',

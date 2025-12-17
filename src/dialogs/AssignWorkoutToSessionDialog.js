@@ -13,14 +13,18 @@ import { FormattedMessage } from 'react-intl';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { contactMethodOptions, sessionModeOptions } from '../types/coach/dropdown-options';
 import { api } from 'services/api-client';
+import { useRpeMethods } from '../hooks/coach/useRpeMethods';
+
 const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey, selectedDate }) => {
   const { showToast } = useToast();
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [selectedRpeMethod, setSelectedRpeMethod] = useState(null);
   const [loading, setLoading] = useState(false);
   const { coach } = useContext(UserContext);
   const intl = useIntl();
   const navigate = useNavigate();
+  const { rpeMethods, defaultRpeMethod } = useRpeMethods();
 
   const [sessionMode, setSessionMode] = useState(null);
   const [location, setLocation] = useState('');
@@ -29,13 +33,20 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   const [meetingLink, setMeetingLink] = useState('');
 
   useEffect(() => {
+    if (defaultRpeMethod) {
+      setSelectedRpeMethod(defaultRpeMethod);
+    }
+  }, [defaultRpeMethod]);
+
+  useEffect(() => {
     setSelectedWorkout(null);
     setSessionMode(null);
     setLocation('');
     setContactMethod('');
     setSessionTime(null);
     setMeetingLink('');
-  }, []);
+    setSelectedRpeMethod(defaultRpeMethod);
+  }, [visible, defaultRpeMethod]);
 
   useEffect(() => {
     const loadWorkouts = async () => {
@@ -84,6 +95,18 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       return;
     }
 
+    if (!selectedRpeMethod) {
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'error' }),
+        intl.formatMessage({
+          id: 'assignWorkout.error.rpeRequired',
+          defaultMessage: 'Por favor selecciona un método RPE'
+        })
+      );
+      return;
+    }
+
     const body = {
       clientId,
       workoutId: selectedWorkout,
@@ -96,7 +119,8 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
         ? `${sessionTime.getHours().toString().padStart(2, '0')}:${sessionTime.getMinutes().toString().padStart(2, '0')}`
         : null,
       sessionDate: selectedDate,
-      notes: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? meetingLink : undefined
+      notes: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? meetingLink : undefined,
+      rpeMethodId: selectedRpeMethod.id
     };
 
     try {
@@ -141,6 +165,26 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
           optionLabel="planName"
           optionValue="id"
           placeholder={intl.formatMessage({ id: 'assignWorkout.selectWorkoutPlaceholder' })}
+        />
+      </div>
+
+      <div className="field">
+        <label htmlFor="rpeMethod">
+          {intl.formatMessage({
+            id: 'assignWorkout.selectRpeMethod',
+            defaultMessage: 'Método de Medición RPE'
+          })}
+        </label>
+        <Dropdown
+          id="rpeMethod"
+          value={selectedRpeMethod}
+          options={rpeMethods}
+          onChange={(e) => setSelectedRpeMethod(e.value)}
+          optionLabel="name"
+          placeholder={intl.formatMessage({
+            id: 'assignWorkout.selectRpeMethodPlaceholder',
+            defaultMessage: 'Seleccionar método RPE'
+          })}
         />
       </div>
 

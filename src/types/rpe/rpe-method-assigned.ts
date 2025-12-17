@@ -8,4 +8,5 @@ export interface IRpeMethod {
   valuesMeta?: Array<{ value: number; color: string; emoji?: string }>;
   createdBy: IUser;
   createdAt: Date;
+  isDefault: boolean;
 }

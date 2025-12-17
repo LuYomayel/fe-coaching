@@ -6,16 +6,21 @@ import { useSpinner } from '../../utils/GlobalSpinner';
 import { useConfirmationDialog } from '../../utils/ConfirmationDialogContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api-client';
+import { useRpeMethods } from './useRpeMethods';
+import { IRpeMethod } from '../../types/rpe/rpe-method-assigned';
 
 export function useTrainingSessions() {
   const [workouts, setWorkouts] = useState<any[]>([]);
   const [selectedWorkouts, setSelectedWorkouts] = useState<any[]>([]);
   const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [selectedRpeMethod, setSelectedRpeMethod] = useState<IRpeMethod | null>(null);
   const [isDialogVisible, setDialogVisible] = useState(false);
   const [students, setStudents] = useState<any[]>([]);
   const [filterOption, setFilterOption] = useState('all');
   const [filteredWorkouts, setFilteredWorkouts] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const { rpeMethods, defaultRpeMethod } = useRpeMethods();
 
   const intl = useIntl();
   const { setLoading } = useSpinner();
@@ -40,6 +45,12 @@ export function useTrainingSessions() {
     loadStudents();
     // eslint-disable-next-line
   }, [refreshKey, user]);
+
+  useEffect(() => {
+    if (defaultRpeMethod) {
+      setSelectedRpeMethod(defaultRpeMethod);
+    }
+  }, [defaultRpeMethod]);
 
   useEffect(() => {
     const filterWorkouts = () => {
@@ -158,14 +169,28 @@ export function useTrainingSessions() {
         return;
       }
 
+      if (!selectedRpeMethod) {
+        showToast(
+          'error',
+          intl.formatMessage({ id: 'coach.assign.error' }),
+          intl.formatMessage({
+            id: 'coach.assign.error.rpeRequired',
+            defaultMessage: 'Debes seleccionar un método RPE'
+          })
+        );
+        return;
+      }
+
       await api.workout.assignWorkoutToClient(
         selectedClient.id,
-        selectedWorkouts.map((workout) => workout.id)
+        selectedWorkouts.map((workout) => workout.id),
+        selectedRpeMethod.id
       );
 
       setDialogVisible(false);
       setSelectedWorkouts([]);
       setSelectedClient(null);
+      setSelectedRpeMethod(defaultRpeMethod);
       setRefreshKey((prev) => prev + 1);
     } catch (error: any) {
       console.error('Error assigning workout to client:', error);
@@ -192,6 +217,9 @@ export function useTrainingSessions() {
     setSelectedWorkouts,
     selectedClient,
     setSelectedClient,
+    selectedRpeMethod,
+    setSelectedRpeMethod,
+    rpeMethods,
     isDialogVisible,
     setDialogVisible,
     students,
