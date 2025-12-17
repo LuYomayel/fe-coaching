@@ -3,6 +3,7 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Checkbox } from 'primereact/checkbox';
+import { Accordion, AccordionTab } from 'primereact/accordion';
 import { IPlanExercise, IPlanGroup } from '../types/workout/plan-state';
 
 interface SetConfigDialogProps {
@@ -69,8 +70,10 @@ export const SetConfigDialog: React.FC<SetConfigDialogProps> = ({
 
             {selectedExercise.setConfiguration.map((set, index) => (
               <div key={index} className="mb-3 p-3 border-1 surface-border border-round">
-                <div className="font-semibold mb-2">Set {set.setNumber}</div>
-                <div className="grid">
+                <div className="font-semibold mb-3">Set {set.setNumber}</div>
+
+                {/* Propiedades principales siempre visibles */}
+                <div className="grid mb-2">
                   <div className="col-4">
                     <label className="block text-xs mb-1">Repeticiones</label>
                     <InputText
@@ -110,57 +113,100 @@ export const SetConfigDialog: React.FC<SetConfigDialogProps> = ({
                       placeholder="30"
                     />
                   </div>
-                  <div className="col-4">
-                    <label className="block text-xs mb-1">Descanso (seg)</label>
-                    <InputText
-                      className="w-full p-inputtext-sm"
-                      value={set.restInterval || ''}
-                      onChange={(e) =>
-                        updateSetConfiguration(
-                          selectedGroup.id,
-                          selectedExercise.id,
-                          index,
-                          'restInterval',
-                          e.target.value
-                        )
-                      }
-                      placeholder="60"
-                    />
-                  </div>
-                  <div className="col-4">
-                    <label className="block text-xs mb-1">Tempo</label>
-                    <InputText
-                      className="w-full p-inputtext-sm"
-                      value={set.tempo || ''}
-                      onChange={(e) =>
-                        updateSetConfiguration(selectedGroup.id, selectedExercise.id, index, 'tempo', e.target.value)
-                      }
-                      placeholder="2-0-2-0"
-                    />
-                  </div>
-                  <div className="col-4">
-                    <label className="block text-xs mb-1">Distancia (m)</label>
-                    <InputText
-                      className="w-full p-inputtext-sm"
-                      value={set.distance || ''}
-                      onChange={(e) =>
-                        updateSetConfiguration(selectedGroup.id, selectedExercise.id, index, 'distance', e.target.value)
-                      }
-                      placeholder="100"
-                    />
-                  </div>
-                  <div className="col-12">
-                    <label className="block text-xs mb-1">Notas</label>
-                    <InputText
-                      className="w-full p-inputtext-sm"
-                      value={set.notes || ''}
-                      onChange={(e) =>
-                        updateSetConfiguration(selectedGroup.id, selectedExercise.id, index, 'notes', e.target.value)
-                      }
-                      placeholder="Observaciones adicionales"
-                    />
-                  </div>
                 </div>
+
+                {/* Propiedades adicionales en Accordion */}
+                <Accordion>
+                  <AccordionTab header="Mostrar más propiedades">
+                    <div className="grid">
+                      <div className="col-6">
+                        <label className="block text-xs mb-1">Descanso (seg)</label>
+                        <InputText
+                          className="w-full p-inputtext-sm"
+                          value={set.restInterval || ''}
+                          onChange={(e) =>
+                            updateSetConfiguration(
+                              selectedGroup.id,
+                              selectedExercise.id,
+                              index,
+                              'restInterval',
+                              e.target.value
+                            )
+                          }
+                          placeholder="60"
+                        />
+                      </div>
+                      <div className="col-6">
+                        <label className="block text-xs mb-1">Tempo</label>
+                        <InputText
+                          className="w-full p-inputtext-sm"
+                          value={set.tempo || ''}
+                          onChange={(e) =>
+                            updateSetConfiguration(
+                              selectedGroup.id,
+                              selectedExercise.id,
+                              index,
+                              'tempo',
+                              e.target.value
+                            )
+                          }
+                          placeholder="2-0-2-0"
+                        />
+                      </div>
+                      <div className="col-6">
+                        <label className="block text-xs mb-1">Distancia (m)</label>
+                        <InputText
+                          className="w-full p-inputtext-sm"
+                          value={set.distance || ''}
+                          onChange={(e) =>
+                            updateSetConfiguration(
+                              selectedGroup.id,
+                              selectedExercise.id,
+                              index,
+                              'distance',
+                              e.target.value
+                            )
+                          }
+                          placeholder="100"
+                        />
+                      </div>
+                      <div className="col-6">
+                        <label className="block text-xs mb-1">Dificultad</label>
+                        <InputText
+                          className="w-full p-inputtext-sm"
+                          value={set.difficulty || ''}
+                          onChange={(e) =>
+                            updateSetConfiguration(
+                              selectedGroup.id,
+                              selectedExercise.id,
+                              index,
+                              'difficulty',
+                              e.target.value
+                            )
+                          }
+                          placeholder="Media"
+                        />
+                      </div>
+                      <div className="col-12">
+                        <label className="block text-xs mb-1">Notas</label>
+                        <InputText
+                          className="w-full p-inputtext-sm"
+                          value={set.notes || ''}
+                          onChange={(e) =>
+                            updateSetConfiguration(
+                              selectedGroup.id,
+                              selectedExercise.id,
+                              index,
+                              'notes',
+                              e.target.value
+                            )
+                          }
+                          placeholder="Observaciones adicionales"
+                        />
+                      </div>
+                    </div>
+                  </AccordionTab>
+                </Accordion>
               </div>
             ))}
           </div>

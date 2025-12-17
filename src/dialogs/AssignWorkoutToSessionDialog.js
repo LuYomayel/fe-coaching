@@ -6,17 +6,13 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { useToast } from '../contexts/ToastContext';
 import { UserContext } from '../contexts/UserContext';
-import {
-  assignSession,
-  assignTrainingSessionToClient,
-  findAllWorkoutTemplatesByCoachId
-} from '../services/workoutService';
-import { formatDateToApi } from '../utils/UtilFunctions';
+import { assignSession, assignTrainingSessionToClient } from '../services/workoutService';
 import { useIntl } from 'react-intl';
 import { useNavigate } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { contactMethodOptions, trainingTypeOptions } from '../types/coach/dropdown-options';
+import { contactMethodOptions, sessionModeOptions } from '../types/coach/dropdown-options';
+import { api } from 'services/api-client';
 const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, setRefreshKey, selectedDate }) => {
   const { showToast } = useToast();
   const [workouts, setWorkouts] = useState([]);
@@ -26,7 +22,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   const intl = useIntl();
   const navigate = useNavigate();
 
-  const [trainingType, setTrainingType] = useState(null);
+  const [sessionMode, setSessionMode] = useState(null);
   const [location, setLocation] = useState('');
   const [contactMethod, setContactMethod] = useState('');
   const [sessionTime, setSessionTime] = useState(null);
@@ -34,7 +30,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
 
   useEffect(() => {
     setSelectedWorkout(null);
-    setTrainingType(null);
+    setSessionMode(null);
     setLocation('');
     setContactMethod('');
     setSessionTime(null);
@@ -44,7 +40,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
   useEffect(() => {
     const loadWorkouts = async () => {
       try {
-        const { data } = await findAllWorkoutTemplatesByCoachId(coach.id);
+        const { data } = await api.workout.findAllWorkoutTemplatesByCoachId();
         setWorkouts(data);
       } catch (error) {
         showToast('error', 'Error', error.message);
@@ -60,12 +56,12 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       return;
     }
 
-    if (!trainingType) {
+    if (!sessionMode) {
       showToast('error', 'Error', 'Por favor selecciona un tipo de entrenamiento');
       return;
     }
 
-    if ((trainingType === 'presencial' || trainingType === 'hibrido') && !location) {
+    if ((sessionMode === 'presencial' || sessionMode === 'hibrido') && !location) {
       showToast(
         'error',
         intl.formatMessage({ id: 'error' }),
@@ -74,7 +70,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       return;
     }
 
-    if ((trainingType === 'virtual_sincronico' || trainingType === 'hibrido') && !contactMethod) {
+    if ((sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido') && !contactMethod) {
       showToast(
         'error',
         intl.formatMessage({ id: 'error' }),
@@ -83,25 +79,24 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       return;
     }
 
-    if ((trainingType === 'presencial' || trainingType === 'virtual_sincronico') && !sessionTime) {
+    if ((sessionMode === 'presencial' || sessionMode === 'virtual_sincronico') && !sessionTime) {
       showToast('error', 'Error', 'Por favor selecciona una hora para el entrenamiento');
       return;
     }
 
-    const sessionDate = formatDateToApi(selectedDate ? selectedDate : new Date());
     const body = {
       clientId,
       workoutId: selectedWorkout,
       sessionId,
-      trainingType,
-      location: trainingType === 'presencial' || trainingType === 'hibrido' ? location : undefined,
-      contactMethod: trainingType === 'virtual_sincronico' || trainingType === 'hibrido' ? contactMethod : undefined,
+      sessionMode: sessionMode,
+      location: sessionMode === 'presencial' || sessionMode === 'hibrido' ? location : undefined,
+      contactMethod: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? contactMethod : undefined,
       //sessionTime: sessionTime ? formatTime(sessionTime) : undefined,
       sessionTime: sessionTime
         ? `${sessionTime.getHours().toString().padStart(2, '0')}:${sessionTime.getMinutes().toString().padStart(2, '0')}`
         : null,
-      sessionDate,
-      notes: trainingType === 'virtual_sincronico' || trainingType === 'hibrido' ? meetingLink : undefined
+      sessionDate: selectedDate,
+      notes: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? meetingLink : undefined
     };
 
     try {
@@ -153,14 +148,14 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
         <label htmlFor="trainingType">{intl.formatMessage({ id: 'assignWorkout.trainingType' })}</label>
         <Dropdown
           id="trainingType"
-          value={trainingType}
-          options={trainingTypeOptions}
-          onChange={(e) => setTrainingType(e.value)}
+          value={sessionMode}
+          options={sessionModeOptions}
+          onChange={(e) => setSessionMode(e.value)}
           placeholder={intl.formatMessage({ id: 'assignWorkout.selectTrainingType' })}
         />
       </div>
 
-      {trainingType === 'presencial' && (
+      {sessionMode === 'presencial' && (
         <div className="p-field">
           <label htmlFor="location">
             <FormattedMessage id="student.location" />
@@ -174,7 +169,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
         </div>
       )}
 
-      {trainingType === 'virtual_sincronico' && (
+      {sessionMode === 'virtual_sincronico' && (
         <div className="p-field">
           <label htmlFor="contactMethod">
             <FormattedMessage id="student.contactMethod" />
@@ -189,7 +184,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
         </div>
       )}
 
-      {trainingType === 'hibrido' && (
+      {sessionMode === 'hibrido' && (
         <>
           <div className="p-field">
             <label htmlFor="location">
@@ -217,7 +212,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
         </>
       )}
 
-      {(trainingType === 'presencial' || trainingType === 'virtual_sincronico') && (
+      {(sessionMode === 'presencial' || sessionMode === 'virtual_sincronico') && (
         <div className="field">
           <label htmlFor="sessionTime">{intl.formatMessage({ id: 'common.sessionTime' })}</label>
           <Calendar
@@ -232,7 +227,7 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
         </div>
       )}
 
-      {(trainingType === 'virtual_sincronico' || trainingType === 'hibrido') && (
+      {(sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido') && (
         <div className="p-field">
           <label htmlFor="meetingLink">
             <FormattedMessage id="assignWorkout.meetingLink" />

@@ -10,8 +10,6 @@ import Sidebar from './components/Sidebar';
 import Unauthorized from './components/Unauthorized';
 import PrivateRoute from './auth/PrivateRoute';
 import CoachProfileForm from './pages/CoachProfileForm';
-import ForgotPassword from './auth/ForgotPassword';
-import ResetPassword from './auth/ResetPassword';
 import NotSubscribed from './components/NotSubscribed';
 import Home from './auth/Home';
 import CoachHome from './pages/CoachHome';
@@ -99,8 +97,6 @@ const AppContent = ({ sidebarExpanded, setSidebarExpanded, isMobile }) => {
           <Route path="/student/calendar" element={<StudentCalendar />} />
 
           <Route path="/complete-coach-profile" element={<PrivateRoute element={CoachProfileForm} />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/not-subscribed" element={<NotSubscribed />} />
 
           <Route path="/settings" element={<Settings />} />

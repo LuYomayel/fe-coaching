@@ -326,3 +326,4 @@ export interface MarkNotificationAsReadRequest {
   notificationId: number;
 }
 
+

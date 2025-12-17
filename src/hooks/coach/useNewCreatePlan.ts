@@ -12,12 +12,15 @@ import {
   IWorkoutTemplateResponse
 } from '../../types/workout/plan-state';
 import { IExercise } from '../../types/workout/exercise';
+import { IWorkoutInstance } from '../../types/workout/workout-instance';
+import { IExerciseGroup } from '../../types/workout/exercise-group';
 import { useNavigate } from 'react-router-dom';
 
 interface UseNewCreatePlanProps {
   coachId?: number;
   planId?: number;
   isTemplate?: boolean;
+  isEdit?: boolean;
 }
 
 interface UseNewCreatePlanReturn {
@@ -210,10 +213,102 @@ const transformTemplateToState = (
   };
 };
 
+const transformWorkoutInstanceGroupsToPlanGroups = (groups: IExerciseGroup[]): IPlanGroup[] => {
+  const mappedGroups: IPlanGroup[] = groups.map((group) => {
+    const exercises = group.exercises?.slice().sort((a, b) => (a.rowIndex ?? 0) - (b.rowIndex ?? 0)) ?? [];
+
+    return {
+      id: group.id ?? uuidv4(),
+      name: group.name ?? '',
+      groupNumber: group.groupNumber ?? 0,
+      set: group.set ?? '',
+      rest: group.rest ?? '',
+      isRestPeriod: group.isRestPeriod ?? false,
+      restDuration: group.restDuration ?? null,
+      createdAt: group.createdAt ?? new Date(),
+      updatedAt: group.updatedAt ?? new Date(),
+      deletedAt: group.deletedAt,
+      exercises: exercises.map((exercise, exerciseIndex) => ({
+        id: exercise.id ?? uuidv4(),
+        dragId: ensureExerciseDragId(exercise),
+        exercise: exercise.exercise
+          ? {
+              id: exercise.exercise.id,
+              name: exercise.exercise.name
+            }
+          : { id: null, name: '' },
+        rowIndex: exercise.rowIndex ?? exerciseIndex,
+        sets: exercise.sets ?? '',
+        repetitions: exercise.repetitions ?? '',
+        weight: exercise.weight ?? '',
+        time: exercise.time ?? '',
+        restInterval: exercise.restInterval ?? '',
+        tempo: exercise.tempo ?? '',
+        notes: exercise.notes ?? '',
+        difficulty: exercise.difficulty ?? '',
+        duration: exercise.duration ?? '',
+        distance: exercise.distance ?? '',
+        rpe: exercise.rpe ?? '',
+        setConfiguration:
+          exercise.setConfiguration && exercise.setConfiguration.length > 0
+            ? (exercise.setConfiguration.map((config) => ({
+                setNumber: config.setNumber,
+                repetitions: config.repetitions,
+                weight: config.weight,
+                time: config.time,
+                restInterval: config.restInterval,
+                tempo: config.tempo,
+                notes: config.notes,
+                difficulty: config.difficulty,
+                duration: config.duration,
+                distance: config.distance
+              })) as ISetConfiguration[])
+            : null
+      }))
+    };
+  });
+
+  return normalizeGroups(mappedGroups);
+};
+
+const transformWorkoutInstanceToState = (
+  instance: IWorkoutInstance | null
+): { planInfo: IPlanInfo; groupList: IPlanGroup[] } => {
+  if (!instance) {
+    return {
+      planInfo: {
+        planName: '',
+        workoutId: null,
+        workoutInstanceTemplateId: null,
+        instanceName: '',
+        clientFacingName: '',
+        personalizedNotes: ''
+      },
+      groupList: []
+    };
+  }
+
+  const groups = instance.groups?.slice().sort((a, b) => (a.groupNumber ?? 0) - (b.groupNumber ?? 0)) ?? [];
+  const transformedGroups = transformWorkoutInstanceGroupsToPlanGroups(groups);
+
+  return {
+    planInfo: {
+      planName: instance.workoutTemplate?.planName ?? '',
+      workoutId: instance.id ?? null,
+      workoutInstanceTemplateId: null,
+      instanceName: instance.instanceName ?? '',
+      clientFacingName: instance.clientFacingName ?? '',
+      personalizedNotes: instance.personalizedNotes ?? ''
+    },
+    groupList: transformedGroups
+  };
+};
+
 export const useNewCreatePlan = ({
   coachId,
   planId,
-  isTemplate = true
+  isTemplate = true,
+  isEdit = false
 }: UseNewCreatePlanProps = {}): UseNewCreatePlanReturn => {
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -270,7 +365,7 @@ export const useNewCreatePlan = ({
 
   // Load plan if planId exists
   useEffect(() => {
-    if (!planId) {
+    if (!planId && !isEdit) {
       setPlan({
         planName: '',
         workoutId: null,
@@ -285,12 +380,31 @@ export const useNewCreatePlan = ({
 
     const loadPlan = async () => {
       try {
+        if (!planId) return;
         setIsLoading(true);
-        const response = await api.workout.fetchWorkoutTemplate(planId);
-        const template = response?.data as IWorkoutTemplateResponse;
-        const { planInfo, groupList } = transformTemplateToState(template);
-        setPlan(planInfo);
-        setGroupsState(groupList.length > 0 ? groupList : normalizeGroups([createEmptyGroup(1)]));
+        console.log('isTemplate', isTemplate);
+        if (isTemplate) {
+          const response = await api.workout.fetchWorkoutTemplate(planId);
+          const template = response?.data as IWorkoutTemplateResponse;
+          const { planInfo, groupList } = transformTemplateToState(template);
+          setPlan(planInfo);
+          console.log('groupList', groupList);
+          setGroupsState(groupList.length > 0 ? groupList : normalizeGroups([createEmptyGroup(1)]));
+        } else {
+          const response = await api.workout.fetchWorkoutInstance(planId);
+          const template = response?.data as IWorkoutInstance;
+
+          setPlan({
+            planName: template.workoutTemplate.planName ?? '',
+            workoutId: template.id ?? null,
+            workoutInstanceTemplateId: null,
+            instanceName: template.instanceName ?? '',
+            clientFacingName: template.clientFacingName ?? '',
+            personalizedNotes: template.personalizedNotes ?? ''
+          });
+          const transformedGroups = transformWorkoutInstanceGroupsToPlanGroups(template.groups ?? []);
+          setGroupsState(transformedGroups.length > 0 ? transformedGroups : normalizeGroups([createEmptyGroup(1)]));
+        }
       } catch (error) {
         console.error('Error fetching workout template', error);
         showToast('error', 'Error', 'No se pudo cargar el plan');
@@ -652,20 +766,35 @@ export const useNewCreatePlan = ({
       const payload = buildPayload();
       setIsSaving(true);
 
-      const { data } = await api.workout.createOrUpdateWorkoutTemplate(payload);
-      if (!data) {
-        showToast('error', 'Error', 'No se pudo guardar el plan');
-        return;
+      let data;
+      if (isTemplate) {
+        const response = await api.workout.createOrUpdateWorkoutTemplate(payload);
+        data = response.data;
+        if (!data) {
+          showToast('error', 'Error', 'No se pudo guardar el plan');
+          return;
+        }
+        const { planInfo, groupList } = transformTemplateToState(data as IWorkoutTemplateResponse);
+        setPlan(planInfo);
+        setGroupsState(groupList.length > 0 ? groupList : normalizeGroups([createEmptyGroup(1)]));
+        setTimeout(() => {
+          navigate('/coach/plans');
+        }, 1000);
+      } else {
+        const response = await api.workout.createOrUpdateWorkoutInstance(payload);
+        data = response.data;
+        if (!data) {
+          showToast('error', 'Error', 'No se pudo guardar el plan');
+          return;
+        }
+        const { planInfo, groupList } = transformWorkoutInstanceToState(data as IWorkoutInstance);
+        setPlan(planInfo);
+        setGroupsState(groupList.length > 0 ? groupList : normalizeGroups([createEmptyGroup(1)]));
       }
-      const { planInfo, groupList } = transformTemplateToState(data as IWorkoutTemplateResponse);
-      setPlan(planInfo);
-      setGroupsState(groupList.length > 0 ? groupList : normalizeGroups([createEmptyGroup(1)]));
-      setTimeout(() => {
-        navigate('/coach/plans');
-      }, 1000);
+
       showToast('success', 'Plan guardado', 'El plan se guardó correctamente');
     } catch (error: any) {
-      console.error('Error saving workout template', error);
+      console.error('Error saving workout', error);
       const detail =
         error?.message || error?.response?.data?.message || 'Ocurrió un error inesperado al guardar el plan';
       showToast('error', 'Error', detail);

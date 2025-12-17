@@ -230,8 +230,10 @@ export const api = {
   auth: {
     login: (data: { email: string; password: string }) => apiClient.post<{ token: string }>('/auth', data),
     forgotPassword: (data: { email: string }) => apiClient.post<{ token: string }>('/auth/forgot-password', data),
-    resetPassword: (data: { token: string; newPassword: string }) =>
-      apiClient.post<{ token: string }>('/auth/reset-password', data)
+    resetPassword: (data: { email: string; token: string; newPassword: string }) =>
+      apiClient.post<{ token: string }>('/auth/reset-password', data),
+    verifyPasswordResetCode: (data: { email: string; code: string }) =>
+      apiClient.get(`/auth/verify-password-reset-code?email=${data.email}&code=${data.code}`)
   },
   coach: {
     fetchStudents: () => apiClient.get<IClient[]>(`/users/coach/allStudents`)
@@ -300,8 +302,14 @@ export const api = {
     fetchTrainingCyclesByClient: (clientId: number) =>
       apiClient.get<ITrainingCycle[]>(`/workout/training-cycles/client/clientId/${clientId}`),
 
+    fetchTrainingSessionsWithoutWeekByClient: (clientId: number) =>
+      apiClient.get<any[]>(`/workout/training-session-with-no-weeks/clientId/${clientId}`),
+
     createOrUpdateWorkoutTemplate: (data: IUpsertWorkoutTemplatePayload) =>
       apiClient.post<IWorkoutTemplate>(`/workout/template/create-or-update`, data),
+
+    createOrUpdateWorkoutInstance: (data: IUpsertWorkoutTemplatePayload) =>
+      apiClient.post<IWorkoutInstance>(`/workout/workout-instance/last-try`, data),
 
     deleteWorkoutPlan: (planId: number, isTemplate: boolean) =>
       apiClient.delete<any>(isTemplate ? `/workout/${planId}` : `/workout/deleteInstance/${planId}`),
@@ -350,15 +358,14 @@ export const api = {
       apiClient.get<IRpeMethod>(`/workout/rpe/get-by-client-id/${clientId}/${planId}/${cycleId}`),
 
     // RPE - Métodos y asignaciones (migrado desde services/workoutService.js)
-    getRpeMethods: (userId: number) => apiClient.get<any>(`/workout/rpe/all/${userId}`),
-    getRpeAssignments: (userId: number) => apiClient.get<any>(`/workout/rpe/get-all-assignments/${userId}`),
-    createOrUpdateRpeMethod: (dialogMode: 'create' | 'edit', newRpe: any, userId: number) => {
-      const endpoint =
-        dialogMode === 'create' ? `/workout/rpe/create/${userId}` : `/workout/rpe/update/${newRpe.id}/${userId}`;
+    getRpeMethods: () => apiClient.get<any>(`/workout/rpe/all`),
+    getRpeAssignments: () => apiClient.get<any>(`/workout/rpe/get-all-assignments`),
+    createOrUpdateRpeMethod: (dialogMode: 'create' | 'edit', newRpe: any) => {
+      const endpoint = dialogMode === 'create' ? `/workout/rpe/create` : `/workout/rpe/update/${newRpe.id}`;
       const method = dialogMode === 'create' ? apiClient.post : apiClient.put;
       return method<any>(endpoint, newRpe);
     },
-    deleteRpe: (rpeId: number, userId: number) => apiClient.delete<any>(`/workout/rpe/delete/${rpeId}/${userId}`),
+    deleteRpe: (rpeId: number) => apiClient.delete<any>(`/workout/rpe/delete/${rpeId}`),
     assignRpeToTarget: (rpeMethodId: number, targetType: string, targetId: number, userId: number) =>
       apiClient.post<any>(`/workout/rpe/assign/${userId}`, { rpeMethodId, targetType, targetId }),
     removeRpeAssignment: (assignmentId: number, targetType: string, userId: number) =>

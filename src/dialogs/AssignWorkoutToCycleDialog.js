@@ -11,12 +11,11 @@ import {
   assignWorkoutsToCycle,
   fetchAssignedWorkoutsForCycleDay,
   unassignWorkoutsFromCycle,
-  findAllWorkoutTemplatesByCoachId,
   deleteTrainingCycle,
   verifyTrainingCycleDeletion
 } from '../services/workoutService';
 import { useIntl } from 'react-intl';
-
+import { api } from 'services/api-client';
 const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, cycleOptions, actionType }) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -47,9 +46,8 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
   useEffect(() => {
     const loadWorkouts = async () => {
       try {
-        const { data } = await findAllWorkoutTemplatesByCoachId(coach.id);
-
-        setWorkouts(data);
+        const { data } = await api.workout.findAllWorkoutTemplatesByCoachId();
+        setWorkouts(data ?? []);
       } catch (error) {
         showToast('error', 'Error', error.message);
       }

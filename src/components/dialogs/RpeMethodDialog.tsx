@@ -4,6 +4,7 @@ import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { useIntl } from 'react-intl';
 import { RpeMethodForm } from '../../hooks/dialogs/useRpeMethodDialog';
+import { InputSwitch } from 'primereact/inputswitch';
 
 interface Props {
   visible: boolean;
@@ -49,8 +50,8 @@ export function RpeMethodDialog({
           : intl.formatMessage({ id: 'coach.rpe.edit' })
       }
       footer={
-        <div className="flex justify-content-end gap-2">
-          <Button label={intl.formatMessage({ id: 'common.cancel' })} className="p-button-text" onClick={onHide} />
+        <div className="flex justify-content-evenly gap-2">
+          <Button label={intl.formatMessage({ id: 'common.cancel' })} className="p-button-outlined" onClick={onHide} />
           <Button
             label={intl.formatMessage({ id: 'common.save' })}
             icon="pi pi-check"
@@ -61,9 +62,17 @@ export function RpeMethodDialog({
       }
     >
       <div className="p-fluid flex flex-column gap-3">
-        <div className="field">
-          <label className="block mb-2">{intl.formatMessage({ id: 'coach.rpe.name' })}</label>
-          <InputText value={form.name} onChange={(e) => onChange({ name: e.target.value })} />
+        <div className="flex gap-2">
+          <div className="field w-full">
+            <label className="block mb-2">{intl.formatMessage({ id: 'coach.rpe.name' })}</label>
+            <InputText value={form.name} onChange={(e) => onChange({ name: e.target.value })} />
+          </div>
+          <div className="field w-full flex flex-column">
+            <label className="">{intl.formatMessage({ id: 'coach.rpe.isDefault' })}</label>
+            <div className="flex align-items-center h-full">
+              <InputSwitch checked={form.isDefault} onChange={(e) => onChange({ isDefault: e.value })} />
+            </div>
+          </div>
         </div>
         <div className="grid">
           <div className="col-12 md:col-4">

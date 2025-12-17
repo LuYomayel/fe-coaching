@@ -158,13 +158,15 @@ const CoachProfileForm = () => {
         title: intl.formatMessage({ id: 'coachProfileForm.freeTrial' }),
         description: intl.formatMessage({ id: 'coachProfileForm.helper.freeTrial' }),
         accent: 'success'
-      },
+      }
+      /* TODO: Add paid plan when it's available
       {
         key: 'paid',
         title: intl.formatMessage({ id: 'coachProfileForm.paid' }),
         description: intl.formatMessage({ id: 'coachProfileForm.helper.paid' }),
         accent: 'info'
       }
+        */
     ];
 
     const showPlanCta = formValues.subscriptionType === 'paid' && !selectedPlan;

@@ -16,6 +16,7 @@ export interface LoginDialogProps {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   loading: boolean;
   onSwitchToSignUp: () => void;
+  onForgotPassword?: () => void;
 }
 export const LoginDialog = ({
   visible,
@@ -25,7 +26,8 @@ export const LoginDialog = ({
   onFieldChange,
   onSubmit,
   loading,
-  onSwitchToSignUp
+  onSwitchToSignUp,
+  onForgotPassword
 }: LoginDialogProps) => {
   const intl = useIntl();
 
@@ -78,9 +80,16 @@ export const LoginDialog = ({
           loading={loading}
         />
         <div className="text-center mt-4">
-          <a href="/forgot-password" className="font-medium no-underline text-primary cursor-pointer hover:underline">
-            <FormattedMessage id="home.login.forgotPassword" />
-          </a>
+          <Button
+            label={intl.formatMessage({ id: 'home.login.forgotPassword' })}
+            className="p-button-text p-button-sm text-primary font-medium"
+            onClick={(event) => {
+              event.preventDefault();
+              if (onForgotPassword) {
+                onForgotPassword();
+              }
+            }}
+          />
         </div>
         <div className="text-center mt-3">
           <span className="text-600">

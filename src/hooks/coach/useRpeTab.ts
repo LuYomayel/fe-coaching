@@ -19,6 +19,7 @@ export interface RpeMethod {
   maxValue: number;
   step: number;
   valuesMeta?: any[];
+  isDefault: boolean;
 }
 export interface RpeAssignment {
   id: number;
@@ -277,10 +278,8 @@ export const useRpeTab = () => {
     setLoading(true);
     if (!user) return;
     try {
-      const [methodsRes, assignmentsRes] = await Promise.all([
-        api.rpe.getRpeMethods(user.userId),
-        api.rpe.getRpeAssignments(user.userId)
-      ]);
+      const [methodsRes, assignmentsRes] = await Promise.all([api.rpe.getRpeMethods(), api.rpe.getRpeAssignments()]);
+      console.log(methodsRes.data);
       setRpeMethods(methodsRes.data ?? []);
       setRpeAssignments(assignmentsRes.data ?? []);
     } catch (e) {
@@ -308,7 +307,7 @@ export const useRpeTab = () => {
         accept: async () => {
           try {
             setLoading(true);
-            await api.rpe.deleteRpe(rpeId, user.userId);
+            await api.rpe.deleteRpe(rpeId);
             await loadRpeData();
             showToast('success', 'Success', 'RPE Method deleted successfully');
           } catch (e) {

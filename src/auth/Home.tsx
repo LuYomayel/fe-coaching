@@ -4,8 +4,12 @@ import { useHomePage } from '../hooks/useHomePage';
 import { useLoginDialog } from '../hooks/dialogs/useLoginDialog';
 import { useSignUpDialog } from '../hooks/dialogs/useSignUpDialog';
 import { useVerificationDialog } from '../hooks/dialogs/useVerificationDialog';
+import { useForgotPasswordVerification } from '../hooks/dialogs/useForgotPasswordVerification';
+import { useResetPassword } from '../hooks/dialogs/useResetPassword';
 import LoginDialog from '../components/dialogs/LoginDialog';
 import SignUpDialog from '../components/dialogs/SignUpDialog';
+import ForgotPasswordVerificationDialog from '../components/dialogs/ForgotPasswordVerificationDialog';
+import ResetPasswordDialog from '../components/dialogs/ResetPasswordDialog';
 
 import Header from '../components/home/header';
 import Footer from '../components/home/footer';
@@ -16,6 +20,11 @@ import './Home.css';
 
 export default function HomePage() {
   const [pendingCredentials, setPendingCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
+  const [resetPasswordVisible, setResetPasswordVisible] = useState(false);
+  const [verifiedEmail, setVerifiedEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+
   const { isScrolled, featuresRef, pricingRef, contactRef, scrollToSection } = useHomePage();
 
   const verificationDialog = useVerificationDialog();
@@ -30,6 +39,25 @@ export default function HomePage() {
       console.log('onRequireVerification', { email, password });
       setPendingCredentials({ email, password });
       verificationDialog.open(email);
+    }
+  });
+
+  // Forgot password flow
+  const forgotPasswordVerification = useForgotPasswordVerification({
+    onSuccess: (email: string, code: string) => {
+      setVerifiedEmail(email);
+      setVerificationCode(code);
+      setForgotPasswordVisible(false);
+      setResetPasswordVisible(true);
+    }
+  });
+
+  const resetPassword = useResetPassword({
+    email: verifiedEmail,
+    verificationCode: verificationCode,
+    onSuccess: () => {
+      setResetPasswordVisible(false);
+      loginDialog.open();
     }
   });
 
@@ -48,6 +76,11 @@ export default function HomePage() {
         setPendingCredentials(null);
       }
     }
+  };
+
+  const handleForgotPassword = () => {
+    loginDialog.close();
+    setForgotPasswordVisible(true);
   };
 
   return (
@@ -78,6 +111,7 @@ export default function HomePage() {
           loginDialog.close();
           signUpDialog.open();
         }}
+        onForgotPassword={handleForgotPassword}
       />
       <SignUpDialog
         visible={signUpDialog.visible}
@@ -97,6 +131,34 @@ export default function HomePage() {
         onHide={verificationDialog.close}
         email={verificationDialog.email}
         onVerificationSuccess={handleVerificationSuccess}
+      />
+      <ForgotPasswordVerificationDialog
+        visible={forgotPasswordVisible}
+        onHide={() => setForgotPasswordVisible(false)}
+        email={forgotPasswordVerification.email}
+        code={forgotPasswordVerification.code}
+        codeSent={forgotPasswordVerification.codeSent}
+        isSendingCode={forgotPasswordVerification.isSendingCode}
+        isVerifying={forgotPasswordVerification.isVerifying}
+        isResending={forgotPasswordVerification.isResending}
+        onEmailChange={forgotPasswordVerification.handleEmailChange}
+        onCodeChange={forgotPasswordVerification.handleCodeChange}
+        onSendCode={forgotPasswordVerification.sendVerificationCode}
+        onVerifyCode={forgotPasswordVerification.verifyCode}
+        onResendCode={forgotPasswordVerification.resendCode}
+        onReset={forgotPasswordVerification.reset}
+      />
+      <ResetPasswordDialog
+        visible={resetPasswordVisible}
+        onHide={() => setResetPasswordVisible(false)}
+        newPassword={resetPassword.newPassword}
+        confirmPassword={resetPassword.confirmPassword}
+        isResetting={resetPassword.isResetting}
+        errors={resetPassword.errors}
+        onNewPasswordChange={resetPassword.handleNewPasswordChange}
+        onConfirmPasswordChange={resetPassword.handleConfirmPasswordChange}
+        onResetPassword={resetPassword.resetPassword}
+        onReset={resetPassword.reset}
       />
     </div>
   );

@@ -1,37 +1,56 @@
 // serviceWorkerRegistration.js
 
-const isLocalhost = Boolean(
-  window.location.hostname === 'localhost' ||
-    window.location.hostname === '[::1]' ||
-    window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
-);
-
-export function register(config) {
+export function register(_config) {
+  // Por defecto, desregistrar service workers y limpiar cache
   if ('serviceWorker' in navigator) {
-    const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
-    if (publicUrl.origin !== window.location.origin) {
-      return;
-    }
-
     window.addEventListener('load', () => {
-      const swUrl = `${process.env.PUBLIC_URL}/sw.js`;
+      // Desregistrar todos los service workers
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration
+            .unregister()
+            .then((success) => {
+              if (success) {
+                console.log('Service Worker desregistrado exitosamente');
+              }
+            })
+            .catch((error) => {
+              console.error('Error al desregistrar service worker:', error);
+            });
+        }
+      });
 
-      if (isLocalhost) {
-        checkValidServiceWorker(swUrl, config);
-        navigator.serviceWorker.ready.then(() => {
-          console.log(
-            'Esta aplicación web está siendo servida desde cache por un service worker. ' +
-              'Para más detalles, visita https://bit.ly/CRA-PWA'
-          );
-        });
-      } else {
-        registerValidSW(swUrl, config);
+      // Limpiar todos los caches
+      if ('caches' in window) {
+        caches
+          .keys()
+          .then((cacheNames) => {
+            return Promise.all(
+              cacheNames.map((cacheName) => {
+                console.log('Eliminando cache:', cacheName);
+                return caches.delete(cacheName);
+              })
+            );
+          })
+          .then(() => {
+            console.log('Todos los caches han sido eliminados');
+          })
+          .catch((error) => {
+            console.error('Error al eliminar caches:', error);
+          });
+      }
+
+      // Si hay un service worker activo, recargar la página después de limpiar
+      if (navigator.serviceWorker.controller) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
     });
   }
 }
 
-function registerValidSW(swUrl, config) {
+function _registerValidSW(swUrl, config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
@@ -68,7 +87,7 @@ function registerValidSW(swUrl, config) {
     });
 }
 
-function checkValidServiceWorker(swUrl, config) {
+function _checkValidServiceWorker(swUrl, config) {
   fetch(swUrl, {
     headers: { 'Service-Worker': 'script' }
   })
@@ -81,7 +100,7 @@ function checkValidServiceWorker(swUrl, config) {
           });
         });
       } else {
-        registerValidSW(swUrl, config);
+        _registerValidSW(swUrl, config);
       }
     })
     .catch(() => {

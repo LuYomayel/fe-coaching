@@ -235,3 +235,4 @@ export function useTrainingCycleTemplateDialog(workouts: any[], deletedWorkoutTe
     deletedWorkoutTemplates
   };
 }
+

@@ -236,7 +236,7 @@ const messages = {
   'coach.tabs.plans': 'Planes',
   'coach.tabs.exercises': 'Ejercicios',
   'coach.tabs.subscription': 'Planes de Suscripción',
-  'coach.tabs.rpe': 'Métodos RPE',
+  'coach.tabs.rpe': 'Medición de Carga Subjetiva',
   'coach.tabs.clients': 'Clientes',
 
   'coach.workouts.title': 'Entrenamientos',
@@ -327,14 +327,14 @@ const messages = {
   'coach.rpe.valuesMeta': 'Valores Meta',
   'coach.rpe.addValue': 'Agregar Valor',
   'coach.rpe.selectType': 'Seleccionar Tipo de Asignación',
-  'coach.rpe.create': 'Crear Método RPE',
-  'coach.rpe.update': 'Actualizar Método RPE',
-  'coach.rpe.methods': 'Métodos RPE',
-  'coach.rpe.assignments': 'Asignaciones de RPE',
-  'coach.rpe.method': 'Método RPE',
+  'coach.rpe.create': 'Crear Método de Medición',
+  'coach.rpe.update': 'Actualizar Método de Medición',
+  'coach.rpe.methods': 'Métodos de Medición Subjetiva',
+  'coach.rpe.assignments': 'Asignaciones de Medición Subjetiva',
+  'coach.rpe.method': 'Método de Medición Subjetiva',
   'coach.rpe.targetType': 'Tipo de destino',
   'coach.rpe.targetName': 'Nombre del destino',
-  'coach.rpe.confirm.removeAssignment': '¿Estás seguro de que deseas eliminar esta asignación de RPE?',
+  'coach.rpe.confirm.removeAssignment': '¿Estás seguro de que deseas eliminar esta asignación de Medición Subjetiva?',
 
   'coach.subscription.currentPlan': 'Plan Actual',
   'coach.subscription.maxClients': 'Clientes Máximos: {max}',
@@ -622,6 +622,8 @@ const messages = {
   'exercise.properties.comments': 'Comentarios',
   'exercise.properties.setLogs': 'Registro de Series',
   'exercise.properties.restDuration': 'Duración del Descanso (segundos)',
+  'exercise.setConfiguration.title': 'Configuración de Sets',
+  'exercise.feedback.title': 'Feedback del Cliente',
   // Mensajes de confirmación
   'confirm.delete': '¿Estás seguro que deseas eliminar esto?',
   'confirm.deleteGroup': '¿Estás seguro que deseas eliminar este grupo?',
@@ -738,9 +740,17 @@ const messages = {
   // ForgotPassword
   'forgotPassword.title': 'Olvidé mi Contraseña',
   'forgotPassword.email': 'Correo Electrónico',
+  'forgotPassword.emailPlaceholder': 'Ingresa tu correo electrónico',
+  'forgotPassword.message':
+    'Ingresa tu correo electrónico para recibir un código de verificación y restablecer tu contraseña.',
+  'forgotPassword.sendCode': 'Enviar Código',
   'forgotPassword.sendLink': 'Enviar Enlace de Restablecimiento',
+  'forgotPassword.codeSent': 'Código de verificación enviado a tu correo',
+  'forgotPassword.codeMessage': 'Por favor ingresa el código de verificación enviado a {email}',
+  'forgotPassword.verificationSuccess': '¡Código verificado exitosamente! Ahora puedes restablecer tu contraseña.',
   'forgotPassword.success': 'El enlace para restablecer la contraseña ha sido enviado a tu correo.',
   'forgotPassword.error': 'Algo salió mal',
+  'forgotPassword.error.emailRequired': 'El correo electrónico es obligatorio',
 
   // HomePage
   'home.header.features': 'Características',
@@ -857,11 +867,17 @@ const messages = {
 
   // ResetPassword
   'resetPassword.title': 'Restablecer Contraseña',
+  'resetPassword.message': 'Ingresa tu nueva contraseña',
   'resetPassword.newPassword': 'Nueva Contraseña',
+  'resetPassword.newPasswordPlaceholder': 'Ingresa tu nueva contraseña',
   'resetPassword.confirmPassword': 'Confirmar Contraseña',
+  'resetPassword.confirmPasswordPlaceholder': 'Confirma tu nueva contraseña',
   'resetPassword.button': 'Restablecer Contraseña',
   'resetPassword.success': 'Contraseña restablecida exitosamente',
   'resetPassword.error.match': 'Las contraseñas no coinciden',
+  'resetPassword.error.passwordRequired': 'La contraseña es obligatoria',
+  'resetPassword.error.confirmPasswordRequired': 'Confirma tu contraseña',
+  'resetPassword.error.passwordTooShort': 'La contraseña debe tener al menos 6 caracteres',
   'resetPassword.error.generic': 'Algo salió mal',
 
   // NotSubscribed
@@ -1320,16 +1336,16 @@ const messages = {
   'common.createdAt': 'Creado el',
 
   // Coach RPE Methods
-  'coach.createRpeMethod': 'Crear Método RPE',
-  'coach.assignRpe': 'Asignar RPE',
-  'coach.rpeMethods': 'Métodos RPE',
-  'coach.rpeAssignments': 'Asignaciones RPE',
-  'coach.noRpeMethods': 'Aún no tienes métodos RPE',
-  'coach.createFirstRpeMethod': 'Crea tu primer método RPE',
-  'coach.noRpeAssignments': 'No se encontraron asignaciones RPE',
-  'coach.createNewRpeMethod': 'Crear Nuevo Método RPE',
-  'coach.editRpeMethod': 'Editar Método RPE',
-  'rpe.method': 'Método RPE',
+  'coach.createRpeMethod': 'Crear Método de Medición',
+  'coach.assignRpe': 'Asignar Medición Subjetiva',
+  'coach.rpeMethods': 'Métodos de Medición Subjetiva',
+  'coach.rpeAssignments': 'Asignaciones de Medición Subjetiva',
+  'coach.noRpeMethods': 'Aún no tienes métodos de Medición Subjetiva',
+  'coach.createFirstRpeMethod': 'Crea tu primer método de Medición Subjetiva',
+  'coach.noRpeAssignments': 'No se encontraron asignaciones de Medición Subjetiva',
+  'coach.createNewRpeMethod': 'Crear Nuevo Método de Medición Subjetiva',
+  'coach.editRpeMethod': 'Editar Método de Medición Subjetiva',
+  'rpe.method': 'Método de Medición Subjetiva',
   'rpe.targetType': 'Tipo de Objetivo',
   'rpe.targetName': 'Nombre del Objetivo',
   'rpe.step': 'Paso',
@@ -1341,15 +1357,16 @@ const messages = {
   'rpe.noValuesMeta': 'Aún no hay descripciones de valores agregadas',
   'rpe.value': 'Valor',
   'rpe.description': 'Descripción',
-  'rpe.selectMethod': 'Seleccionar Método RPE',
+  'rpe.isDefault': 'Método por defecto',
+  'rpe.selectMethod': 'Seleccionar Método de Medición Subjetiva',
   'rpe.selectTargetType': 'Seleccionar Tipo de Objetivo',
   'rpe.selectTarget': 'Seleccionar Objetivo',
   'rpe.target': 'Objetivo',
   'coach.rpe.error.missingFields': 'Por favor selecciona todos los campos requeridos',
   'coach.rpe.clearValues': 'Limpiar Valores',
   'coach.rpe.clearValues.tooltip': 'Elimina todos los valores meta configurados',
-  'coach.assignRpeMethod': 'Asignar Método RPE',
-  'coach.assignRpeMethod.tooltip': 'Asigna un método RPE a un entrenamiento o ejercicio',
+  'coach.assignRpeMethod': 'Asignar Método de Medición Subjetiva',
+  'coach.assignRpeMethod.tooltip': 'Asigna un método de Medición Subjetiva a un entrenamiento o ejercicio',
 
   // Coach Subscription
   'coach.subscription.plans': 'Planes de Suscripción',
@@ -1578,6 +1595,7 @@ const messages = {
   'coach.rpe.assign.step2': 'Seleccionar objetivo',
   'coach.rpe.assign.step3': 'Seleccionar método RPE',
   'coach.rpe.assign.summary': 'Resumen de asignación',
-  'coach.rpe.assign.target': 'Objetivo'
+  'coach.rpe.assign.target': 'Objetivo',
+  'coach.rpe.isDefault': 'Método por defecto'
 };
 export default messages;

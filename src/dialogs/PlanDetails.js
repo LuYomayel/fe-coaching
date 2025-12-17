@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
@@ -16,12 +15,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getYouTubeThumbnail, extractYouTubeVideoId } from '../utils/UtilFunctions';
 import { useToast } from '../contexts/ToastContext';
-import { UserContext } from '../contexts/UserContext';
+import { useUser } from '../contexts/UserContext';
 import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { useIntl, FormattedMessage } from 'react-intl';
 import VideoDialog from './VideoDialog';
 import { fetchClientByClientId } from '../services/usersService';
-import { contactMethodOptions, trainingTypeOptions } from '../types/coach/dropdown-options';
+import { contactMethodOptions, sessionModeOptions } from '../types/coach/dropdown-options';
 export default function NewPlanDetailHorizontal({
   planId,
   setPlanDetailsVisible,
@@ -31,9 +30,8 @@ export default function NewPlanDetailHorizontal({
   clientId
 }) {
   const intl = useIntl();
-  const toast = useRef(null);
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
+  const { user } = useUser();
   const { showConfirmationDialog } = useConfirmationDialog();
   const { showToast } = useToast();
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits'));
@@ -59,7 +57,7 @@ export default function NewPlanDetailHorizontal({
   const [editedContactMethod, setEditedContactMethod] = useState('');
   const [editedNotes, setEditedNotes] = useState('');
   const [editedSessionTime, setEditedSessionTime] = useState(null);
-  const [editedTrainingType, setEditedTrainingType] = useState('');
+  const [editedSessionMode, setEditedSessionMode] = useState('');
 
   useEffect(() => {
     const fetchClientData = async () => {
@@ -108,7 +106,7 @@ export default function NewPlanDetailHorizontal({
         setEditedContactMethod(data.trainingSession?.contactMethod || '');
         setEditedNotes(data.trainingSession?.notes || '');
         setEditedSessionTime(data.trainingSession?.sessionTime ? new Date(data.trainingSession.sessionTime) : null);
-        setEditedTrainingType(data.trainingSession?.trainingType || '');
+        setEditedSessionMode(data.trainingSession?.sessionMode || '');
       } catch (error) {
         showToast('error', 'Error fetching plan details', error.message);
       } finally {
@@ -182,7 +180,7 @@ export default function NewPlanDetailHorizontal({
       state: {
         isTraining: true,
         planId: workoutPlan.id,
-        trainingType: workoutPlan.trainingSession?.trainingType,
+        sessionMode: workoutPlan.trainingSession?.sessionMode,
         location: workoutPlan.trainingSession?.location,
         contactMethod: workoutPlan.trainingSession?.contactMethod,
         isCoach: user.userType === 'coach',
@@ -213,7 +211,7 @@ export default function NewPlanDetailHorizontal({
         sessionTime: editedSessionTime
           ? `${editedSessionTime.getHours().toString().padStart(2, '0')}:${editedSessionTime.getMinutes().toString().padStart(2, '0')}`
           : null,
-        trainingType: editedTrainingType
+        sessionMode: editedSessionMode
       };
 
       //console.log('updatedData', planId, updatedData);
@@ -229,7 +227,7 @@ export default function NewPlanDetailHorizontal({
           contactMethod: editedContactMethod,
           notes: editedNotes,
           sessionTime: editedSessionTime ? editedSessionTime.toISOString() : null,
-          trainingType: editedTrainingType
+          sessionMode: editedSessionMode
         }
       }));
 
@@ -251,7 +249,7 @@ export default function NewPlanDetailHorizontal({
     setEditedSessionTime(
       workoutPlan.trainingSession?.sessionTime ? new Date(workoutPlan.trainingSession.sessionTime) : null
     );
-    setEditedTrainingType(workoutPlan.trainingSession?.trainingType || '');
+    setEditedSessionMode(workoutPlan.trainingSession?.sessionMode || '');
     setIsEditing(false);
   };
 
@@ -564,18 +562,12 @@ export default function NewPlanDetailHorizontal({
 
   return (
     <div className="workout-plan-detail p-4">
-      <Toast ref={toast} />
-
       {/* Card for Plan Title */}
       <Card className="mb-4">
         <div className="flex justify-content-between align-items-center mb-2">
           <h2 className="text-2xl font-bold m-0">
             {/* If it's a template, show the template name; otherwise, instanceName or workout planName */}
-            {isTemplate
-              ? workoutPlan.workoutTemplate?.planName
-              : workoutPlan.instanceName
-                ? workoutPlan.instanceName
-                : workoutPlan.workout?.planName}
+            {workoutPlan.workoutTemplate.planName}
           </h2>
 
           {/* Botones de edición y guardado */}
@@ -613,21 +605,21 @@ export default function NewPlanDetailHorizontal({
           {isEditing ? (
             <div className="grid">
               <div className="col-12 mb-3">
-                <label htmlFor="trainingType" className="block mb-2">
+                <label htmlFor="sessionMode" className="block mb-2">
                   {intl.formatMessage({ id: 'common.trainingType' })}
                 </label>
                 <Dropdown
-                  id="trainingType"
-                  value={editedTrainingType}
-                  options={trainingTypeOptions}
-                  onChange={(e) => setEditedTrainingType(e.value)}
+                  id="sessionMode"
+                  value={editedSessionMode}
+                  options={sessionModeOptions}
+                  onChange={(e) => setEditedSessionMode(e.value)}
                   placeholder={intl.formatMessage({ id: 'common.selectTrainingType' })}
                   className="w-full"
                 />
               </div>
 
               {/* Mostrar campos según el tipo de entrenamiento seleccionado */}
-              {(editedTrainingType === 'presencial' || editedTrainingType === 'hibrido') && (
+              {(editedSessionMode === 'presencial' || editedSessionMode === 'hibrido') && (
                 <div className="col-12 md:col-6 mb-3">
                   <label htmlFor="location" className="block mb-2">
                     {intl.formatMessage({ id: 'common.location' })}
@@ -641,7 +633,7 @@ export default function NewPlanDetailHorizontal({
                 </div>
               )}
 
-              {(editedTrainingType === 'virtual_sincronico' || editedTrainingType === 'hibrido') && (
+              {(editedSessionMode === 'virtual_sincronico' || editedSessionMode === 'hibrido') && (
                 <div className="col-12 md:col-6 mb-3">
                   <label htmlFor="contactMethod" className="block mb-2">
                     {intl.formatMessage({ id: 'common.contactMethod' })}
@@ -657,9 +649,9 @@ export default function NewPlanDetailHorizontal({
                 </div>
               )}
 
-              {(editedTrainingType === 'presencial' ||
-                editedTrainingType === 'virtual_sincronico' ||
-                editedTrainingType === 'hibrido') && (
+              {(editedSessionMode === 'presencial' ||
+                editedSessionMode === 'virtual_sincronico' ||
+                editedSessionMode === 'hibrido') && (
                 <div className="col-12 md:col-6 mb-3">
                   <label htmlFor="sessionTime" className="block mb-2">
                     {intl.formatMessage({ id: 'common.sessionTime' })}
@@ -690,29 +682,29 @@ export default function NewPlanDetailHorizontal({
           ) : (
             <div className="flex flex-column gap-2">
               {/* Mostrar tipo de entrenamiento */}
-              {workoutPlan.trainingSession?.trainingType && (
+              {workoutPlan.trainingSession?.sessionMode && (
                 <div className="flex align-items-center">
                   <i className="pi pi-calendar mr-2" />
                   <span>
-                    {trainingTypeOptions.find((option) => option.value === workoutPlan.trainingSession.trainingType)
-                      ?.label || workoutPlan.trainingSession.trainingType}
+                    {sessionModeOptions.find((option) => option.value === workoutPlan.trainingSession.sessionMode)
+                      ?.label || workoutPlan.trainingSession.sessionMode}
                   </span>
                 </div>
               )}
 
               {/* Mostrar ubicación según prioridad: primero session, luego cliente */}
-              {(workoutPlan.trainingSession?.trainingType === 'hibrido' ||
-                workoutPlan.trainingSession?.trainingType === 'presencial' ||
-                workoutPlan.trainingSession?.trainingType === 'virtual_sincronico') &&
+              {(workoutPlan.trainingSession?.sessionMode === 'hibrido' ||
+                workoutPlan.trainingSession?.sessionMode === 'presencial' ||
+                workoutPlan.trainingSession?.sessionMode === 'virtual_sincronico') &&
               workoutPlan.trainingSession?.location ? (
                 <div className="flex align-items-center">
                   <i className="pi pi-map-marker mr-2" />
                   <span>{workoutPlan.trainingSession.location}</span>
                 </div>
               ) : (
-                (clientData?.trainingType === 'hibrido' ||
-                  clientData?.trainingType === 'presencial' ||
-                  clientData?.trainingType === 'virtual_sincronico') &&
+                (clientData?.sessionMode === 'hibrido' ||
+                  clientData?.sessionMode === 'presencial' ||
+                  clientData?.sessionMode === 'virtual_sincronico') &&
                 clientData?.location && (
                   <div className="flex align-items-center">
                     <i className="pi pi-map-marker mr-2" />
@@ -882,7 +874,6 @@ export default function NewPlanDetailHorizontal({
                         {group.name
                           ? group.name
                           : intl.formatMessage({ id: 'common.group' }, { number: group.groupNumber })}{' '}
-                        {group.groupNumber}
                       </h3>
                     )}
                   </div>

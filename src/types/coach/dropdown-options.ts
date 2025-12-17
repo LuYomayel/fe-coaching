@@ -5,7 +5,7 @@ export const contactMethodOptions = [
   { label: 'Skype', value: 'skype' }
 ];
 
-export const trainingTypeOptions = [
+export const sessionModeOptions = [
   { label: 'Presencial', value: 'presencial' },
   { label: 'Virtual Sincrónico', value: 'virtual_sincronico' },
   { label: 'Virtual Asincrónico', value: 'virtual_asincronico' },

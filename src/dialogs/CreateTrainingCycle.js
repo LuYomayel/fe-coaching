@@ -12,14 +12,12 @@ import { InputNumber } from 'primereact/inputnumber';
 import {
   createTrainingCycle,
   createCycleAndAssignWorkouts,
-  findAllWorkoutTemplatesByCoachId,
-  fetchTrainingCyclesTemplates,
   assignCycleTemplateToClient
 } from '../services/workoutService';
-import { fetchCoachStudents } from '../services/usersService';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { TabPanel, TabView } from 'primereact/tabview';
 import { formatDateToApi } from '../utils/UtilFunctions';
+import { api } from 'services/api-client';
 const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey }) => {
   const { user, coach } = useContext(UserContext);
   const intl = useIntl();
@@ -70,13 +68,14 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
   useEffect(() => {
     const loadCoachStudents = async () => {
       try {
-        const { data } = await fetchCoachStudents(user.userId);
+        const { data } = await api.coach.fetchStudents();
         const activeStudents = data
           .filter((client) => client.user.subscription.status !== 'Inactive')
           .map((client) => ({
             label: client.name,
             value: client.id
           }));
+        console.log(activeStudents);
         setClients(activeStudents);
       } catch (error) {
         showToast('error', intl.formatMessage({ id: 'error.fetchingStudents' }), error.message);
@@ -85,8 +84,7 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
 
     const loadWorkouts = async () => {
       try {
-        const { data } = await findAllWorkoutTemplatesByCoachId(coach.id);
-        console.log(data);
+        const { data } = await api.workout.findAllWorkoutTemplatesByCoachId();
         setWorkouts(data);
       } catch (error) {
         showToast('error', 'Error', error.message);
@@ -95,10 +93,8 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
 
     const loadCycleTemplates = async () => {
       try {
-        const response = await fetchTrainingCyclesTemplates(coach.id);
-        if (response.message === 'success') {
-          setTrainingCycleTemplates(response.data);
-        }
+        const { data } = await api.workout.fetchTrainingCyclesTemplatesByCoachId();
+        setTrainingCycleTemplates(data ?? []);
       } catch (error) {
         console.error('Error fetching training cycle templates:', error);
         showToast('error', 'Error', intl.formatMessage({ id: 'error' }));
@@ -227,7 +223,6 @@ const CreateTrainingCycleDialog = ({ visible, onHide, clientId, setRefreshKey })
     try {
       setLoading(true);
       // const cycle = await createTrainingCycle(bodyCycle);
-      console.log('Body', body);
       //return
       const { data } = await createCycleAndAssignWorkouts(body);
 

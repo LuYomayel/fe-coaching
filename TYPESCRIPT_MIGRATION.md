@@ -303,3 +303,4 @@ Si encuentras problemas durante la migración:
 3. Verifica los ejemplos en `src/utils/UtilFunctions.ts`
 4. Usa `npx tsc --noEmit` para ver errores detallados
 
+

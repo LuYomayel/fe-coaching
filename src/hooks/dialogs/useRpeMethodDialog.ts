@@ -14,6 +14,7 @@ export interface RpeMethodForm {
   maxValue: number;
   step: number;
   valuesMeta: RpeValueMeta[];
+  isDefault: boolean;
 }
 
 export type DialogMode = 'create' | 'edit';
@@ -27,12 +28,13 @@ export const useRpeMethodDialog = (userId: number) => {
     minValue: 0,
     maxValue: 10,
     step: 1,
-    valuesMeta: []
+    valuesMeta: [],
+    isDefault: false
   });
 
   const openCreate = useCallback(() => {
     setMode('create');
-    setForm({ name: '', minValue: 0, maxValue: 10, step: 1, valuesMeta: [] });
+    setForm({ name: '', minValue: 0, maxValue: 10, step: 1, valuesMeta: [], isDefault: false });
     setVisible(true);
   }, []);
 
@@ -78,7 +80,7 @@ export const useRpeMethodDialog = (userId: number) => {
   const save = useCallback(async () => {
     setLoading(true);
     try {
-      await api.rpe.createOrUpdateRpeMethod(mode, form, userId);
+      await api.rpe.createOrUpdateRpeMethod(mode, form);
       setVisible(false);
       return { success: true } as const;
     } catch (e) {

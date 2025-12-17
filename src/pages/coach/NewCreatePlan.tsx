@@ -25,6 +25,8 @@ export const NewCreatePlan: React.FC = () => {
   const { planId: planIdParam } = useParams<{ planId?: string }>();
   const location = useLocation();
   const state = location.state as LocationState | undefined;
+  const pathname = useLocation().pathname;
+  const isEdit = pathname.includes('/edit/');
   const parsedParamId = planIdParam ? Number(planIdParam) : undefined;
   const paramPlanId = Number.isNaN(parsedParamId) ? undefined : parsedParamId;
   const statePlanId = state?.planId ? Number(state.planId) : undefined;
@@ -69,7 +71,8 @@ export const NewCreatePlan: React.FC = () => {
   } = useNewCreatePlan({
     coachId: coach?.id ?? 0,
     planId,
-    isTemplate
+    isTemplate,
+    isEdit
   });
 
   const [isEditing, setIsEditing] = useState(false);

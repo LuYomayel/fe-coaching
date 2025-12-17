@@ -16,21 +16,6 @@ const fetchWorkoutTemplate = async (workoutTemplateId) => {
     throw error;
   }
 };
-const findAllWorkoutTemplatesByCoachId = async () => {
-  try {
-    const response = await fetch(`${apiUrl}/workout/workout-template`, {
-      headers: getAuthHeaders()
-    });
-    const data = await response.json();
-    if (data.error) {
-      throw new Error(data.error);
-    }
-    return data;
-  } catch (error) {
-    console.error('Error fetching workout templates:', error);
-    throw error;
-  }
-};
 
 const fetchTrainingCyclesTemplates = async () => {
   try {
@@ -76,69 +61,6 @@ const fetchWorkoutInstance = async (planId) => {
     return data;
   } catch (error) {
     console.error('Error fetching workout instance:', error);
-    throw error;
-  }
-};
-
-const fetchTrainingCyclesByClient = async (clientId) => {
-  try {
-    const response = await fetch(`${apiUrl}/workout/training-cycles/client/clientId/${clientId}`, {
-      headers: getAuthHeaders()
-    });
-    const data = await response.json();
-
-    if (data.error) {
-      throw new Error(data.error);
-    }
-    const cycles = data.data;
-
-    if (cycles.length === 0) return { events: [], cycleOptions: [] };
-    const events = cycles.flatMap((cycle) =>
-      cycle.trainingWeeks.flatMap((week) =>
-        week.trainingSessions.flatMap((session) => {
-          const sessionEvents =
-            session.workoutInstances.length > 0
-              ? session.workoutInstances.map((workoutInstance) => {
-                  workoutInstance.status = updateStatusLocal(workoutInstance, session);
-
-                  if (session.notes) console.log(session);
-                  return {
-                    title: workoutInstance.instanceName
-                      ? workoutInstance.instanceName
-                      : workoutInstance.workout.planName,
-                    start: session.sessionDate.split('T')[0],
-                    allDay: true,
-                    extendedProps: {
-                      status: workoutInstance.status,
-                      workoutInstanceId: workoutInstance.id,
-                      sessionId: session.id,
-                      trainingType: session.trainingType,
-                      location: session.location,
-                      sessionTime: session.sessionTime,
-                      contactMethod: session.contactMethod,
-                      notes: session.notes
-                    }
-                  };
-                })
-              : [
-                  {
-                    title: 'no title',
-                    start: session.sessionDate.split('T')[0],
-                    allDay: true,
-                    extendedProps: {
-                      sessionId: session.id,
-                      cycle: cycle.name
-                    }
-                  }
-                ];
-
-          return sessionEvents;
-        })
-      )
-    );
-    return { events, cycleOptions: cycles };
-  } catch (error) {
-    console.error('Error fetching training cycles by client:', error);
     throw error;
   }
 };
@@ -227,7 +149,7 @@ const fetchDeletedWorkoutTemplatesByCoachId = async (coachId) => {
 
 const fetchWorkoutsByClientId = async (clientId) => {
   try {
-    const response = await fetch(`${apiUrl}/workout/clientId/${clientId}`, {
+    const response = await fetch(`${apiUrl}/workout/client/${clientId}`, {
       headers: getAuthHeaders()
     });
     const data = await response.json();
@@ -292,21 +214,7 @@ const createTrainingCycle = async (body) => {
   }
 };
 
-const updateStatusLocal = (workout, session) => {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const sessionDate = new Date(session.sessionDate);
-  const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
-  if (workout.status === 'pending') {
-    if (sessionDay < today) {
-      return 'expired';
-    } else if (sessionDay.getTime() === today.getTime()) {
-      return 'current';
-    }
-  } else {
-    return workout.status;
-  }
-};
+// mapSessionToCalendarEvent and updateStatusLocal moved to UtilFunctions.ts
 
 const updateExercisesInstace = async (exercises) => {
   try {
@@ -990,10 +898,8 @@ const updateWorkoutInstance = async (workoutInstanceId, body) => {
 export {
   fetchWorkoutTemplate,
   fetchTrainingCyclesByCoachId,
-  findAllWorkoutTemplatesByCoachId,
   fetchWorkoutInstanceTemplate,
   fetchWorkoutInstance,
-  fetchTrainingCyclesByClient,
   fetchTrainingCyclesForClientByUserId,
   fetchWorkoutsByClientId,
   createTrainingCycle,

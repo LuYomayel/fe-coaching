@@ -735,9 +735,16 @@ const messages = {
   // ForgotPassword
   'forgotPassword.title': 'Forgot Password',
   'forgotPassword.email': 'Email',
+  'forgotPassword.emailPlaceholder': 'Enter your email',
+  'forgotPassword.message': 'Enter your email to receive a verification code and reset your password.',
+  'forgotPassword.sendCode': 'Send Code',
   'forgotPassword.sendLink': 'Send Reset Link',
+  'forgotPassword.codeSent': 'Verification code sent to your email',
+  'forgotPassword.codeMessage': 'Please enter the verification code sent to {email}',
+  'forgotPassword.verificationSuccess': 'Code verified successfully! Now you can reset your password.',
   'forgotPassword.success': 'Password reset link has been sent to your email.',
   'forgotPassword.error': 'Something went wrong',
+  'forgotPassword.error.emailRequired': 'Email is required',
 
   // HomePage
   'home.header.features': 'Features',
@@ -859,11 +866,17 @@ const messages = {
   'home.verification.resendError': 'Error resending verification code',
   // ResetPassword
   'resetPassword.title': 'Reset Password',
+  'resetPassword.message': 'Enter your new password',
   'resetPassword.newPassword': 'New Password',
+  'resetPassword.newPasswordPlaceholder': 'Enter your new password',
   'resetPassword.confirmPassword': 'Confirm Password',
+  'resetPassword.confirmPasswordPlaceholder': 'Confirm your new password',
   'resetPassword.button': 'Reset Password',
   'resetPassword.success': 'Password reset successfully',
   'resetPassword.error.match': 'Passwords do not match',
+  'resetPassword.error.passwordRequired': 'Password is required',
+  'resetPassword.error.confirmPasswordRequired': 'Confirm your password',
+  'resetPassword.error.passwordTooShort': 'Password must be at least 6 characters',
   'resetPassword.error.generic': 'Something went wrong',
 
   // NotSubscribed

@@ -153,3 +153,36 @@ export interface IWorkoutTemplateResponse {
     }>;
   }>;
 }
+
+export interface IWorkoutInstanceResponse {
+  id: number;
+  planName: string;
+  groups?: Array<{
+    id: number;
+    groupNumber: number;
+    name?: string;
+    set?: number;
+    rest?: number;
+    isRestPeriod?: boolean;
+    restDuration?: number;
+    exercises?: Array<{
+      id: number;
+      rowIndex: number;
+      exercise: IExercise;
+      repetitions?: string;
+      sets?: string;
+      time?: string;
+      weight?: string;
+      restInterval?: string;
+      tempo?: string;
+      notes?: string;
+      difficulty?: string;
+      duration?: string;
+      distance?: string;
+      setConfiguration?: ISetConfiguration[];
+    }>;
+  }>;
+  instanceName?: string;
+  clientFacingName?: string;
+  personalizedNotes?: string;
+}

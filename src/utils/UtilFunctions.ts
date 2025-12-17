@@ -80,6 +80,7 @@ export const extractYouTubeVideoId = (url: string | null | undefined): string | 
 };
 
 export const getYouTubeThumbnail = (url: string): string => {
+  console.log('url', url);
   const videoId = extractYouTubeVideoId(url);
   return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 };
@@ -267,4 +268,112 @@ export const getAuthHeaders = (): Record<string, string> => {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`
   };
+};
+
+// ==================== CALENDAR EVENTS ====================
+
+/**
+ * Updates the status of a workout instance based on the session date
+ * @param workout - The workout instance object
+ * @param session - The training session object
+ * @returns Updated status string
+ */
+export const updateStatusLocal = (workout: { status: string }, session: { sessionDate: string | Date }): string => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sessionDate = new Date(session.sessionDate);
+  const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+  if (workout.status === 'pending') {
+    if (sessionDay < today) {
+      return 'expired';
+    } else if (sessionDay.getTime() === today.getTime()) {
+      return 'current';
+    }
+  }
+  return workout.status;
+};
+
+/**
+ * Maps a training session to a calendar event
+ * @param session - The training session object
+ * @param workoutInstance - The workout instance (optional)
+ * @param cycleName - The cycle name (optional, for sessions without workout instances)
+ * @returns Calendar event object
+ */
+export const mapSessionToCalendarEvent = (
+  session: {
+    sessionDate: string | Date;
+    id: number;
+    sessionMode?: string;
+    location?: string;
+    sessionTime?: string;
+    contactMethod?: string;
+    notes?: string;
+  },
+  workoutInstance:
+    | {
+        instanceName?: string;
+        workoutTemplate?: { planName?: string };
+        id: number;
+        status: string;
+      }
+    | null
+    | undefined = null,
+  cycleName: string | null = null
+): {
+  title: string;
+  start: string;
+  allDay: boolean;
+  extendedProps: {
+    status?: string;
+    workoutInstanceId?: number;
+    sessionId: number;
+    cycle?: string | null;
+    sessionMode?: string;
+    location?: string;
+    sessionTime?: string;
+    contactMethod?: string;
+    notes?: string;
+  };
+} => {
+  // Normalize sessionDate to string
+  const sessionDateStr =
+    typeof session.sessionDate === 'string' ? session.sessionDate : session.sessionDate.toISOString();
+  const startDate = sessionDateStr.split('T')[0] || '';
+
+  if (workoutInstance) {
+    // Update status if needed
+    const status = updateStatusLocal(workoutInstance, session);
+    return {
+      title: workoutInstance.workoutTemplate?.planName || 'Sin título',
+      start: startDate,
+      allDay: true,
+      extendedProps: {
+        status: status,
+        workoutInstanceId: workoutInstance.id,
+        sessionId: session.id,
+        sessionMode: session.sessionMode,
+        location: session.location,
+        sessionTime: session.sessionTime,
+        contactMethod: session.contactMethod,
+        notes: session.notes
+      }
+    };
+  } else {
+    // Session without workout instance
+    return {
+      title: 'no title',
+      start: startDate,
+      allDay: true,
+      extendedProps: {
+        sessionId: session.id,
+        cycle: cycleName,
+        sessionMode: session.sessionMode,
+        location: session.location,
+        sessionTime: session.sessionTime,
+        contactMethod: session.contactMethod,
+        notes: session.notes
+      }
+    };
+  }
 };

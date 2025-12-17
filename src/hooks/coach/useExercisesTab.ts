@@ -82,7 +82,6 @@ export function useExercisesTab() {
     const load = async () => {
       const { data } = await api.exercise.fetchCoachExercises();
       setExercises(data || []);
-      console.log('data', data);
       const missing =
         data?.filter((e: any) => !e.multimedia || !e.exerciseType || !e.description || !e.equipmentNeeded) || [];
       setMissingExercises(missing || []);
