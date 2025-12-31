@@ -28,26 +28,26 @@ const Header = ({
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: '1400px' }}>
         <div className="flex align-items-center justify-content-between h-4rem">
           <div className="flex align-items-center gap-2">
-            <div className="w-2rem h-2rem bg-primary border-round-lg flex align-items-center justify-content-center">
+            <div className="w-2rem h-2rem bg-primary border-round-lg flex align-items-center justify-content-center text-gray-900">
               <span className="text-0 font-bold text-sm">ET</span>
             </div>
-            <span className="font-bold text-xl text-900">EaseTrain</span>
+            <span className="font-bold text-xl text-gray-900">EaseTrain</span>
           </div>
 
           <nav className="hidden md:flex align-items-center gap-8">
             <Button
               label={intl.formatMessage({ id: 'home.header.features' })}
-              className="p-button-text text-600 hover:text-900 transition-colors"
+              className="p-button-text text-gray-500 hover:text-gray-900 transition-colors"
               onClick={onScrollToFeatures}
             />
             <Button
               label={intl.formatMessage({ id: 'home.header.pricing' })}
-              className="p-button-text text-600 hover:text-900 transition-colors"
+              className="p-button-text text-gray-500 hover:text-gray-900 transition-colors"
               onClick={onScrollToPricing}
             />
             <Button
               label={intl.formatMessage({ id: 'home.header.contact' })}
-              className="p-button-text text-600 hover:text-900 transition-colors"
+              className="p-button-text text-gray-500 hover:text-gray-900 transition-colors"
               onClick={onScrollToContact}
             />
           </nav>
@@ -55,7 +55,7 @@ const Header = ({
           <div className="flex align-items-center gap-4">
             <Button
               label={intl.formatMessage({ id: 'home.header.login' })}
-              className="p-button-text text-800 hover:text-900 "
+              className="p-button-text text-gray-500 hover:text-gray-900 transition-colors"
               onClick={onLoginClick}
             />
             <Button
