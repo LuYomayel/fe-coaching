@@ -21,6 +21,8 @@ const messages = {
   'common.confirm': 'Confirmar',
   'common.cancel': 'Cancelar',
   'common.delete': 'Eliminar',
+  'common.showing': 'Mostrando',
+  'common.of': 'de',
   'common.template': 'Plantilla',
   'common.useAsTemplate': 'Usar como Plantilla',
   'common.edit': 'Editar',

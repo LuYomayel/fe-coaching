@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IRpeMethod } from 'types/rpe/rpe-method-assigned';
-import { ApiResponse } from '../types/api';
+import { ApiResponse, BaseFilters, PaginatedResponse } from '../types/api';
 import { IWorkoutInstance } from 'types/workout/workout-instance';
 import {
   ICategory,
@@ -19,6 +19,7 @@ import { IUpsertWorkoutTemplatePayload } from 'types/workout/plan-state';
 import { ITrainingCycle } from 'types/training-cycle/training-cycle';
 import { IClient } from 'types/models';
 import { ICoachPlan } from 'types/coach/coach-plan';
+import { toQueryString } from 'utils/UtilFunctions';
 
 // Base URL (CRA env var)
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
@@ -240,7 +241,8 @@ export const api = {
   },
   exercise: {
     processImportExercises: (importData: any) => apiClient.post<any>(`/exercise/process-import`, importData),
-    fetchCoachExercises: () => apiClient.get<IExercise[]>(`/exercise`),
+    fetchCoachExercises: (query: BaseFilters) =>
+      apiClient.get<PaginatedResponse<IExercise>>(`/exercise${toQueryString(query as Record<string, unknown>)}`),
     fetchCategories: () => apiClient.get<ICategory[]>(`/exercise/categories`),
     fetchContractions: () => apiClient.get<IContractionType[]>(`/exercise/contractions`),
     fetchDifficulties: () => apiClient.get<IDifficultyLevel[]>(`/exercise/difficulties`),

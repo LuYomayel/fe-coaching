@@ -154,7 +154,7 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
             api.exercise.fetchMuscles(),
             api.exercise.fetchUnilateralTypes(),
             api.exercise.fetchVariants(),
-            api.exercise.fetchCoachExercises()
+            api.exercise.fetchCoachExercises({ page: 1, limit: 10, search: '' })
           ]);
 
           setCategories(categoriesRes.data || []);
@@ -166,7 +166,7 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
           setMuscles(musclesRes.data || []);
           setUnilateralTypes(unilateralTypesRes.data || []);
           setVariants(variantsRes.data || []);
-          setExercises(exercisesRes.data || []);
+          setExercises(exercisesRes.data?.items || []);
         } catch (error) {
           console.error('Error loading exercise properties:', error);
         } finally {

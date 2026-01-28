@@ -17,11 +17,6 @@ export const LanguageProvider = ({ children }) => {
     addLocale('es', esLocale);
   }, []);
 
-  function getBrowserLanguage() {
-    const browserLang = navigator.language.split(/[-_]/)[0];
-    return messages[browserLang] ? browserLang : 'es'; // Por defecto: español
-  }
-
   const getSavedLocale = () => {
     const savedLocale = localStorage.getItem('locale');
     return savedLocale ? savedLocale : 'es'; // Por defecto: español

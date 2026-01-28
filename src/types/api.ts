@@ -3,7 +3,11 @@
  */
 
 // ==================== RESPUESTAS GENÉRICAS ====================
-
+export interface BaseFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
 export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
@@ -18,7 +22,7 @@ export interface ApiError {
 }
 
 export interface PaginatedResponse<T> {
-  data: T[];
+  items: T[];
   total: number;
   page: number;
   limit: number;
@@ -325,5 +329,3 @@ export interface CreateNotificationRequest {
 export interface MarkNotificationAsReadRequest {
   notificationId: number;
 }
-
-

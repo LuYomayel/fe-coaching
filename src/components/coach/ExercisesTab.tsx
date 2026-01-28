@@ -31,9 +31,18 @@ export function ExercisesTab() {
   };
 
   const renderHeader = (text: string) => (
-    <div className="flex justify-content-between align-items-center py-2">
+    <div className="flex flex-column md:flex-row justify-content-between align-items-center gap-2 py-2">
       <div className="flex align-items-center gap-2">
         <h2 className="text-xl font-bold mb-0">{text}</h2>
+      </div>
+      <div className="flex align-items-center gap-2">
+        <span className="p-input-icon-left">
+          <InputText
+            value={state.searchTerm}
+            onChange={(e) => state.onGlobalFilterChange(e.target.value)}
+            placeholder={intl.formatMessage({ id: 'common.search' })}
+          />
+        </span>
       </div>
       <div className="flex align-items-center gap-2">
         {state.isEditingExercises ? (
@@ -149,15 +158,17 @@ export function ExercisesTab() {
         <DataTable
           value={state.exercises}
           stripedRows
+          lazy
           paginator
-          rows={10}
+          first={(state.currentPage - 1) * state.limit}
+          rows={state.limit}
+          totalRecords={state.totalRecords}
+          onPage={state.onPageChange}
           rowsPerPageOptions={[10, 25, 50, 100]}
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          currentPageReportTemplate={`${intl.formatMessage({ id: 'common.showing', defaultMessage: 'Mostrando' })} {first} - {last} ${intl.formatMessage({ id: 'common.of', defaultMessage: 'de' })} {totalRecords} ${intl.formatMessage({ id: 'coach.tabs.exercises' })}`}
           emptyMessage={intl.formatMessage({ id: 'coach.noExercisesFound' })}
-          filters={state.filters}
-          filterDisplay="menu"
-          globalFilterFields={['name']}
           header={renderHeader(intl.formatMessage({ id: 'coach.tabs.exercises' }))}
-          globalFilter={state.filters.global?.value}
           breakpoint="960px"
           dataKey="id"
           scrollable
@@ -165,6 +176,7 @@ export function ExercisesTab() {
           editMode={state.isEditingExercises ? 'cell' : undefined}
           size="small"
           className="text-sm"
+          loading={state.loading}
         >
           <Column
             field="name"

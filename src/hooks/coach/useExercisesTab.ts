@@ -27,6 +27,15 @@ export function useExercisesTab() {
   const [modifiedExercises, setModifiedExercises] = useState<Record<number, any>>({});
 
   const [missingExercises, setMissingExercises] = useState<any[]>([]);
+
+  // Estado de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const [filters, setFilters] = useState<any>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
@@ -78,16 +87,58 @@ export function useExercisesTab() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [saveTimeouts, setSaveTimeouts] = useState<Record<number, any>>({});
 
+  // Función para cargar ejercicios con paginación
+  const loadExercises = useCallback(
+    async (page: number = currentPage, rows: number = limit, search: string = searchTerm) => {
+      if (!coach) return;
+
+      setLoading(true);
+      try {
+        const { data } = await api.exercise.fetchCoachExercises({ page, limit: rows, search });
+
+        setExercises(data?.items || []);
+        setTotalRecords(data?.total || 0);
+        setTotalPages(data?.totalPages || 0);
+
+        const missing =
+          data?.items?.filter((e: any) => !e.multimedia || !e.exerciseType || !e.description || !e.equipmentNeeded) ||
+          [];
+        setMissingExercises(missing || []);
+      } catch (error: any) {
+        showToast('error', 'Error', error.message || 'Error al cargar ejercicios');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [coach, currentPage, limit, searchTerm, showToast]
+  );
+
   useEffect(() => {
-    const load = async () => {
-      const { data } = await api.exercise.fetchCoachExercises();
-      setExercises(data || []);
-      const missing =
-        data?.filter((e: any) => !e.multimedia || !e.exerciseType || !e.description || !e.equipmentNeeded) || [];
-      setMissingExercises(missing || []);
-    };
-    if (coach) load();
+    loadExercises();
   }, [coach, refreshKey]);
+
+  // Manejar cambio de página
+  const onPageChange = useCallback(
+    (event: any) => {
+      const newPage = event.page + 1; // PrimeReact usa base 0, la API usa base 1
+      const newLimit = event.rows;
+
+      setCurrentPage(newPage);
+      setLimit(newLimit);
+      loadExercises(newPage, newLimit, searchTerm);
+    },
+    [searchTerm, loadExercises]
+  );
+
+  // Manejar búsqueda global
+  const onGlobalFilterChange = useCallback(
+    (value: string) => {
+      setSearchTerm(value || '');
+      setCurrentPage(1); // Resetear a la primera página al buscar
+      loadExercises(1, limit, value || '');
+    },
+    [limit, loadExercises]
+  );
 
   useEffect(() => {
     const loadExerciseProperties = async () => {
@@ -437,6 +488,13 @@ export function useExercisesTab() {
     newExercise,
     videoDialogVisible,
     currentVideoUrl,
+    loading,
+    // pagination state
+    currentPage,
+    limit,
+    totalRecords,
+    totalPages,
+    searchTerm,
     // setters
     setFilters,
     setIsEditingExercises,
@@ -457,6 +515,9 @@ export function useExercisesTab() {
     handleMassUpdateExercises,
     cancelMassUpdate,
     setRefreshKey,
+    loadExercises,
+    onPageChange,
+    onGlobalFilterChange,
     // helpers
     hasMissingData,
     // editores

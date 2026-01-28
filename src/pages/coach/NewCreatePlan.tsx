@@ -67,7 +67,10 @@ export const NewCreatePlan: React.FC = () => {
 
     editingGroupName,
     setEditingGroupName,
-    updateGroupName
+    updateGroupName,
+
+    handleExerciseFilter,
+    isLoadingExercises
   } = useNewCreatePlan({
     coachId: coach?.id ?? 0,
     planId,
@@ -327,15 +330,19 @@ export const NewCreatePlan: React.FC = () => {
                                     onChange={(e) => updateExerciseSelection(group.id, exercise.id, e.value)}
                                     filter
                                     showClear
+                                    onFilter={(e) => handleExerciseFilter(e.filter ?? '')}
+                                    filterInputAutoFocus={false}
+                                    resetFilterOnHide
                                     onFocus={() => setIsEditing(true)}
                                     onBlur={() => setIsEditing(false)}
+                                    loading={isLoadingExercises}
                                   />
                                 </div>
 
                                 {/* Series */}
                                 <div style={{ width: '100px' }} className="p-2 border-right-1 surface-border">
                                   <InputText
-                                    className="w-full p-inputtext-sm text-center font-bold"
+                                    className="w-full p-inputtext-sm text-center font-bold my-input"
                                     value={exercise.sets || ''}
                                     onChange={(e) =>
                                       updateExerciseProperty(group.id, exercise.id, 'sets', e.target.value)

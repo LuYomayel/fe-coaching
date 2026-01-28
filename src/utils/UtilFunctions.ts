@@ -377,3 +377,29 @@ export const mapSessionToCalendarEvent = (
     };
   }
 };
+
+export function toQueryString(params: Record<string, unknown>): string {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || v === null || v === '') continue;
+
+    if (v instanceof Date) {
+      qs.append(k, v.toISOString());
+      continue;
+    }
+    if (Array.isArray(v)) {
+      v.forEach((item) => {
+        if (item !== undefined && item !== null) qs.append(k, String(item));
+      });
+      continue;
+    }
+    // objetos simples → JSON (opcional)
+    if (typeof v === 'object') {
+      qs.append(k, JSON.stringify(v));
+      continue;
+    }
+    qs.append(k, String(v));
+  }
+  const s = qs.toString();
+  return s ? `?${s}` : '';
+}

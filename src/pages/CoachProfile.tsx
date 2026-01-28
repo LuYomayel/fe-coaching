@@ -18,7 +18,6 @@ import { ExercisesTab } from '../components/coach/ExercisesTab';
 import BankDataDialog from '../dialogs/BankDataDialog';
 import { api } from '../services/api-client';
 import { ICoach, IUser } from '../types/models';
-import { IExercise } from '../types/workout/exercise';
 import { IWorkoutTemplate } from '../types/workout/workout-template';
 import { IClient } from '../types/models';
 import { ESubscriptionStatus } from '../types/enums/subscription-status';
@@ -44,7 +43,7 @@ export default function CoachProfilePage() {
 
   // Data arrays
   const [users, setUsers] = useState<IClient[]>([]);
-  const [exercises, setExercises] = useState<IExercise[]>([]);
+  const [totalExercises, setTotalExercises] = useState<number>(0);
   const [workouts, setWorkouts] = useState<IWorkoutTemplate[]>([]);
 
   // Current plan
@@ -95,8 +94,8 @@ export default function CoachProfilePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await api.exercise.fetchCoachExercises();
-        setExercises(data || []);
+        const { data } = await api.exercise.fetchCoachExercises({ page: 1, limit: 10, search: '' });
+        setTotalExercises(data?.total || 0);
         const { data: workoutsData } = await api.workout.findAllWorkoutTemplatesByCoachId();
         setWorkouts(workoutsData || []);
         const { data: usersData } = await api.coach.fetchStudents();
@@ -138,7 +137,7 @@ export default function CoachProfilePage() {
                 <span className="text-500 text-sm">Workouts</span>
               </div>
               <div className="flex flex-column align-items-center">
-                <span className="text-3xl font-bold text-primary">{exercises.length}</span>
+                <span className="text-3xl font-bold text-primary">{totalExercises}</span>
                 <span className="text-500 text-sm">Exercises</span>
               </div>
             </div>

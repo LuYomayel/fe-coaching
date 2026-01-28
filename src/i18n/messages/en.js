@@ -14,6 +14,8 @@ const messages = {
   'common.loading': 'Loading...',
   'common.confirm': 'Confirm',
   'common.cancel': 'Cancel',
+  'common.showing': 'Showing',
+  'common.of': 'of',
   'common.delete': 'Delete',
   'common.edit': 'Edit',
   'common.save': 'Save',
