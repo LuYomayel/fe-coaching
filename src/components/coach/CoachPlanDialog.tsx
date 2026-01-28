@@ -29,6 +29,8 @@ export function CoachPlanDialog({ visible, loading, mode, form, onHide, onChange
     <Dialog
       visible={visible}
       style={{ width: '650px' }}
+      draggable={false}
+      dismissableMask={true}
       header={
         mode === 'create'
           ? intl.formatMessage({ id: 'coach.createNewPlan' })
