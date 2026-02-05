@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { api } from '../../services/api-client';
 import { validateExercisesHaveIds } from '../../schemas/createPlanSchema';
@@ -75,9 +75,6 @@ interface UseNewCreatePlanReturn {
 
   editingGroupName: number | null;
   setEditingGroupName: (index: number | null) => void;
-
-  handleExerciseFilter: (search: string) => void;
-  isLoadingExercises: boolean;
 }
 
 const sanitizeValue = (value: any): string | number | null => {
@@ -328,7 +325,6 @@ export const useNewCreatePlan = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoadingExercises, setIsLoadingExercises] = useState(false);
   const [hoverRowIndex, setHoverRowIndex] = useState<number | null>(null);
   const [showInsertButton, setShowInsertButton] = useState(false);
   const [isInsertButtonHovered, setIsInsertButtonHovered] = useState(false);
@@ -338,8 +334,6 @@ export const useNewCreatePlan = ({
   const [selectedExercise, setSelectedExercise] = useState<IPlanExercise | null>(null);
 
   const [editingGroupName, setEditingGroupName] = useState<number | null>(null);
-
-  const exerciseFilterTimeoutRef = useRef<number | null>(null);
 
   const getExerciseKey = useCallback(
     (groupId: string | number, exercise: IPlanExercise) => exercise.dragId ?? `${groupId}::${exercise.id}`,
@@ -360,16 +354,15 @@ export const useNewCreatePlan = ({
   const loadExercises = useCallback(
     async (search: string) => {
       try {
-        // No usamos el isLoading global del plan para no bloquear toda la pantalla,
-        // pero podríamos agregar un spinner específico para el dropdown si hiciera falta.
-        setIsLoadingExercises(true);
-        const { data } = await api.exercise.fetchCoachExercises({ page: 1, limit: 100, search });
+        setIsLoading(true);
+
+        const { data } = await api.exercise.fetchCoachExercises({ search });
         setExercises(data?.items ?? []);
       } catch (error) {
         console.error('Error fetching exercises', error);
         showToast('error', 'Error', 'No se pudieron cargar los ejercicios');
       } finally {
-        setIsLoadingExercises(false);
+        setIsLoading(false);
       }
     },
     [showToast]
@@ -379,25 +372,6 @@ export const useNewCreatePlan = ({
   useEffect(() => {
     loadExercises('');
   }, [loadExercises]);
-
-  /**
-   * Maneja el filtro del Dropdown de ejercicios.
-   * Se llama cada vez que el usuario escribe en el buscador del Dropdown.
-   */
-  const handleExerciseFilter = useCallback(
-    (search: string) => {
-      const value = search || '';
-
-      if (exerciseFilterTimeoutRef.current) {
-        window.clearTimeout(exerciseFilterTimeoutRef.current);
-      }
-
-      exerciseFilterTimeoutRef.current = window.setTimeout(() => {
-        loadExercises(value);
-      }, 1000);
-    },
-    [loadExercises]
-  );
 
   // Load plan if planId exists
   useEffect(() => {
@@ -879,10 +853,6 @@ export const useNewCreatePlan = ({
     setSelectedExercise,
 
     getExerciseKey,
-    setGroups,
-
-    // búsqueda de ejercicios para el dropdown
-    handleExerciseFilter,
-    isLoadingExercises
+    setGroups
   };
 };

@@ -16,10 +16,7 @@ npx tailwindcss init -p
 ```javascript
 // tailwind.config.js
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -28,19 +25,20 @@ export default {
           100: '#e0f2fe',
           500: '#0ea5e9',
           600: '#0284c7',
-          700: '#0369a1',
-        },
+          700: '#0369a1'
+        }
         // Agregar colores personalizados aquí
-      },
-    },
+      }
+    }
   },
-  plugins: [],
-}
+  plugins: []
+};
 ```
 
 ## Clases Comunes
 
 ### Layout
+
 ```typescript
 // Contenedores
 <div className="container mx-auto px-4">
@@ -50,6 +48,7 @@ export default {
 ```
 
 ### Spacing
+
 ```typescript
 // Padding y Margin
 <div className="p-4 m-2">          // padding y margin
@@ -59,6 +58,7 @@ export default {
 ```
 
 ### Typography
+
 ```typescript
 <h1 className="text-3xl font-bold text-gray-900">
 <p className="text-base text-gray-600 leading-relaxed">
@@ -66,18 +66,21 @@ export default {
 ```
 
 ### Buttons
+
 ```typescript
 <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
 <button className="px-6 py-3 bg-green-500 text-white font-semibold rounded-md shadow-md hover:shadow-lg active:scale-95 transition-all">
 ```
 
 ### Cards
+
 ```typescript
 <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
 <div className="border border-gray-200 rounded-xl p-8 bg-gray-50">
 ```
 
 ### Forms
+
 ```typescript
 <input className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
 <textarea className="w-full px-4 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-500" />
@@ -145,6 +148,7 @@ const buttonClasses = clsx(
 ## Excepciones
 
 Los únicos archivos CSS permitidos son:
+
 - `src/index.css` - Para directivas de Tailwind y estilos globales mínimos
 - `src/App.css` - Solo si es absolutamente necesario (preferir eliminarlo)
 
@@ -161,4 +165,3 @@ Los únicos archivos CSS permitidos son:
   }
 }
 ```
-

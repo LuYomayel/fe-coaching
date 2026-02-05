@@ -33,7 +33,7 @@ function App() {
         <Routes>
           {/* Rutas públicas */}
           <Route path="/login" element={<LoginPage />} />
-          
+
           {/* Rutas protegidas */}
           <Route
             path="/"
@@ -43,7 +43,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           <Route
             path="/profile"
             element={
@@ -52,7 +52,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Ruta 404 */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
@@ -139,4 +139,3 @@ export const Navigation = () => {
 - ✅ Usar `Link` de react-router en lugar de `<a>`
 - ✅ Usar `useNavigate` para navegación programática
 - ❌ NO usar window.location o manipulación manual de la URL
-

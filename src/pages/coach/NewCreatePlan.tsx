@@ -67,10 +67,7 @@ export const NewCreatePlan: React.FC = () => {
 
     editingGroupName,
     setEditingGroupName,
-    updateGroupName,
-
-    handleExerciseFilter,
-    isLoadingExercises
+    updateGroupName
   } = useNewCreatePlan({
     coachId: coach?.id ?? 0,
     planId,
@@ -330,12 +327,12 @@ export const NewCreatePlan: React.FC = () => {
                                     onChange={(e) => updateExerciseSelection(group.id, exercise.id, e.value)}
                                     filter
                                     showClear
-                                    onFilter={(e) => handleExerciseFilter(e.filter ?? '')}
                                     filterInputAutoFocus={false}
                                     resetFilterOnHide
                                     onFocus={() => setIsEditing(true)}
                                     onBlur={() => setIsEditing(false)}
-                                    loading={isLoadingExercises}
+                                    emptyMessage="No se encontraron ejercicios"
+                                    emptyFilterMessage="No se encontraron ejercicios"
                                   />
                                 </div>
 

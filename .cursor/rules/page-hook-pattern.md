@@ -7,11 +7,13 @@
 ## Estructura
 
 ### Nomenclatura
+
 - Página: `HomePage.tsx` → Hook: `useHomePage.ts`
 - Página: `ProfilePage.tsx` → Hook: `useProfilePage.ts`
 - Página: `SettingsPage.tsx` → Hook: `useSettingsPage.ts`
 
 ### Ubicación
+
 - Páginas: `src/pages/`
 - Hooks: `src/hooks/`
 
@@ -76,7 +78,7 @@ export const useHomePage = () => {
       setLoading(true);
       setError(null);
       const newMessage = await apiClient.sendMessage(content);
-      setMessages(prev => [...prev, newMessage]);
+      setMessages((prev) => [...prev, newMessage]);
     } catch (err) {
       setError('Error al enviar mensaje');
       throw err;
@@ -90,7 +92,7 @@ export const useHomePage = () => {
     loading,
     error,
     sendMessage,
-    loadMessages,
+    loadMessages
   };
 };
 ```
@@ -125,4 +127,3 @@ export const HomePage = () => {
 - ✅ El componente de página debe ser mayormente JSX
 - ❌ NO poner lógica de negocio en el componente de página
 - ❌ NO llamar a api-client directamente desde el componente
-

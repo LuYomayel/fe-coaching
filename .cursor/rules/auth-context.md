@@ -80,10 +80,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       const response = await apiClient.login(email, password);
-      
+
       // Guardar token
       localStorage.setItem('auth_token', response.token);
-      
+
       // Guardar usuario
       setUser(response.user);
     } catch (error) {
@@ -192,4 +192,3 @@ export const UserProfile = () => {
 - ✅ Limpiar localStorage en logout
 - ❌ NO acceder directamente a localStorage desde componentes
 - ❌ NO manejar autenticación fuera del AuthContext
-

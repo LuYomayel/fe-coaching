@@ -3,12 +3,14 @@
 ## Principios Fundamentales
 
 ### 1. Estructura de Páginas
+
 - Cada página en `src/pages/` debe tener su propio hook personalizado
 - Patrón: Para `HomePage.tsx`, crear `useHomePage.ts`
 - Los hooks de página manejan toda la lógica de estado y efectos
 - Los componentes de página solo renderizan UI
 
 ### 2. API Client
+
 - Todas las llamadas HTTP deben pasar por `src/services/api-client.ts`
 - El api-client maneja:
   - Manejo centralizado de excepciones
@@ -19,12 +21,14 @@
 - Cada método del api-client encapsula el verbo HTTP correspondiente
 
 ### 3. Estilos
+
 - **SOLO Tailwind CSS** para todos los estilos
 - **PROHIBIDO** crear archivos `.css` adicionales
 - Usar clases de utilidad de Tailwind directamente en JSX
 - Para estilos complejos, usar `@apply` en archivos existentes si es absolutamente necesario
 
 ### 4. Componentes Compartidos
+
 - Todos los componentes reutilizables en `src/components/shared/`
 - Componentes a crear: Input, Button, Dropdown, Card, Dialog, Modal, etc.
 - Cada componente debe:
@@ -34,6 +38,7 @@
   - Tener props bien definidas
 
 ### 5. Autenticación
+
 - Usar `AuthContext` para manejo de sesión
 - El contexto debe manejar:
   - Login/Logout
@@ -43,6 +48,7 @@
   - Usuario actual
 
 ### 6. Validaciones
+
 - **SIEMPRE usar Zod** con schemas para todas las validaciones
 - Los schemas deben estar en `src/schemas/` organizados por dominio
 - Usar `safeParse()` para validación sin lanzar errores
@@ -50,6 +56,7 @@
 - **PROHIBIDO** validar manualmente con regex o if/else
 
 ### 7. Idioma de la Interfaz
+
 - **TODOS los textos visibles** deben estar en **ESPAÑOL**
 - El código (variables, funciones, comentarios) debe estar en **INGLÉS**
 - Esto incluye: títulos, labels, placeholders, botones, mensajes de error, textos de ayuda
@@ -77,7 +84,6 @@ src/
 2. **SIEMPRE** usar el api-client para llamadas HTTP
 3. **SIEMPRE** crear un hook para cada página
 4. **SIEMPRE** usar componentes shared en lugar de HTML nativo
-5. **SIEMPRE** tipar todo con TypeScript
+5. **SIEMPRE** tipar todo con TypeScript - **NO usar `any`** - Tipos en `/src/types` o localmente
 6. **SIEMPRE** usar Zod schemas para validaciones (NO validar manualmente)
 7. **SIEMPRE** mostrar texto visible en ESPAÑOL (código en inglés)
-

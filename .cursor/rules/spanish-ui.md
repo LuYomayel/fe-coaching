@@ -7,6 +7,7 @@
 ## Reglas Específicas
 
 ### ✅ Texto en Español (UI)
+
 - Títulos de páginas
 - Labels de formularios
 - Mensajes de error
@@ -20,6 +21,7 @@
 - Cualquier texto visible para el usuario
 
 ### ✅ Código en Inglés
+
 - Nombres de variables
 - Nombres de funciones
 - Nombres de componentes
@@ -71,71 +73,13 @@ Todos los mensajes de error deben estar en español:
 const loginSchema = z.object({
   email: z
     .string()
-    .min(1, 'El correo electrónico es requerido')  // ✅ Español
-    .email('Por favor ingresa un correo electrónico válido'),  // ✅ Español
+    .min(1, 'El correo electrónico es requerido') // ✅ Español
+    .email('Por favor ingresa un correo electrónico válido'), // ✅ Español
   password: z
     .string()
-    .min(1, 'La contraseña es requerida')  // ✅ Español
-    .min(8, 'La contraseña debe tener al menos 8 caracteres'),  // ✅ Español
+    .min(1, 'La contraseña es requerida') // ✅ Español
+    .min(8, 'La contraseña debe tener al menos 8 caracteres') // ✅ Español
 });
-```
-
-## Componentes Shared
-
-Los componentes shared deben aceptar texto en español como props:
-
-```typescript
-// ✅ CORRECTO
-<Button variant="primary">Guardar Cambios</Button>
-<Input label="Nombre Completo" placeholder="Ingresa tu nombre" />
-<Alert variant="success">¡Operación exitosa!</Alert>
-```
-
-## Schemas de Validación
-
-Todos los mensajes de validación en schemas Zod deben estar en español:
-
-```typescript
-// ✅ CORRECTO
-export const userSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido'),
-  email: z.string().email('Correo electrónico inválido'),
-  age: z.number().positive('La edad debe ser un número positivo'),
-});
-```
-
-## Excepciones
-
-### Nombres Técnicos
-Si es necesario mostrar nombres técnicos (como nombres de archivos, URLs, IDs), pueden mantenerse en inglés:
-
-```typescript
-// ✅ Aceptable
-<span>Archivo: {fileName}</span>  // fileName puede ser en inglés
-<span>ID: {userId}</span>  // userId puede ser en inglés
-```
-
-### Códigos de Error del Sistema
-Los códigos de error del sistema pueden mantenerse en inglés si vienen del backend:
-
-```typescript
-// ✅ Aceptable
-{error && (
-  <Alert variant="danger">
-    Error del servidor: {error.code}  // code puede ser en inglés
-  </Alert>
-)}
-```
-
-Pero el mensaje descriptivo debe estar en español:
-
-```typescript
-// ✅ MEJOR
-{error && (
-  <Alert variant="danger">
-    Error al procesar la solicitud. Código: {error.code}
-  </Alert>
-)}
 ```
 
 ## Checklist
@@ -157,4 +101,3 @@ Al crear una nueva página o componente, verificar:
 **Aunque se reciban screenshots o referencias en inglés, SIEMPRE traducir todo el texto visible al español.**
 
 El código puede y debe estar en inglés para mantener estándares internacionales, pero la experiencia del usuario debe ser completamente en español.
-
