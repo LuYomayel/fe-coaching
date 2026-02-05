@@ -85,7 +85,7 @@ export const useForgotPasswordVerification = ({ onSuccess }: UseForgotPasswordVe
       }
     } catch (error) {
       console.error('Verification error', error);
-      showToast('error', intl.formatMessage({ id: 'home.toast.error' }), (error as Error).message);
+      showToast('error', 'Error', (error as unknown as { message: string })?.message);
       return false;
     } finally {
       setIsVerifying(false);
@@ -116,6 +116,7 @@ export const useForgotPasswordVerification = ({ onSuccess }: UseForgotPasswordVe
 
   return {
     email,
+    setEmail,
     code,
     codeSent,
     isSendingCode,

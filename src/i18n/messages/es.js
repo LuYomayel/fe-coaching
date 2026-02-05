@@ -1032,7 +1032,9 @@ const messages = {
   'student.addedSuccessfully': 'Estudiante agregado exitosamente',
   'student.error.nameEmailRequired': 'El nombre y el correo electrónico no pueden estar vacíos',
   'student.error.birthdateInvalid': 'La fecha de nacimiento no puede ser posterior a hoy',
+  'student.validation.error': 'Por favor, corrige los errores en el formulario antes de continuar',
   'student.warning.youngClient': 'El cliente es muy joven, por favor verifica la fecha de nacimiento',
+  'validation.error': 'Por favor, corrige los errores en el formulario antes de continuar',
   'student.confirmation.create': '¿Estás seguro de que deseas crear este estudiante?',
   'student.error.noSubscription': 'El cliente no tiene una suscripción activa',
   'student.error.noCoachPlans':
@@ -1545,7 +1547,8 @@ const messages = {
   'dashboard.calendar.joinMeeting': 'Unirse a la Reunión',
   'dashboard.calendar.startTrainingSession': 'Iniciar Entrenamiento',
 
-  'student.trainingType': 'Tipo de Entrenamiento',
+  'student.sessionMode': 'Modo de Sesión',
+  'student.selectSessionMode': 'Seleccionar un modo de sesión',
   'student.selectTrainingType': 'Seleccionar un tipo de entrenamiento',
   'student.contactMethod': 'Método de Contacto',
   'student.selectContactMethod': 'Seleccionar un método de contacto',

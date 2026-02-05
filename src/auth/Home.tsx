@@ -68,7 +68,6 @@ export default function HomePage() {
 
     if (pendingCredentials) {
       try {
-        console.log('loginWithCredentials', pendingCredentials);
         await loginDialog.loginWithCredentials(pendingCredentials);
       } catch (error) {
         console.error('Error logging in', error);
@@ -80,6 +79,7 @@ export default function HomePage() {
 
   const handleForgotPassword = () => {
     loginDialog.close();
+    forgotPasswordVerification.setEmail(loginDialog.formValues.email);
     setForgotPasswordVisible(true);
   };
 
@@ -109,6 +109,7 @@ export default function HomePage() {
         loading={loginDialog.loading}
         onSwitchToSignUp={() => {
           loginDialog.close();
+          signUpDialog.setEmail(loginDialog.formValues.email);
           signUpDialog.open();
         }}
         onForgotPassword={handleForgotPassword}
@@ -123,6 +124,7 @@ export default function HomePage() {
         loading={signUpDialog.loading}
         onSwitchToLogin={() => {
           signUpDialog.close();
+          loginDialog.setEmail(signUpDialog.formValues.email);
           loginDialog.open();
         }}
       />

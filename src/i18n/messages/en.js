@@ -1313,6 +1313,8 @@ const messages = {
   'student.selectContactMethod': 'Select a contact method',
   'student.location': 'Location',
   'student.locationPlaceholder': 'Select a location',
+  'student.validation.error': 'Please correct the errors in the form before continuing',
+  'validation.error': 'Please correct the errors in the form before continuing',
 
   // Mercado Pago
   'payment.method.mercadoPago': 'Mercado Pago',

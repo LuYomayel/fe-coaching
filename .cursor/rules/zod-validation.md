@@ -54,16 +54,21 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 ```typescript
 // hooks/useLoginPage.ts
 import { loginSchema, type LoginFormData } from '@/schemas/auth.schemas';
+import { useToast } from '@/contexts/ToastContext';
+import { useIntl } from 'react-intl';
 
 export const useLoginPage = () => {
+  const { showToast } = useToast();
+  const intl = useIntl();
+
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: ''
   });
   const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({});
 
-  const validateForm = (data: LoginFormData) => {
-    const result = loginSchema.safeParse(data);
+  const validateForm = () => {
+    const result = loginSchema.safeParse(formData);
 
     if (!result.success) {
       // Transformar errores de Zod a formato de formulario
@@ -74,17 +79,30 @@ export const useLoginPage = () => {
         }
       });
       setErrors(fieldErrors);
-      return false;
+      // IMPORTANTE: Retornar el objeto con isValid y errors
+      return { isValid: false, errors: fieldErrors };
     }
 
     setErrors({});
-    return true;
+    return { isValid: true, errors: {} };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm(formData)) {
+    const validation = validateForm();
+
+    if (!validation.isValid) {
+      // IMPORTANTE: Mostrar errores específicos de Zod en el toast
+      const errorMessages = Object.values(validation.errors)
+        .filter((msg) => msg) // Filtrar valores null/undefined
+        .join('. ');
+
+      showToast(
+        'error',
+        intl.formatMessage({ id: 'error' }),
+        errorMessages || intl.formatMessage({ id: 'validation.error' })
+      );
       return;
     }
 
@@ -101,9 +119,12 @@ export const useLoginPage = () => {
 - ✅ **SIEMPRE** crear schemas en `src/schemas/`
 - ✅ **SIEMPRE** inferir tipos con `z.infer<typeof schema>`
 - ✅ **SIEMPRE** usar `safeParse()` para validación sin lanzar errores
-- ✅ **SIEMPRE** proporcionar mensajes de error descriptivos
+- ✅ **SIEMPRE** proporcionar mensajes de error descriptivos en español
 - ✅ **SIEMPRE** organizar schemas por dominio/funcionalidad
 - ✅ **SIEMPRE** exportar tipos inferidos junto con schemas
+- ✅ **SIEMPRE** mostrar errores de validación en un toast con los mensajes específicos de Zod
+- ✅ **SIEMPRE** retornar `{ isValid, errors }` desde validateForm (no solo boolean)
 - ❌ **NUNCA** validar manualmente con regex o if/else
 - ❌ **NUNCA** duplicar lógica de validación
 - ❌ **NUNCA** usar validaciones sin schemas
+- ❌ **NUNCA** ignorar mostrar los errores específicos al usuario

@@ -13,9 +13,10 @@ Esta carpeta contiene las reglas de arquitectura y patrones de desarrollo que Cu
 7. **[tailwind-styling.md](./tailwind-styling.md)** - Guía de estilos con Tailwind CSS
 8. **[shared-components.md](./shared-components.md)** - Componentes reutilizables
 9. **[zod-validation.md](./zod-validation.md)** - Validaciones con Zod schemas
-10. **[spanish-ui.md](./spanish-ui.md)** - Idioma de la interfaz de usuario
-11. **[backend-api-spec.md](./backend-api-spec.md)** - Especificaciones del backend
-12. **[backend-examples.md](./backend-examples.md)** - Ejemplos de código del backend
+10. **[form-validation-errors.md](./form-validation-errors.md)** - **IMPORTANTE:** Cómo mostrar errores de validación
+11. **[spanish-ui.md](./spanish-ui.md)** - Idioma de la interfaz de usuario
+12. **[backend-api-spec.md](./backend-api-spec.md)** - Especificaciones del backend
+13. **[backend-examples.md](./backend-examples.md)** - Ejemplos de código del backend
 
 ## 🎯 Reglas Principales
 
@@ -27,6 +28,7 @@ Esta carpeta contiene las reglas de arquitectura y patrones de desarrollo que Cu
 - Crear componentes en `components/shared/` en lugar de HTML nativo
 - Tipar TODO con TypeScript - NO usar `any` - Tipos compartidos en `/src/types`
 - Usar Zod con schemas para todas las validaciones de formularios
+- **SIEMPRE mostrar errores específicos de Zod al usuario en toast** (ver form-validation-errors.md)
 - Mostrar TODO el texto visible en ESPAÑOL (UI en español, código en inglés)
 
 ### ❌ NUNCA

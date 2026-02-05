@@ -163,13 +163,16 @@ async function fetchAPI<T = unknown>(endpoint: string, options: RequestInit = {}
 
       try {
         const errorData = await response.json();
+        console.log('errorData', errorData);
         if (errorData && !errorData.success && errorData.message) {
           const errorMessage =
             Array.isArray(errorData.errors) && errorData.errors.length > 0
               ? errorData.errors.join(', ')
-              : errorData.message;
+              : errorData.error;
+
           throw new Error(errorMessage);
         }
+        console.log('errorData.message', errorData.message);
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       } catch (jsonErr) {
         throw new Error((jsonErr as Error).message);

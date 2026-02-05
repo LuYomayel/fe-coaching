@@ -177,20 +177,20 @@ const StudentDialog = ({ onClose, setRefreshKey, studentData, visible }) => {
           {errors.birthdate && <small className="p-error">{errors.birthdate}</small>}
         </div>
         <div className="p-field">
-          <label htmlFor="trainingType">
-            <FormattedMessage id="student.trainingType" />
+          <label htmlFor="sessionMode">
+            <FormattedMessage id="student.sessionMode" />
           </label>
           <Dropdown
-            id="trainingType"
-            value={formData.trainingType}
+            id="sessionMode"
+            value={formData.sessionMode}
             options={sessionModeOptions}
-            onChange={(e) => updateField('trainingType', e.value)}
-            placeholder={intl.formatMessage({ id: 'student.selectTrainingType' })}
+            onChange={(e) => updateField('sessionMode', e.value)}
+            placeholder={intl.formatMessage({ id: 'student.selectSessionMode' })}
             className="w-full"
           />
         </div>
 
-        {formData.trainingType === 'presencial' && (
+        {formData.sessionMode === 'presencial' && (
           <div className="p-field">
             <label htmlFor="location">
               <FormattedMessage id="student.location" />
@@ -200,13 +200,13 @@ const StudentDialog = ({ onClose, setRefreshKey, studentData, visible }) => {
               value={formData.location}
               onChange={(e) => updateField('location', e.target.value)}
               placeholder={intl.formatMessage({ id: 'student.locationPlaceholder' })}
-              className={errors.location ? 'p-invalid' : ''}
+              className={errors.location ? 'p-invalid w-full' : 'w-full'}
             />
             {errors.location && <small className="p-error">{errors.location}</small>}
           </div>
         )}
 
-        {formData.trainingType === 'virtual_sincronico' && (
+        {formData.sessionMode === 'virtual_sincronico' && (
           <div className="p-field">
             <label htmlFor="contactMethod">
               <FormattedMessage id="student.contactMethod" />
@@ -217,13 +217,13 @@ const StudentDialog = ({ onClose, setRefreshKey, studentData, visible }) => {
               options={contactMethodOptions}
               onChange={(e) => updateField('contactMethod', e.value)}
               placeholder={intl.formatMessage({ id: 'student.selectContactMethod' })}
-              className={errors.contactMethod ? 'p-invalid' : ''}
+              className={errors.contactMethod ? 'p-invalid w-full' : 'w-full'}
             />
             {errors.contactMethod && <small className="p-error">{errors.contactMethod}</small>}
           </div>
         )}
 
-        {formData.trainingType === 'hibrido' && (
+        {formData.sessionMode === 'hibrido' && (
           <>
             <div className="p-field">
               <label htmlFor="location">
@@ -234,7 +234,7 @@ const StudentDialog = ({ onClose, setRefreshKey, studentData, visible }) => {
                 value={formData.location}
                 onChange={(e) => updateField('location', e.target.value)}
                 placeholder={intl.formatMessage({ id: 'student.locationPlaceholder' })}
-                className={errors.location ? 'p-invalid' : ''}
+                className={errors.location ? 'p-invalid w-full' : 'w-full'}
               />
               {errors.location && <small className="p-error">{errors.location}</small>}
             </div>
@@ -248,7 +248,7 @@ const StudentDialog = ({ onClose, setRefreshKey, studentData, visible }) => {
                 options={contactMethodOptions}
                 onChange={(e) => updateField('contactMethod', e.value)}
                 placeholder={intl.formatMessage({ id: 'student.selectContactMethod' })}
-                className={errors.contactMethod ? 'p-invalid' : ''}
+                className={errors.contactMethod ? 'p-invalid w-full' : 'w-full'}
               />
               {errors.contactMethod && <small className="p-error">{errors.contactMethod}</small>}
             </div>

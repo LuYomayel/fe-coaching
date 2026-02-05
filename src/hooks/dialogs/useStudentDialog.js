@@ -23,7 +23,7 @@ export const useStudentDialog = (studentData, onClose, setRefreshKey) => {
     height: null,
     birthdate: null,
     customFitnessGoal: '',
-    trainingType: null,
+    sessionMode: null,
     location: '',
     contactMethod: ''
   });
@@ -111,7 +111,7 @@ export const useStudentDialog = (studentData, onClose, setRefreshKey) => {
         height: studentData.height || null,
         birthdate: studentData.birthdate ? new Date(studentData.birthdate) : null,
         customFitnessGoal: studentData.customFitnessGoal || '',
-        trainingType: studentData.trainingType || null,
+        sessionMode: studentData.sessionMode || null,
         location: studentData.location || '',
         contactMethod: studentData.contactMethod || ''
       });
@@ -149,7 +149,7 @@ export const useStudentDialog = (studentData, onClose, setRefreshKey) => {
       const result = studentDialogSchema.parse(dataToValidate);
       console.log(result);
       setErrors({});
-      return true;
+      return { isValid: true, errors: {} };
     } catch (error) {
       console.log(error);
       if (error.issues) {
@@ -158,8 +158,9 @@ export const useStudentDialog = (studentData, onClose, setRefreshKey) => {
           newErrors[issue.path[0]] = issue.message;
         });
         setErrors(newErrors);
+        return { isValid: false, errors: newErrors };
       }
-      return false;
+      return { isValid: false, errors: {} };
     }
   };
 
@@ -204,7 +205,12 @@ export const useStudentDialog = (studentData, onClose, setRefreshKey) => {
   // Función para manejar el envío del formulario
   const handleSubmit = () => {
     console.log('handleSubmit');
-    if (!validateForm()) {
+    const validation = validateForm();
+
+    if (!validation.isValid) {
+      console.log('errors', validation.errors);
+      // Convertir el objeto de errores en un array de mensajes
+
       return;
     }
 
@@ -230,17 +236,16 @@ export const useStudentDialog = (studentData, onClose, setRefreshKey) => {
       weight: formData.weight,
       height: formData.height,
       birthdate: formData.birthdate,
-      trainingType: formData.trainingType,
+      sessionMode: formData.sessionMode,
       location:
-        formData.trainingType === 'presencial' || formData.trainingType === 'hibrido' ? formData.location : undefined,
+        formData.sessionMode === 'presencial' || formData.sessionMode === 'hibrido' ? formData.location : undefined,
       contactMethod:
-        formData.trainingType === 'virtual_sincronico' || formData.trainingType === 'hibrido'
+        formData.sessionMode === 'virtual_sincronico' || formData.sessionMode === 'hibrido'
           ? formData.contactMethod
           : undefined,
       coachId: user.userId
     };
 
-    console.log(body);
     showConfirmationDialog({
       message: intl.formatMessage({ id: 'student.confirmation.create' }),
       header: intl.formatMessage({ id: 'common.confirmation' }),

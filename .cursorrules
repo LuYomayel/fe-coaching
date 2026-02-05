@@ -9,7 +9,7 @@
 3. **API Client** - Usar `src/services/api-client.ts` para TODAS las llamadas HTTP. NO llamar directamente a `fetch`.
 4. **Componentes Shared** - Usar componentes de `src/components/shared/` en lugar de HTML nativo.
 5. **TypeScript Estricto** - Tipar absolutamente TODO. NO usar `any` excepto casos extremos. Tipos compartidos en `/src/types`, tipos locales en el mismo archivo.
-6. **Zod Schemas** - Usar Zod con schemas para TODAS las validaciones de formularios. NO validar manualmente con regex o if/else.
+6. **Zod Schemas** - Usar Zod con schemas para TODAS las validaciones. SIEMPRE mostrar errores específicos de Zod en toast al usuario. validateForm debe retornar `{ isValid, errors }`.
 7. **Español en UI** - TODO el texto visible debe estar en ESPAÑOL. El código (variables, funciones) en inglés.
 
 ### ❌ NUNCA
@@ -23,6 +23,7 @@
 7. NO mostrar texto en inglés en la interfaz de usuario
 8. NO usar `any` - Siempre tipar correctamente. Buscar tipos en `/src/types` primero
 9. NO dejar parámetros, retornos o estados sin tipo explícito
+10. NO ignorar errores de validación - SIEMPRE mostrar errores específicos de Zod al usuario en toast
 
 ## 📁 Estructura del Proyecto
 
@@ -131,11 +132,32 @@ export const loginSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
-// Uso en hook
-const result = loginSchema.safeParse(formData);
-if (!result.success) {
-  // Manejar errores
-}
+// IMPORTANTE: validateForm debe retornar { isValid, errors }
+const validateForm = () => {
+  const result = loginSchema.safeParse(formData);
+  if (!result.success) {
+    const errors = {};
+    result.error.errors.forEach((err) => {
+      errors[err.path[0]] = err.message;
+    });
+    setErrors(errors);
+    return { isValid: false, errors };
+  }
+  return { isValid: true, errors: {} };
+};
+
+// IMPORTANTE: Mostrar errores específicos en toast
+const handleSubmit = () => {
+  const validation = validateForm();
+  if (!validation.isValid) {
+    const errorMessages = Object.values(validation.errors)
+      .filter((msg) => msg)
+      .join('. ');
+    showToast('error', 'Error', errorMessages);
+    return;
+  }
+  // Proceder...
+};
 ```
 
 ## 🌍 Idioma

@@ -16,14 +16,8 @@ export const buildCoachProfileFormSchema = (intl: IntlShape) => {
       .string()
       .trim()
       .min(1, { message: required('coachProfileForm.validation.name') }),
-    bio: z
-      .string()
-      .trim()
-      .min(1, { message: required('coachProfileForm.validation.bio') }),
-    experience: z
-      .string()
-      .trim()
-      .min(1, { message: required('coachProfileForm.validation.experience') })
+    bio: z.string().trim().optional().nullable(),
+    experience: z.string().trim().optional().nullable()
   });
 
   const trainingDetailsSchema = z

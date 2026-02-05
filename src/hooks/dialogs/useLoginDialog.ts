@@ -36,6 +36,13 @@ export const useLoginDialog = ({
   const open = () => setVisible(true);
   const close = () => setVisible(false);
 
+  const setEmail = (email: string) => {
+    setFormValues((prev) => ({
+      ...prev,
+      email: email
+    }));
+  };
+
   const performLogin = useCallback(
     async (credentials: { email: string; password: string }) => {
       setLoading(true);
@@ -147,6 +154,7 @@ export const useLoginDialog = ({
     handleFieldChange,
     handleSubmit,
     resetForm,
-    loginWithCredentials: performLogin
+    loginWithCredentials: performLogin,
+    setEmail
   };
 };

@@ -8,7 +8,6 @@ import { mapZodErrors } from '../../utils/mapZodErrors';
 import { buildSignUpSchema } from '../../schemas/auth/signUpSchema';
 
 const initialValues = {
-  fullName: '',
   email: '',
   password: '',
   confirmPassword: '',
@@ -50,6 +49,13 @@ export const useSignUpDialog = ({
       }));
     };
 
+  const setEmail = (email: string) => {
+    setFormValues((prev) => ({
+      ...prev,
+      email: email
+    }));
+  };
+
   const validate = () => {
     const result = signUpSchema.safeParse(formValues);
     if (result.success) {
@@ -68,7 +74,9 @@ export const useSignUpDialog = ({
 
     setLoading(true);
     try {
+      console.log('formValues', formValues);
       const response = await registerCoach(formValues);
+
       const { message, error } = response || {};
 
       if (message !== 'success') {
@@ -105,6 +113,7 @@ export const useSignUpDialog = ({
     formErrors,
     handleFieldChange,
     handleSubmit,
-    resetForm
+    resetForm,
+    setEmail
   };
 };
