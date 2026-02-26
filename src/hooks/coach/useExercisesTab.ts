@@ -4,6 +4,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { deleteExercise } from '../../services/exercisesService';
 import { FilterMatchMode } from 'primereact/api';
 import { api } from '../../services/api-client';
+import { useExercisesStore } from '../../stores/useExercisesStore';
 import {
   ICategory,
   IContractionType,
@@ -16,6 +17,7 @@ import {
   IUnilateralType,
   IVariant
 } from 'types/workout/exercise';
+import { IRpeMethod } from 'types/rpe/rpe-method-assigned';
 export function useExercisesTab() {
   const { coach } = useUser();
   const { showToast } = useToast();
@@ -58,8 +60,11 @@ export function useExercisesTab() {
   const [muscles, setMuscles] = useState<IMuscle[]>([]);
   const [unilateralTypes, setUnilateralTypes] = useState<IUnilateralType[]>([]);
   const [variants, setVariants] = useState<IVariant[]>([]);
+  const [rpeMethods, setRpeMethods] = useState<IRpeMethod[]>([]);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [exerciseDialogVisible, setExerciseDialogVisible] = useState(false);
+
+  const exercisesStore = useExercisesStore();
   const [newExercise, setNewExercise] = useState<IExercise>({
     id: 0,
     name: '',
@@ -77,7 +82,8 @@ export function useExercisesTab() {
     progressionExercise: null,
     equipments: [],
     muscles: [],
-    coach: null
+    coach: null,
+    rpeMethod: null
   });
 
   const [videoDialogVisible, setVideoDialogVisible] = useState(false);
@@ -151,7 +157,8 @@ export function useExercisesTab() {
         movementPlanes,
         muscles,
         unilateralTypes,
-        variants
+        variants,
+        rpeMethods
       ] = await Promise.all([
         api.exercise.fetchCategories(),
         api.exercise.fetchContractions(),
@@ -161,7 +168,8 @@ export function useExercisesTab() {
         api.exercise.fetchMovementPlanes(),
         api.exercise.fetchMuscles(),
         api.exercise.fetchUnilateralTypes(),
-        api.exercise.fetchVariants()
+        api.exercise.fetchVariants(),
+        api.exercise.fetchRpeMethods()
       ]);
 
       setCategories(categories.data || []);
@@ -173,12 +181,14 @@ export function useExercisesTab() {
       setMuscles(muscles.data || []);
       setUnilateralTypes(unilateralTypes.data || []);
       setVariants(variants.data || []);
+      setRpeMethods(rpeMethods.data || []);
     };
     loadExerciseProperties();
   }, []);
 
   const openCreateExerciseDialog = useCallback(() => {
     setDialogMode('create');
+    exercisesStore.loadExercises({ search: '' });
     setNewExercise({
       id: 0,
       name: '',
@@ -196,16 +206,21 @@ export function useExercisesTab() {
       progressionExercise: null,
       equipments: [],
       muscles: [],
-      coach: null
+      coach: null,
+      rpeMethod: null
     });
     setExerciseDialogVisible(true);
-  }, []);
+  }, [exercisesStore]);
 
-  const openEditExerciseDialog = useCallback((exercise: any) => {
-    setDialogMode('edit');
-    setNewExercise(exercise);
-    setExerciseDialogVisible(true);
-  }, []);
+  const openEditExerciseDialog = useCallback(
+    (exercise: IExercise) => {
+      setDialogMode('edit');
+      exercisesStore.loadExercises({ search: '' });
+      setNewExercise(exercise);
+      setExerciseDialogVisible(true);
+    },
+    [exercisesStore]
+  );
 
   const closeExerciseDialog = useCallback(() => {
     setNewExercise({
@@ -225,7 +240,8 @@ export function useExercisesTab() {
       progressionExercise: null,
       equipments: [],
       muscles: [],
-      coach: null
+      coach: null,
+      rpeMethod: null
     });
     setExerciseDialogVisible(false);
   }, []);
@@ -235,13 +251,14 @@ export function useExercisesTab() {
       try {
         const response = await deleteExercise(exerciseId);
         if (response.error) throw new Error(response.message);
+        exercisesStore.invalidate();
         setRefreshKey((old) => old + 1);
         showToast('success', 'Success', 'Exercise deleted successfully');
       } catch (error: any) {
         showToast('error', 'Error', error.message);
       }
     },
-    [showToast]
+    [showToast, exercisesStore]
   );
 
   const debouncedSaveExercise = useCallback(
@@ -349,12 +366,13 @@ export function useExercisesTab() {
       setModifiedExercises({});
       setIsEditingExercises(false);
       setOriginalExercisesForEdit(exercises);
+      exercisesStore.invalidate();
       setRefreshKey((k) => k + 1);
       showToast('success', 'Éxito', 'Ejercicios actualizados correctamente');
     } catch (error: any) {
       showToast('error', 'Error', error.message || 'Error updating exercises');
     }
-  }, [exercises, modifiedExercises, showToast]);
+  }, [exercises, modifiedExercises, showToast, exercisesStore]);
 
   const cancelMassUpdate = useCallback(() => {
     setIsEditingExercises(false);
@@ -463,6 +481,10 @@ export function useExercisesTab() {
     return rowData.progressionExercise?.name || '-';
   }, []);
 
+  const rpeMethodBodyTemplate = useCallback((rowData: any) => {
+    return rowData.rpeMethod?.name || '-';
+  }, []);
+
   const equipmentsBodyTemplate = useCallback((rowData: any) => {
     if (!rowData.equipments || rowData.equipments.length === 0) return '-';
     return rowData.equipments
@@ -498,6 +520,7 @@ export function useExercisesTab() {
     // setters
     setFilters,
     setIsEditingExercises,
+    setExerciseDialogVisible,
     setOriginalExercisesForEdit,
     setNewExercise,
     setVideoDialogVisible,
@@ -534,6 +557,7 @@ export function useExercisesTab() {
     movementPatternBodyTemplate,
     regressionExerciseBodyTemplate,
     progressionExerciseBodyTemplate,
+    rpeMethodBodyTemplate,
     equipmentsBodyTemplate,
     musclesBodyTemplate,
     // data
@@ -545,6 +569,8 @@ export function useExercisesTab() {
     movementPlanes,
     muscles,
     unilateralTypes,
-    variants
+    variants,
+    rpeMethods,
+    dialogExercises: exercisesStore.exercises
   };
 }

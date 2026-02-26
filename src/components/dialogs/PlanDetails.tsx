@@ -35,7 +35,6 @@ const PlanDetails: React.FC<PlanDetailsProps> = ({
 }) => {
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits') || '{}');
 
-  console.log('planId', planId, isTemplate);
   const {
     workoutPlan,
     rpeMethod,

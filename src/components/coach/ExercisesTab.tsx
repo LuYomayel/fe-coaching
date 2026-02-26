@@ -8,6 +8,7 @@ import { MultiSelect } from 'primereact/multiselect';
 
 import { useIntl } from 'react-intl';
 import { useExercisesTab } from '../../hooks/coach/useExercisesTab';
+import { useRpeMethods } from '../../hooks/coach/useRpeMethods';
 import { ExerciseExcelImport } from './ExerciseExcelImport';
 import { useSpinner } from '../../utils/GlobalSpinner';
 import VideoDialog from '../../dialogs/VideoDialog';
@@ -18,6 +19,7 @@ export function ExercisesTab() {
   const intl = useIntl();
   const { setLoading } = useSpinner();
   const state = useExercisesTab();
+  const { rpeMethods } = useRpeMethods();
 
   const handleVideoClick = (url: string | null | undefined) => {
     try {
@@ -345,6 +347,17 @@ export function ExercisesTab() {
             style={{ minWidth: '130px', maxWidth: '170px' }}
           />
 
+          <Column
+            field="rpeMethod"
+            header={intl.formatMessage({ id: 'exercises.field.rpeMethod' })}
+            editor={createDropdownEditor(rpeMethods)}
+            body={state.rpeMethodBodyTemplate}
+            className="text-xs"
+            headerClassName="text-xs p-2"
+            bodyClassName="p-2 text-xs"
+            style={{ minWidth: '130px', maxWidth: '170px' }}
+          />
+
           {!state.isEditingExercises && (
             <Column
               header={intl.formatMessage({ id: 'common.actions' })}
@@ -389,8 +402,8 @@ export function ExercisesTab() {
           exerciseDialogVisible={state.exerciseDialogVisible}
           closeExerciseDialog={state.closeExerciseDialog}
           dialogMode={state.dialogMode}
-          setExerciseDialogVisible={state.setIsEditingExercises as any}
-          setRefreshKey={state.setRefreshKey as any}
+          setExerciseDialogVisible={state.setExerciseDialogVisible}
+          setRefreshKey={state.setRefreshKey}
           categories={state.categories}
           contractions={state.contractions}
           difficulties={state.difficulties}
@@ -400,7 +413,8 @@ export function ExercisesTab() {
           muscles={state.muscles}
           unilateralTypes={state.unilateralTypes}
           variants={state.variants}
-          exercises={state.exercises}
+          exercises={state.dialogExercises}
+          rpeMethods={rpeMethods}
         />
       )}
     </div>

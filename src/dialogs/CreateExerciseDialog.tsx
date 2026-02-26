@@ -8,6 +8,7 @@ import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import { isValidYouTubeUrl } from '../utils/UtilFunctions';
 import { useSpinner } from '../utils/GlobalSpinner';
 import { api } from '../services/api-client';
+import { useExercisesStore } from '../stores/useExercisesStore';
 import {
   ICategory,
   IContractionType,
@@ -20,8 +21,10 @@ import {
   IUnilateralType,
   IVariant
 } from 'types/workout/exercise';
+import { IRpeMethod } from 'types/rpe/rpe-method-assigned';
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
+import { ExerciseDropdown } from '../components/shared/ExerciseDropdown';
 
 interface CreateExerciseDialogProps {
   exercise: IExercise;
@@ -40,6 +43,7 @@ interface CreateExerciseDialogProps {
   unilateralTypes: IUnilateralType[];
   variants: IVariant[];
   exercises: IExercise[];
+  rpeMethods?: IRpeMethod[];
 }
 
 const truncateMessage = (message: string, maxLength = 50) => {
@@ -66,11 +70,13 @@ export const CreateExerciseDialog: React.NamedExoticComponent<CreateExerciseDial
     muscles,
     unilateralTypes,
     variants,
-    exercises
+    exercises,
+    rpeMethods = []
   }: CreateExerciseDialogProps) => {
     const intl = useIntl();
     const [newExercise, setNewExercise] = useState<IExercise>(exercise);
     const { isLoading } = useSpinner();
+    const invalidateExercises = useExercisesStore((s) => s.invalidate);
     const { showToast } = useToast();
     const { showConfirmationDialog } = useConfirmationDialog();
     const handleSaveExercise = async () => {
@@ -87,6 +93,7 @@ export const CreateExerciseDialog: React.NamedExoticComponent<CreateExerciseDial
         movementPatternId: newExercise.movementPattern?.id ?? null,
         regressionExerciseId: newExercise.regressionExercise?.id ?? null,
         progressionExerciseId: newExercise.progressionExercise?.id ?? null,
+        rpeMethodId: newExercise.rpeMethod?.id ?? null,
         equipmentIds:
           newExercise.equipments && Array.isArray(newExercise.equipments) && newExercise.equipments.length > 0
             ? newExercise.equipments.map((eq: any) => {
@@ -140,6 +147,7 @@ export const CreateExerciseDialog: React.NamedExoticComponent<CreateExerciseDial
           }
         }
 
+        invalidateExercises();
         setExerciseDialogVisible(false);
         setRefreshKey((old) => old + 1);
       } catch (error: any) {
@@ -321,21 +329,14 @@ export const CreateExerciseDialog: React.NamedExoticComponent<CreateExerciseDial
                 <label htmlFor="regressionExercise">
                   {intl.formatMessage({ id: 'exercises.field.regressionExercise' })}
                 </label>
-                <Dropdown
-                  id="regressionExercise"
+                <ExerciseDropdown
+                  exercises={exercises.map((ex) => ({ id: ex.id, name: ex.name }))}
                   value={newExercise.regressionExercise?.id ?? null}
-                  options={exercises}
-                  optionLabel="name"
-                  optionValue="id"
-                  filter
-                  filterBy="name"
-                  showClear
-                  className="w-full"
-                  onChange={(e) => {
-                    const selectedId = (e as any).value;
+                  onChange={(selectedId) => {
                     const selectedExercise = selectedId ? (exercises.find((ex) => ex.id === selectedId) ?? null) : null;
                     setNewExercise({ ...newExercise, regressionExercise: selectedExercise });
                   }}
+                  placeholder={intl.formatMessage({ id: 'exercises.field.regressionExercise' })}
                 />
               </div>
 
@@ -343,21 +344,14 @@ export const CreateExerciseDialog: React.NamedExoticComponent<CreateExerciseDial
                 <label htmlFor="progressionExercise">
                   {intl.formatMessage({ id: 'exercises.field.progressionExercise' })}
                 </label>
-                <Dropdown
-                  id="progressionExercise"
+                <ExerciseDropdown
+                  exercises={exercises.map((ex) => ({ id: ex.id, name: ex.name }))}
                   value={newExercise.progressionExercise?.id ?? null}
-                  options={exercises}
-                  optionLabel="name"
-                  optionValue="id"
-                  filter
-                  filterBy="name"
-                  showClear
-                  className="w-full"
-                  onChange={(e) => {
-                    const selectedId = (e as any).value;
+                  onChange={(selectedId) => {
                     const selectedExercise = selectedId ? (exercises.find((ex) => ex.id === selectedId) ?? null) : null;
                     setNewExercise({ ...newExercise, progressionExercise: selectedExercise });
                   }}
+                  placeholder={intl.formatMessage({ id: 'exercises.field.progressionExercise' })}
                 />
               </div>
             </div>
@@ -423,6 +417,27 @@ export const CreateExerciseDialog: React.NamedExoticComponent<CreateExerciseDial
                 }}
               />
             </div>
+
+            {rpeMethods.length > 0 && (
+              <div className="p-field">
+                <label htmlFor="rpeMethod">{intl.formatMessage({ id: 'exercises.field.rpeMethod' })}</label>
+                <Dropdown
+                  id="rpeMethod"
+                  value={newExercise.rpeMethod?.id ?? null}
+                  options={rpeMethods}
+                  optionLabel="name"
+                  optionValue="id"
+                  showClear
+                  className="w-full"
+                  placeholder={intl.formatMessage({ id: 'exercises.field.rpeMethod' })}
+                  onChange={(e) => {
+                    const selectedId = (e as any).value;
+                    const selectedRpe = selectedId ? (rpeMethods.find((r) => r.id === selectedId) ?? null) : null;
+                    setNewExercise({ ...newExercise, rpeMethod: selectedRpe });
+                  }}
+                />
+              </div>
+            )}
 
             <div className="mt-2">
               <Button

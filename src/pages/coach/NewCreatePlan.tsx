@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
-import { Dropdown } from 'primereact/dropdown';
 import { DndContext, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FaGripVertical } from 'react-icons/fa';
@@ -12,6 +11,7 @@ import { useNewCreatePlan } from '../../hooks/coach/useNewCreatePlan';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 import { useSetConfigDialog } from '../../hooks/dialogs/useSetConfigDialog';
 import { DragableRow } from '../../components/shared/DragableRow';
+import { ExerciseDropdown } from '../../components/shared/ExerciseDropdown';
 import { SetConfigDialog } from '../../dialogs/SetConfigDialog';
 import { IPlanGroup, IPlanExercise } from '../../types/workout/plan-state';
 
@@ -37,7 +37,6 @@ export const NewCreatePlan: React.FC = () => {
     plan,
     groups,
     exercises,
-    isLoading,
     isSaving,
     updatePlanName,
     updateExerciseSelection,
@@ -110,14 +109,6 @@ export const NewCreatePlan: React.FC = () => {
     setSelectedExercise(exercise);
     openDialog();
   };
-
-  if (isLoading) {
-    return (
-      <div className="p-4">
-        <span>Cargando plan...</span>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -317,22 +308,12 @@ export const NewCreatePlan: React.FC = () => {
 
                                 {/* Dropdown de ejercicio */}
                                 <div style={{ width: '300px' }} className="p-2 border-right-1 surface-border">
-                                  <Dropdown
-                                    className="w-full p-inputtext-sm"
-                                    options={exercises}
-                                    optionLabel="name"
-                                    optionValue="id"
-                                    placeholder="Seleccionar ejercicio"
+                                  <ExerciseDropdown
+                                    exercises={exercises}
                                     value={exercise.exercise?.id ?? null}
-                                    onChange={(e) => updateExerciseSelection(group.id, exercise.id, e.value)}
-                                    filter
-                                    showClear
-                                    filterInputAutoFocus={false}
-                                    resetFilterOnHide
+                                    onChange={(val) => updateExerciseSelection(group.id, exercise.id, val)}
                                     onFocus={() => setIsEditing(true)}
                                     onBlur={() => setIsEditing(false)}
-                                    emptyMessage="No se encontraron ejercicios"
-                                    emptyFilterMessage="No se encontraron ejercicios"
                                   />
                                 </div>
 

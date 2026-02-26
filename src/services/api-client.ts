@@ -255,6 +255,7 @@ export const api = {
     fetchMuscles: () => apiClient.get<IMuscle[]>(`/exercise/muscles`),
     fetchUnilateralTypes: () => apiClient.get<IUnilateralType[]>(`/exercise/unilateral-types`),
     fetchVariants: () => apiClient.get<IVariant[]>(`/exercise/variants`),
+    fetchRpeMethods: () => apiClient.get<IRpeMethod[]>(`/exercise/rpe-methods`),
     createExercise: (data: {
       name: string;
       multimedia: string;

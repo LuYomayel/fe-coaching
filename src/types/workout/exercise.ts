@@ -1,4 +1,5 @@
 import { ICoach } from 'types/models';
+import { IRpeMethod } from 'types/rpe/rpe-method-assigned';
 export interface IExercise {
   id: number;
   name: string;
@@ -19,6 +20,8 @@ export interface IExercise {
 
   equipments: IExerciseEquipment[];
   muscles: IExerciseMuscle[];
+
+  rpeMethod: IRpeMethod | null;
 
   coach: ICoach | null;
 }

@@ -17,7 +17,6 @@ export const useRpeMethods = () => {
     setLoading(true);
     try {
       const { data } = await api.rpe.getRpeMethods();
-      console.log('data', data);
       setRpeMethods(data || []);
 
       // Encontrar el método por defecto

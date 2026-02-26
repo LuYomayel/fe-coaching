@@ -12,7 +12,6 @@ import AssignWorkoutToCycleDialog from '../../dialogs/AssignWorkoutToCycleDialog
 import AssignWorkoutToSessionDialog from '../../dialogs/AssignWorkoutToSessionDialog';
 import CreateTrainingCycleDialog from '../../dialogs/CreateTrainingCycle';
 import PlanDetails from '../dialogs/PlanDetails';
-import { AssignCycleTemplateDialog } from '../dialogs/AssignCycleTemplateDialog';
 import { useCalendarTab } from '../../hooks/client/useCalendarTab';
 import '../../App.css';
 import { contactMethodOptions } from '../../types/coach/dropdown-options';
@@ -22,7 +21,7 @@ interface CalendarTabProps {
   clientId: string;
   clientData: ClientData | null;
   refreshKey: number;
-  setRefreshKey: (value: number | ((prev: number) => number)) => void;
+  setRefreshKey: (value: number | ((prev: number) => number)) => void; // eslint-disable-line no-unused-vars
 }
 
 export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, refreshKey, setRefreshKey }) => {
@@ -68,18 +67,6 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
     planDetailsVisible,
     setPlanDetailsVisible,
     handleViewWorkoutDetails,
-
-    // Assign cycle template dialog
-    isAssignCycleTemplateDialogVisible,
-    setAssignCycleTemplateDialogVisible,
-    trainingCycleTemplates,
-    selectedCycleTemplate,
-    setSelectedCycleTemplate,
-    startDate,
-    setStartDate,
-    endDate,
-    setEndDate,
-    handleAssignCycleTemplateToClient,
 
     // Utilities
     navigateToTrainingSession,
@@ -340,13 +327,13 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
         />
         <Button
           label={intl.formatMessage({ id: 'clientDashboard.buttons.assign' })}
-          icon="pi pi-refresh"
+          icon="pi pi-plus-circle"
           className="p-button-success"
           onClick={() => handleOpenAssignCycle('assign')}
         />
         <Button
           label={intl.formatMessage({ id: 'clientDashboard.buttons.unassign' })}
-          icon="pi pi-trash"
+          icon="pi pi-minus-circle"
           className="p-button-danger"
           onClick={() => handleOpenAssignCycle('unassign')}
         />
@@ -421,18 +408,6 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
         setLoading={setLoading}
         isTemplate={false}
         clientId={clientId}
-      />
-      <AssignCycleTemplateDialog
-        visible={isAssignCycleTemplateDialogVisible}
-        onHide={() => setAssignCycleTemplateDialogVisible(false)}
-        trainingCycleTemplates={trainingCycleTemplates}
-        selectedCycleTemplate={selectedCycleTemplate}
-        setSelectedCycleTemplate={setSelectedCycleTemplate}
-        startDate={startDate}
-        setStartDate={setStartDate}
-        endDate={endDate}
-        setEndDate={setEndDate}
-        onAssign={handleAssignCycleTemplateToClient}
       />
     </>
   );

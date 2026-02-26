@@ -33,15 +33,17 @@ const AssignWorkoutToCycleDialog = ({ visible, onHide, clientId, setRefreshKey, 
   const [showVerificationDialog, setShowVerificationDialog] = useState(false); // Estado para controlar la visibilidad del diálogo de verificación
 
   useEffect(() => {
-    setAssignments([{ workoutId: null, dayOfWeek: null }]);
-    setCycle(-1);
-    setSelectedDay(null);
-    setAssignedWorkouts([]);
-    setUnassignOption('day');
-    setVerificationResult(null);
-    setForceDelete(false);
-    setShowVerificationDialog(false);
-  }, []);
+    if (visible) {
+      setAssignments([{ workoutId: null, dayOfWeek: null }]);
+      setCycle(-1);
+      setSelectedDay(null);
+      setAssignedWorkouts([]);
+      setUnassignOption('day');
+      setVerificationResult(null);
+      setForceDelete(false);
+      setShowVerificationDialog(false);
+    }
+  }, [visible]);
 
   useEffect(() => {
     const loadWorkouts = async () => {

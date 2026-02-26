@@ -3,11 +3,13 @@ import { useToast } from '../../contexts/ToastContext';
 import { analyzeExcelFile } from '../../services/exercisesService';
 import { useUser } from 'contexts/UserContext';
 import { api } from 'services/api-client';
+import { useExercisesStore } from '../../stores/useExercisesStore';
 
 export function useExerciseExcelImport(params: { onAfterImport?: () => void; setLoading: (v: boolean) => void }) {
   const { onAfterImport, setLoading } = params;
   const { showToast } = useToast();
   const { coach } = useUser();
+  const invalidateExercises = useExercisesStore((s) => s.invalidate);
   const [analysisDialogVisible, setAnalysisDialogVisible] = useState(false);
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [totalSize, setTotalSize] = useState(0);
@@ -15,6 +17,19 @@ export function useExerciseExcelImport(params: { onAfterImport?: () => void; set
 
   const fileUploadRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const clearAll = useCallback(() => {
+    setSelectedFile(null);
+    setTotalSize(0);
+    setAnalysisData(null);
+    setAnalysisDialogVisible(false);
+    if (fileUploadRef.current?.clear) {
+      fileUploadRef.current.clear();
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
 
   const onTemplateSelect = useCallback(
     (e: { files: Record<string, File> }) => {
@@ -35,12 +50,15 @@ export function useExerciseExcelImport(params: { onAfterImport?: () => void; set
 
   const onTemplateError = useCallback((e: any) => {
     setTotalSize(0);
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     console.error('Error during upload:', e);
   }, []);
 
   const onTemplateClear = useCallback(() => {
     setSelectedFile(null);
     setTotalSize(0);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
   const uploadHandler = useCallback(
@@ -52,24 +70,23 @@ export function useExerciseExcelImport(params: { onAfterImport?: () => void; set
         setLoading(true);
         console.log('formData', formData);
         const { data } = await analyzeExcelFile(coach?.id, formData);
+        console.log('data', data);
         setAnalysisDialogVisible(true);
         setAnalysisData(data);
       } catch (error: any) {
         onTemplateError(error);
+        console.error('Error analyzing excel file', error);
         showToast('error', 'Error', error.message);
       } finally {
         setLoading(false);
       }
     },
-    [coach, onTemplateError, showToast]
+    [coach, onTemplateError, setLoading, showToast]
   );
 
   const handleAnalysisCancel = useCallback(() => {
-    setAnalysisDialogVisible(false);
-    if (fileUploadRef.current) fileUploadRef.current.clear();
-    setSelectedFile(null);
-    setTotalSize(0);
-  }, []);
+    clearAll();
+  }, [clearAll]);
 
   const handleAnalysisConfirm = useCallback(async () => {
     try {
@@ -80,21 +97,17 @@ export function useExerciseExcelImport(params: { onAfterImport?: () => void; set
       };
       await api.exercise.processImportExercises(importData);
 
-      if (fileUploadRef.current) fileUploadRef.current.clear();
-      setSelectedFile(null);
-      setTotalSize(0);
-      setAnalysisDialogVisible(false);
-      setAnalysisData(null);
+      invalidateExercises();
+      clearAll();
       onAfterImport && onAfterImport();
     } catch (error: any) {
       console.error('Error processing import exercises', error);
-      onTemplateError(error);
       showToast('error', 'Error', error.message);
+      clearAll();
     } finally {
       setLoading(false);
-      if (fileUploadRef.current) fileUploadRef.current.clear();
     }
-  }, [analysisData, coach, onAfterImport, onTemplateError, setLoading, showToast]);
+  }, [analysisData, clearAll, invalidateExercises, onAfterImport, setLoading, showToast]);
 
   return {
     // refs

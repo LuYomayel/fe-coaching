@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useSpinner } from '../../utils/GlobalSpinner';
 import { api } from '../../services/api-client';
-import { formatDate, formatDateToApi, mapSessionToCalendarEvent } from '../../utils/UtilFunctions';
+import { formatDate, mapSessionToCalendarEvent } from '../../utils/UtilFunctions';
 import { ClientData } from '../../pages/ClientDashboard';
 
 interface CalendarEvent {
@@ -27,25 +27,6 @@ interface CalendarEvent {
 interface CycleOption {
   label: string;
   value: number;
-}
-
-interface TrainingCycleTemplate {
-  id: number;
-  name: string;
-  duration: number;
-  isDurationInMonths: boolean;
-  trainingWeeks?: Array<{
-    trainingSessions?: Array<{
-      workoutInstances?: Array<{
-        workout?: {
-          planName: string;
-        };
-      }>;
-      workout?: {
-        planName: string;
-      };
-    }>;
-  }>;
 }
 
 interface UseCalendarTabProps {
@@ -83,13 +64,6 @@ export const useCalendarTab = ({ clientId, clientData, refreshKey, setRefreshKey
   // Plan details dialog states
   const [planDetailsVisible, setPlanDetailsVisible] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
-
-  // Assign cycle template dialog states
-  const [isAssignCycleTemplateDialogVisible, setAssignCycleTemplateDialogVisible] = useState(false);
-  const [trainingCycleTemplates, setTrainingCycleTemplates] = useState<TrainingCycleTemplate[]>([]);
-  const [selectedCycleTemplate, setSelectedCycleTemplate] = useState<TrainingCycleTemplate | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
 
   // Helper function to fetch and map training cycles to calendar events
   const fetchTrainingCyclesEvents = async () => {
@@ -163,20 +137,6 @@ export const useCalendarTab = ({ clientId, clientData, refreshKey, setRefreshKey
       });
   }, [clientId, refreshKey, intl, showToast, setLoading]);
 
-  // Fetch training cycle templates
-  useEffect(() => {
-    const fetchTrainingCyclesTemplates = async () => {
-      const response = await api.workout.fetchTrainingCyclesTemplatesByCoachId();
-      if (response.message !== 'success' || !response.data) {
-        throw new Error('Error fetching training cycles templates');
-      }
-      setTrainingCycleTemplates(response.data as any);
-    };
-    if (clientData?.coach?.id !== undefined) {
-      fetchTrainingCyclesTemplates();
-    }
-  }, [clientData?.coach?.id, refreshKey]);
-
   // Handlers
   const handleViewWorkoutDetails = (workoutInstanceId: number) => {
     setLoading(true);
@@ -212,69 +172,6 @@ export const useCalendarTab = ({ clientId, clientData, refreshKey, setRefreshKey
     setSelectedClient(clientId);
     setActionType(action);
     setAssignCycleVisible(true);
-    console.log('handleOpenAssignCycle', action);
-  };
-
-  const openAssignCycleTemplateDialog = () => {
-    setAssignCycleTemplateDialogVisible(true);
-    setSelectedCycleTemplate(null);
-    setStartDate(null);
-    setEndDate(null);
-  };
-
-  const handleAssignCycleTemplateToClient = async () => {
-    if (!selectedCycleTemplate || !startDate || !endDate) {
-      showToast(
-        'error',
-        'Error',
-        intl.formatMessage({
-          id: 'clientDashboard.error.selectCycleAndDates',
-          defaultMessage: 'Por favor seleccione un ciclo de entrenamiento y fechas de inicio/fin.'
-        })
-      );
-      return;
-    }
-
-    setLoading(true);
-    const startDateNewDate = new Date(startDate);
-    const endDateNewDate = new Date(endDate);
-
-    try {
-      const payload = {
-        cycleTemplateId: selectedCycleTemplate.id,
-        clientId: parseInt(clientId),
-        startDate: formatDateToApi(startDateNewDate),
-        endDate: formatDateToApi(endDateNewDate)
-      };
-
-      const response = await api.workout.assignCycleTemplateToClient(payload);
-
-      if (!response.success) {
-        throw new Error(response.message || 'Error al asignar ciclo');
-      }
-
-      showToast(
-        'success',
-        intl.formatMessage({
-          id: 'clientDashboard.success',
-          defaultMessage: 'Éxito'
-        }),
-        intl.formatMessage({
-          id: 'clientDashboard.success.cycleAssigned',
-          defaultMessage: 'Ciclo de entrenamiento asignado correctamente.'
-        })
-      );
-      setAssignCycleTemplateDialogVisible(false);
-      setRefreshKey((prev: number) => prev + 1);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      showToast('error', 'Error', error.message || 'Ocurrió un error al asignar el ciclo de entrenamiento.');
-    } finally {
-      setLoading(false);
-      setSelectedCycleTemplate(null);
-      setStartDate(null);
-      setEndDate(null);
-    }
   };
 
   const handleAddDayWorkout = (date: string) => {
@@ -326,19 +223,6 @@ export const useCalendarTab = ({ clientId, clientData, refreshKey, setRefreshKey
     selectedPlan,
     handleViewWorkoutDetails,
     hidePlanDetails,
-
-    // Assign cycle template dialog
-    isAssignCycleTemplateDialogVisible,
-    setAssignCycleTemplateDialogVisible,
-    trainingCycleTemplates,
-    selectedCycleTemplate,
-    setSelectedCycleTemplate,
-    startDate,
-    setStartDate,
-    endDate,
-    setEndDate,
-    openAssignCycleTemplateDialog,
-    handleAssignCycleTemplateToClient,
 
     // Utilities
     navigateToTrainingSession,

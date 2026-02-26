@@ -196,6 +196,7 @@ const fetchExcelViewByCycleAndDay = async (cycleId, dayNumber) => {
 };
 
 const createTrainingCycle = async (body) => {
+  if (DEBUG_CALENDAR) console.log('[CalendarTab] Flujo 2a: createTrainingCycle', body);
   try {
     const response = await fetch(`${apiUrl}/workout/training-cycles`, {
       method: 'POST',
@@ -333,6 +334,7 @@ const updateTrainingCycle = async (cycleId, body) => {
 };
 
 const deleteTrainingCycle = async (cycleId, forceDelete = false) => {
+  if (DEBUG_CALENDAR) console.log('[CalendarTab] Flujo 6: deleteTrainingCycle', { cycleId, forceDelete });
   try {
     const response = await fetch(`${apiUrl}/workout/training-cycle/cycleId/${cycleId}?forceDelete=${forceDelete}`, {
       method: 'DELETE',
@@ -477,6 +479,7 @@ const assignWorkout = async (data) => {
 };
 
 const assignWorkoutsToCycle = async (cycleId, clientId, body) => {
+  if (DEBUG_CALENDAR) console.log('[CalendarTab] Flujo 4: assignWorkoutsToCycle', { cycleId, clientId, body });
   try {
     const response = await fetch(`${apiUrl}/workout/assign-cycle/${cycleId}/assign-workouts/${clientId}`, {
       method: 'POST',
@@ -515,6 +518,7 @@ const createTrainingCycleTemplate = async (body) => {
 };
 
 const createCycleAndAssignWorkouts = async (body) => {
+  if (DEBUG_CALENDAR) console.log('[CalendarTab] Flujo 2a: createCycleAndAssignWorkouts', body);
   try {
     const response = await fetch(`${apiUrl}/workout/create-cycle-and-assign-workouts/${body.clientId}`, {
       method: 'POST',
@@ -532,7 +536,10 @@ const createCycleAndAssignWorkouts = async (body) => {
   }
 };
 
+const DEBUG_CALENDAR = process.env.NODE_ENV === 'development' && process.env.REACT_APP_DEBUG_CALENDAR === 'true';
+
 const assignSession = async (sessionId, body) => {
+  if (DEBUG_CALENDAR) console.log('[CalendarTab] Flujo 3: assignSession', { sessionId, body });
   try {
     const response = await fetch(`${apiUrl}/workout/assign-session/${sessionId}`, {
       method: 'POST',
@@ -552,6 +559,7 @@ const assignSession = async (sessionId, body) => {
 };
 
 const assignTrainingSessionToClient = async (body) => {
+  if (DEBUG_CALENDAR) console.log('[CalendarTab] Flujo 1: assignTrainingSessionToClient', body);
   try {
     const response = await fetch(`${apiUrl}/workout/assign-training-session-to-client`, {
       method: 'POST',
@@ -589,6 +597,7 @@ const createAndAssignWorkout = async (body) => {
 };
 
 const unassignWorkoutsFromCycle = async (cycleId, body) => {
+  if (DEBUG_CALENDAR) console.log('[CalendarTab] Flujo 5: unassignWorkoutsFromCycle', { cycleId, body });
   try {
     const response = await fetch(`${apiUrl}/workout/delete-instances-cycle/${cycleId}`, {
       method: 'DELETE',
@@ -793,6 +802,7 @@ const deleteExercises = async (exercises) => {
 };
 
 const assignCycleTemplateToClient = async (payload) => {
+  if (DEBUG_CALENDAR) console.log('[CalendarTab] Flujo 2b: assignCycleTemplateToClient', payload);
   try {
     const response = await fetch(`${apiUrl}/workout/assign-cycle-template-to-client`, {
       method: 'POST',

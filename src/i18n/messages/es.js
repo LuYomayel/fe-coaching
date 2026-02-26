@@ -1432,6 +1432,7 @@ const messages = {
   'exercises.field.progressionExercise': 'Ejercicio de Progresión',
   'exercises.field.equipment': 'Equipamiento',
   'exercises.field.muscles': 'Músculos',
+  'exercises.field.rpeMethod': 'Método de Medición Subjetiva',
 
   // Plan
   'plan.details': 'Detalles del Plan',

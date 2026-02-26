@@ -111,6 +111,7 @@ export const usePlanDetails = ({
 
         setWorkoutPlan(data);
 
+        console.log('data', data);
         // Initialize editable fields
         setEditedLocation(data.trainingSession?.location || '');
         setEditedContactMethod(data.trainingSession?.contactMethod || '');

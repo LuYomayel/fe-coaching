@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { api } from '../../services/api-client';
+import { useExercisesStore } from '../../stores/useExercisesStore';
+import { useSpinner } from '../../utils/GlobalSpinner';
 import { validateExercisesHaveIds } from '../../schemas/createPlanSchema';
 import { useToast } from '../../contexts/ToastContext';
 import {
@@ -27,7 +29,6 @@ interface UseNewCreatePlanReturn {
   plan: IPlanInfo;
   groups: IPlanGroup[];
   exercises: IExercise[];
-  isLoading: boolean;
   isSaving: boolean;
 
   updatePlanName: (newName: string) => void;
@@ -321,9 +322,11 @@ export const useNewCreatePlan = ({
     personalizedNotes: ''
   });
   const [groupsState, setGroupsState] = useState<IPlanGroup[]>(() => normalizeGroups([createEmptyGroup(1)]));
-  const [exercises, setExercises] = useState<IExercise[]>([]);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const exercisesStore = useExercisesStore();
+  const exercises = exercisesStore.exercises;
+  const { setLoading } = useSpinner();
+
   const [isSaving, setIsSaving] = useState(false);
   const [hoverRowIndex, setHoverRowIndex] = useState<number | null>(null);
   const [showInsertButton, setShowInsertButton] = useState(false);
@@ -347,31 +350,10 @@ export const useNewCreatePlan = ({
     });
   }, []);
 
-  /**
-   * Carga ejercicios para el dropdown de forma paginada / filtrada.
-   * Limitamos a 100 ejercicios por llamada para evitar traer toda la base.
-   */
-  const loadExercises = useCallback(
-    async (search: string) => {
-      try {
-        setIsLoading(true);
-
-        const { data } = await api.exercise.fetchCoachExercises({ search });
-        setExercises(data?.items ?? []);
-      } catch (error) {
-        console.error('Error fetching exercises', error);
-        showToast('error', 'Error', 'No se pudieron cargar los ejercicios');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [showToast]
-  );
-
-  // Primer load: sin filtro
+  // Cargar ejercicios del store al montar (usa caché global)
   useEffect(() => {
-    loadExercises('');
-  }, [loadExercises]);
+    exercisesStore.loadExercises({ search: '' });
+  }, [exercisesStore]);
 
   // Load plan if planId exists
   useEffect(() => {
@@ -391,7 +373,7 @@ export const useNewCreatePlan = ({
     const loadPlan = async () => {
       try {
         if (!planId) return;
-        setIsLoading(true);
+        setLoading(true);
         console.log('isTemplate', isTemplate);
         if (isTemplate) {
           const response = await api.workout.fetchWorkoutTemplate(planId);
@@ -419,7 +401,9 @@ export const useNewCreatePlan = ({
         console.error('Error fetching workout template', error);
         showToast('error', 'Error', 'No se pudo cargar el plan');
       } finally {
-        setIsLoading(false);
+        setTimeout(() => {
+          setLoading(false);
+        }, 10000);
       }
     };
 
@@ -817,7 +801,6 @@ export const useNewCreatePlan = ({
     plan,
     groups: groupsState,
     exercises,
-    isLoading,
     isSaving,
 
     updatePlanName,

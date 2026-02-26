@@ -107,28 +107,39 @@ const AssignWorkoutToSessionDialog = ({ visible, onHide, sessionId, clientId, se
       return;
     }
 
-    const body = {
-      clientId,
-      workoutId: selectedWorkout,
-      sessionId,
-      sessionMode: sessionMode,
-      location: sessionMode === 'presencial' || sessionMode === 'hibrido' ? location : undefined,
-      contactMethod: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? contactMethod : undefined,
-      //sessionTime: sessionTime ? formatTime(sessionTime) : undefined,
-      sessionTime: sessionTime
-        ? `${sessionTime.getHours().toString().padStart(2, '0')}:${sessionTime.getMinutes().toString().padStart(2, '0')}`
-        : null,
-      sessionDate: selectedDate,
-      notes: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? meetingLink : undefined,
-      rpeMethodId: selectedRpeMethod.id
-    };
+    const sessionTimeStr = sessionTime
+      ? `${sessionTime.getHours().toString().padStart(2, '0')}:${sessionTime.getMinutes().toString().padStart(2, '0')}`
+      : null;
 
     try {
       setLoading(true);
       if (sessionId) {
-        await assignSession(sessionId, body);
+        // AssignSessionDto: no incluye sessionDate (la sesión ya existe)
+        const bodyAssignSession = {
+          clientId,
+          workoutId: selectedWorkout,
+          sessionMode: sessionMode,
+          location: sessionMode === 'presencial' || sessionMode === 'hibrido' ? location : undefined,
+          contactMethod: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? contactMethod : undefined,
+          sessionTime: sessionTimeStr,
+          notes: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? meetingLink : undefined,
+          rpeMethodId: selectedRpeMethod.id
+        };
+        await assignSession(sessionId, bodyAssignSession);
       } else {
-        await assignTrainingSessionToClient(body);
+        // AssignTrainingSessionToClientDTO: requiere sessionDate
+        const bodyNewSession = {
+          clientId,
+          workoutId: selectedWorkout,
+          sessionDate: selectedDate,
+          sessionMode: sessionMode,
+          location: sessionMode === 'presencial' || sessionMode === 'hibrido' ? location : undefined,
+          contactMethod: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? contactMethod : undefined,
+          sessionTime: sessionTimeStr,
+          notes: sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido' ? meetingLink : undefined,
+          rpeMethodId: selectedRpeMethod.id
+        };
+        await assignTrainingSessionToClient(bodyNewSession);
       }
       showToast('success', 'Sesión asignada exitosamente');
       onHide();
