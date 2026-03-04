@@ -3,22 +3,20 @@ import { Navigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import CoachProfileForm from '../pages/CoachProfileForm';
 //import NotSubscribed from '../components/NotSubscribed';
-import { useSpinner } from '../utils/GlobalSpinner';
 //import { ESubscriptionStatus } from 'types/enums/subscription-status';
 
-const PrivateRoute = ({
-  element: Component,
-  requiredType,
-  ...rest
-}: {
-  element: ComponentType;
-  requiredType: 'coach' | 'client';
-}) => {
-  const { user, coach, isInitialized } = useUser();
-  const { isLoading } = useSpinner();
+interface PrivateRouteProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  element: ComponentType<any>;
+  requiredType?: 'coach' | 'client';
+  [key: string]: unknown;
+}
 
-  // Si el contexto no está inicializado o está cargando, mostramos nada
-  if (!isInitialized || isLoading) {
+const PrivateRoute = ({ element: Component, requiredType, ...rest }: PrivateRouteProps) => {
+  const { user, coach, isInitialized } = useUser();
+
+  // Si el contexto no está inicializado, mostramos nada
+  if (!isInitialized) {
     return null;
   }
 

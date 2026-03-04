@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl';
 
 import { useToast } from '../../contexts/ToastContext';
 import { useSpinner } from '../../utils/GlobalSpinner';
-import { registerCoach } from '../../services/usersService';
+import { api } from '../../services/api-client';
 import { mapZodErrors } from '../../utils/mapZodErrors';
 import { buildSignUpSchema } from '../../schemas/auth/signUpSchema';
 
@@ -75,12 +75,20 @@ export const useSignUpDialog = ({
     setLoading(true);
     try {
       console.log('formValues', formValues);
-      const response = await registerCoach(formValues);
+      const response = await api.user.registerCoach(formValues);
 
       const { message, error } = response || {};
 
       if (message !== 'success') {
-        throw new Error(error || intl.formatMessage({ id: 'home.signup.error.generic' }));
+        let errorMessage: string;
+        if (Array.isArray(error)) {
+          errorMessage = error.join('. ');
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        } else {
+          errorMessage = intl.formatMessage({ id: 'home.signup.error.generic' });
+        }
+        throw new Error(errorMessage);
       }
 
       if (onRequireVerification) {

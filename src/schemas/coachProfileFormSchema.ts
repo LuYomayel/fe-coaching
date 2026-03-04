@@ -22,9 +22,7 @@ export const buildCoachProfileFormSchema = (intl: IntlShape) => {
 
   const trainingDetailsSchema = z
     .object({
-      trainingSpecialties: z
-        .array(z.string())
-        .min(1, { message: required('coachProfileForm.validation.trainingSpecialties') }),
+      trainingSpecialties: z.array(z.string()).optional().default([]),
       hasGym: z.boolean(),
       gymLocation: z.string().optional().nullable()
     })

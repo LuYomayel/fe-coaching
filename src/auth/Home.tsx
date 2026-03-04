@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import VerificationCodeDialog from '../dialogs/VerificationCodeDialog';
+import { useIntl } from 'react-intl';
+import VerificationCodeDialog from '../components/dialogs/VerificationCodeDialog';
 import { useHomePage } from '../hooks/useHomePage';
 import { useLoginDialog } from '../hooks/dialogs/useLoginDialog';
 import { useSignUpDialog } from '../hooks/dialogs/useSignUpDialog';
 import { useVerificationDialog } from '../hooks/dialogs/useVerificationDialog';
 import { useForgotPasswordVerification } from '../hooks/dialogs/useForgotPasswordVerification';
 import { useResetPassword } from '../hooks/dialogs/useResetPassword';
+import { useConfirmationDialog } from '../utils/ConfirmationDialogContext';
 import LoginDialog from '../components/dialogs/LoginDialog';
 import SignUpDialog from '../components/dialogs/SignUpDialog';
 import ForgotPasswordVerificationDialog from '../components/dialogs/ForgotPasswordVerificationDialog';
@@ -19,6 +21,8 @@ import Subscriptions from '../components/home/subscriptions';
 import './Home.css';
 
 export default function HomePage() {
+  const intl = useIntl();
+  const { showConfirmationDialog } = useConfirmationDialog();
   const [pendingCredentials, setPendingCredentials] = useState<{ email: string; password: string } | null>(null);
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
   const [resetPasswordVisible, setResetPasswordVisible] = useState(false);
@@ -55,9 +59,15 @@ export default function HomePage() {
   const resetPassword = useResetPassword({
     email: verifiedEmail,
     verificationCode: verificationCode,
-    onSuccess: () => {
+    onSuccess: async (newPassword: string) => {
       setResetPasswordVisible(false);
-      loginDialog.open();
+      try {
+        await loginDialog.loginWithCredentials({ email: verifiedEmail, password: newPassword });
+      } catch (error) {
+        console.error('Auto-login after password reset failed', error);
+        loginDialog.setEmail(verifiedEmail);
+        loginDialog.open();
+      }
     }
   });
 
@@ -152,7 +162,14 @@ export default function HomePage() {
       />
       <ResetPasswordDialog
         visible={resetPasswordVisible}
-        onHide={() => setResetPasswordVisible(false)}
+        onHide={() => {
+          showConfirmationDialog({
+            message: intl.formatMessage({ id: 'resetPassword.confirm.exit' }),
+            header: intl.formatMessage({ id: 'common.confirmation' }),
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => setResetPasswordVisible(false)
+          });
+        }}
         newPassword={resetPassword.newPassword}
         confirmPassword={resetPassword.confirmPassword}
         isResetting={resetPassword.isResetting}

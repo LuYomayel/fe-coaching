@@ -75,7 +75,7 @@ export const CreateExerciseDialog: React.NamedExoticComponent<CreateExerciseDial
   }: CreateExerciseDialogProps) => {
     const intl = useIntl();
     const [newExercise, setNewExercise] = useState<IExercise>(exercise);
-    const { isLoading } = useSpinner();
+    const { loading } = useSpinner();
     const invalidateExercises = useExercisesStore((s) => s.invalidate);
     const { showToast } = useToast();
     const { showConfirmationDialog } = useConfirmationDialog();
@@ -169,7 +169,7 @@ export const CreateExerciseDialog: React.NamedExoticComponent<CreateExerciseDial
         style={{ width: '50vw' }}
         onHide={closeExerciseDialog}
       >
-        {!isLoading && (
+        {!loading && (
           <div className="p-fluid">
             <div className="p-field">
               <label htmlFor="name">

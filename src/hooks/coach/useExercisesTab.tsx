@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUser } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
-import {
-  fetchCoachExercises,
-  fetchBodyAreas,
-  deleteExercise,
-  massUpdateExercises,
-  fetchExerciseTypes
-} from '../../services/exercisesService';
+import { api } from '../../services/api-client';
 import { FilterMatchMode } from 'primereact/api';
 
 export function useExercisesTab() {
@@ -49,9 +43,9 @@ export function useExercisesTab() {
   useEffect(() => {
     const load = async () => {
       const [exRes, typesRes, areasRes] = await Promise.all([
-        fetchCoachExercises(coach?.id),
-        fetchExerciseTypes(),
-        fetchBodyAreas()
+        api.exercise.fetchCoachExercises({}),
+        api.exercise.fetchExerciseTypes(),
+        api.exercise.fetchBodyAreas()
       ]);
       setExercises(exRes.data || []);
       setExerciseTypes(typesRes.data || []);
@@ -87,7 +81,7 @@ export function useExercisesTab() {
   const handleDeleteExercise = useCallback(
     async (exerciseId: number) => {
       try {
-        const response = await deleteExercise(exerciseId);
+        const response = await api.exercise.deleteExercise(exerciseId);
         if (response.error) throw new Error(response.message);
         setRefreshKey((old) => old + 1);
         showToast('success', 'Success', 'Exercise deleted successfully');
@@ -171,7 +165,7 @@ export function useExercisesTab() {
           bodyArea: bodyAreaIds
         };
       });
-      await massUpdateExercises(formatted);
+      await api.exercise.massUpdateExercises(formatted);
       setModifiedExercises({});
       setIsEditingExercises(false);
       setOriginalExercisesForEdit(exercises);

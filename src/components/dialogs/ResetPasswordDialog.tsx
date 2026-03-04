@@ -40,10 +40,8 @@ const ResetPasswordDialog = ({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const success = await onResetPassword();
-    if (success) {
-      onHide();
-    }
+    await onResetPassword();
+    // El cierre del dialog lo maneja onSuccess en el padre via setResetPasswordVisible(false)
   };
 
   return (

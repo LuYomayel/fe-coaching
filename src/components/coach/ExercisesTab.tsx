@@ -11,7 +11,7 @@ import { useExercisesTab } from '../../hooks/coach/useExercisesTab';
 import { useRpeMethods } from '../../hooks/coach/useRpeMethods';
 import { ExerciseExcelImport } from './ExerciseExcelImport';
 import { useSpinner } from '../../utils/GlobalSpinner';
-import VideoDialog from '../../dialogs/VideoDialog';
+import VideoDialog from '../dialogs/VideoDialog';
 import { CreateExerciseDialog } from '../../dialogs/CreateExerciseDialog';
 import { extractYouTubeVideoId, getYouTubeThumbnail } from 'utils/UtilFunctions';
 

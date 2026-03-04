@@ -232,15 +232,60 @@ export const apiClient = {
 // API agrupada por dominios/áreas
 export const api = {
   auth: {
-    login: (data: { email: string; password: string }) => apiClient.post<{ token: string }>('/auth', data),
+    login: (data: { email: string; password: string }) => apiClient.post<{ access_token: string }>('/auth/login', data),
     forgotPassword: (data: { email: string }) => apiClient.post<{ token: string }>('/auth/forgot-password', data),
     resetPassword: (data: { email: string; token: string; newPassword: string }) =>
       apiClient.post<{ token: string }>('/auth/reset-password', data),
     verifyPasswordResetCode: (data: { email: string; code: string }) =>
-      apiClient.get(`/auth/verify-password-reset-code?email=${data.email}&code=${data.code}`)
+      apiClient.get(`/auth/verify-password-reset-code?email=${data.email}&code=${data.code}`),
+    verifyEmail: (email: string, code: string) =>
+      apiClient.get(`/auth/verify-email?email=${encodeURIComponent(email)}&code=${code}`),
+    sendVerificationEmail: (email: string) => apiClient.post('/auth/send-verification-email', { email })
   },
   coach: {
-    fetchStudents: () => apiClient.get<IClient[]>(`/users/coach/allStudents`)
+    fetchStudents: () => apiClient.get<IClient[]>(`/users/coach/allStudents`),
+    fetchClientsSubscribed: (coachId: number) => apiClient.get<any[]>(`/users/coach/clients-subscribed/${coachId}`)
+  },
+  user: {
+    fetchUser: (userId: number) => apiClient.get<any>(`/users/${userId}`),
+    fetchCoach: (userId: number) => apiClient.get<any>(`/users/coach/${userId}`),
+    fetchClient: (userId: number) => apiClient.get<any>(`/users/client/${userId}`),
+    fetchClientByClientId: (clientId: number) => apiClient.get<any>(`/users/client/clientId/${clientId}`),
+    fetchClientActivitiesByUserId: (userId: number) => apiClient.get<any[]>(`/users/userId/activities/${userId}`),
+    saveStudent: (body: any) => apiClient.post<any>(`/users/client`, body),
+    updateStudent: (studentId: number, body: any) => apiClient.put<any>(`/users/client/${studentId}`, body),
+    updateCoach: (userId: number, body: any) => apiClient.post<any>(`/users/coach/${userId}`, body),
+    updatePersonalInfo: (personalInfoId: number, body: any) =>
+      apiClient.put<any>(`/users/client/${personalInfoId}`, body),
+    updateClient: (clientId: number, body: any) => apiClient.put<any>(`/students/${clientId}`, body),
+    deleteClient: (clientId: number) => apiClient.delete<any>(`/users/client/${clientId}`),
+    fetchClientStreak: (clientId: number) => apiClient.get<any>(`/workout-streaks/client/${clientId}/active`),
+    fetchClientDailyStreak: (clientId: number) => apiClient.get<any>(`/workout-streaks/client/${clientId}/daily`),
+    fetchAmIWorkingOutToday: (clientId: number) => apiClient.get<any>(`/workout/am-i-traning-today/${clientId}`),
+    registerCoach: (body: any) => apiClient.post<any>(`/auth/register`, body)
+  },
+  message: {
+    fetchMessages: (coachId: number, clientId: number, page: number) =>
+      apiClient.get<any>(`/messages/${coachId}/${clientId}?page=${page}&limit=100`),
+    markMessagesAsRead: (senderId: number, receiverId: number) =>
+      apiClient.post<any>(`/messages/mark-as-read/conversation/${senderId}/${receiverId}`),
+    fetchLastMessages: (coachId: number) => apiClient.get<any[]>(`/messages/coach/${coachId}/last-messages`),
+    fetchUnreadMessages: (userId: number) => apiClient.get<any>(`/messages/get-unread-messages/${userId}`)
+  },
+  notification: {
+    markNotificationAsRead: (notificationId: number) =>
+      apiClient.put<any>(`/notifications/mark-as-read/${notificationId}`),
+    getUserNotifications: (userId: number) => apiClient.get<any[]>(`/notifications/all/${userId}`)
+  },
+  payment: {
+    createMercadoPagoPayment: (paymentData: any) => apiClient.post<any>(`/payment/mercado-pago/create`, paymentData),
+    checkMercadoPagoPaymentStatus: (paymentId: string) =>
+      apiClient.get<any>(`/payment/mercado-pago/status/${paymentId}`),
+    notifyBankTransfer: (transferData: any, coachId: number) =>
+      apiClient.post<any>(`/payment/bank-transfer/notify/${coachId}`, transferData),
+    getCoachBankData: (coachId: number) => apiClient.get<any>(`/payment/coach-bank-data/${coachId}`),
+    updateCoachBankData: (coachId: number, bankData: any) =>
+      apiClient.post<any>(`/payment/coach-bank-data/${coachId}`, bankData)
   },
   exercise: {
     processImportExercises: (importData: any) => apiClient.post<any>(`/exercise/process-import`, importData),
@@ -292,7 +337,16 @@ export const api = {
         createdByCoach: boolean;
         createdByAdmin: boolean;
       }
-    ) => apiClient.put<any>(`/exercise/${exerciseId}`, data)
+    ) => apiClient.put<any>(`/exercise/${exerciseId}`, data),
+    fetchBodyAreas: () => apiClient.get<any[]>(`/exercise/body-area`),
+    fetchExerciseTypes: () => apiClient.get<any[]>(`/exercise/exercise-types`),
+    deleteExercise: (exerciseId: number) => apiClient.delete<any>(`/exercise/${exerciseId}`),
+    massUpdateExercises: (exercises: any[]) => apiClient.put<any>(`/exercise/mass-update`, exercises),
+    importExercises: (coachId: number, file: FormData) => apiClient.post<any>(`/exercise/import/${coachId}`, file),
+    analyzeExcelFile: (coachId: number, file: FormData) =>
+      apiClient.post<any>(`/exercise/analyze-import/${coachId}`, file),
+    createExercises: (exercises: any[]) => apiClient.post<any>(`/exercise/generate-exercises`, exercises),
+    deleteExercises: (exercises: any[]) => apiClient.post<any>(`/workout/delete-exercises`, exercises)
   },
   workout: {
     fetchWorkoutInstance: (planId: number) => apiClient.get<IWorkoutInstance>(`/workout/workout-instance/${planId}`),
@@ -341,7 +395,76 @@ export const api = {
       apiClient.post<any>(`/workout/assign-workout-to-client/${clientId}`, { workoutIds, rpeMethodId }),
 
     unassignWorkoutFromClient: (clientId: number, workoutIds: number[]) =>
-      apiClient.delete<any>(`/workout/unassign-workout-from-client/${clientId}`, workoutIds)
+      apiClient.delete<any>(`/workout/unassign-workout-from-client/${clientId}`, workoutIds),
+
+    // Workout instance templates
+    fetchWorkoutInstanceTemplate: (templateId: number) =>
+      apiClient.get<any>(`/workout/workout-instance-template/${templateId}`),
+
+    // Client workouts
+    fetchWorkoutsByClientId: (clientId: number) => apiClient.get<any[]>(`/workout/client/${clientId}`),
+    fetchTrainingCyclesForClientByUserId: (userId: number) =>
+      apiClient.get<any[]>(`/workout/training-cycles/client/userId/${userId}`),
+    fetchTrainingSessionWithNoWeekByClientId: (clientId: number) =>
+      apiClient.get<any[]>(`/workout/training-session-with-no-weeks/clientId/${clientId}`),
+
+    // Excel view
+    fetchAssignedWorkoutsForCycleDay: (cycleId: number, dayNumber: number) =>
+      apiClient.get<any>(`/workout/training-cycle/${cycleId}/day/${dayNumber}`),
+    fetchExcelViewByCycleAndDay: (cycleId: number, dayNumber: number) =>
+      apiClient.get<any>(`/workout/excel-view/${cycleId}/day/${dayNumber}`),
+    saveWorkoutChanges: (payload: any) => apiClient.post<any>(`/workout/save-changes-from-excel-view`, payload),
+    createNewTrainingFromExcelView: (plan: any) => apiClient.post<any>(`/workout/from-excel-view`, plan),
+
+    // Coach dashboard stats
+    fetchLastTimeTrained: (coachId: number) => apiClient.get<any>(`/workout/last-time-trained/${coachId}`),
+    fetchHowLongToFinishCycle: (coachId: number) => apiClient.get<any>(`/workout/how-long-to-finish-cycle/${coachId}`),
+    fetchTrainingFrequency: (coachId: number) => apiClient.get<any>(`/workout/training-frequency/${coachId}`),
+
+    // Training cycles (non-template)
+    createTrainingCycle: (body: any) => apiClient.post<any>(`/workout/training-cycles`, body),
+    deleteTrainingCycle: (cycleId: number, forceDelete?: boolean) =>
+      apiClient.delete<any>(`/workout/training-cycle/cycleId/${cycleId}?forceDelete=${forceDelete || false}`),
+    verifyTrainingCycleDeletion: (cycleId: number) =>
+      apiClient.get<any>(`/workout/training-cycle/cycleId/${cycleId}/verify-deletion`),
+
+    // Plan submission
+    submitPlan: (plan: any, planId: number | null, isEdit: boolean, isTemplate: boolean) => {
+      if (!isEdit) return apiClient.post<any>(`/workout`, plan);
+      const type = isTemplate ? 'template' : 'instance';
+      return apiClient.put<any>(`/workout/${type}/${planId}`, plan);
+    },
+    submitPlanTemplate: (plan: any) => apiClient.post<any>(`/workout/workout-template/last-try`, plan),
+    updatePlanName: (planId: number, planName: string) =>
+      apiClient.put<any>(`/workout/update-name/${planId}`, { planName }),
+
+    // Exercise operations
+    updateExercisesInstance: (exercises: any) => apiClient.post<any>(`/workout/updateExercises`, exercises),
+    verifyExerciseChanges: (exerciseData: any) => apiClient.post<any>(`/workout/verify-exercise-changes`, exerciseData),
+
+    // Assignments
+    assignWorkout: (data: any) => apiClient.post<any>(`/workout/assignWorkout`, data),
+    assignWorkoutsToCycle: (cycleId: number, clientId: number, body: any) =>
+      apiClient.post<any>(`/workout/assign-cycle/${cycleId}/assign-workouts/${clientId}`, body),
+    createCycleAndAssignWorkouts: (body: any) =>
+      apiClient.post<any>(`/workout/create-cycle-and-assign-workouts/${body.clientId}`, body),
+    assignSession: (sessionId: number, body: any) => apiClient.post<any>(`/workout/assign-session/${sessionId}`, body),
+    assignTrainingSessionToClient: (body: any) =>
+      apiClient.post<any>(`/workout/assign-training-session-to-client`, body),
+    createAndAssignWorkout: (body: any) => apiClient.post<any>(`/workout/create-workout-and-assign`, body),
+    unassignWorkoutsFromCycle: (cycleId: number, body: any) =>
+      apiClient.delete<any>(`/workout/delete-instances-cycle/${cycleId}`, body),
+
+    // Delete instance
+    deletePlan: (workoutInstanceId: number) => apiClient.delete<any>(`/workout/deleteInstance/${workoutInstanceId}`),
+
+    // Feedback
+    submitFeedback: (planId: number, body: any, clientId: number) =>
+      apiClient.post<any>(`/workout/feedback/${planId}/clientId/${clientId}`, body),
+
+    // Session details
+    updateWorkoutInstance: (workoutInstanceId: number, body: any) =>
+      apiClient.put<any>(`/workout/session-details/${workoutInstanceId}`, body)
   },
   trainingCycle: {
     fetchTrainingCycles: () => apiClient.get<ITrainingCycle[]>(`/workout/training-cycles`)
@@ -358,7 +481,19 @@ export const api = {
       const method = mode === 'create' ? apiClient.post : apiClient.put;
       return method<any>(endpoint, plan);
     },
-    deleteCoachPlan: (planId: number) => apiClient.delete<any>(`/subscription/coach/coachPlan/${planId}`)
+    deleteCoachPlan: (planId: number) => apiClient.delete<any>(`/subscription/coach/coachPlan/${planId}`),
+    fetchCoachSubscription: (coachId: number) => apiClient.get<any>(`/subscription/coach/${coachId}`),
+    fetchSubscriptionForStudent: (studentId: number) => apiClient.get<any>(`/subscription/client/${studentId}`),
+    fetchSubscriptionDetails: (userId: number) =>
+      apiClient.get<any>(`/subscription/client-subscription/details/${userId}`),
+    assignSubscription: (body: any) => apiClient.post<any>(`/subscription/client`, body),
+    makePayment: (body: any) => apiClient.post<any>(`/payment/create-payment-intent`, body),
+    updateCoachSubscription: (body: any) => apiClient.put<any>(`/subscription/coach-subscription`, body),
+    registerPayment: (body: any) => apiClient.put<any>(`/subscription/update`, body),
+    cancelSubscription: (clientSubscriptionId: number) =>
+      apiClient.delete<any>(`/subscription/clientSubscription/${clientSubscriptionId}`),
+    fetchClientsPaymentStatus: (coachId: number) =>
+      apiClient.get<any>(`/subscription/clients-payment-status/${coachId}`)
   },
   rpe: {
     getRpeMethodAssigned: (clientId: number, planId: number, cycleId: number) =>
@@ -372,6 +507,7 @@ export const api = {
       const method = dialogMode === 'create' ? apiClient.post : apiClient.put;
       return method<any>(endpoint, newRpe);
     },
+    setDefault: (rpeId: number) => apiClient.put<any>(`/workout/rpe/update/${rpeId}`, { isDefault: true }),
     deleteRpe: (rpeId: number) => apiClient.delete<any>(`/workout/rpe/delete/${rpeId}`),
     assignRpeToTarget: (rpeMethodId: number, targetType: string, targetId: number, userId: number) =>
       apiClient.post<any>(`/workout/rpe/assign/${userId}`, { rpeMethodId, targetType, targetId }),

@@ -45,6 +45,12 @@ const ForgotPasswordVerificationDialog = ({
     }
   }, [visible, onReset]);
 
+  const handleDialogHide = () => {
+    if (!codeSent) {
+      onHide();
+    }
+  };
+
   const handleSendCode = async () => {
     await onSendCode();
   };
@@ -60,9 +66,9 @@ const ForgotPasswordVerificationDialog = ({
     <Dialog
       header={intl.formatMessage({ id: 'forgotPassword.title' })}
       visible={visible}
-      onHide={onHide}
+      onHide={handleDialogHide}
       draggable={false}
-      dismissableMask
+      dismissableMask={!codeSent}
       resizable={false}
       className="border-round-2xl w-4/5 sm:w-11/12"
       style={{ width: 500 }}

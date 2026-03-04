@@ -6,7 +6,7 @@ import { api } from '../../services/api-client';
 interface UseResetPasswordProps {
   email: string;
   verificationCode: string;
-  onSuccess?: () => void;
+  onSuccess?: (newPassword: string) => void;
 }
 
 export const useResetPassword = ({ email, verificationCode, onSuccess }: UseResetPasswordProps) => {
@@ -61,7 +61,7 @@ export const useResetPassword = ({ email, verificationCode, onSuccess }: UseRese
       );
 
       if (onSuccess) {
-        onSuccess();
+        onSuccess(newPassword);
       }
 
       return true;

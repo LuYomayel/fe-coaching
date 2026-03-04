@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { installPWA, requestNotificationPermission } from '../serviceWorkerRegistration';
+import { installPWA, requestNotificationPermission, IBeforeInstallPromptEvent } from '../serviceWorkerRegistration';
 import { useToast } from 'contexts/ToastContext';
 
 const PWAInstallButton = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<IBeforeInstallPromptEvent | null>(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -37,7 +37,7 @@ const PWAInstallButton = () => {
     // Para otros navegadores, escuchar el evento beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as IBeforeInstallPromptEvent);
       setShowInstallButton(true);
     };
 
@@ -71,7 +71,7 @@ const PWAInstallButton = () => {
     try {
       const result = await installPWA(deferredPrompt);
 
-      if (result.outcome === 'accepted') {
+      if (result?.outcome === 'accepted') {
         // Solicitar permisos de notificaciones después de la instalación
         setTimeout(async () => {
           const permission = await requestNotificationPermission();

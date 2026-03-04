@@ -1,7 +1,7 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { fetchClient, fetchCoach, fetchUser } from '../services/usersService';
+import { api } from '../services/api-client';
 import { UserContextValue, UserProviderProps } from 'types/contexts';
 import { ICoach, IClient, IUser } from 'types/models';
 import { JwtPayload } from 'types/auth/auth';
@@ -79,16 +79,16 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     checkEverything();
   }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     setUser(null);
     setCoach(null);
     setClient(null);
-  };
+  }, []);
 
   const fetchUserData = async (userId: number) => {
     try {
-      const { data } = await fetchUser(userId);
+      const { data } = await api.user.fetchUser(userId);
       return data;
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -98,7 +98,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const fetchCoachData = async (userId: number) => {
     try {
-      const { data } = await fetchCoach(userId);
+      const { data } = await api.user.fetchCoach(userId);
       return data;
     } catch (error) {
       console.error('Error fetching coach data:', error);
@@ -109,7 +109,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const fetchClientData = async (userId: number) => {
     try {
-      const { data } = await fetchClient(userId);
+      const { data } = await api.user.fetchClient(userId);
       return data;
     } catch (error) {
       console.error('Error fetching client data:', error);
@@ -118,11 +118,12 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   };
 
-  return (
-    <UserContext.Provider value={{ user, coach, client, setUser, setCoach, setClient, isInitialized, logout }}>
-      {children}
-    </UserContext.Provider>
+  const contextValue = useMemo(
+    () => ({ user, coach, client, setUser, setCoach, setClient, isInitialized, logout }),
+    [user, coach, client, isInitialized, logout]
   );
+
+  return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };
 
 export const useUser = () => {

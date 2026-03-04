@@ -6,11 +6,11 @@ import { Button } from 'primereact/button';
 import { useParams } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
 import { useSpinner } from '../utils/GlobalSpinner';
-import { fetchClientByClientId } from '../services/usersService';
-import NewWorkoutTable from '../components/NewWorkoutTable';
+import { api } from '../services/api-client';
+import NewWorkoutTable from '../components/workout/NewWorkoutTable';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { Panel } from 'primereact/panel';
-import StudentDialog from '../dialogs/StudentDialog';
+import StudentDialog from '../components/dialogs/StudentDialog';
 import { Tooltip } from 'primereact/tooltip';
 import { CalendarTab } from '../components/client/CalendarTab';
 
@@ -58,7 +58,8 @@ const ClientDashboard: React.FC = () => {
 
     setLoading(true);
 
-    fetchClientByClientId(clientId)
+    api.user
+      .fetchClientByClientId(Number(clientId))
       .then(({ data }) => {
         setClientData(data);
         console.log('clientData', data);

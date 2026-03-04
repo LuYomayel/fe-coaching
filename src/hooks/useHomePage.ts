@@ -14,6 +14,7 @@ export const useHomePage = () => {
   const { setUser } = useUser();
 
   const [isScrolled, setIsScrolled] = useState(false);
+  const heroHeightRef = useRef(0); // altura del hero (viewport) para umbral responsive
   const featuresRef = useRef<HTMLDivElement>(null);
   const pricingRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
@@ -54,10 +55,31 @@ export const useHomePage = () => {
     }
   }, [intl, navigate, setUser, showToast]);
 
+  // El scroll ocurre en #app-main-scroll (App.tsx). Umbral = altura del hero (100vh) para transición al pasar el hero.
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const scrollContainer = document.getElementById('app-main-scroll');
+    if (!scrollContainer) return;
+
+    const updateHeroHeight = () => {
+      heroHeightRef.current = scrollContainer.clientHeight; // mismo que 100vh en este layout
+    };
+
+    const handleScroll = () => {
+      setIsScrolled(scrollContainer.scrollTop > heroHeightRef.current);
+    };
+
+    const handleResize = () => {
+      updateHeroHeight();
+      handleScroll(); // re-evaluar isScrolled con la nueva altura
+    };
+
+    updateHeroHeight();
+    scrollContainer.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const scrollToSection = (sectionRef: RefObject<HTMLDivElement | null>) => {

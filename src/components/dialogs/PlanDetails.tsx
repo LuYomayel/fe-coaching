@@ -6,7 +6,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
 import { FormattedMessage } from 'react-intl';
 import { formatDate, getYouTubeThumbnail } from '../../utils/UtilFunctions';
-import VideoDialog from '../../dialogs/VideoDialog';
+import VideoDialog from './VideoDialog';
 import { contactMethodOptions, sessionModeOptions } from '../../types/coach/dropdown-options';
 import { usePlanDetails } from '../../hooks/dialogs/usePlanDetails';
 import { IExerciseSetConfiguration } from '../../types/workout/exercise-set-configuration';

@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { buildCoachProfileFormSchema } from '../../schemas/coachProfileFormSchema';
 import { useUser } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
-import { updateCoach } from '../../services/usersService';
-import { fetchCoachSubscriptionPlans } from '../../services/subscriptionService';
+import { api } from '../../services/api-client';
 import { mapZodErrors } from '../../utils/mapZodErrors';
 import { ISubscriptionPlan } from '../../types/models';
 import { ZodError, ZodSchema } from 'zod';
@@ -76,7 +75,7 @@ export const useCoachProfileForm = () => {
     const loadPlans = async () => {
       setPlansLoading(true);
       try {
-        const { data } = await fetchCoachSubscriptionPlans();
+        const { data } = await api.subscription.fetchCoachSubscriptionPlans();
         setPlans(data || []);
       } catch (error) {
         showToast('error', intl.formatMessage({ id: 'coachProfileForm.error' }), (error as Error).message);
@@ -235,7 +234,7 @@ export const useCoachProfileForm = () => {
         email: user?.email
       };
 
-      const { data } = await updateCoach(user.userId, body);
+      const { data } = await api.user.updateCoach(user.userId, body);
       setCoach(data);
       showToast(
         'success',

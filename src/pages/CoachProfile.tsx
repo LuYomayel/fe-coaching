@@ -7,7 +7,6 @@ import { useUser } from '../contexts/UserContext';
 import { useToast } from '../contexts/ToastContext';
 import { useNavigate } from 'react-router-dom';
 
-import { fetchCoach } from '../services/usersService';
 import { useSpinner } from '../utils/GlobalSpinner';
 
 import { useIntl } from 'react-intl';
@@ -15,7 +14,7 @@ import { RpeTab } from '../components/coach/RpeTab';
 import { SubscriptionTab } from '../components/coach/SubscriptionTab';
 import { CoachPlansTab } from '../components/coach/CoachPlansTab';
 import { ExercisesTab } from '../components/coach/ExercisesTab';
-import BankDataDialog from '../dialogs/BankDataDialog';
+import BankDataDialog from '../components/dialogs/BankDataDialog';
 import { api } from '../services/api-client';
 import { ICoach, IUser } from '../types/models';
 import { IWorkoutTemplate } from '../types/workout/workout-template';
@@ -60,7 +59,7 @@ export default function CoachProfilePage() {
       try {
         setLoading(true);
         // Cargar datos críticos en paralelo
-        const { data } = await fetchCoach(user.userId);
+        const { data } = await api.user.fetchCoach(user.userId);
         // Procesar respuesta del coach
         if (data) {
           setCoachInfo(data as CoachInfo);

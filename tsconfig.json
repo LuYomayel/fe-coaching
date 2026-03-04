@@ -14,10 +14,6 @@
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
 
-    /* Migración Gradual - Permitir JS */
-    "allowJs": true,
-    "checkJs": false,
-
     /* Output */
     "noEmit": true,
     "sourceMap": true,

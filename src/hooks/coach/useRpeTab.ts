@@ -297,6 +297,27 @@ export const useRpeTab = () => {
     loadWorkouts();
   }, []);
 
+  const setDefaultMethod = useCallback(
+    async (rpeId: number) => {
+      if (!user) return;
+      try {
+        setLoading(true);
+        await api.rpe.setDefault(rpeId);
+        await loadRpeData();
+        showToast(
+          'success',
+          intl.formatMessage({ id: 'common.success' }),
+          intl.formatMessage({ id: 'coach.rpe.success.defaultChanged' })
+        );
+      } catch (e) {
+        showToast('error', 'Error', (e as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [intl, loadRpeData, showToast, user]
+  );
+
   const deleteMethod = useCallback(
     (rpeId: number) => {
       if (!user) return;
@@ -309,7 +330,11 @@ export const useRpeTab = () => {
             setLoading(true);
             await api.rpe.deleteRpe(rpeId);
             await loadRpeData();
-            showToast('success', 'Success', 'RPE Method deleted successfully');
+            showToast(
+              'success',
+              intl.formatMessage({ id: 'common.success' }),
+              intl.formatMessage({ id: 'coach.rpe.success.deleted' })
+            );
           } catch (e) {
             showToast('error', 'Error', (e as Error).message);
           } finally {
@@ -358,6 +383,7 @@ export const useRpeTab = () => {
     setSelectedTarget,
     setSelectedRpe,
     deleteMethod,
+    setDefaultMethod,
     loadRpeData,
     // helpers
     getRpeNameById,

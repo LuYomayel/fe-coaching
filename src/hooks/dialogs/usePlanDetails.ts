@@ -4,14 +4,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useUser } from '../../contexts/UserContext';
 import { useConfirmationDialog } from '../../utils/ConfirmationDialogContext';
 import { useIntl } from 'react-intl';
-import {
-  fetchWorkoutInstance,
-  fetchWorkoutInstanceTemplate,
-  deleteWorkoutPlan,
-  getRpeMethodAssigned,
-  updateWorkoutInstance
-} from '../../services/workoutService';
-import { fetchClientByClientId } from '../../services/usersService';
+import { api } from '../../services/api-client';
 import { IWorkoutInstance } from '../../types/workout/workout-instance';
 import { IExerciseInstance } from '../../types/workout/exercise-instance';
 import { IExerciseGroup } from '../../types/workout/exercise-group';
@@ -64,7 +57,7 @@ export const usePlanDetails = ({
   useEffect(() => {
     const fetchClientData = async () => {
       try {
-        const { data } = await fetchClientByClientId(clientId);
+        const { data } = await api.user.fetchClientByClientId(Number(clientId));
         setClientData(data);
       } catch (error) {
         console.error('Error fetching client data:', error);
@@ -80,7 +73,9 @@ export const usePlanDetails = ({
     const fetchPlanDetails = async () => {
       try {
         setLoading(true);
-        const { data } = isTemplate ? await fetchWorkoutInstanceTemplate(planId) : await fetchWorkoutInstance(planId);
+        const { data } = isTemplate
+          ? await api.workout.fetchWorkoutInstanceTemplate(planId)
+          : await api.workout.fetchWorkoutInstance(planId);
         const trainingCycle = data.trainingSession?.trainingWeek?.trainingCycle || null;
         setCurrentCycle(trainingCycle);
 
@@ -132,7 +127,7 @@ export const usePlanDetails = ({
   useEffect(() => {
     const fetchRpeMethods = async () => {
       try {
-        const { data } = await getRpeMethodAssigned(Number(clientId), planId, currentCycle?.id || -1);
+        const { data } = await api.rpe.getRpeMethodAssigned(Number(clientId), planId, currentCycle?.id || -1);
 
         if (data) {
           setRpeMethod(data);
@@ -162,7 +157,7 @@ export const usePlanDetails = ({
       icon: 'pi pi-exclamation-triangle',
       accept: async () => {
         try {
-          const response = await deleteWorkoutPlan(Number(planId), workoutPlan.isTemplate);
+          const response = await api.workout.deleteWorkoutPlan(Number(planId), !!workoutPlan.isTemplate);
           if (response.message === 'success') {
             setPlanDetailsVisible(false);
             showToast(
@@ -249,7 +244,7 @@ export const usePlanDetails = ({
         sessionMode: editedSessionMode
       };
 
-      await updateWorkoutInstance(planId, updatedData);
+      await api.workout.updateWorkoutInstance(planId, updatedData);
 
       setWorkoutPlan((prev) => ({
         ...prev,

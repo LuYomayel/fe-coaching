@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUser } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
-import { deleteExercise } from '../../services/exercisesService';
 import { FilterMatchMode } from 'primereact/api';
 import { api } from '../../services/api-client';
 import { useExercisesStore } from '../../stores/useExercisesStore';
@@ -249,7 +248,7 @@ export function useExercisesTab() {
   const handleDeleteExercise = useCallback(
     async (exerciseId: number) => {
       try {
-        const response = await deleteExercise(exerciseId);
+        const response = await api.exercise.deleteExercise(exerciseId);
         if (response.error) throw new Error(response.message);
         exercisesStore.invalidate();
         setRefreshKey((old) => old + 1);

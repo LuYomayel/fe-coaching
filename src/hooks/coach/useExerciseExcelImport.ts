@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
 import { useToast } from '../../contexts/ToastContext';
-import { analyzeExcelFile } from '../../services/exercisesService';
 import { useUser } from 'contexts/UserContext';
 import { api } from 'services/api-client';
 import { useExercisesStore } from '../../stores/useExercisesStore';
@@ -69,7 +68,7 @@ export function useExerciseExcelImport(params: { onAfterImport?: () => void; set
       try {
         setLoading(true);
         console.log('formData', formData);
-        const { data } = await analyzeExcelFile(coach?.id, formData);
+        const { data } = await api.exercise.analyzeExcelFile(coach!.id, formData);
         console.log('data', data);
         setAnalysisDialogVisible(true);
         setAnalysisData(data);
@@ -88,26 +87,40 @@ export function useExerciseExcelImport(params: { onAfterImport?: () => void; set
     clearAll();
   }, [clearAll]);
 
-  const handleAnalysisConfirm = useCallback(async () => {
-    try {
-      setLoading(true);
-      const importData = {
-        newExercises: analysisData?.exercisesToCreate || [],
-        updateExercises: analysisData?.exercisesToUpdate || []
-      };
-      await api.exercise.processImportExercises(importData);
+  const handleAnalysisConfirm = useCallback(
+    async (selectedItems?: any[]) => {
+      try {
+        setLoading(true);
 
-      invalidateExercises();
-      clearAll();
-      onAfterImport && onAfterImport();
-    } catch (error: any) {
-      console.error('Error processing import exercises', error);
-      showToast('error', 'Error', error.message);
-      clearAll();
-    } finally {
-      setLoading(false);
-    }
-  }, [analysisData, clearAll, invalidateExercises, onAfterImport, setLoading, showToast]);
+        // Si se pasaron items seleccionados, filtrar los datos según la selección
+        let newExercises = analysisData?.exercisesToCreate || [];
+        let updateExercises = analysisData?.exercisesToUpdate || [];
+
+        if (selectedItems && selectedItems.length > 0) {
+          const selectedNames = new Set(selectedItems.map((item: any) => item.name));
+          newExercises = newExercises.filter((ex: any) => selectedNames.has(ex.name));
+          updateExercises = updateExercises.filter((ex: any) => selectedNames.has(ex.name));
+        }
+
+        const importData = {
+          newExercises,
+          updateExercises
+        };
+        await api.exercise.processImportExercises(importData);
+
+        invalidateExercises();
+        clearAll();
+        onAfterImport && onAfterImport();
+      } catch (error: any) {
+        console.error('Error processing import exercises', error);
+        showToast('error', 'Error', error.message);
+        clearAll();
+      } finally {
+        setLoading(false);
+      }
+    },
+    [analysisData, clearAll, invalidateExercises, onAfterImport, setLoading, showToast]
+  );
 
   return {
     // refs

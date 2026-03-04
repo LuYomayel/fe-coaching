@@ -2,6 +2,7 @@ import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
+import { InputSwitch } from 'primereact/inputswitch';
 import { useIntl } from 'react-intl';
 import { useRpeTab } from '../../hooks/coach/useRpeTab';
 import { useRpeMethodDialog } from '../../hooks/dialogs/useRpeMethodDialog';
@@ -9,9 +10,11 @@ import { useRpeAssignmentDialog } from '../../hooks/dialogs/useRpeAssignmentDial
 import { RpeMethodDialog } from '../dialogs/RpeMethodDialog';
 import { RpeAssignmentDialog } from '../dialogs/RpeAssignmentDialog';
 import { useUser } from '../../contexts/UserContext';
+import { useToast } from '../../contexts/ToastContext';
 
 export function RpeTab() {
   const intl = useIntl();
+  const { showToast } = useToast();
   const state = useRpeTab();
   const { user } = useUser();
   const rpeMethodDialog = useRpeMethodDialog(user?.userId || 0);
@@ -49,17 +52,23 @@ export function RpeTab() {
               <div key={rpe.id} className="col-12 md:col-6 lg:col-4">
                 <div className="surface-card shadow-2 border-round p-4">
                   <h3 className="text-xl font-bold m-0 mb-3">{rpe.name}</h3>
-                  <div className="flex align-items-start  flex-column gap-2 mb-1 text-600">
+                  <div className="flex align-items-start flex-column gap-2 mb-1 text-600">
                     <p className="flex align-items-center gap-2">
                       <i className="pi pi-sliders-h"></i>
                       {rpe.minValue} - {rpe.maxValue} ({intl.formatMessage({ id: 'rpe.step' })}: {rpe.step})
                     </p>
-                    {rpe.isDefault && (
-                      <p className="flex align-items-center gap-2">
-                        <i className="pi pi-star"></i>
-                        {intl.formatMessage({ id: 'rpe.isDefault' })}
-                      </p>
-                    )}
+                    <div className="flex align-items-center gap-2">
+                      <InputSwitch
+                        checked={rpe.isDefault}
+                        onChange={() => {
+                          if (!rpe.isDefault) {
+                            state.setDefaultMethod(rpe.id);
+                          }
+                        }}
+                        disabled={rpe.isDefault}
+                      />
+                      <span>{intl.formatMessage({ id: 'rpe.isDefault' })}</span>
+                    </div>
                   </div>
                   <div className="flex gap-2 justify-content-end">
                     <Button
@@ -131,7 +140,12 @@ export function RpeTab() {
         onRemoveValue={rpeMethodDialog.removeValueMeta}
         onSave={async () => {
           const res = await rpeMethodDialog.save();
-          if (res.success) state.loadRpeData();
+          if (res.success) {
+            state.loadRpeData();
+            const msgKey =
+              rpeMethodDialog.mode === 'create' ? 'coach.rpe.success.created' : 'coach.rpe.success.updated';
+            showToast('success', intl.formatMessage({ id: 'common.success' }), intl.formatMessage({ id: msgKey }));
+          }
           return res;
         }}
       />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
@@ -6,7 +6,10 @@ import { Column } from 'primereact/column';
 import { useIntl } from 'react-intl';
 import { Checkbox } from 'primereact/checkbox';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { Message } from 'primereact/message';
+import { OverlayPanel } from 'primereact/overlaypanel';
 import { api } from '../../services/api-client';
+import { extractYouTubeVideoId } from '../../utils/UtilFunctions';
 import {
   ICategory,
   IContractionType,
@@ -93,16 +96,22 @@ interface ExerciseAnalysisItem {
   muscleIds?: number[];
 }
 
+interface DuplicateInFile {
+  name: string;
+  rows: number[];
+}
+
 interface AnalysisData {
   exercisesToUpdate?: ExerciseAnalysisItem[];
   exercisesToCreate?: ExerciseAnalysisItem[];
+  duplicatesInFile?: DuplicateInFile[];
 }
 
 interface ExcelAnalysisDialogProps {
   visible: boolean;
   onHide: () => void;
   analysisData: AnalysisData | null;
-  onConfirm: () => void;
+  onConfirm: (selectedItems: ExerciseAnalysisItem[]) => void;
   setAnalysisData: (data: AnalysisData | null) => void;
 }
 
@@ -115,6 +124,7 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
 }) => {
   const intl = useIntl();
   const [localAnalysisData, setLocalAnalysisData] = useState<AnalysisData | null>(analysisData);
+  const [selectedExercises, setSelectedExercises] = useState<ExerciseAnalysisItem[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [contractions, setContractions] = useState<IContractionType[]>([]);
   const [difficulties, setDifficulties] = useState<IDifficultyLevel[]>([]);
@@ -126,6 +136,8 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
   const [variants, setVariants] = useState<IVariant[]>([]);
   const [exercises, setExercises] = useState<IExercise[]>([]);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState<boolean>(false);
+  const [previewVideoId, setPreviewVideoId] = useState<string | null>(null);
+  const videoOverlayRef = useRef<OverlayPanel>(null);
 
   // Cargar datos de referencia cuando el diálogo se abre
   useEffect(() => {
@@ -180,6 +192,19 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
     }
   }, [visible]);
 
+  // Pre-seleccionar todos los ejercicios cuando cambia analysisData
+  useEffect(() => {
+    if (analysisData) {
+      const allItems = [
+        ...(analysisData.exercisesToUpdate || []).map((ex) => ({ ...ex, status: 'EXISTING' as const })),
+        ...(analysisData.exercisesToCreate || []).map((ex) => ({ ...ex, status: 'NEW' as const }))
+      ];
+      setSelectedExercises(allItems);
+    } else {
+      setSelectedExercises([]);
+    }
+  }, [analysisData]);
+
   useEffect(() => {
     if (!analysisData) {
       setLocalAnalysisData(null);
@@ -217,6 +242,8 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
     }
   }, [analysisData]);
 
+  const hasDuplicatesInFile = (analysisData?.duplicatesInFile?.length ?? 0) > 0;
+
   const renderFooter = () => {
     return (
       <div>
@@ -232,9 +259,10 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
           onClick={() => {
             // Actualizar el analysisData del padre con los datos locales antes de confirmar
             setAnalysisData(localAnalysisData);
-            onConfirm();
+            onConfirm(selectedExercises);
           }}
           autoFocus
+          disabled={hasDuplicatesInFile || selectedExercises.length === 0}
         />
       </div>
     );
@@ -311,7 +339,48 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
               />
               <i className="pi pi-info-circle mr-2" />
               <span>
-                {intl.formatMessage({ id: `exercises.field.${field}` })}: {oldValue} → {newValue}
+                {intl.formatMessage({ id: `exercises.field.${field}` })}:{' '}
+                {field === 'multimedia' ? (
+                  <>
+                    <span className="inline-flex align-items-center gap-1">
+                      {oldValue}
+                      {extractYouTubeVideoId(value.old) && (
+                        <Button
+                          icon="pi pi-play"
+                          className="p-button-rounded p-button-text p-button-sm"
+                          style={{ width: '1.5rem', height: '1.5rem' }}
+                          onClick={(e) => {
+                            setPreviewVideoId(extractYouTubeVideoId(value.old));
+                            videoOverlayRef.current?.toggle(e);
+                          }}
+                          tooltip={intl.formatMessage({ id: 'exercises.import.previewVideo' })}
+                          tooltipOptions={{ position: 'top' }}
+                        />
+                      )}
+                    </span>
+                    {' → '}
+                    <span className="inline-flex align-items-center gap-1">
+                      {newValue}
+                      {extractYouTubeVideoId(value.new) && (
+                        <Button
+                          icon="pi pi-play"
+                          className="p-button-rounded p-button-text p-button-sm"
+                          style={{ width: '1.5rem', height: '1.5rem' }}
+                          onClick={(e) => {
+                            setPreviewVideoId(extractYouTubeVideoId(value.new));
+                            videoOverlayRef.current?.toggle(e);
+                          }}
+                          tooltip={intl.formatMessage({ id: 'exercises.import.previewVideo' })}
+                          tooltipOptions={{ position: 'top' }}
+                        />
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {oldValue} → {newValue}
+                  </>
+                )}
               </span>
             </div>
           );
@@ -708,6 +777,33 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
         </p>
       </div>
 
+      {hasDuplicatesInFile && (
+        <div className="mb-4">
+          <Message
+            severity="warn"
+            className="w-full"
+            content={
+              <div>
+                <div className="font-bold mb-2">
+                  {intl.formatMessage({ id: 'exercises.import.duplicatesInFile.title' })}
+                </div>
+                <ul className="m-0 pl-4">
+                  {analysisData!.duplicatesInFile!.map((dup, idx) => (
+                    <li key={idx}>
+                      <strong>{dup.name}</strong> —{' '}
+                      {intl.formatMessage(
+                        { id: 'exercises.import.duplicatesInFile.rows' },
+                        { rows: dup.rows.join(', ') }
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            }
+          />
+        </div>
+      )}
+
       {isLoadingMetadata ? (
         <div className="flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
           <ProgressSpinner />
@@ -723,6 +819,39 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
           rowsPerPageOptions={[5, 10, 25]}
           className="p-datatable-sm"
         >
+          <Column
+            header={
+              <Checkbox
+                checked={
+                  selectedExercises.length ===
+                  (analysisData?.exercisesToUpdate?.length || 0) + (analysisData?.exercisesToCreate?.length || 0)
+                }
+                onChange={(e) => {
+                  if (e.checked) {
+                    setSelectedExercises([
+                      ...(analysisData?.exercisesToUpdate || []).map((ex) => ({ ...ex, status: 'EXISTING' as const })),
+                      ...(analysisData?.exercisesToCreate || []).map((ex) => ({ ...ex, status: 'NEW' as const }))
+                    ]);
+                  } else {
+                    setSelectedExercises([]);
+                  }
+                }}
+              />
+            }
+            headerStyle={{ width: '3rem' }}
+            body={(rowData: ExerciseAnalysisItem) => (
+              <Checkbox
+                checked={selectedExercises.some((s) => s.name === rowData.name)}
+                onChange={(e) => {
+                  if (e.checked) {
+                    setSelectedExercises([...selectedExercises, rowData]);
+                  } else {
+                    setSelectedExercises(selectedExercises.filter((s) => s.name !== rowData.name));
+                  }
+                }}
+              />
+            )}
+          />
           <Column
             field="name"
             header={intl.formatMessage({ id: 'exercises.name' })}
@@ -745,6 +874,20 @@ const ExcelAnalysisDialog: React.FC<ExcelAnalysisDialogProps> = ({
           <Column field="changes" header={intl.formatMessage({ id: 'exercises.changes' })} body={changesBodyTemplate} />
         </DataTable>
       )}
+
+      <OverlayPanel ref={videoOverlayRef} onHide={() => setPreviewVideoId(null)} dismissable>
+        {previewVideoId && (
+          <iframe
+            width="320"
+            height="180"
+            src={`https://www.youtube.com/embed/${previewVideoId}`}
+            title="Video preview"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        )}
+      </OverlayPanel>
     </Dialog>
   );
 };

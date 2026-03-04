@@ -6,7 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useUser } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useSpinner } from '../../utils/GlobalSpinner';
-import { fetchClient, fetchCoach, login } from '../../services/usersService';
+import { api } from '../../services/api-client';
 import { mapZodErrors } from '../../utils/mapZodErrors';
 import { buildLoginSchema } from '../../schemas/auth/loginSchema';
 import { JwtPayload } from '../../types/auth/auth';
@@ -47,7 +47,7 @@ export const useLoginDialog = ({
     async (credentials: { email: string; password: string }) => {
       setLoading(true);
       try {
-        const { data: loginData, error } = await login(credentials);
+        const { data: loginData, error } = await api.auth.login(credentials);
 
         if (error) {
           throw new Error(error);
@@ -82,7 +82,7 @@ export const useLoginDialog = ({
         }
 
         if (decodedToken.userType === 'coach') {
-          const { data } = await fetchCoach(decodedToken.userId);
+          const { data } = await api.user.fetchCoach(decodedToken.userId);
 
           if (!data) {
             setCoach(null as unknown as ICoach);
@@ -92,7 +92,7 @@ export const useLoginDialog = ({
             navigate('/coach');
           }
         } else if (decodedToken.userType === 'client') {
-          const { data } = await fetchClient(decodedToken.userId);
+          const { data } = await api.user.fetchClient(decodedToken.userId);
           setClient(data);
           navigate('/student');
         }
