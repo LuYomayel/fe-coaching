@@ -68,7 +68,7 @@ export const useStudentCalendar = () => {
                   const start = formatDateToApi(new Date(session.sessionDate as string));
                   const workout = workoutInstance.workout as Record<string, unknown>;
                   return {
-                    title: workout.planName as string,
+                    title: (workoutInstance.instanceName as string) || (workout.planName as string),
                     start,
                     extendedProps: {
                       status,

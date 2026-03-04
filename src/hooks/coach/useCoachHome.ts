@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useIntl, IntlShape } from 'react-intl';
-import { useNavigate, NavigateFunction } from 'react-router-dom';
+import { useNavigate, useLocation, NavigateFunction, Location } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
 import { useSpinner } from '../../utils/GlobalSpinner';
 import { useToast } from '../../contexts/ToastContext';
@@ -64,6 +64,7 @@ export interface IUseCoachHomeReturn {
   coachName: string;
   intl: IntlShape;
   navigate: NavigateFunction;
+  location: Location;
 
   // Handlers
   goToManageStudents: () => void;
@@ -80,6 +81,7 @@ export const useCoachHome = (): IUseCoachHomeReturn => {
   const { showToast } = useToast();
   const { coach, user } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const intl = useIntl();
 
   const [combinedClientData, setCombinedClientData] = useState<ICombinedClientData[]>([]);
@@ -206,6 +208,7 @@ export const useCoachHome = (): IUseCoachHomeReturn => {
     coachName,
     intl,
     navigate,
+    location,
     goToManageStudents,
     viewClientProfile,
     getStatusColor

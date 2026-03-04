@@ -439,7 +439,11 @@ const PlanDetails: React.FC<PlanDetailsProps> = ({
       {/* Card for Plan Title */}
       <Card className="mb-4">
         <div className="flex justify-content-between align-items-center mb-2">
-          <h2 className="text-2xl font-bold m-0">{workoutPlan.workoutTemplate?.planName}</h2>
+          <h2 className="text-2xl font-bold m-0">
+            {isTemplate
+              ? workoutPlan.workoutTemplate?.planName
+              : workoutPlan.instanceName || workoutPlan.workoutTemplate?.planName}
+          </h2>
 
           {/* Botones de edición y guardado */}
           {!isTemplate && user && user.userType === 'coach' && (

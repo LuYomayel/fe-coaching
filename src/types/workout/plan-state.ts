@@ -63,7 +63,6 @@ export interface IPlanInfo {
   workoutId: number | null;
   workoutInstanceTemplateId: number | null;
   instanceName: string;
-  clientFacingName: string;
   personalizedNotes: string;
 }
 
@@ -82,7 +81,6 @@ export interface IUpsertWorkoutTemplatePayload {
     }>;
   };
   instanceName: string;
-  clientFacingName: string;
   personalizedNotes: string;
   groups: Array<{
     groupNumber: number;
@@ -124,7 +122,6 @@ export interface IWorkoutTemplateResponse {
   workoutInstanceTemplates?: Array<{
     id: number;
     instanceName?: string;
-    clientFacingName?: string;
     personalizedNotes?: string;
     groups?: Array<{
       id: number;
@@ -183,6 +180,5 @@ export interface IWorkoutInstanceResponse {
     }>;
   }>;
   instanceName?: string;
-  clientFacingName?: string;
   personalizedNotes?: string;
 }

@@ -345,7 +345,7 @@ export const mapSessionToCalendarEvent = (
     // Update status if needed
     const status = updateStatusLocal(workoutInstance, session);
     return {
-      title: workoutInstance.workoutTemplate?.planName || 'Sin título',
+      title: workoutInstance.instanceName || workoutInstance.workoutTemplate?.planName || 'Sin título',
       start: startDate,
       allDay: true,
       extendedProps: {

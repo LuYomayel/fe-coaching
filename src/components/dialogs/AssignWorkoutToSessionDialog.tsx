@@ -6,7 +6,7 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { useIntl, FormattedMessage } from 'react-intl';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useUser } from '../../contexts/UserContext';
 import { useRpeMethods } from '../../hooks/coach/useRpeMethods';
@@ -44,6 +44,7 @@ const AssignWorkoutToSessionDialog = ({
   const { coach } = useUser();
   const intl = useIntl();
   const navigate = useNavigate();
+  const routerLocation = useLocation();
   const { rpeMethods, defaultRpeMethod } = useRpeMethods();
 
   const [workouts, setWorkouts] = useState<IWorkoutOption[]>([]);
@@ -169,7 +170,14 @@ const AssignWorkoutToSessionDialog = ({
   };
 
   const handleCreateNew = () => {
-    navigate('/plans/create-and-assign', { state: { clientId, sessionDate: selectedDate, changeToTemplate: false } });
+    navigate('/plans/create-and-assign', {
+      state: {
+        clientId,
+        sessionDate: selectedDate,
+        changeToTemplate: false,
+        returnTo: routerLocation.pathname + routerLocation.search
+      }
+    });
   };
 
   return (

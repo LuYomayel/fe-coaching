@@ -16,7 +16,7 @@ import {
 import { IExercise } from '../../types/workout/exercise';
 import { IWorkoutInstance } from '../../types/workout/workout-instance';
 import { IExerciseGroup } from '../../types/workout/exercise-group';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface UseNewCreatePlanProps {
   coachId?: number;
@@ -32,6 +32,7 @@ interface UseNewCreatePlanReturn {
   isSaving: boolean;
 
   updatePlanName: (newName: string) => void;
+  updateInstanceName: (newName: string) => void;
   handleSavePlan: () => Promise<void>;
 
   updateGroupName: (groupNumber: string | number, newName: string) => void;
@@ -146,7 +147,6 @@ const transformTemplateToState = (
         workoutId: null,
         workoutInstanceTemplateId: null,
         instanceName: '',
-        clientFacingName: '',
         personalizedNotes: ''
       },
       groupList: []
@@ -207,7 +207,6 @@ const transformTemplateToState = (
       workoutId: template.id ?? null,
       workoutInstanceTemplateId: instance?.id ?? null,
       instanceName: instance?.instanceName ?? template.planName ?? '',
-      clientFacingName: instance?.clientFacingName ?? instance?.instanceName ?? template.planName ?? '',
       personalizedNotes: instance?.personalizedNotes ?? ''
     },
     groupList: normalizeGroups(mappedGroups)
@@ -282,7 +281,6 @@ const transformWorkoutInstanceToState = (
         workoutId: null,
         workoutInstanceTemplateId: null,
         instanceName: '',
-        clientFacingName: '',
         personalizedNotes: ''
       },
       groupList: []
@@ -298,7 +296,6 @@ const transformWorkoutInstanceToState = (
       workoutId: instance.id ?? null,
       workoutInstanceTemplateId: null,
       instanceName: instance.instanceName ?? '',
-      clientFacingName: instance.clientFacingName ?? '',
       personalizedNotes: instance.personalizedNotes ?? ''
     },
     groupList: transformedGroups
@@ -313,12 +310,14 @@ export const useNewCreatePlan = ({
 }: UseNewCreatePlanProps = {}): UseNewCreatePlanReturn => {
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Ruta de retorno: la pasa quien navega hacia el editor (ej. client-dashboard, plans list, etc.)
+  const returnTo: string = (location.state as any)?.returnTo ?? '/coach/plans';
   const [plan, setPlan] = useState<IPlanInfo>({
     planName: '',
     workoutId: null,
     workoutInstanceTemplateId: null,
     instanceName: '',
-    clientFacingName: '',
     personalizedNotes: ''
   });
   const [groupsState, setGroupsState] = useState<IPlanGroup[]>(() => normalizeGroups([createEmptyGroup(1)]));
@@ -363,7 +362,6 @@ export const useNewCreatePlan = ({
         workoutId: null,
         workoutInstanceTemplateId: null,
         instanceName: '',
-        clientFacingName: '',
         personalizedNotes: ''
       });
       setGroupsState(normalizeGroups([createEmptyGroup(1)]));
@@ -391,7 +389,6 @@ export const useNewCreatePlan = ({
             workoutId: template.id ?? null,
             workoutInstanceTemplateId: null,
             instanceName: template.instanceName ?? '',
-            clientFacingName: template.clientFacingName ?? '',
             personalizedNotes: template.personalizedNotes ?? ''
           });
           const transformedGroups = transformWorkoutInstanceGroupsToPlanGroups(template.groups ?? []);
@@ -401,9 +398,7 @@ export const useNewCreatePlan = ({
         console.error('Error fetching workout template', error);
         showToast('error', 'Error', 'No se pudo cargar el plan');
       } finally {
-        setTimeout(() => {
-          setLoading(false);
-        }, 10000);
+        setLoading(false);
       }
     };
 
@@ -426,8 +421,15 @@ export const useNewCreatePlan = ({
     setPlan((prev) => ({
       ...prev,
       planName: newName,
-      instanceName: prev.instanceName || newName,
-      clientFacingName: prev.clientFacingName || newName
+      // Sincronizar instanceName si aún no fue personalizado (era igual al planName anterior o estaba vacío)
+      instanceName: !prev.instanceName || prev.instanceName === prev.planName ? newName : prev.instanceName
+    }));
+  };
+
+  const updateInstanceName = (newName: string) => {
+    setPlan((prev) => ({
+      ...prev,
+      instanceName: newName
     }));
   };
 
@@ -726,7 +728,6 @@ export const useNewCreatePlan = ({
     return {
       workout: workoutPayload,
       instanceName: plan.instanceName ?? '',
-      clientFacingName: plan.clientFacingName ?? '',
       personalizedNotes: plan.personalizedNotes ?? '',
       groups: normalizedGroups,
       isTemplate,
@@ -771,9 +772,6 @@ export const useNewCreatePlan = ({
         const { planInfo, groupList } = transformTemplateToState(data as IWorkoutTemplateResponse);
         setPlan(planInfo);
         setGroupsState(groupList.length > 0 ? groupList : normalizeGroups([createEmptyGroup(1)]));
-        setTimeout(() => {
-          navigate('/coach/plans');
-        }, 1000);
       } else {
         const response = await api.workout.createOrUpdateWorkoutInstance(payload);
         data = response.data;
@@ -787,6 +785,9 @@ export const useNewCreatePlan = ({
       }
 
       showToast('success', 'Plan guardado', 'El plan se guardó correctamente');
+      setTimeout(() => {
+        navigate(returnTo);
+      }, 1000);
     } catch (error: any) {
       console.error('Error saving workout', error);
       const detail =
@@ -804,6 +805,7 @@ export const useNewCreatePlan = ({
     isSaving,
 
     updatePlanName,
+    updateInstanceName,
     handleSavePlan,
 
     updateGroupName,

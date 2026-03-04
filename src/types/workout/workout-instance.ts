@@ -12,7 +12,6 @@ export interface IWorkoutInstance {
   workoutTemplate: IWorkoutTemplate;
   clientSubscription?: IClientSubscription;
   instanceName: string;
-  clientFacingName?: string;
   personalizedNotes?: string;
   status?: string;
   groups: IExerciseGroup[];

@@ -83,6 +83,7 @@ export default function CoachHomePage(): JSX.Element {
     coachName,
     intl,
     navigate,
+    location,
     goToManageStudents,
     viewClientProfile,
     getStatusColor
@@ -315,7 +316,11 @@ export default function CoachHomePage(): JSX.Element {
                 label={intl.formatMessage({ id: 'coach.home.createWorkout' })}
                 icon="pi pi-plus-circle"
                 className="p-button-outlined w-full"
-                onClick={() => navigate('/plans/create', { state: { changeToTemplate: false } })}
+                onClick={() =>
+                  navigate('/plans/create', {
+                    state: { changeToTemplate: false, returnTo: location.pathname + location.search }
+                  })
+                }
               />
               <Button
                 label={intl.formatMessage({ id: 'coach.home.addExercise' })}

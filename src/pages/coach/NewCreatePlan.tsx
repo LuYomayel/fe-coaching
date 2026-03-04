@@ -39,6 +39,7 @@ export const NewCreatePlan: React.FC = () => {
     exercises,
     isSaving,
     updatePlanName,
+    updateInstanceName,
     updateExerciseSelection,
     updateExerciseProperty,
     getExerciseKey,
@@ -120,8 +121,8 @@ export const NewCreatePlan: React.FC = () => {
             </label>
             <InputText
               id="plan-name"
-              value={plan.planName || ''}
-              onChange={(e) => updatePlanName(e.target.value)}
+              value={isTemplate ? plan.planName || '' : plan.instanceName || ''}
+              onChange={(e) => (isTemplate ? updatePlanName(e.target.value) : updateInstanceName(e.target.value))}
               className="w-full"
               placeholder="Ingresa el nombre del plan"
             />

@@ -1,7 +1,7 @@
 import { Card } from 'primereact/card';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Button } from 'primereact/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Dropdown } from 'primereact/dropdown';
 import { ButtonGroup } from 'primereact/buttongroup';
 import { Checkbox } from 'primereact/checkbox';
@@ -11,6 +11,7 @@ import { AssignWorkoutDialog } from '../dialogs/AssignWorkoutDialog';
 export function TrainingSessionsTab() {
   const intl = useIntl();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     workouts,
     selectedWorkouts,
@@ -73,7 +74,7 @@ export function TrainingSessionsTab() {
             className="p-button-secondary"
             onClick={() =>
               navigate(`/plans/create/${rowData.id}`, {
-                state: { isEdit: true, changeToTemplate: false }
+                state: { isEdit: true, changeToTemplate: false, returnTo: location.pathname + location.search }
               })
             }
           />
@@ -126,7 +127,11 @@ export function TrainingSessionsTab() {
           label={intl.formatMessage({ id: 'coach.buttons.newPlan' })}
           icon="pi pi-plus"
           className="p-button-rounded p-button-primary"
-          onClick={() => navigate('/plans/create', { state: { changeToTemplate: false } })}
+          onClick={() =>
+            navigate('/plans/create', {
+              state: { changeToTemplate: false, returnTo: location.pathname + location.search }
+            })
+          }
         />
         {filterOption === 'all' || filterOption === 'general' ? (
           <Button

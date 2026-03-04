@@ -99,7 +99,6 @@ export const exerciseGroupTemplateSchema = z
 export const workoutInstanceTemplateSchema = z.object({
   id: z.union([z.number(), z.string()]).optional(),
   instanceName: z.string().optional(),
-  clientFacingName: z.string().optional(),
   personalizedNotes: z.string().optional(),
   groups: z.array(exerciseGroupTemplateSchema).min(1, 'El plan debe tener al menos un grupo'),
   // Campos para workout instance (no template)

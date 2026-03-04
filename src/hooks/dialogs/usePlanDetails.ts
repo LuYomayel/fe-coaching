@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useUser } from '../../contexts/UserContext';
 import { useConfirmationDialog } from '../../utils/ConfirmationDialogContext';
@@ -32,6 +32,7 @@ export const usePlanDetails = ({
 }: UsePlanDetailsProps) => {
   const intl = useIntl();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useUser();
   const { showConfirmationDialog } = useConfirmationDialog();
   const { showToast } = useToast();
@@ -147,7 +148,9 @@ export const usePlanDetails = ({
   }, [isTemplate, clientId, planId, currentCycle, showToast]);
 
   const handleEdit = () => {
-    navigate(`/plans/edit/${planId}`, { state: { changeToTemplate: false, isTemplate } });
+    navigate(`/plans/edit/${planId}`, {
+      state: { changeToTemplate: false, isTemplate, returnTo: location.pathname + location.search }
+    });
   };
 
   const handleDelete = () => {

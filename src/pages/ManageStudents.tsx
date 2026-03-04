@@ -55,8 +55,8 @@ export default function ManageStudentsPage() {
 
   const truncateEmail = (email: string): string => {
     const atIndex = email.indexOf('@');
-    if (atIndex === -1 || atIndex <= 6) return email;
-    return `${email.substring(0, 3)}...${email.substring(atIndex)}`;
+    if (atIndex === -1 || atIndex <= 12) return email;
+    return `${email.substring(0, 12)}...${email.substring(atIndex)}`;
   };
 
   const renderStudentCards = () => {
