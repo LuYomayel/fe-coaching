@@ -1,0 +1,258 @@
+# Reglas de Desarrollo - Proyecto Fe-Coaching
+
+## 🎯 Reglas Principales
+
+### ✅ SIEMPRE
+
+1. **Tailwind CSS** - Usar SOLO Tailwind para todos los estilos. NO crear archivos `.css` adicionales.
+2. **Hook por Página** - Cada página debe tener su propio hook personalizado (`useHomePage.ts` para `HomePage.tsx`).
+3. **API Client** - Usar `src/services/api-client.ts` para TODAS las llamadas HTTP. NO llamar directamente a `fetch`.
+4. **Componentes Shared** - Usar componentes de `src/components/shared/` en lugar de HTML nativo.
+5. **TypeScript Estricto** - Tipar absolutamente TODO. NO usar `any` excepto casos extremos. Tipos compartidos en `/src/types`, tipos locales en el mismo archivo.
+6. **Zod Schemas** - Usar Zod con schemas para TODAS las validaciones. SIEMPRE mostrar errores específicos de Zod en toast al usuario. validateForm debe retornar `{ isValid, errors }`.
+7. **Español en UI** - TODO el texto visible debe estar en ESPAÑOL. El código (variables, funciones) en inglés.
+
+### ❌ NUNCA
+
+1. NO crear archivos `.css` adicionales
+2. NO llamar directamente a `fetch` desde hooks o componentes
+3. NO poner lógica de negocio en componentes de página
+4. NO usar HTML nativo cuando existe un componente shared
+5. NO acceder directamente a localStorage (usar AuthContext)
+6. NO validar manualmente con regex o if/else (usar Zod schemas)
+7. NO mostrar texto en inglés en la interfaz de usuario
+8. NO usar `any` - Siempre tipar correctamente. Buscar tipos en `/src/types` primero
+9. NO dejar parámetros, retornos o estados sin tipo explícito
+10. NO ignorar errores de validación - SIEMPRE mostrar errores específicos de Zod al usuario en toast
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── pages/              # Páginas (solo UI/JSX)
+├── hooks/              # Hooks personalizados (uno por página mínimo)
+├── components/
+│   └── shared/        # Componentes reutilizables
+├── services/
+│   └── api-client.ts  # Cliente API centralizado
+├── context/           # Contextos (AuthContext, etc.)
+├── schemas/           # Schemas de validación Zod
+├── types/             # Tipos TypeScript compartidos
+└── utils/             # Utilidades generales
+```
+
+## 🔄 Patrón Página + Hook
+
+### Componente de Página (solo UI)
+
+```typescript
+// pages/HomePage.tsx
+import { useHomePage } from '@/hooks/useHomePage';
+
+export const HomePage = () => {
+  const { data, loading, error, handleSubmit } = useHomePage();
+
+  return (
+    <div className="container mx-auto p-4">
+      {/* Solo JSX aquí */}
+    </div>
+  );
+};
+```
+
+### Hook (toda la lógica)
+
+```typescript
+// hooks/useHomePage.ts
+import { useState, useEffect } from 'react';
+import { apiClient } from '@/services/api-client';
+
+export const useHomePage = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const result = await apiClient.getData();
+      setData(result);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { data, loading, loadData };
+};
+```
+
+## 🌐 API Client
+
+```typescript
+// Uso desde hooks
+import { apiClient } from '@/services/api-client';
+
+// ✅ CORRECTO
+const result = await apiClient.getUsers();
+const newUser = await apiClient.createUser(userData);
+
+// ❌ INCORRECTO
+const response = await fetch('/api/users');
+```
+
+## 🎨 Estilos con Tailwind
+
+```typescript
+// ✅ CORRECTO
+<button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+  Enviar
+</button>
+
+// ❌ INCORRECTO
+<button style={{ padding: '8px 16px', background: 'blue' }}>
+  Enviar
+</button>
+```
+
+## ✅ Validación con Zod
+
+```typescript
+// schemas/auth.schemas.ts
+import { z } from 'zod';
+
+export const loginSchema = z.object({
+  email: z.string().min(1, 'El email es requerido').email('Por favor ingresa un email válido'),
+  password: z.string().min(1, 'La contraseña es requerida').min(8, 'La contraseña debe tener al menos 8 caracteres')
+});
+
+export type LoginFormData = z.infer<typeof loginSchema>;
+
+// IMPORTANTE: validateForm debe retornar { isValid, errors }
+const validateForm = () => {
+  const result = loginSchema.safeParse(formData);
+  if (!result.success) {
+    const errors = {};
+    result.error.errors.forEach((err) => {
+      errors[err.path[0]] = err.message;
+    });
+    setErrors(errors);
+    return { isValid: false, errors };
+  }
+  return { isValid: true, errors: {} };
+};
+
+// IMPORTANTE: Mostrar errores específicos en toast
+const handleSubmit = () => {
+  const validation = validateForm();
+  if (!validation.isValid) {
+    const errorMessages = Object.values(validation.errors)
+      .filter((msg) => msg)
+      .join('. ');
+    showToast('error', 'Error', errorMessages);
+    return;
+  }
+  // Proceder...
+};
+```
+
+## 🌍 Idioma
+
+### ✅ CORRECTO
+
+```typescript
+<Input
+  label="Correo Electrónico"  // ✅ Español
+  placeholder="nombre@empresa.com"  // ✅ Español
+/>
+<Button>Iniciar Sesión</Button>  // ✅ Español
+```
+
+### ❌ INCORRECTO
+
+```typescript
+<Input
+  label="Email Address"  // ❌ Inglés
+  placeholder="name@company.com"  // ❌ Inglés
+/>
+<Button>Sign In</Button>  // ❌ Inglés
+```
+
+## 🔐 Autenticación
+
+```typescript
+// Uso del AuthContext
+import { useAuth } from '@/context/AuthContext';
+
+const { user, login, logout, isAuthenticated } = useAuth();
+
+// ✅ CORRECTO - Usar AuthContext
+await login(email, password);
+logout();
+
+// ❌ INCORRECTO - Acceso directo
+localStorage.setItem('token', token);
+```
+
+## 📝 Componentes Shared
+
+```typescript
+// ✅ CORRECTO
+import { Button, Input, Card } from '@/components/shared';
+
+<Card>
+  <Input label="Nombre" />
+  <Button>Guardar</Button>
+</Card>
+
+// ❌ INCORRECTO
+<div className="card">
+  <input type="text" />
+  <button>Guardar</button>
+</div>
+```
+
+## 🔷 TypeScript - Reglas Estrictas
+
+```typescript
+// ✅ CORRECTO - Todo tipado
+const [users, setUsers] = useState<User[]>([]);
+const [loading, setLoading] = useState<boolean>(false);
+
+interface ButtonProps {
+  variant: 'primary' | 'secondary';
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+const handleSubmit = async (data: LoginFormData): Promise<void> => {
+  await apiClient.login(data);
+};
+
+// ❌ INCORRECTO - any y sin tipos
+const [users, setUsers] = useState([]); // ❌ Sin tipo
+const handleSubmit = async (data: any) => {}; // ❌ any
+const fetchData = async () => {}; // ❌ Sin tipo de retorno
+```
+
+### Ubicación de Tipos
+
+- **Tipos compartidos globales**: `/src/types/index.ts` o `/src/types/*.ts`
+- **Tipos locales**: En el mismo archivo del componente/hook
+- **Siempre buscar primero** en `/src/types` antes de crear nuevos tipos
+
+## 📚 Documentación Completa
+
+Para más detalles, consulta:
+
+- `.cursor/rules/architecture.md` - Arquitectura completa
+- `.cursor/rules/typescript.md` - Reglas estrictas de TypeScript (NO usar any)
+- `.cursor/rules/api-client-pattern.md` - Patrón API Client
+- `.cursor/rules/page-hook-pattern.md` - Patrón Página + Hook
+- `.cursor/rules/tailwind-styling.md` - Guía de Tailwind
+- `.cursor/rules/zod-validation.md` - Validación con Zod
+- `.cursor/rules/spanish-ui.md` - Textos en español
