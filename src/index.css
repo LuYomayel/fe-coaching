@@ -1,36 +1,365 @@
-@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+/* ============================================
+   iOS-STYLE GLOBAL DESIGN SYSTEM
+   ============================================ */
+
+/* --- CSS Custom Properties --- */
+:root {
+  --ios-radius-sm: 8px;
+  --ios-radius-md: 12px;
+  --ios-radius-lg: 16px;
+  --ios-radius-xl: 20px;
+  --ios-radius-pill: 9999px;
+  --ios-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --ios-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --ios-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --ios-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.06);
+  --ios-blur: blur(20px);
+  --ios-blur-light: blur(10px);
+  --ios-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --ios-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --ios-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* --- Base Reset & Typography --- */
 body {
   margin: 0;
-  font-family: 'Kanit', sans-serif;
-
+  font-family: var(--ios-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
+  letter-spacing: -0.01em;
 }
 
 * {
-  font-family: 'Kanit', sans-serif;
+  font-family: var(--ios-font);
 }
 
 code {
-  font-family: 'Kanit', sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
 }
 
 h1 {
   font-size: 2.5rem;
   margin-bottom: 1.5rem;
   text-align: center;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  letter-spacing: -0.015em;
 }
 
 p {
   padding: 0;
   margin: 0;
+  line-height: 1.6;
+}
+
+/* ============================================
+   PRIMEREACT COMPONENT OVERRIDES - iOS STYLE
+   ============================================ */
+
+/* --- Cards --- */
+.p-card {
+  border-radius: var(--ios-radius-lg) !important;
+  box-shadow: var(--ios-shadow-md) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  transition: var(--ios-transition) !important;
+  overflow: hidden;
+}
+
+.p-card:hover {
+  box-shadow: var(--ios-shadow-lg) !important;
+  transform: translateY(-1px);
+}
+
+.p-card .p-card-body {
+  padding: 1.25rem !important;
+}
+
+.p-card-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
 .p-fieldset-content,
 .p-card-content {
   padding: 0;
 }
+
+/* --- Buttons --- */
+.p-button {
+  border-radius: var(--ios-radius-md) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  transition: var(--ios-transition) !important;
+  padding: 0.6rem 1.2rem !important;
+}
+
+.p-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ios-shadow-sm);
+}
+
+.p-button:active {
+  transform: scale(0.97);
+}
+
+.p-button.p-button-rounded {
+  border-radius: var(--ios-radius-pill) !important;
+}
+
+.p-button.p-button-text {
+  border-radius: var(--ios-radius-sm) !important;
+}
+
+.p-button.p-button-text:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.p-button.p-button-sm {
+  padding: 0.4rem 0.9rem !important;
+  font-size: 0.85rem !important;
+}
+
+.p-button.p-button-lg {
+  padding: 0.8rem 1.6rem !important;
+  font-size: 1.05rem !important;
+  border-radius: var(--ios-radius-lg) !important;
+}
+
+/* --- Input Fields --- */
+.p-inputtext {
+  border-radius: var(--ios-radius-md) !important;
+  padding: 0.7rem 1rem !important;
+  transition: var(--ios-transition) !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
+  font-size: 0.95rem !important;
+}
+
+.p-inputtext:focus {
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.p-inputtext::placeholder {
+  color: #9ca3af;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+/* --- Dropdowns --- */
+.p-dropdown {
+  border-radius: var(--ios-radius-md) !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
+  transition: var(--ios-transition) !important;
+}
+
+.p-dropdown:hover {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.p-dropdown-panel {
+  border-radius: var(--ios-radius-md) !important;
+  box-shadow: var(--ios-shadow-lg) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden;
+}
+
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+  border-radius: var(--ios-radius-sm) !important;
+  margin: 2px 4px !important;
+  padding: 0.6rem 0.8rem !important;
+  transition: var(--ios-transition-fast) !important;
+}
+
+/* --- Dialogs --- */
+.p-dialog {
+  border-radius: var(--ios-radius-xl) !important;
+  box-shadow: var(--ios-shadow-xl) !important;
+  border: none !important;
+  overflow: hidden;
+}
+
+.p-dialog .p-dialog-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  padding: 1.25rem 1.5rem !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: -0.015em;
+}
+
+.p-dialog .p-dialog-content {
+  padding: 1.5rem !important;
+}
+
+.p-dialog .p-dialog-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+  padding: 1rem 1.5rem !important;
+}
+
+.p-dialog-mask {
+  backdrop-filter: var(--ios-blur-light) !important;
+}
+
+/* --- DataTable --- */
+.p-datatable {
+  border-radius: var(--ios-radius-lg) !important;
+  overflow: hidden;
+}
+
+.p-datatable .p-datatable-header {
+  border: none !important;
+  padding: 1rem 1.25rem !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 0.75rem 1rem !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-width: 0 0 1px 0 !important;
+}
+
+.p-datatable .p-datatable-tbody > tr {
+  transition: var(--ios-transition-fast) !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.85rem 1rem !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+  border-width: 0 0 1px 0 !important;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  transform: none !important;
+}
+
+/* --- Sidebar --- */
+.p-sidebar {
+  box-shadow: var(--ios-shadow-xl) !important;
+}
+
+.p-sidebar .p-sidebar-header {
+  padding: 1.25rem !important;
+}
+
+/* --- Tabs --- */
+.p-tabview .p-tabview-nav {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  border-radius: var(--ios-radius-sm) var(--ios-radius-sm) 0 0 !important;
+  font-weight: 500 !important;
+  transition: var(--ios-transition-fast) !important;
+}
+
+/* --- Toast --- */
+.p-toast .p-toast-message {
+  border-radius: var(--ios-radius-lg) !important;
+  box-shadow: var(--ios-shadow-lg) !important;
+  backdrop-filter: var(--ios-blur-light);
+}
+
+/* --- Tooltip --- */
+.p-tooltip .p-tooltip-text {
+  border-radius: var(--ios-radius-sm) !important;
+  font-size: 0.82rem !important;
+  padding: 0.4rem 0.7rem !important;
+  box-shadow: var(--ios-shadow-md) !important;
+}
+
+/* --- Paginator --- */
+.p-paginator {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  justify-items: center;
+  border: none !important;
+  padding: 0.75rem !important;
+}
+
+.p-paginator .p-dropdown {
+  width: 6rem;
+}
+
+.p-paginator .p-paginator-page {
+  border-radius: var(--ios-radius-sm) !important;
+  min-width: 2.2rem !important;
+  height: 2.2rem !important;
+}
+
+/* --- Menu --- */
+.p-menu {
+  border-radius: var(--ios-radius-lg) !important;
+  border: none !important;
+  box-shadow: var(--ios-shadow-md) !important;
+}
+
+.p-menu .p-menuitem-link {
+  border-radius: var(--ios-radius-sm) !important;
+  margin: 2px 4px !important;
+  transition: var(--ios-transition-fast) !important;
+}
+
+/* --- Avatar --- */
+.p-avatar {
+  border-radius: var(--ios-radius-pill) !important;
+}
+
+/* --- Timeline --- */
+.p-timeline-event-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Calendar/DatePicker --- */
+.p-calendar-w-btn .p-datepicker-trigger.p-button {
+  background-color: var(--primary-color) !important;
+  border-radius: 0 var(--ios-radius-md) var(--ios-radius-md) 0 !important;
+}
+
+.p-datepicker {
+  border-radius: var(--ios-radius-lg) !important;
+  box-shadow: var(--ios-shadow-lg) !important;
+}
+
+/* --- ProgressBar --- */
+.p-progressbar {
+  border-radius: var(--ios-radius-pill) !important;
+  height: 6px !important;
+}
+
+.p-progressbar .p-progressbar-value {
+  border-radius: var(--ios-radius-pill) !important;
+}
+
+/* --- Fieldset --- */
+.p-fieldset {
+  border-radius: var(--ios-radius-lg) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ============================================
+   LAYOUT & CONTAINERS
+   ============================================ */
 
 .actions-section {
   position: fixed;
@@ -52,26 +381,11 @@ p {
   margin: 0 auto;
 }
 
-.p-calendar-w-btn .p-datepicker-trigger.p-button {
-  background-color: var(--primary-color) !important; /* Usa la variable de color primario de tu tema */
-}
-
 .login-container {
-  width: 50%;
+  width: 400px;
 }
 
-/* .global-spinner-container {
-  background: rgba(0, 0, 0, 0.5);
-}
-.global-spinner {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  
-} */
-
+/* --- Spinner --- */
 .global-spinner-container {
   position: fixed;
   top: 0;
@@ -81,38 +395,33 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: var(--ios-blur);
   z-index: 9999;
 }
+
 .global-spinner {
   width: 10rem;
   height: 10rem;
 }
 
+/* --- Body Containers --- */
 .body-container {
   height: calc(100vh - 5rem);
   overflow: auto;
 }
+
 .home-container {
-  height: calc(100vh);
+  height: 100vh;
   overflow: auto;
 }
+
 .body-container-home {
   height: 100vh;
   overflow: auto;
 }
-.p-paginator {
-  display: flex;
-  align-items: center;
-  align-content: center;
-  justify-content: center;
-  justify-items: center;
-}
 
-.p-paginator .p-dropdown {
-  width: 6rem;
-}
-
+/* --- Responsive Table --- */
 .responsive-table .p-datatable {
   width: 100%;
 }
@@ -123,76 +432,67 @@ p {
     max-width: none !important;
     padding: 0.5rem;
   }
+
   .responsive-card {
     width: 100% !important;
     padding: 1rem;
   }
+
   .responsive-table .p-datatable-thead {
     display: none;
   }
 
-  /* Each table row becomes a flex container */
   .responsive-table .p-datatable-tbody > tr {
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     margin-bottom: 1rem;
-    /* align-items: self-start; */
+    border-radius: var(--ios-radius-md);
+    overflow: hidden;
   }
 
-  /* Each cell in the table row */
   .responsive-table .p-datatable-tbody > tr > td {
     display: flex;
     justify-content: space-between;
-    padding: 0.5rem;
+    padding: 0.6rem 0.8rem;
     border: none;
   }
 
-  /* Add labels to each cell before the actual content */
   .responsive-table .p-datatable-tbody > tr > td:before {
     content: attr(data-label);
-    font-weight: bold;
+    font-weight: 600;
     flex: 1;
   }
 }
 
-/* index.css or a dedicated CSS file for Login component */
-.login-container {
-  width: 400px;
-}
+/* ============================================
+   GROUP ROW COLORS
+   ============================================ */
 
-/* Card */
-
-.p-card-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.p-timeline-event-content {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .group-even {
-  background-color: #f9f9f9;
+  background-color: #f9fafb;
 }
 
 .group-odd {
-  background-color: #e0e0e0;
+  background-color: #f3f4f6;
 }
 
 .group-even-dark {
-  background-color: #2c3e50;
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .group-odd-dark {
-  background-color: #34495e;
+  background-color: rgba(255, 255, 255, 0.06);
 }
 
-/* Animations */
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translate3d(0, 40px, 0);
+    transform: translate3d(0, 20px, 0);
   }
   to {
     opacity: 1;
@@ -203,30 +503,44 @@ p {
 @keyframes pulseGlow {
   0%,
   100% {
-    box-shadow: 0 0 5px rgba(var(--primary-color-rgb), 0.5);
+    box-shadow: 0 0 5px rgba(var(--primary-color-rgb), 0.3);
   }
   50% {
     box-shadow:
-      0 0 20px rgba(var(--primary-color-rgb), 0.8),
-      0 0 30px rgba(var(--primary-color-rgb), 0.6);
+      0 0 15px rgba(var(--primary-color-rgb), 0.5),
+      0 0 25px rgba(var(--primary-color-rgb), 0.3);
+  }
+}
+
+@keyframes subtlePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
   }
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
+  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animate-pulse-glow {
   animation: pulseGlow 2s ease-in-out infinite;
 }
 
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
 /* Smooth transitions */
 .transition-all {
-  transition: all 0.3s ease;
+  transition: var(--ios-transition);
 }
 
 .transition-transform {
-  transition: transform 0.3s ease;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .duration-300 {
@@ -249,4 +563,37 @@ p {
 /* Backdrop blur */
 .backdrop-blur-sm {
   backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+}
+
+.backdrop-blur-lg {
+  backdrop-filter: var(--ios-blur);
+}
+
+/* iOS-style glass effect */
+.ios-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: var(--ios-blur);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.ios-glass-dark {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--ios-blur);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* iOS-style surface cards */
+.ios-surface {
+  border-radius: var(--ios-radius-lg);
+  box-shadow: var(--ios-shadow-md);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: var(--ios-transition);
+}
+
+.ios-surface:hover {
+  box-shadow: var(--ios-shadow-lg);
 }
