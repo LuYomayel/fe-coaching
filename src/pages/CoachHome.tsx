@@ -93,7 +93,7 @@ function StatWidget({
       className="flex align-items-center gap-3"
       style={{
         padding: '0.85rem 1rem',
-        background: 'rgba(0,0,0,0.02)',
+        background: 'var(--ios-surface-subtle)',
         borderRadius: '14px',
         minWidth: '140px'
       }}
@@ -112,7 +112,7 @@ function StatWidget({
       </div>
       <div>
         <div style={{ fontSize: '1.35rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{value}</div>
-        <div style={{ fontSize: '0.78rem', color: '#737373', fontWeight: 500 }}>{label}</div>
+        <div style={{ fontSize: '0.78rem', color: 'var(--ios-text-secondary)', fontWeight: 500 }}>{label}</div>
       </div>
     </div>
   );
@@ -136,17 +136,17 @@ function DashboardCard({
   return (
     <div
       style={{
-        background: '#fff',
+        background: 'var(--ios-card-bg)',
         borderRadius: '20px',
-        border: '1px solid rgba(0,0,0,0.04)',
-        boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+        border: '1px solid var(--ios-card-border)',
+        boxShadow: 'var(--ios-card-shadow)',
         height: '100%',
         overflow: 'hidden'
       }}
     >
       <div
         className="flex align-items-center gap-2"
-        style={{ padding: '1rem 1.25rem 0.75rem', borderBottom: '1px solid rgba(0,0,0,0.04)' }}
+        style={{ padding: '1rem 1.25rem 0.75rem', borderBottom: '1px solid var(--ios-card-border)' }}
       >
         <i className={icon} style={{ color: iconColor, fontSize: '1rem' }} />
         <span style={{ fontWeight: 600, fontSize: '0.95rem', letterSpacing: '-0.01em' }}>{title}</span>
@@ -208,12 +208,12 @@ export default function CoachHomePage(): JSX.Element {
       {/* Dashboard header */}
       <div
         style={{
-          background: '#fff',
+          background: 'var(--ios-card-bg)',
           borderRadius: '20px',
           padding: '1.5rem',
           marginBottom: '1.25rem',
-          border: '1px solid rgba(0,0,0,0.04)',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.04)'
+          border: '1px solid var(--ios-card-border)',
+          boxShadow: 'var(--ios-card-shadow)'
         }}
       >
         <div className="flex flex-column lg:flex-row justify-content-between align-items-start lg:align-items-center gap-4">
@@ -228,7 +228,7 @@ export default function CoachHomePage(): JSX.Element {
             >
               {intl.formatMessage({ id: 'coach.home.welcome' }, { name: coachName })}
             </h1>
-            <p style={{ color: '#737373', fontSize: '0.95rem', margin: 0 }}>{formattedDate}</p>
+            <p style={{ color: 'var(--ios-text-secondary)', fontSize: '0.95rem', margin: 0 }}>{formattedDate}</p>
           </div>
 
           <div className="flex flex-wrap gap-2 align-items-center">
@@ -285,10 +285,10 @@ export default function CoachHomePage(): JSX.Element {
                   <div
                     key={client.clientId}
                     className="flex align-items-center justify-content-between"
-                    style={{ padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.02)', borderRadius: '10px' }}
+                    style={{ padding: '0.5rem 0.6rem', background: 'var(--ios-surface-subtle)', borderRadius: '10px' }}
                   >
                     <div className="flex align-items-center gap-2">
-                      <i className="pi pi-user" style={{ color: '#a3a3a3', fontSize: '0.85rem' }} />
+                      <i className="pi pi-user" style={{ color: 'var(--ios-text-tertiary)', fontSize: '0.85rem' }} />
                       <span style={{ fontWeight: 500, fontSize: '0.88rem' }}>{client.clientName}</span>
                     </div>
                     <Button
@@ -306,7 +306,7 @@ export default function CoachHomePage(): JSX.Element {
                   className="pi pi-check-circle"
                   style={{ color: '#22c55e', fontSize: '2rem', marginBottom: '0.5rem' }}
                 />
-                <p style={{ color: '#737373', margin: 0, fontSize: '0.88rem' }}>
+                <p style={{ color: 'var(--ios-text-secondary)', margin: 0, fontSize: '0.88rem' }}>
                   {intl.formatMessage({ id: 'coach.home.allPaid' })}
                 </p>
               </div>
@@ -327,10 +327,10 @@ export default function CoachHomePage(): JSX.Element {
                   <div
                     key={client.clientId}
                     className="flex align-items-center justify-content-between"
-                    style={{ padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.02)', borderRadius: '10px' }}
+                    style={{ padding: '0.5rem 0.6rem', background: 'var(--ios-surface-subtle)', borderRadius: '10px' }}
                   >
                     <div className="flex align-items-center gap-2">
-                      <i className="pi pi-user" style={{ color: '#a3a3a3', fontSize: '0.85rem' }} />
+                      <i className="pi pi-user" style={{ color: 'var(--ios-text-tertiary)', fontSize: '0.85rem' }} />
                       <span style={{ fontWeight: 500, fontSize: '0.88rem' }}>{client.clientName}</span>
                     </div>
                     <span
@@ -360,7 +360,7 @@ export default function CoachHomePage(): JSX.Element {
                   className="pi pi-info-circle"
                   style={{ color: '#3b82f6', fontSize: '2rem', marginBottom: '0.5rem' }}
                 />
-                <p style={{ color: '#737373', margin: 0, fontSize: '0.88rem' }}>
+                <p style={{ color: 'var(--ios-text-secondary)', margin: 0, fontSize: '0.88rem' }}>
                   {intl.formatMessage({ id: 'coach.home.noDaysLeftData' })}
                 </p>
               </div>
@@ -381,10 +381,10 @@ export default function CoachHomePage(): JSX.Element {
                   <div
                     key={client.clientId}
                     className="flex align-items-center justify-content-between"
-                    style={{ padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.02)', borderRadius: '10px' }}
+                    style={{ padding: '0.5rem 0.6rem', background: 'var(--ios-surface-subtle)', borderRadius: '10px' }}
                   >
                     <div className="flex align-items-center gap-2">
-                      <i className="pi pi-user" style={{ color: '#a3a3a3', fontSize: '0.85rem' }} />
+                      <i className="pi pi-user" style={{ color: 'var(--ios-text-tertiary)', fontSize: '0.85rem' }} />
                       <span style={{ fontWeight: 500, fontSize: '0.88rem' }}>{client.clientName}</span>
                     </div>
                     <span
@@ -418,7 +418,7 @@ export default function CoachHomePage(): JSX.Element {
                   className="pi pi-info-circle"
                   style={{ color: '#3b82f6', fontSize: '2rem', marginBottom: '0.5rem' }}
                 />
-                <p style={{ color: '#737373', margin: 0, fontSize: '0.88rem' }}>
+                <p style={{ color: 'var(--ios-text-secondary)', margin: 0, fontSize: '0.88rem' }}>
                   {intl.formatMessage({ id: 'coach.home.noFrequencyData7days' })}
                 </p>
               </div>
@@ -485,10 +485,10 @@ export default function CoachHomePage(): JSX.Element {
       {/* Client summary table */}
       <div
         style={{
-          background: '#fff',
+          background: 'var(--ios-card-bg)',
           borderRadius: '20px',
-          border: '1px solid rgba(0,0,0,0.04)',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+          border: '1px solid var(--ios-card-border)',
+          boxShadow: 'var(--ios-card-shadow)',
           marginTop: '1.25rem',
           overflow: 'hidden'
         }}

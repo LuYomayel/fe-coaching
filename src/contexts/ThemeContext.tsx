@@ -16,6 +16,15 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   };
 
   useEffect(() => {
+    // Toggle .dark class on body for CSS variable switching
+    if (isDarkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  useEffect(() => {
     // Persist preference in localStorage
     // localStorage.setItem('theme', JSON.stringify(isDarkMode));
 

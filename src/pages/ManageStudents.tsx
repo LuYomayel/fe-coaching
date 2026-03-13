@@ -70,10 +70,10 @@ export default function ManageStudentsPage() {
               <div key={student.id} className="col-12 md:col-6 xl:col-4 p-2">
                 <div
                   style={{
-                    background: '#fff',
+                    background: 'var(--ios-card-bg)',
                     borderRadius: '20px',
-                    border: '1px solid rgba(0,0,0,0.04)',
-                    boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+                    border: '1px solid var(--ios-card-border)',
+                    boxShadow: 'var(--ios-card-shadow)',
                     overflow: 'hidden',
                     height: '100%',
                     transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -82,7 +82,7 @@ export default function ManageStudentsPage() {
                   {/* Header */}
                   <div
                     className="flex flex-column md:flex-row align-items-start md:align-items-center gap-3"
-                    style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(0,0,0,0.04)' }}
+                    style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--ios-card-border)' }}
                   >
                     <div
                       style={{
@@ -92,7 +92,7 @@ export default function ManageStudentsPage() {
                         overflow: 'hidden',
                         flexShrink: 0,
                         position: 'relative',
-                        border: '2px solid rgba(0,0,0,0.04)'
+                        border: '2px solid var(--ios-card-border)'
                       }}
                     >
                       <img
@@ -108,7 +108,7 @@ export default function ManageStudentsPage() {
                             position: 'absolute',
                             bottom: -2,
                             right: -2,
-                            background: '#fff',
+                            background: 'var(--ios-card-bg)',
                             borderRadius: '50%',
                             padding: '1px'
                           }}
@@ -121,7 +121,7 @@ export default function ManageStudentsPage() {
                       <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0, letterSpacing: '-0.01em' }}>
                         {student.name}
                       </h3>
-                      <p style={{ color: '#a3a3a3', margin: 0, fontSize: '0.82rem' }}>
+                      <p style={{ color: 'var(--ios-text-tertiary)', margin: 0, fontSize: '0.82rem' }}>
                         {student.user?.email ? truncateEmail(student.user.email) : ''}
                       </p>
                     </div>
@@ -175,7 +175,7 @@ export default function ManageStudentsPage() {
                   <div style={{ padding: '0.85rem 1.25rem' }}>
                     <div className="flex align-items-center mb-2" style={{ gap: '0.5rem' }}>
                       <i className="pi pi-flag" style={{ color: '#6366f1', fontSize: '0.85rem' }} />
-                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#525252' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--ios-text)' }}>
                         {intl.formatMessage({ id: 'students.fitnessGoal' })}:
                       </span>
                       <span style={{ fontSize: '0.82rem', color: '#737373' }}>
@@ -187,7 +187,7 @@ export default function ManageStudentsPage() {
                       <>
                         <div className="flex align-items-center mb-2" style={{ gap: '0.5rem' }}>
                           <i className="pi pi-calendar" style={{ color: '#6366f1', fontSize: '0.85rem' }} />
-                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#525252' }}>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--ios-text)' }}>
                             {intl.formatMessage({ id: 'students.remainingDays' })}:
                           </span>
                           <span
@@ -203,7 +203,7 @@ export default function ManageStudentsPage() {
                             <div
                               style={{
                                 height: '4px',
-                                background: 'rgba(0,0,0,0.04)',
+                                background: 'var(--ios-surface-muted)',
                                 borderRadius: '4px',
                                 overflow: 'hidden'
                               }}
@@ -222,7 +222,7 @@ export default function ManageStudentsPage() {
                         </div>
                         <div className="flex align-items-center flex-wrap" style={{ gap: '0.5rem' }}>
                           <i className="pi pi-credit-card" style={{ color: '#6366f1', fontSize: '0.85rem' }} />
-                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#525252' }}>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--ios-text)' }}>
                             {intl.formatMessage({ id: 'students.table.plan' })}:
                           </span>
                           <span
@@ -247,7 +247,7 @@ export default function ManageStudentsPage() {
                   {/* Footer */}
                   <div
                     className="flex flex-wrap justify-content-between align-items-center"
-                    style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(0,0,0,0.04)' }}
+                    style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--ios-card-border)' }}
                   >
                     <div className="flex gap-2 flex-wrap">
                       <Button
@@ -308,7 +308,10 @@ export default function ManageStudentsPage() {
         ) : (
           <div className="col-12 text-center p-5">
             <div className="flex flex-column align-items-center p-4">
-              <i className="pi pi-search" style={{ fontSize: '2.5rem', color: '#a3a3a3', marginBottom: '0.75rem' }} />
+              <i
+                className="pi pi-search"
+                style={{ fontSize: '2.5rem', color: 'var(--ios-text-tertiary)', marginBottom: '0.75rem' }}
+              />
               <p style={{ fontWeight: 500, color: '#737373' }}>{intl.formatMessage({ id: 'students.noStudents' })}</p>
             </div>
           </div>
@@ -327,11 +330,11 @@ export default function ManageStudentsPage() {
         <div className="col-12 md:col-8 p-2">
           <div
             style={{
-              background: '#fff',
+              background: 'var(--ios-card-bg)',
               borderRadius: '20px',
               padding: '1.5rem',
-              border: '1px solid rgba(0,0,0,0.04)',
-              boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+              border: '1px solid var(--ios-card-border)',
+              boxShadow: 'var(--ios-card-shadow)',
               height: '100%'
             }}
           >
@@ -340,7 +343,7 @@ export default function ManageStudentsPage() {
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 0.25rem' }}>
                   <FormattedMessage id="students.title" values={{ count: totalClientsSubscribed, total: maxClients }} />
                 </h1>
-                <p style={{ color: '#737373', margin: 0, fontSize: '0.9rem' }}>
+                <p style={{ color: 'var(--ios-text-secondary)', margin: 0, fontSize: '0.9rem' }}>
                   {intl.formatMessage(
                     { id: 'students.subtitle' },
                     { count: totalClientsSubscribed, total: maxClients }
@@ -365,11 +368,11 @@ export default function ManageStudentsPage() {
         <div className="col-12 md:col-4 p-2">
           <div
             style={{
-              background: '#fff',
+              background: 'var(--ios-card-bg)',
               borderRadius: '20px',
               padding: '1.5rem',
-              border: '1px solid rgba(0,0,0,0.04)',
-              boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+              border: '1px solid var(--ios-card-border)',
+              boxShadow: 'var(--ios-card-shadow)',
               height: '100%',
               textAlign: 'center'
             }}
@@ -385,13 +388,15 @@ export default function ManageStudentsPage() {
             >
               {totalClientsSubscribed} / {maxClients}
             </div>
-            <div style={{ fontSize: '0.82rem', color: '#737373', marginBottom: '0.75rem' }}>
+            <div style={{ fontSize: '0.82rem', color: 'var(--ios-text-secondary)', marginBottom: '0.75rem' }}>
               {intl.formatMessage(
                 { id: 'coach.subscription.clientsManaged' },
                 { current: totalClientsSubscribed, max: maxClients }
               )}
             </div>
-            <div style={{ height: '6px', background: 'rgba(0,0,0,0.04)', borderRadius: '6px', overflow: 'hidden' }}>
+            <div
+              style={{ height: '6px', background: 'var(--ios-surface-muted)', borderRadius: '6px', overflow: 'hidden' }}
+            >
               <div
                 style={{
                   width: `${(totalClientsSubscribed / maxClients) * 100}%`,
@@ -409,10 +414,10 @@ export default function ManageStudentsPage() {
       <div
         className="mb-3"
         style={{
-          background: '#fff',
+          background: 'var(--ios-card-bg)',
           borderRadius: '16px',
           padding: '0.85rem 1rem',
-          border: '1px solid rgba(0,0,0,0.04)',
+          border: '1px solid var(--ios-card-border)',
           boxShadow: '0 1px 8px rgba(0,0,0,0.03)'
         }}
       >

@@ -54,11 +54,11 @@ export function CoachPlansTab() {
 
       <div
         style={{
-          background: '#fff',
+          background: 'var(--ios-card-bg)',
           borderRadius: '20px',
           padding: '1.25rem',
-          border: '1px solid rgba(0,0,0,0.04)',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.04)'
+          border: '1px solid var(--ios-card-border)',
+          boxShadow: 'var(--ios-card-shadow)'
         }}
       >
         <h3 style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.015em', margin: '0 0 1rem' }}>
@@ -70,10 +70,10 @@ export function CoachPlansTab() {
             <div key={plan.id} className="col-12 md:col-6 lg:col-4 p-2">
               <div
                 style={{
-                  background: 'rgba(0,0,0,0.015)',
+                  background: 'var(--ios-surface-subtle)',
                   borderRadius: '16px',
                   padding: '1.25rem',
-                  border: '1px solid rgba(0,0,0,0.04)',
+                  border: '1px solid var(--ios-card-border)',
                   transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
@@ -86,11 +86,14 @@ export function CoachPlansTab() {
                   </span>
                 </div>
                 <div className="flex flex-column gap-2 mb-3">
-                  <div className="flex align-items-center gap-2" style={{ color: '#737373', fontSize: '0.85rem' }}>
+                  <div
+                    className="flex align-items-center gap-2"
+                    style={{ color: 'var(--ios-text-secondary)', fontSize: '0.85rem' }}
+                  >
                     <i className="pi pi-credit-card" style={{ fontSize: '0.85rem' }} />
                     <span>
                       {intl.formatMessage({ id: 'coach.plan.paymentFrequency' })}:{' '}
-                      <strong style={{ color: '#525252' }}>
+                      <strong style={{ color: 'var(--ios-text)' }}>
                         {plan.paymentFrequency === 'monthly' &&
                           intl.formatMessage({ id: 'coach.plan.paymentFrequency.monthly' })}
                         {plan.paymentFrequency === 'weekly' &&
@@ -100,11 +103,14 @@ export function CoachPlansTab() {
                       </strong>
                     </span>
                   </div>
-                  <div className="flex align-items-center gap-2" style={{ color: '#737373', fontSize: '0.85rem' }}>
+                  <div
+                    className="flex align-items-center gap-2"
+                    style={{ color: 'var(--ios-text-secondary)', fontSize: '0.85rem' }}
+                  >
                     <i className="pi pi-clock" style={{ fontSize: '0.85rem' }} />
                     <span>
                       {intl.formatMessage({ id: 'common.created' })}:{' '}
-                      <strong style={{ color: '#525252' }}>{formatDate(plan.createdAt || new Date())}</strong>
+                      <strong style={{ color: 'var(--ios-text)' }}>{formatDate(plan.createdAt || new Date())}</strong>
                     </span>
                   </div>
                 </div>
@@ -135,9 +141,11 @@ export function CoachPlansTab() {
               <div className="flex flex-column align-items-center justify-content-center p-5 text-center">
                 <i
                   className="pi pi-info-circle"
-                  style={{ fontSize: '2.5rem', color: '#a3a3a3', marginBottom: '0.75rem' }}
+                  style={{ fontSize: '2.5rem', color: 'var(--ios-text-tertiary)', marginBottom: '0.75rem' }}
                 />
-                <p style={{ color: '#737373', margin: 0 }}>{intl.formatMessage({ id: 'coach.noPlans' })}</p>
+                <p style={{ color: 'var(--ios-text-secondary)', margin: 0 }}>
+                  {intl.formatMessage({ id: 'coach.noPlans' })}
+                </p>
               </div>
             </div>
           )}

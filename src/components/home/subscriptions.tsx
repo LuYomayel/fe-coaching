@@ -28,7 +28,7 @@ const Subscriptions = ({ pricingRef, onSignUpClick }: SubscriptionsProps) => {
   }, [showToast]);
 
   return (
-    <div ref={pricingRef} style={{ background: '#fafafa', padding: '4rem 0' }}>
+    <div ref={pricingRef} style={{ background: 'var(--ios-surface-subtle)', padding: '4rem 0' }}>
       <div className="px-4 sm:px-6" style={{ maxWidth: '1100px', margin: '0 auto' }}>
         <div className="text-center mb-6">
           <h2
@@ -36,13 +36,21 @@ const Subscriptions = ({ pricingRef, onSignUpClick }: SubscriptionsProps) => {
               fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)',
               fontWeight: 800,
               letterSpacing: '-0.03em',
-              color: '#171717',
+              color: 'var(--ios-text)',
               marginBottom: '0.75rem'
             }}
           >
             <FormattedMessage id="home.pricing.title" />
           </h2>
-          <p style={{ color: '#737373', fontSize: '1.05rem', maxWidth: '32rem', margin: '0 auto', lineHeight: 1.6 }}>
+          <p
+            style={{
+              color: 'var(--ios-text-secondary)',
+              fontSize: '1.05rem',
+              maxWidth: '32rem',
+              margin: '0 auto',
+              lineHeight: 1.6
+            }}
+          >
             <FormattedMessage id="home.pricing.subtitle" />
           </p>
         </div>
@@ -52,11 +60,11 @@ const Subscriptions = ({ pricingRef, onSignUpClick }: SubscriptionsProps) => {
             <div key={plan.id} className="col-12 sm:col-6 lg:col-3 p-2">
               <div
                 style={{
-                  background: '#fff',
+                  background: 'var(--ios-card-bg)',
                   borderRadius: '24px',
                   padding: '2rem 1.5rem',
-                  border: '1px solid rgba(0,0,0,0.04)',
-                  boxShadow: '0 2px 20px rgba(0,0,0,0.04)',
+                  border: '1px solid var(--ios-card-border)',
+                  boxShadow: 'var(--ios-card-shadow)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   height: '100%',
                   display: 'flex',
@@ -83,7 +91,7 @@ const Subscriptions = ({ pricingRef, onSignUpClick }: SubscriptionsProps) => {
                   style={{
                     fontSize: '1.1rem',
                     fontWeight: 700,
-                    color: '#171717',
+                    color: 'var(--ios-text)',
                     marginBottom: '0.5rem',
                     letterSpacing: '-0.01em'
                   }}
@@ -102,7 +110,7 @@ const Subscriptions = ({ pricingRef, onSignUpClick }: SubscriptionsProps) => {
                   >
                     ${plan.price}
                   </span>
-                  <span style={{ color: '#a3a3a3', fontSize: '0.88rem', marginLeft: '2px' }}>
+                  <span style={{ color: 'var(--ios-text-tertiary)', fontSize: '0.88rem', marginLeft: '2px' }}>
                     /<FormattedMessage id="home.pricing.perMonth" />
                   </span>
                 </div>
@@ -130,7 +138,7 @@ const Subscriptions = ({ pricingRef, onSignUpClick }: SubscriptionsProps) => {
                           justifyContent: 'center'
                         }}
                       />
-                      <span style={{ color: '#525252', fontSize: '0.88rem' }}>
+                      <span style={{ color: 'var(--ios-text)', fontSize: '0.88rem' }}>
                         <FormattedMessage id={item.msgId} values={item.values} />
                       </span>
                     </div>

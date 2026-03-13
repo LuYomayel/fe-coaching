@@ -20,7 +20,7 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
           className="absolute top-0 left-0 w-full h-full"
           style={{
             background:
-              'linear-gradient(160deg, rgba(255,255,255,0.92) 0%, rgba(245,245,255,0.88) 50%, rgba(224,231,255,0.85) 100%)',
+              'linear-gradient(160deg, var(--ios-glass-bg) 0%, var(--ios-glass-bg) 50%, var(--ios-glass-bg) 100%)',
             backdropFilter: 'blur(2px)'
           }}
         />
@@ -40,7 +40,7 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
                 fontWeight: 800,
                 lineHeight: 1.05,
                 letterSpacing: '-0.04em',
-                color: '#171717'
+                color: 'var(--ios-text)'
               }}
             >
               <FormattedMessage id="home.hero.transformYour" />
@@ -55,7 +55,7 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
               style={{
                 fontSize: '1.15rem',
                 lineHeight: 1.7,
-                color: '#525252',
+                color: 'var(--ios-text)',
                 maxWidth: '28rem'
               }}
             >
@@ -116,13 +116,13 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
           <div className="col-12 lg:col-6 animate-fade-in-up">
             <div
               style={{
-                background: 'rgba(255,255,255,0.8)',
+                background: 'var(--ios-glass-bg)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
                 borderRadius: '24px',
                 padding: '2rem',
-                border: '1px solid rgba(255,255,255,0.6)',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04)'
+                border: '1px solid var(--ios-glass-border)',
+                boxShadow: 'var(--ios-shadow-lg)'
               }}
             >
               <div className="flex align-items-center justify-content-between mb-4">
@@ -131,7 +131,7 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
                     fontSize: '1.15rem',
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
-                    color: '#171717',
+                    color: 'var(--ios-text)',
                     margin: 0
                   }}
                 >
@@ -150,7 +150,14 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
                 </div>
               </div>
 
-              <p style={{ color: '#737373', marginBottom: '1.25rem', lineHeight: 1.6, fontSize: '0.92rem' }}>
+              <p
+                style={{
+                  color: 'var(--ios-text-secondary)',
+                  marginBottom: '1.25rem',
+                  lineHeight: 1.6,
+                  fontSize: '0.92rem'
+                }}
+              >
                 <FormattedMessage id="home.hero.customTrainingPlansDesc" />
               </p>
 
@@ -180,7 +187,7 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
                     className="flex align-items-center"
                     style={{
                       padding: '0.75rem 0.85rem',
-                      background: 'rgba(0,0,0,0.02)',
+                      background: 'var(--ios-surface-subtle)',
                       borderRadius: '12px',
                       gap: '0.75rem',
                       transition: 'all 0.2s ease'
@@ -198,7 +205,7 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
                     >
                       <i className={feat.icon} style={{ color: feat.iconColor, fontSize: '0.9rem' }} />
                     </div>
-                    <span style={{ fontSize: '0.88rem', fontWeight: 500, color: '#171717' }}>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--ios-text)' }}>
                       <FormattedMessage id={feat.msgId} />
                     </span>
                   </div>

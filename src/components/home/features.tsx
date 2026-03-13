@@ -49,13 +49,21 @@ const Features = ({ featuresRef }: FeaturesProps) => {
               fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)',
               fontWeight: 800,
               letterSpacing: '-0.03em',
-              color: '#171717',
+              color: 'var(--ios-text)',
               marginBottom: '0.75rem'
             }}
           >
             <FormattedMessage id="home.features.title" />
           </h2>
-          <p style={{ color: '#737373', fontSize: '1.05rem', maxWidth: '32rem', margin: '0 auto', lineHeight: 1.6 }}>
+          <p
+            style={{
+              color: 'var(--ios-text-secondary)',
+              fontSize: '1.05rem',
+              maxWidth: '32rem',
+              margin: '0 auto',
+              lineHeight: 1.6
+            }}
+          >
             <FormattedMessage id="home.features.subtitle" />
           </p>
         </div>
@@ -65,13 +73,13 @@ const Features = ({ featuresRef }: FeaturesProps) => {
             <div key={index} className="col-12 sm:col-6 lg:col-3 p-2">
               <div
                 style={{
-                  background: 'rgba(255,255,255,0.8)',
+                  background: 'var(--ios-glass-bg)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   borderRadius: '20px',
                   padding: '1.75rem',
-                  border: '1px solid rgba(0,0,0,0.04)',
-                  boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+                  border: '1px solid var(--ios-card-border)',
+                  boxShadow: 'var(--ios-card-shadow)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   height: '100%',
                   cursor: 'default'
@@ -94,14 +102,14 @@ const Features = ({ featuresRef }: FeaturesProps) => {
                     fontSize: '1.05rem',
                     fontWeight: 700,
                     letterSpacing: '-0.015em',
-                    color: '#171717',
+                    color: 'var(--ios-text)',
                     marginBottom: '0.5rem',
                     textAlign: 'left'
                   }}
                 >
                   {feature.title}
                 </h3>
-                <p style={{ color: '#737373', lineHeight: 1.6, fontSize: '0.9rem', margin: 0 }}>
+                <p style={{ color: 'var(--ios-text-secondary)', lineHeight: 1.6, fontSize: '0.9rem', margin: 0 }}>
                   {feature.description}
                 </p>
               </div>
