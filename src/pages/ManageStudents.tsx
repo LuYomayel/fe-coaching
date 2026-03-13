@@ -1,4 +1,3 @@
-import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
@@ -69,10 +68,33 @@ export default function ManageStudentsPage() {
             const isVerified = student.user?.isVerified;
             return (
               <div key={student.id} className="col-12 md:col-6 xl:col-4 p-2">
-                <div className="student-card border-1 border-round surface-card shadow-2 p-0 h-full">
-                  {/* Header de la tarjeta */}
-                  <div className="student-card-header p-3 border-bottom-1 surface-border flex flex-column md:flex-row align-items-start md:align-items-center gap-3">
-                    <div className="profile-image border-circle overflow-hidden flex-shrink-0 position-relative w-4rem h-4rem md:w-5rem md:h-5rem">
+                <div
+                  style={{
+                    background: '#fff',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(0,0,0,0.04)',
+                    boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+                    overflow: 'hidden',
+                    height: '100%',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
+                  {/* Header */}
+                  <div
+                    className="flex flex-column md:flex-row align-items-start md:align-items-center gap-3"
+                    style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(0,0,0,0.04)' }}
+                  >
+                    <div
+                      style={{
+                        width: '3.5rem',
+                        height: '3.5rem',
+                        borderRadius: '16px',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        position: 'relative',
+                        border: '2px solid rgba(0,0,0,0.04)'
+                      }}
+                    >
                       <img
                         src={student.avatar || 'defaultAvatar.png'}
                         alt={student.name}
@@ -81,25 +103,44 @@ export default function ManageStudentsPage() {
                         style={{ objectFit: 'cover' }}
                       />
                       {!isVerified && (
-                        <div className="verification-indicator">
-                          <i className="pi pi-exclamation-circle text-red-500"></i>
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: -2,
+                            right: -2,
+                            background: '#fff',
+                            borderRadius: '50%',
+                            padding: '1px'
+                          }}
+                        >
+                          <i className="pi pi-exclamation-circle" style={{ color: '#ef4444', fontSize: '0.75rem' }} />
                         </div>
                       )}
                     </div>
                     <div className="flex-grow-1 min-w-0">
-                      <h3 className="text-lg font-semibold m-0 text-ellipsis white-space-nowrap overflow-hidden md:overflow-visible md:whitespace-normal">
+                      <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0, letterSpacing: '-0.01em' }}>
                         {student.name}
                       </h3>
-                      <p className="text-color-secondary mb-0 white-space-nowrap overflow-hidden text-overflow-ellipsis">
+                      <p style={{ color: '#a3a3a3', margin: 0, fontSize: '0.82rem' }}>
                         {student.user?.email ? truncateEmail(student.user.email) : ''}
                       </p>
                     </div>
-                    <div className="status-indicators flex flex-row md:flex-column align-items-start md:align-items-center gap-2 flex-wrap">
+                    <div className="flex flex-row md:flex-column align-items-start md:align-items-end gap-1 flex-wrap">
                       {student.user?.subscription && (
                         <span
-                          className={`status-badge border-round-2xl py-1 px-2 text-sm font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}
+                          style={{
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            background: isActive ? 'rgba(34,197,94,0.1)' : 'rgba(249,115,22,0.1)',
+                            color: isActive ? '#22c55e' : '#f97316'
+                          }}
                         >
-                          <i className={`${isActive ? 'pi pi-check-circle' : 'pi pi-clock'} mr-1`}></i>
+                          <i
+                            className={`${isActive ? 'pi pi-check-circle' : 'pi pi-clock'} mr-1`}
+                            style={{ fontSize: '0.7rem' }}
+                          />
                           {isActive
                             ? intl.formatMessage({ id: 'students.status.active' })
                             : intl.formatMessage({ id: 'students.status.inactive' })}
@@ -107,8 +148,18 @@ export default function ManageStudentsPage() {
                       )}
                       {!isVerified && (
                         <>
-                          <span className="status-badge border-round-2xl py-1 px-2 text-sm font-medium bg-red-100 text-red-800 resend-verification cursor-pointer text-wrap text-overflow-ellipsis overflow-hidden white-space-nowrap">
-                            <i className="pi pi-exclamation-circle mr-1"></i>
+                          <span
+                            className="resend-verification cursor-pointer"
+                            style={{
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: '8px',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              background: 'rgba(239,68,68,0.1)',
+                              color: '#ef4444'
+                            }}
+                          >
+                            <i className="pi pi-exclamation-circle mr-1" style={{ fontSize: '0.7rem' }} />
                             {intl.formatMessage({ id: 'students.status.unverified' })}
                           </span>
                           <Tooltip
@@ -120,66 +171,70 @@ export default function ManageStudentsPage() {
                     </div>
                   </div>
 
-                  {/* Cuerpo de la tarjeta con informacion clave */}
-                  <div className="student-card-body p-3">
-                    <div className="mb-2 flex align-items-center">
-                      <i className="pi pi-flag text-primary mr-2 flex-shrink-0"></i>
-                      <span className="font-medium mr-1 flex-shrink-0">
+                  {/* Body */}
+                  <div style={{ padding: '0.85rem 1.25rem' }}>
+                    <div className="flex align-items-center mb-2" style={{ gap: '0.5rem' }}>
+                      <i className="pi pi-flag" style={{ color: '#6366f1', fontSize: '0.85rem' }} />
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#525252' }}>
                         {intl.formatMessage({ id: 'students.fitnessGoal' })}:
                       </span>
-                      <span className="text-sm break-words">{student.fitnessGoal || 'No definido'}</span>
+                      <span style={{ fontSize: '0.82rem', color: '#737373' }}>
+                        {student.fitnessGoal || 'No definido'}
+                      </span>
                     </div>
 
                     {student.user?.subscription && (
                       <>
-                        <div className="mb-2 flex align-items-center">
-                          <i className="pi pi-calendar text-primary mr-2"></i>
-                          <span className="font-medium mr-1">
+                        <div className="flex align-items-center mb-2" style={{ gap: '0.5rem' }}>
+                          <i className="pi pi-calendar" style={{ color: '#6366f1', fontSize: '0.85rem' }} />
+                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#525252' }}>
                             {intl.formatMessage({ id: 'students.remainingDays' })}:
                           </span>
                           <span
-                            className={`text-sm font-bold ${
-                              remainingDays <= 3
-                                ? 'text-red-500'
-                                : remainingDays <= 7
-                                  ? 'text-orange-500'
-                                  : 'text-green-500'
-                            }`}
+                            style={{
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                              color: remainingDays <= 3 ? '#ef4444' : remainingDays <= 7 ? '#f97316' : '#22c55e'
+                            }}
                           >
                             {remainingDays}
                           </span>
-                          <div className="days-indicator ml-2 flex-grow-1">
+                          <div className="flex-grow-1 ml-2">
                             <div
-                              className="days-bar border-round-sm"
                               style={{
                                 height: '4px',
-                                background: '#e9ecef',
-                                position: 'relative',
+                                background: 'rgba(0,0,0,0.04)',
+                                borderRadius: '4px',
                                 overflow: 'hidden'
                               }}
                             >
                               <div
-                                className={`days-progress border-round-sm ${
-                                  remainingDays <= 3
-                                    ? 'bg-red-500'
-                                    : remainingDays <= 7
-                                      ? 'bg-orange-500'
-                                      : 'bg-green-500'
-                                }`}
                                 style={{
                                   width: `${Math.min(remainingDays * 3, 100)}%`,
-                                  height: '100%'
+                                  height: '100%',
+                                  borderRadius: '4px',
+                                  background:
+                                    remainingDays <= 3 ? '#ef4444' : remainingDays <= 7 ? '#f97316' : '#22c55e'
                                 }}
-                              ></div>
+                              />
                             </div>
                           </div>
                         </div>
-                        <div className="mb-2 flex align-items-center flex-wrap gap-1">
-                          <i className="pi pi-credit-card text-primary mr-2 flex-shrink-0"></i>
-                          <span className="font-medium mr-1 flex-shrink-0">
+                        <div className="flex align-items-center flex-wrap" style={{ gap: '0.5rem' }}>
+                          <i className="pi pi-credit-card" style={{ color: '#6366f1', fontSize: '0.85rem' }} />
+                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#525252' }}>
                             {intl.formatMessage({ id: 'students.table.plan' })}:
                           </span>
-                          <span className="text-sm plan-chip border-round-sm py-1 px-2 bg-primary-50 text-primary-700 break-all md:break-normal">
+                          <span
+                            style={{
+                              fontSize: '0.75rem',
+                              padding: '0.15rem 0.5rem',
+                              borderRadius: '8px',
+                              background: 'rgba(99,102,241,0.08)',
+                              color: '#6366f1',
+                              fontWeight: 600
+                            }}
+                          >
                             {student.user.subscription.clientSubscription
                               ? student.user.subscription.clientSubscription.coachPlan.name
                               : 'N/A'}
@@ -189,55 +244,61 @@ export default function ManageStudentsPage() {
                     )}
                   </div>
 
-                  {/* Footer con botones de accion */}
-                  <div className="student-card-footer p-3 pt-0 flex flex-wrap justify-content-between align-items-center gap-2">
-                    <div className="action-buttons flex gap-2 flex-wrap">
+                  {/* Footer */}
+                  <div
+                    className="flex flex-wrap justify-content-between align-items-center"
+                    style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(0,0,0,0.04)' }}
+                  >
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         icon="pi pi-user"
                         tooltip={intl.formatMessage({ id: 'students.viewProfile' })}
-                        className="p-button-rounded p-button-info p-button-outlined flex-shrink-0"
+                        className="p-button-rounded p-button-outlined p-button-sm"
                         onClick={() => viewProfile(student.id)}
+                        style={{ width: '2.2rem', height: '2.2rem', borderColor: '#3b82f6', color: '#3b82f6' }}
                       />
-
                       {isActive ? (
                         <>
                           <Button
                             icon="pi pi-dollar"
                             tooltip={intl.formatMessage({ id: 'students.registerPayment' })}
-                            className="p-button-rounded p-button-success p-button-outlined flex-shrink-0"
+                            className="p-button-rounded p-button-outlined p-button-sm"
                             onClick={() => openRegisterPaymentDialog(student)}
+                            style={{ width: '2.2rem', height: '2.2rem', borderColor: '#22c55e', color: '#22c55e' }}
                           />
                           <Button
                             icon="pi pi-times"
                             tooltip={intl.formatMessage({ id: 'students.cancelSubscription' })}
-                            className="p-button-rounded p-button-danger p-button-outlined flex-shrink-0"
+                            className="p-button-rounded p-button-outlined p-button-sm"
                             onClick={() => deleteCancelSubscription(student.user!.subscription!.id)}
+                            style={{ width: '2.2rem', height: '2.2rem', borderColor: '#ef4444', color: '#ef4444' }}
                           />
                         </>
                       ) : (
-                        <>
-                          <Button
-                            icon="pi pi-calendar-plus"
-                            tooltip={intl.formatMessage({ id: 'students.assignSubscription' })}
-                            className="p-button-rounded p-button-success p-button-outlined flex-shrink-0"
-                            onClick={() => openSubscriptionDialog(student)}
-                          />
-                        </>
+                        <Button
+                          icon="pi pi-calendar-plus"
+                          tooltip={intl.formatMessage({ id: 'students.assignSubscription' })}
+                          className="p-button-rounded p-button-outlined p-button-sm"
+                          onClick={() => openSubscriptionDialog(student)}
+                          style={{ width: '2.2rem', height: '2.2rem', borderColor: '#22c55e', color: '#22c55e' }}
+                        />
                       )}
                       {!isVerified && (
                         <Button
                           icon="pi pi-envelope"
                           tooltip={intl.formatMessage({ id: 'students.resendVerification' })}
-                          className="p-button-rounded p-button-warning p-button-outlined flex-shrink-0"
+                          className="p-button-rounded p-button-outlined p-button-sm"
                           onClick={() => handleResendVerification(student.user?.email)}
+                          style={{ width: '2.2rem', height: '2.2rem', borderColor: '#f59e0b', color: '#f59e0b' }}
                         />
                       )}
                     </div>
                     <Button
                       icon="pi pi-trash"
                       tooltip={intl.formatMessage({ id: 'students.actions.deleteClient' })}
-                      className="p-button-rounded p-button-danger p-button-text flex-shrink-0"
+                      className="p-button-rounded p-button-text p-button-sm"
                       onClick={() => deleteStudentDialog(student.id)}
+                      style={{ width: '2.2rem', height: '2.2rem', color: '#ef4444' }}
                     />
                   </div>
                 </div>
@@ -246,9 +307,9 @@ export default function ManageStudentsPage() {
           })
         ) : (
           <div className="col-12 text-center p-5">
-            <div className="no-results p-4">
-              <i className="pi pi-search text-4xl text-color-secondary mb-3"></i>
-              <p className="font-medium">{intl.formatMessage({ id: 'students.noStudents' })}</p>
+            <div className="flex flex-column align-items-center p-4">
+              <i className="pi pi-search" style={{ fontSize: '2.5rem', color: '#a3a3a3', marginBottom: '0.75rem' }} />
+              <p style={{ fontWeight: 500, color: '#737373' }}>{intl.formatMessage({ id: 'students.noStudents' })}</p>
             </div>
           </div>
         )}
@@ -257,67 +318,104 @@ export default function ManageStudentsPage() {
   };
 
   return (
-    <div className="manage-students-page p-4">
+    <div style={{ padding: '1.5rem' }}>
       <Toast ref={toast} />
       <ConfirmDialog />
 
-      {/* Cabecera con info y stats */}
-      <div className="dashboard-header mb-4">
-        <div className="grid">
-          <div className="col-12 md:col-8">
-            <Card className="h-full">
-              <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between">
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">
-                    <FormattedMessage
-                      id="students.title"
-                      values={{ count: totalClientsSubscribed, total: maxClients }}
-                    />
-                  </h1>
-                  <p className="text-color-secondary m-0">
-                    {intl.formatMessage(
-                      { id: 'students.subtitle' },
-                      { count: totalClientsSubscribed, total: maxClients }
-                    )}
-                  </p>
-                </div>
-                <Button
-                  label={intl.formatMessage({ id: 'students.addNew' })}
-                  icon="pi pi-plus"
-                  className="p-button-primary mt-3 md:mt-0"
-                  onClick={openNewStudentDialog}
-                />
-              </div>
-            </Card>
-          </div>
-          <div className="col-12 md:col-4">
-            <Card className="h-full">
-              <div className="flex flex-column align-items-center justify-content-center text-center">
-                <div className="text-4xl font-bold mb-2 text-primary">
-                  {totalClientsSubscribed} / {maxClients}
-                </div>
-                <div className="text-sm text-color-secondary">
+      {/* Header */}
+      <div className="grid mb-3">
+        <div className="col-12 md:col-8 p-2">
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: '20px',
+              padding: '1.5rem',
+              border: '1px solid rgba(0,0,0,0.04)',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+              height: '100%'
+            }}
+          >
+            <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between gap-3">
+              <div>
+                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 0.25rem' }}>
+                  <FormattedMessage id="students.title" values={{ count: totalClientsSubscribed, total: maxClients }} />
+                </h1>
+                <p style={{ color: '#737373', margin: 0, fontSize: '0.9rem' }}>
                   {intl.formatMessage(
-                    { id: 'coach.subscription.clientsManaged' },
-                    { current: totalClientsSubscribed, max: maxClients }
+                    { id: 'students.subtitle' },
+                    { count: totalClientsSubscribed, total: maxClients }
                   )}
-                </div>
-                <div className="progress-bar mt-3 w-full">
-                  <div className="bg-gray-200 border-round-sm w-full" style={{ height: '8px' }}>
-                    <div
-                      className="bg-primary border-round-sm h-full"
-                      style={{ width: `${(totalClientsSubscribed / maxClients) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
+                </p>
               </div>
-            </Card>
+              <Button
+                label={intl.formatMessage({ id: 'students.addNew' })}
+                icon="pi pi-plus"
+                onClick={openNewStudentDialog}
+                style={{
+                  background: '#6366f1',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  fontSize: '0.88rem'
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="col-12 md:col-4 p-2">
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: '20px',
+              padding: '1.5rem',
+              border: '1px solid rgba(0,0,0,0.04)',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+              height: '100%',
+              textAlign: 'center'
+            }}
+          >
+            <div
+              style={{
+                fontSize: '2rem',
+                fontWeight: 800,
+                color: '#6366f1',
+                letterSpacing: '-0.03em',
+                marginBottom: '0.25rem'
+              }}
+            >
+              {totalClientsSubscribed} / {maxClients}
+            </div>
+            <div style={{ fontSize: '0.82rem', color: '#737373', marginBottom: '0.75rem' }}>
+              {intl.formatMessage(
+                { id: 'coach.subscription.clientsManaged' },
+                { current: totalClientsSubscribed, max: maxClients }
+              )}
+            </div>
+            <div style={{ height: '6px', background: 'rgba(0,0,0,0.04)', borderRadius: '6px', overflow: 'hidden' }}>
+              <div
+                style={{
+                  width: `${(totalClientsSubscribed / maxClients) * 100}%`,
+                  height: '100%',
+                  borderRadius: '6px',
+                  background: 'linear-gradient(90deg, #6366f1, #818cf8)'
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Filtros y herramientas */}
-      <div className="filter-tools p-3 mb-4 surface-card border-round shadow-1">
+      {/* Filters */}
+      <div
+        className="mb-3"
+        style={{
+          background: '#fff',
+          borderRadius: '16px',
+          padding: '0.85rem 1rem',
+          border: '1px solid rgba(0,0,0,0.04)',
+          boxShadow: '0 1px 8px rgba(0,0,0,0.03)'
+        }}
+      >
         <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between gap-3">
           <div className="flex align-items-center gap-3 w-full md:w-auto">
             <IconField iconPosition="left" className="w-full md:w-auto">
@@ -329,7 +427,6 @@ export default function ManageStudentsPage() {
                 className="w-full"
               />
             </IconField>
-
             <Dropdown
               value={filterStatus}
               options={statusOptions}
@@ -338,30 +435,33 @@ export default function ManageStudentsPage() {
               className="w-full md:w-auto"
             />
           </div>
-
-          <div className="view-toggle flex">
+          <div className="flex gap-1">
             <Button
               icon="pi pi-th-large"
-              className={`p-button-rounded p-button-text ${currentView === 'grid' ? 'p-button-info' : ''}`}
+              className={`p-button-rounded p-button-text ${currentView === 'grid' ? '' : ''}`}
               onClick={() => setCurrentView('grid')}
               tooltip="Vista de tarjetas"
+              style={{
+                color: currentView === 'grid' ? '#6366f1' : '#a3a3a3',
+                background: currentView === 'grid' ? 'rgba(99,102,241,0.1)' : 'transparent'
+              }}
             />
             <Button
               icon="pi pi-list"
-              className={`p-button-rounded p-button-text ${currentView === 'list' ? 'p-button-info' : ''}`}
+              className="p-button-rounded p-button-text"
               onClick={() => setCurrentView('list')}
               tooltip="Vista de lista"
               disabled={true}
+              style={{ color: currentView === 'list' ? '#6366f1' : '#a3a3a3' }}
             />
           </div>
         </div>
       </div>
 
-      {/* Contenido principal */}
-      <div className="students-content">{renderStudentCards()}</div>
+      {/* Content */}
+      <div>{renderStudentCards()}</div>
 
-      {/* Dialogos */}
-
+      {/* Dialogs */}
       <StudentDialog
         onClose={handleNewStudentDialogHide}
         setRefreshKey={setRefreshKey}
@@ -373,9 +473,7 @@ export default function ManageStudentsPage() {
         draggable={false}
         resizable={false}
         dismissableMask
-        header={intl.formatMessage({
-          id: 'students.dialog.assignSubscription'
-        })}
+        header={intl.formatMessage({ id: 'students.dialog.assignSubscription' })}
         className="responsive-dialog"
         visible={isSubscriptionDialogVisible}
         style={{ width: '50vw' }}

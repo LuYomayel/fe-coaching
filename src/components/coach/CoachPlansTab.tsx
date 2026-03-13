@@ -1,4 +1,3 @@
-import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { useIntl } from 'react-intl';
 import { useCoachPlanDialog } from '../../hooks/coach/useCoachPlanDialog';
@@ -37,31 +36,61 @@ export function CoachPlansTab() {
   };
 
   return (
-    <div className="p-3">
-      <div className="flex gap-2 mb-3">
+    <div style={{ padding: '1rem' }}>
+      <div className="flex gap-2 mb-4">
         <Button
           label={intl.formatMessage({ id: 'common.add' }, { item: intl.formatMessage({ id: 'coach.plan.title' }) })}
           icon="pi pi-plus-circle"
           onClick={() => dialog.openCreate()}
-          className="p-button-primary"
+          style={{
+            background: '#6366f1',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: 600,
+            fontSize: '0.88rem'
+          }}
         />
       </div>
 
-      <Card title={intl.formatMessage({ id: 'coach.plans.title' })}>
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: '20px',
+          padding: '1.25rem',
+          border: '1px solid rgba(0,0,0,0.04)',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.04)'
+        }}
+      >
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.015em', margin: '0 0 1rem' }}>
+          {intl.formatMessage({ id: 'coach.plans.title' })}
+        </h3>
+
         <div className="grid">
           {plans.map((plan) => (
-            <div key={plan.id} className="col-12 md:col-6 lg:col-4">
-              <div className="surface-card shadow-2 border-round p-4">
+            <div key={plan.id} className="col-12 md:col-6 lg:col-4 p-2">
+              <div
+                style={{
+                  background: 'rgba(0,0,0,0.015)',
+                  borderRadius: '16px',
+                  padding: '1.25rem',
+                  border: '1px solid rgba(0,0,0,0.04)',
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+              >
                 <div className="flex justify-content-between align-items-start mb-3">
-                  <h3 className="text-xl font-bold m-0">{plan.name}</h3>
-                  <span className="text-2xl font-bold text-primary">${plan.price}</span>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>
+                    {plan.name}
+                  </h3>
+                  <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#6366f1', letterSpacing: '-0.02em' }}>
+                    ${plan.price}
+                  </span>
                 </div>
                 <div className="flex flex-column gap-2 mb-3">
-                  <div className="flex align-items-center gap-2 text-600">
-                    <i className="pi pi-credit-card"></i>
+                  <div className="flex align-items-center gap-2" style={{ color: '#737373', fontSize: '0.85rem' }}>
+                    <i className="pi pi-credit-card" style={{ fontSize: '0.85rem' }} />
                     <span>
                       {intl.formatMessage({ id: 'coach.plan.paymentFrequency' })}:{' '}
-                      <strong>
+                      <strong style={{ color: '#525252' }}>
                         {plan.paymentFrequency === 'monthly' &&
                           intl.formatMessage({ id: 'coach.plan.paymentFrequency.monthly' })}
                         {plan.paymentFrequency === 'weekly' &&
@@ -71,28 +100,30 @@ export function CoachPlansTab() {
                       </strong>
                     </span>
                   </div>
-                  <div className="flex align-items-center gap-2 text-600">
-                    <i className="pi pi-clock"></i>
+                  <div className="flex align-items-center gap-2" style={{ color: '#737373', fontSize: '0.85rem' }}>
+                    <i className="pi pi-clock" style={{ fontSize: '0.85rem' }} />
                     <span>
                       {intl.formatMessage({ id: 'common.created' })}:{' '}
-                      <strong>{formatDate(plan.createdAt || new Date())}</strong>
+                      <strong style={{ color: '#525252' }}>{formatDate(plan.createdAt || new Date())}</strong>
                     </span>
                   </div>
                 </div>
                 <div className="flex gap-2 justify-content-end">
                   <Button
                     icon="pi pi-pencil"
-                    className="p-button-rounded p-button-outlined"
+                    className="p-button-rounded p-button-outlined p-button-sm"
                     onClick={() => dialog.openEdit(plan as any)}
                     tooltip={intl.formatMessage({ id: 'common.edit' })}
                     tooltipOptions={{ position: 'top' }}
+                    style={{ width: '2.2rem', height: '2.2rem', borderColor: '#6366f1', color: '#6366f1' }}
                   />
                   <Button
                     icon="pi pi-trash"
-                    className="p-button-rounded p-button-outlined p-button-danger"
+                    className="p-button-rounded p-button-outlined p-button-sm"
                     onClick={() => handleDelete(plan.id)}
                     tooltip={intl.formatMessage({ id: 'common.delete' })}
                     tooltipOptions={{ position: 'top' }}
+                    style={{ width: '2.2rem', height: '2.2rem', borderColor: '#ef4444', color: '#ef4444' }}
                   />
                 </div>
               </div>
@@ -102,13 +133,16 @@ export function CoachPlansTab() {
           {plans.length === 0 && (
             <div className="col-12">
               <div className="flex flex-column align-items-center justify-content-center p-5 text-center">
-                <i className="pi pi-info-circle text-5xl mb-3 text-500"></i>
-                <p className="text-600 mb-3">{intl.formatMessage({ id: 'coach.noPlans' })}</p>
+                <i
+                  className="pi pi-info-circle"
+                  style={{ fontSize: '2.5rem', color: '#a3a3a3', marginBottom: '0.75rem' }}
+                />
+                <p style={{ color: '#737373', margin: 0 }}>{intl.formatMessage({ id: 'coach.noPlans' })}</p>
               </div>
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
       <CoachPlanDialog
         visible={dialog.visible}
