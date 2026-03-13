@@ -1,3 +1,7 @@
+/* ============================================
+   APP-LEVEL OVERRIDES - iOS STYLE
+   ============================================ */
+
 .App {
   text-align: center;
 }
@@ -14,7 +18,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #0a0a0a;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -25,7 +29,7 @@
 }
 
 .App-link {
-  color: #61dafb;
+  color: #818cf8;
 }
 
 @keyframes App-logo-spin {
@@ -37,13 +41,51 @@
   }
 }
 
+/* --- FullCalendar iOS Override --- */
 .fc-h-event {
   background-color: transparent !important;
   border: none !important;
 }
 
+/* --- Input Placeholder iOS Style --- */
 .p-inputtext::placeholder {
-  color: #707682;
-  opacity: 0.5; /* important on some browsers */
-  font-weight: 300;
+  color: #9ca3af;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+/* --- Scrollbar iOS Style --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb,
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* --- Selection Color --- */
+::selection {
+  background: rgba(99, 102, 241, 0.2);
+  color: inherit;
 }
