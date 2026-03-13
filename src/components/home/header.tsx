@@ -34,11 +34,11 @@ const Header = ({
         className="fixed top-0 left-0 right-0 z-5"
         style={{
           transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-          background: isScrolled ? 'rgba(255, 255, 255, 0.75)' : 'transparent',
+          background: isScrolled ? 'var(--ios-glass-bg)' : 'transparent',
           backdropFilter: isScrolled ? 'blur(24px)' : 'none',
           WebkitBackdropFilter: isScrolled ? 'blur(24px)' : 'none',
-          borderBottom: isScrolled ? '1px solid rgba(0, 0, 0, 0.06)' : '1px solid transparent',
-          boxShadow: isScrolled ? '0 1px 12px rgba(0, 0, 0, 0.04)' : 'none'
+          borderBottom: isScrolled ? '1px solid var(--ios-divider)' : '1px solid transparent',
+          boxShadow: isScrolled ? 'var(--ios-shadow-sm)' : 'none'
         }}
       >
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: '1200px' }}>
@@ -61,7 +61,7 @@ const Header = ({
                   fontWeight: 700,
                   fontSize: '1.05rem',
                   letterSpacing: '-0.02em',
-                  color: isScrolled ? '#171717' : '#fff'
+                  color: isScrolled ? 'var(--ios-text)' : '#fff'
                 }}
               >
                 EaseTrain
@@ -87,7 +87,7 @@ const Header = ({
                     fontFamily: 'inherit',
                     fontSize: '0.88rem',
                     fontWeight: 500,
-                    color: isScrolled ? '#525252' : 'rgba(255,255,255,0.9)',
+                    color: isScrolled ? 'var(--ios-text-secondary)' : 'rgba(255,255,255,0.9)',
                     transition: 'all 0.2s ease',
                     letterSpacing: '-0.01em'
                   }}
@@ -111,7 +111,7 @@ const Header = ({
                   fontFamily: 'inherit',
                   fontSize: '0.88rem',
                   fontWeight: 500,
-                  color: isScrolled ? '#525252' : 'rgba(255,255,255,0.9)',
+                  color: isScrolled ? 'var(--ios-text-secondary)' : 'rgba(255,255,255,0.9)',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -138,7 +138,7 @@ const Header = ({
                   border: 'none',
                   cursor: 'pointer',
                   padding: '0.4rem',
-                  color: isScrolled ? '#171717' : '#fff',
+                  color: isScrolled ? 'var(--ios-text)' : '#fff',
                   fontSize: '1.1rem'
                 }}
               >
@@ -156,7 +156,7 @@ const Header = ({
         position="right"
         style={{
           width: '280px',
-          background: 'rgba(255,255,255,0.9)',
+          background: 'var(--ios-glass-bg)',
           backdropFilter: 'blur(30px)',
           WebkitBackdropFilter: 'blur(30px)'
         }}
@@ -179,7 +179,7 @@ const Header = ({
                 fontFamily: 'inherit',
                 fontSize: '0.95rem',
                 fontWeight: 500,
-                color: '#171717',
+                color: 'var(--ios-text)',
                 textAlign: 'left',
                 transition: 'background 0.15s ease',
                 width: '100%'
@@ -189,7 +189,7 @@ const Header = ({
             </button>
           ))}
 
-          <div style={{ height: '1px', background: 'rgba(0,0,0,0.06)', margin: '0.5rem 0' }} />
+          <div style={{ height: '1px', background: 'var(--ios-divider)', margin: '0.5rem 0' }} />
 
           <button
             onClick={() => handleMobileNav(onLoginClick)}
@@ -202,7 +202,7 @@ const Header = ({
               fontFamily: 'inherit',
               fontSize: '0.95rem',
               fontWeight: 500,
-              color: '#171717',
+              color: 'var(--ios-text)',
               textAlign: 'left',
               width: '100%'
             }}

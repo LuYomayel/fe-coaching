@@ -20,6 +20,46 @@
   --ios-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --ios-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --ios-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* --- Semantic Colors (Light Mode) --- */
+  --ios-bg: #f5f5f7;
+  --ios-card-bg: #ffffff;
+  --ios-card-bg-hover: rgba(0, 0, 0, 0.02);
+  --ios-card-border: rgba(0, 0, 0, 0.04);
+  --ios-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  --ios-text: #171717;
+  --ios-text-secondary: #737373;
+  --ios-text-tertiary: #a3a3a3;
+  --ios-divider: rgba(0, 0, 0, 0.06);
+  --ios-surface-subtle: rgba(0, 0, 0, 0.02);
+  --ios-surface-muted: rgba(0, 0, 0, 0.04);
+  --ios-glass-bg: rgba(255, 255, 255, 0.75);
+  --ios-glass-border: rgba(0, 0, 0, 0.06);
+  --ios-input-border: rgba(0, 0, 0, 0.1);
+  --ios-input-border-hover: rgba(0, 0, 0, 0.2);
+}
+
+/* --- Dark Mode Semantic Colors --- */
+body.dark {
+  --ios-bg: #0a0a0a;
+  --ios-card-bg: #1c1c1e;
+  --ios-card-bg-hover: rgba(255, 255, 255, 0.05);
+  --ios-card-border: rgba(255, 255, 255, 0.08);
+  --ios-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  --ios-text: #f2f2f7;
+  --ios-text-secondary: #8e8e93;
+  --ios-text-tertiary: #636366;
+  --ios-divider: rgba(255, 255, 255, 0.08);
+  --ios-surface-subtle: rgba(255, 255, 255, 0.04);
+  --ios-surface-muted: rgba(255, 255, 255, 0.06);
+  --ios-glass-bg: rgba(28, 28, 30, 0.8);
+  --ios-glass-border: rgba(255, 255, 255, 0.1);
+  --ios-input-border: rgba(255, 255, 255, 0.12);
+  --ios-input-border-hover: rgba(255, 255, 255, 0.2);
+  --ios-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
+  --ios-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+  --ios-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2);
+  --ios-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.25);
 }
 
 /* --- Base Reset & Typography --- */
@@ -70,7 +110,7 @@ p {
 .p-card {
   border-radius: var(--ios-radius-lg) !important;
   box-shadow: var(--ios-shadow-md) !important;
-  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid var(--ios-card-border) !important;
   transition: var(--ios-transition) !important;
   overflow: hidden;
 }
@@ -143,7 +183,7 @@ p {
   border-radius: var(--ios-radius-md) !important;
   padding: 0.7rem 1rem !important;
   transition: var(--ios-transition) !important;
-  border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
+  border: 1.5px solid var(--ios-input-border) !important;
   font-size: 0.95rem !important;
 }
 
@@ -161,18 +201,18 @@ p {
 /* --- Dropdowns --- */
 .p-dropdown {
   border-radius: var(--ios-radius-md) !important;
-  border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
+  border: 1.5px solid var(--ios-input-border) !important;
   transition: var(--ios-transition) !important;
 }
 
 .p-dropdown:hover {
-  border-color: rgba(0, 0, 0, 0.2) !important;
+  border-color: var(--ios-input-border-hover) !important;
 }
 
 .p-dropdown-panel {
   border-radius: var(--ios-radius-md) !important;
   box-shadow: var(--ios-shadow-lg) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid var(--ios-divider) !important;
   overflow: hidden;
 }
 
@@ -192,7 +232,7 @@ p {
 }
 
 .p-dialog .p-dialog-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-bottom: 1px solid var(--ios-divider) !important;
   padding: 1.25rem 1.5rem !important;
 }
 
@@ -207,7 +247,7 @@ p {
 }
 
 .p-dialog .p-dialog-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-top: 1px solid var(--ios-divider) !important;
   padding: 1rem 1.5rem !important;
 }
 
@@ -232,7 +272,7 @@ p {
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   padding: 0.75rem 1rem !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-bottom: 1px solid var(--ios-divider) !important;
   border-width: 0 0 1px 0 !important;
 }
 
@@ -242,7 +282,7 @@ p {
 
 .p-datatable .p-datatable-tbody > tr > td {
   padding: 0.85rem 1rem !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+  border-bottom: 1px solid var(--ios-card-border) !important;
   border-width: 0 0 1px 0 !important;
 }
 
@@ -261,7 +301,7 @@ p {
 
 /* --- Tabs --- */
 .p-tabview .p-tabview-nav {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-bottom: 1px solid var(--ios-divider) !important;
 }
 
 .p-tabview .p-tabview-nav li .p-tabview-nav-link {
@@ -354,7 +394,7 @@ p {
 /* --- Fieldset --- */
 .p-fieldset {
   border-radius: var(--ios-radius-lg) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid var(--ios-divider) !important;
 }
 
 /* ============================================
@@ -575,9 +615,9 @@ p {
 
 /* iOS-style glass effect */
 .ios-glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--ios-glass-bg);
   backdrop-filter: var(--ios-blur);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--ios-glass-border);
 }
 
 .ios-glass-dark {
@@ -588,9 +628,10 @@ p {
 
 /* iOS-style surface cards */
 .ios-surface {
+  background: var(--ios-card-bg);
   border-radius: var(--ios-radius-lg);
   box-shadow: var(--ios-shadow-md);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--ios-card-border);
   transition: var(--ios-transition);
 }
 

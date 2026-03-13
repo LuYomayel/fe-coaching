@@ -26,13 +26,15 @@ const Footer = ({ contactRef }: FooterProps) => {
               >
                 <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.7rem' }}>ET</span>
               </div>
-              <span style={{ fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', color: '#171717' }}>
+              <span
+                style={{ fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.02em', color: 'var(--ios-text)' }}
+              >
                 EaseTrain
               </span>
             </div>
             <p
               style={{
-                color: '#737373',
+                color: 'var(--ios-text-secondary)',
                 marginBottom: '0.75rem',
                 maxWidth: '28rem',
                 lineHeight: 1.6,
@@ -42,7 +44,7 @@ const Footer = ({ contactRef }: FooterProps) => {
             >
               <FormattedMessage id="home.footer.description" />
             </p>
-            <p style={{ fontSize: '0.82rem', color: '#a3a3a3' }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--ios-text-tertiary)' }}>
               <FormattedMessage id="home.footer.copyright" />
             </p>
           </div>

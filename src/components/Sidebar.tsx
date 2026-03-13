@@ -102,11 +102,11 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
             zIndex: 1000,
             width: '2.5rem',
             height: '2.5rem',
-            background: 'rgba(255,255,255,0.7)',
+            background: 'var(--ios-glass-bg)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '12px',
-            border: '1px solid rgba(0,0,0,0.06)'
+            border: '1px solid var(--ios-glass-border)'
           }}
         />
         <PrimeSidebar
@@ -115,7 +115,7 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
           showCloseIcon={true}
           style={{
             width: '280px',
-            background: 'rgba(255,255,255,0.85)',
+            background: 'var(--ios-glass-bg)',
             backdropFilter: 'blur(30px)',
             WebkitBackdropFilter: 'blur(30px)'
           }}
@@ -150,7 +150,7 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
             </div>
 
             {/* Divider */}
-            <div style={{ height: '1px', background: 'rgba(0,0,0,0.06)', margin: '0 1rem' }} />
+            <div style={{ height: '1px', background: 'var(--ios-divider)', margin: '0 1rem' }} />
 
             {/* Menu items */}
             <div className="flex flex-column gap-1 py-3 px-3 flex-grow-1">
@@ -174,7 +174,11 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
                       cursor: 'pointer',
                       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       background: active ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                      color: (item as { isLogout?: boolean }).isLogout ? '#ef4444' : active ? '#6366f1' : 'inherit',
+                      color: (item as { isLogout?: boolean }).isLogout
+                        ? '#ef4444'
+                        : active
+                          ? '#6366f1'
+                          : 'var(--ios-text)',
                       fontFamily: 'inherit',
                       fontSize: '0.95rem',
                       fontWeight: active ? 600 : 500,
@@ -218,10 +222,10 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
       <div
         className="flex flex-column h-full"
         style={{
-          background: 'rgba(255,255,255,0.75)',
+          background: 'var(--ios-glass-bg)',
           backdropFilter: 'blur(30px)',
           WebkitBackdropFilter: 'blur(30px)',
-          borderRight: '1px solid rgba(0,0,0,0.06)',
+          borderRight: '1px solid var(--ios-glass-border)',
           boxShadow: '4px 0 24px rgba(0,0,0,0.03)'
         }}
       >
@@ -237,7 +241,9 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
             <div className="flex align-items-center justify-content-between w-full px-2">
               <div className="flex align-items-center gap-2">
                 <img src="/logo512.png" alt="EaseTrain" style={{ height: '28px', borderRadius: '8px' }} />
-                <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.02em' }}>EaseTrain</span>
+                <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.02em', color: 'var(--ios-text)' }}>
+                  EaseTrain
+                </span>
               </div>
               <Button
                 icon="pi pi-chevron-left"
@@ -283,7 +289,7 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
               >
                 {user?.name}
               </h4>
-              <span style={{ fontSize: '0.75rem', color: '#8e8e93', fontWeight: 500 }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--ios-text-secondary)', fontWeight: 500 }}>
                 {user?.userType === 'coach' ? 'Coach' : 'Athlete'}
               </span>
             </div>
@@ -294,7 +300,7 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
         <div
           style={{
             height: '1px',
-            background: 'rgba(0,0,0,0.04)',
+            background: 'var(--ios-divider)',
             margin: expanded ? '0.5rem 1rem' : '0.5rem 0.75rem'
           }}
         />
@@ -322,7 +328,7 @@ const Sidebar = ({ onExpandChange }: { onExpandChange: (expanded: boolean) => vo
                   cursor: 'pointer',
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   background: active ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                  color: isLogout ? '#ef4444' : active ? '#6366f1' : '#636366',
+                  color: isLogout ? '#ef4444' : active ? '#6366f1' : 'var(--ios-text-secondary)',
                   fontFamily: 'inherit',
                   fontSize: '0.88rem',
                   fontWeight: active ? 600 : 500,
