@@ -9,104 +9,200 @@ export interface HeroProps {
 const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
   const intl = useIntl();
   return (
-    <section className="hero-bg flex align-items-center justify-content-center overflow-hidden relative min-h-screen">
-      {/* Background Image */}
+    <section
+      className="flex align-items-center justify-content-center overflow-hidden relative"
+      style={{ minHeight: '100vh' }}
+    >
+      {/* Background */}
       <div className="absolute top-0 left-0 w-full h-full z-1">
-        <img src="/bg.png" alt="Fitness background" className="w-full h-full object-cover" />
-        <div className="absolute top-0 left-0 w-full h-full bg-white opacity-80"></div>
+        <img src="/bg.png" alt="Fitness background" className="w-full h-full" style={{ objectFit: 'cover' }} />
+        <div
+          className="absolute top-0 left-0 w-full h-full"
+          style={{
+            background:
+              'linear-gradient(160deg, rgba(255,255,255,0.92) 0%, rgba(245,245,255,0.88) 50%, rgba(224,231,255,0.85) 100%)',
+            backdropFilter: 'blur(2px)'
+          }}
+        />
       </div>
 
-      <div className="relative z-2 max-w-7xl mx-auto px-4 py-8" style={{ paddingTop: '5rem' }}>
-        <div className="grid lg:grid-cols-2 gap-6 align-items-center">
+      <div
+        className="relative z-2 w-full px-4 py-8"
+        style={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '6rem' }}
+      >
+        <div className="grid align-items-center">
           {/* Left Content */}
-          <div className="animate-fade-in-up">
-            <h1 className="hero-title text-gray-900 mb-4 line-height-1 text-left">
+          <div className="col-12 lg:col-6 animate-fade-in-up">
+            <h1
+              className="mb-4 text-left"
+              style={{
+                fontSize: 'clamp(2.5rem, 5vw, 4.2rem)',
+                fontWeight: 800,
+                lineHeight: 1.05,
+                letterSpacing: '-0.04em',
+                color: '#171717'
+              }}
+            >
               <FormattedMessage id="home.hero.transformYour" />
-              <span className="block text-primary">
+              <span className="block" style={{ color: '#6366f1' }}>
                 <FormattedMessage id="home.hero.fitnessJourney" />
               </span>
               <FormattedMessage id="home.hero.withEaseTrain" />
             </h1>
 
-            <p className="text-xl text-gray-600 mb-6 line-height-3 max-w-30rem">
+            <p
+              className="mb-5 text-left"
+              style={{
+                fontSize: '1.15rem',
+                lineHeight: 1.7,
+                color: '#525252',
+                maxWidth: '28rem'
+              }}
+            >
               <FormattedMessage id="home.hero.subtitle" />
             </p>
 
-            <div className="flex flex-column sm:flex-row gap-3 mb-6">
+            <div className="flex flex-column sm:flex-row gap-3 mb-5">
               <Button
                 label={intl.formatMessage({ id: 'home.hero.getStarted' })}
                 icon="pi pi-arrow-right"
                 iconPos="right"
-                className="p-button-lg p-button-primary"
+                className="p-button-lg"
+                style={{
+                  background: '#6366f1',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '0.85rem 1.8rem',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  boxShadow: '0 4px 20px rgba(99, 102, 241, 0.3)'
+                }}
                 onClick={onSignUpClick}
               />
               <Button
                 label={intl.formatMessage({ id: 'home.hero.watchDemo' })}
                 icon="pi pi-play"
                 className="p-button-lg p-button-outlined"
+                style={{
+                  borderRadius: '14px',
+                  padding: '0.85rem 1.8rem',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  borderColor: '#6366f1',
+                  color: '#6366f1',
+                  borderWidth: '1.5px'
+                }}
                 onClick={onScrollToFeatures}
               />
             </div>
 
-            <div className="flex align-items-center gap-4 text-sm text-gray-600">
-              <div className="flex align-items-center">
-                <i className="pi pi-check text-green-300 mr-1"></i>
+            <div className="flex align-items-center gap-4" style={{ fontSize: '0.88rem', color: '#737373' }}>
+              <div className="flex align-items-center gap-1">
+                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.8rem' }} />
                 <FormattedMessage id="home.hero.easyToUse" />
               </div>
-              <div className="flex align-items-center">
-                <i className="pi pi-check text-green-300 mr-1"></i>
+              <div className="flex align-items-center gap-1">
+                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.8rem' }} />
                 <FormattedMessage id="home.hero.safeAndReliable" />
               </div>
-              <div className="flex align-items-center">
-                <i className="pi pi-check text-green-300 mr-1"></i>
+              <div className="flex align-items-center gap-1">
+                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.8rem' }} />
                 <FormattedMessage id="home.hero.support" />
               </div>
             </div>
           </div>
 
-          {/* Right Content - Feature Preview */}
-          <div className="animate-fade-in-up">
-            <div className="surface-0 border-round-2xl p-5 shadow-8 border-1 surface-border bg-white">
+          {/* Right Content - Feature Preview Card */}
+          <div className="col-12 lg:col-6 animate-fade-in-up">
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.8)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                borderRadius: '24px',
+                padding: '2rem',
+                border: '1px solid rgba(255,255,255,0.6)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04)'
+              }}
+            >
               <div className="flex align-items-center justify-content-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3
+                  style={{
+                    fontSize: '1.15rem',
+                    fontWeight: 700,
+                    letterSpacing: '-0.02em',
+                    color: '#171717',
+                    margin: 0
+                  }}
+                >
                   <FormattedMessage id="home.hero.customTrainingPlans" />
                 </h3>
-                <div className="w-3rem h-3rem bg-primary-100 border-round-3xl flex align-items-center justify-content-center">
-                  <i className="pi pi-heart text-primary text-xl"></i>
+                <div
+                  className="flex align-items-center justify-content-center"
+                  style={{
+                    width: '2.8rem',
+                    height: '2.8rem',
+                    background: 'rgba(99, 102, 241, 0.1)',
+                    borderRadius: '14px'
+                  }}
+                >
+                  <i className="pi pi-heart" style={{ color: '#6366f1', fontSize: '1.2rem' }} />
                 </div>
               </div>
 
-              <p className="text-gray-600 mb-4">
+              <p style={{ color: '#737373', marginBottom: '1.25rem', lineHeight: 1.6, fontSize: '0.92rem' }}>
                 <FormattedMessage id="home.hero.customTrainingPlansDesc" />
               </p>
 
-              <div className="flex flex-column gap-3">
-                <div className="flex align-items-center p-3 surface-100 border-round-lg bg-gray-50">
-                  <div className="w-2rem h-2rem bg-primary-100 border-round-3xl flex align-items-center justify-content-center mr-3">
-                    <i className="pi pi-user text-primary"></i>
+              <div className="flex flex-column gap-2">
+                {[
+                  {
+                    icon: 'pi pi-user',
+                    color: 'rgba(99, 102, 241, 0.1)',
+                    iconColor: '#6366f1',
+                    msgId: 'home.hero.feature1'
+                  },
+                  {
+                    icon: 'pi pi-chart-line',
+                    color: 'rgba(34, 197, 94, 0.1)',
+                    iconColor: '#22c55e',
+                    msgId: 'home.hero.feature2'
+                  },
+                  {
+                    icon: 'pi pi-video',
+                    color: 'rgba(249, 115, 22, 0.1)',
+                    iconColor: '#f97316',
+                    msgId: 'home.hero.feature3'
+                  }
+                ].map((feat, i) => (
+                  <div
+                    key={i}
+                    className="flex align-items-center"
+                    style={{
+                      padding: '0.75rem 0.85rem',
+                      background: 'rgba(0,0,0,0.02)',
+                      borderRadius: '12px',
+                      gap: '0.75rem',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <div
+                      className="flex align-items-center justify-content-center"
+                      style={{
+                        width: '2rem',
+                        height: '2rem',
+                        background: feat.color,
+                        borderRadius: '10px',
+                        flexShrink: 0
+                      }}
+                    >
+                      <i className={feat.icon} style={{ color: feat.iconColor, fontSize: '0.9rem' }} />
+                    </div>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 500, color: '#171717' }}>
+                      <FormattedMessage id={feat.msgId} />
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">
-                    <FormattedMessage id="home.hero.feature1" />
-                  </span>
-                </div>
-
-                <div className="flex align-items-center p-3 surface-100 border-round-lg bg-gray-50">
-                  <div className="w-2rem h-2rem bg-secondary-100 border-round-3xl flex align-items-center justify-content-center mr-3">
-                    <i className="pi pi-chart-line text-primary"></i>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900">
-                    <FormattedMessage id="home.hero.feature2" />
-                  </span>
-                </div>
-
-                <div className="flex align-items-center p-3 surface-100 border-round-lg bg-gray-50">
-                  <div className="w-2rem h-2rem bg-orange-100 border-round-3xl flex align-items-center justify-content-center mr-3">
-                    <i className="pi pi-video text-orange-500"></i>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900">
-                    <FormattedMessage id="home.hero.feature3" />
-                  </span>
-                </div>
+                ))}
               </div>
             </div>
           </div>
