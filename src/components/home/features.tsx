@@ -1,73 +1,116 @@
 import { RefObject } from 'react';
-import { Card } from 'primereact/card';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { Users, Dumbbell, LineChart, Video } from 'lucide-react';
 
 export interface FeaturesProps {
   featuresRef: RefObject<HTMLDivElement | null>;
 }
+
 const Features = ({ featuresRef }: FeaturesProps) => {
   const intl = useIntl();
 
   const features = [
     {
-      icon: <Users size={32} className="text-primary" />,
+      icon: <Users size={24} />,
+      iconColor: '#6366f1',
+      iconBg: 'rgba(99, 102, 241, 0.1)',
       title: intl.formatMessage({ id: 'home.features.manageClients' }),
-      description: intl.formatMessage({
-        id: 'home.features.manageClientsDesc'
-      })
+      description: intl.formatMessage({ id: 'home.features.manageClientsDesc' })
     },
     {
-      icon: <Dumbbell size={32} className="text-primary" />,
+      icon: <Dumbbell size={24} />,
+      iconColor: '#22c55e',
+      iconBg: 'rgba(34, 197, 94, 0.1)',
       title: intl.formatMessage({ id: 'home.features.customPlans' }),
       description: intl.formatMessage({ id: 'home.features.customPlansDesc' })
     },
     {
-      icon: <LineChart size={32} className="text-primary" />,
+      icon: <LineChart size={24} />,
+      iconColor: '#3b82f6',
+      iconBg: 'rgba(59, 130, 246, 0.1)',
       title: intl.formatMessage({ id: 'home.features.trackProgress' }),
-      description: intl.formatMessage({
-        id: 'home.features.trackProgressDesc'
-      })
+      description: intl.formatMessage({ id: 'home.features.trackProgressDesc' })
     },
     {
-      icon: <Video size={32} className="text-orange-500" />,
+      icon: <Video size={24} />,
+      iconColor: '#f97316',
+      iconBg: 'rgba(249, 115, 22, 0.1)',
       title: intl.formatMessage({ id: 'home.features.videoTutorials' }),
-      description: intl.formatMessage({
-        id: 'home.features.videoTutorialsDesc'
-      })
+      description: intl.formatMessage({ id: 'home.features.videoTutorialsDesc' })
     }
   ];
 
   return (
-    <div className="surface-section py-2 sm:py-2" ref={featuresRef}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-900 mb-4">
+    <div ref={featuresRef} style={{ padding: '4rem 0 3rem' }}>
+      <div className="px-4 sm:px-6" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="text-center mb-6">
+          <h2
+            style={{
+              fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)',
+              fontWeight: 800,
+              letterSpacing: '-0.03em',
+              color: '#171717',
+              marginBottom: '0.75rem'
+            }}
+          >
             <FormattedMessage id="home.features.title" />
           </h2>
-          <p className="text-600 text-lg max-w-2xl mx-auto">
+          <p style={{ color: '#737373', fontSize: '1.05rem', maxWidth: '32rem', margin: '0 auto', lineHeight: 1.6 }}>
             <FormattedMessage id="home.features.subtitle" />
           </p>
         </div>
 
-        <div className="flex flex-row gap-4 h-full">
+        <div className="grid">
           {features.map((feature, index) => (
-            <Card
-              key={index}
-              className="group h-[20rem] hover:shadow-8 transition-all duration-300 hover:-translate-y-1 border-1 surface-border surface-card h-full w-full"
-            >
-              <div className="p-2">
-                <div className="w-3rem h-3rem border-round-3xl bg-primary-50 flex align-items-center justify-content-center mb-4 group-hover:scale-110 transition-transform">
+            <div key={index} className="col-12 sm:col-6 lg:col-3 p-2">
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.8)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  borderRadius: '20px',
+                  padding: '1.75rem',
+                  border: '1px solid rgba(0,0,0,0.04)',
+                  boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  height: '100%',
+                  cursor: 'default'
+                }}
+              >
+                <div
+                  className="flex align-items-center justify-content-center mb-4"
+                  style={{
+                    width: '3rem',
+                    height: '3rem',
+                    background: feature.iconBg,
+                    borderRadius: '14px',
+                    color: feature.iconColor
+                  }}
+                >
                   {feature.icon}
                 </div>
-                <h3 className="text-xl text-left font-semibold text-900 mb-3">{feature.title}</h3>
-                <p className="text-700 line-height-3">{feature.description}</p>
+                <h3
+                  style={{
+                    fontSize: '1.05rem',
+                    fontWeight: 700,
+                    letterSpacing: '-0.015em',
+                    color: '#171717',
+                    marginBottom: '0.5rem',
+                    textAlign: 'left'
+                  }}
+                >
+                  {feature.title}
+                </h3>
+                <p style={{ color: '#737373', lineHeight: 1.6, fontSize: '0.9rem', margin: 0 }}>
+                  {feature.description}
+                </p>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       </div>
     </div>
   );
 };
+
 export default Features;

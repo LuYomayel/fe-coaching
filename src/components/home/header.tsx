@@ -11,6 +11,7 @@ export interface HeaderProps {
   onScrollToPricing: () => void;
   onScrollToContact: () => void;
 }
+
 const Header = ({
   isScrolled,
   onLoginClick,
@@ -22,110 +23,203 @@ const Header = ({
   const intl = useIntl();
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
 
-  const navTextClass = 'p-button-text text-white hover:text-gray-300 transition-colors';
-  const logoTextClass = 'font-bold text-xl text-white';
-
   const handleMobileNav = (action: () => void) => {
     setMobileMenuVisible(false);
     action();
   };
 
-  console.log('isScrolled', isScrolled);
-
   return (
     <>
       <header
-        className="fixed top-0 left-0 right-0 z-5 transition-all duration-300"
-        style={
-          isScrolled
-            ? {
-                backgroundColor: '#1e293b',
-                borderBottom: '2px solid var(--primary-color)',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.6)'
-              }
-            : { backgroundColor: 'transparent' }
-        }
+        className="fixed top-0 left-0 right-0 z-5"
+        style={{
+          transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+          background: isScrolled ? 'rgba(255, 255, 255, 0.75)' : 'transparent',
+          backdropFilter: isScrolled ? 'blur(24px)' : 'none',
+          WebkitBackdropFilter: isScrolled ? 'blur(24px)' : 'none',
+          borderBottom: isScrolled ? '1px solid rgba(0, 0, 0, 0.06)' : '1px solid transparent',
+          boxShadow: isScrolled ? '0 1px 12px rgba(0, 0, 0, 0.04)' : 'none'
+        }}
       >
-        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: '1400px' }}>
-          <div className="flex align-items-center justify-content-between h-4rem">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: '1200px' }}>
+          <div className="flex align-items-center justify-content-between" style={{ height: '3.5rem' }}>
+            {/* Logo */}
             <div className="flex align-items-center gap-2">
-              <div className="w-2rem h-2rem bg-primary border-round-lg flex align-items-center justify-content-center">
-                <span className="text-0 font-bold text-sm">ET</span>
+              <div
+                className="flex align-items-center justify-content-center"
+                style={{
+                  width: '2rem',
+                  height: '2rem',
+                  background: '#6366f1',
+                  borderRadius: '10px'
+                }}
+              >
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.75rem' }}>ET</span>
               </div>
-              <span className={logoTextClass}>EaseTrain</span>
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: '1.05rem',
+                  letterSpacing: '-0.02em',
+                  color: isScrolled ? '#171717' : '#fff'
+                }}
+              >
+                EaseTrain
+              </span>
             </div>
 
-            <nav className="hidden md:flex align-items-center gap-8">
-              <Button
-                label={intl.formatMessage({ id: 'home.header.features' })}
-                className={navTextClass}
-                onClick={onScrollToFeatures}
-              />
-              <Button
-                label={intl.formatMessage({ id: 'home.header.pricing' })}
-                className={navTextClass}
-                onClick={onScrollToPricing}
-              />
-              <Button
-                label={intl.formatMessage({ id: 'home.header.contact' })}
-                className={navTextClass}
-                onClick={onScrollToContact}
-              />
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex align-items-center gap-1">
+              {[
+                { label: intl.formatMessage({ id: 'home.header.features' }), action: onScrollToFeatures },
+                { label: intl.formatMessage({ id: 'home.header.pricing' }), action: onScrollToPricing },
+                { label: intl.formatMessage({ id: 'home.header.contact' }), action: onScrollToContact }
+              ].map((item, i) => (
+                <button
+                  key={i}
+                  onClick={item.action}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: '0.88rem',
+                    fontWeight: 500,
+                    color: isScrolled ? '#525252' : 'rgba(255,255,255,0.9)',
+                    transition: 'all 0.2s ease',
+                    letterSpacing: '-0.01em'
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
             </nav>
 
-            <div className="flex align-items-center gap-2 sm:gap-4">
-              <Button
-                label={intl.formatMessage({ id: 'home.header.login' })}
-                className={`${navTextClass} hidden sm:inline-flex`}
+            {/* Actions */}
+            <div className="flex align-items-center gap-2">
+              <button
                 onClick={onLoginClick}
-              />
+                className="hidden sm:inline-flex"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: '0.88rem',
+                  fontWeight: 500,
+                  color: isScrolled ? '#525252' : 'rgba(255,255,255,0.9)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {intl.formatMessage({ id: 'home.header.login' })}
+              </button>
               <Button
                 label={intl.formatMessage({ id: 'home.hero.getStarted' })}
-                className="bg-primary hover:bg-primary-600 text-0 border-none shadow-2 animate-pulse-glow"
                 onClick={onSignUpClick}
+                style={{
+                  background: '#6366f1',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.45rem 1rem',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  boxShadow: '0 2px 12px rgba(99, 102, 241, 0.25)'
+                }}
               />
-              <Button
-                icon="pi pi-bars"
-                className={`md:hidden ${navTextClass}`}
+              <button
+                className="md:hidden"
                 onClick={() => setMobileMenuVisible(true)}
-              />
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.4rem',
+                  color: isScrolled ? '#171717' : '#fff',
+                  fontSize: '1.1rem'
+                }}
+              >
+                <i className="pi pi-bars" />
+              </button>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Mobile Menu */}
       <Sidebar
         visible={mobileMenuVisible}
         onHide={() => setMobileMenuVisible(false)}
         position="right"
-        className="w-18rem"
+        style={{
+          width: '280px',
+          background: 'rgba(255,255,255,0.9)',
+          backdropFilter: 'blur(30px)',
+          WebkitBackdropFilter: 'blur(30px)'
+        }}
       >
-        <div className="flex flex-column gap-2">
-          <Button
-            label={intl.formatMessage({ id: 'home.header.features' })}
-            className="p-button-text text-left"
-            onClick={() => handleMobileNav(onScrollToFeatures)}
-          />
-          <Button
-            label={intl.formatMessage({ id: 'home.header.pricing' })}
-            className="p-button-text text-left"
-            onClick={() => handleMobileNav(onScrollToPricing)}
-          />
-          <Button
-            label={intl.formatMessage({ id: 'home.header.contact' })}
-            className="p-button-text text-left"
-            onClick={() => handleMobileNav(onScrollToContact)}
-          />
-          <hr className="my-2" />
-          <Button
-            label={intl.formatMessage({ id: 'home.header.login' })}
-            className="p-button-text text-left"
+        <div className="flex flex-column gap-1 pt-2">
+          {[
+            { label: intl.formatMessage({ id: 'home.header.features' }), action: onScrollToFeatures },
+            { label: intl.formatMessage({ id: 'home.header.pricing' }), action: onScrollToPricing },
+            { label: intl.formatMessage({ id: 'home.header.contact' }), action: onScrollToContact }
+          ].map((item, i) => (
+            <button
+              key={i}
+              onClick={() => handleMobileNav(item.action)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '0.7rem 0.85rem',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                color: '#171717',
+                textAlign: 'left',
+                transition: 'background 0.15s ease',
+                width: '100%'
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+
+          <div style={{ height: '1px', background: 'rgba(0,0,0,0.06)', margin: '0.5rem 0' }} />
+
+          <button
             onClick={() => handleMobileNav(onLoginClick)}
-          />
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: '0.7rem 0.85rem',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: '0.95rem',
+              fontWeight: 500,
+              color: '#171717',
+              textAlign: 'left',
+              width: '100%'
+            }}
+          >
+            {intl.formatMessage({ id: 'home.header.login' })}
+          </button>
+
           <Button
             label={intl.formatMessage({ id: 'home.hero.getStarted' })}
-            className="bg-primary text-0 border-none"
             onClick={() => handleMobileNav(onSignUpClick)}
+            style={{
+              background: '#6366f1',
+              border: 'none',
+              borderRadius: '12px',
+              fontWeight: 600,
+              marginTop: '0.25rem'
+            }}
           />
         </div>
       </Sidebar>
