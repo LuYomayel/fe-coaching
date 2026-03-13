@@ -1,4 +1,3 @@
-import { Card } from 'primereact/card';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -7,7 +6,7 @@ import { formatDate } from '../utils/UtilFunctions';
 import { useCoachHome, ICombinedClientData } from '../hooks/coach/useCoachHome';
 
 // ---------------------------------------------------------------------------
-// Template helpers (pure render functions)
+// Template helpers
 // ---------------------------------------------------------------------------
 
 function PaymentStatusTemplate({
@@ -42,8 +41,14 @@ function LastTrainedTemplate({
     <div>
       {rowData.lastTimeTrained ? (
         <>
-          <div>{formatDate(rowData.lastTimeTrained)}</div>
-          <div className={`text-sm ${daysAgo !== null && daysAgo > 7 ? 'client-danger' : 'client-success'}`}>
+          <div style={{ fontWeight: 500, fontSize: '0.88rem' }}>{formatDate(rowData.lastTimeTrained)}</div>
+          <div
+            style={{
+              fontSize: '0.78rem',
+              fontWeight: 500,
+              color: daysAgo !== null && daysAgo > 7 ? '#ef4444' : '#22c55e'
+            }}
+          >
             {daysAgo === 0
               ? intl.formatMessage({ id: 'coach.home.today' })
               : daysAgo === 1
@@ -52,23 +57,107 @@ function LastTrainedTemplate({
           </div>
         </>
       ) : (
-        <span className="client-danger">---</span>
+        <span style={{ color: '#ef4444' }}>---</span>
       )}
     </div>
   );
 }
 
 function DaysLeftTemplate({ rowData }: { rowData: ICombinedClientData }): JSX.Element {
-  if (rowData.daysLeft === null) return <span>---</span>;
+  if (rowData.daysLeft === null) return <span style={{ color: '#a3a3a3' }}>---</span>;
 
-  const colorClass =
-    rowData.daysLeft < 3 ? 'client-danger' : rowData.daysLeft < 7 ? 'client-warning' : 'client-success';
+  const color = rowData.daysLeft < 3 ? '#ef4444' : rowData.daysLeft < 7 ? '#f59e0b' : '#22c55e';
 
-  return <span className={colorClass}>{rowData.daysLeft}</span>;
+  return <span style={{ fontWeight: 600, color }}>{rowData.daysLeft}</span>;
 }
 
 // ---------------------------------------------------------------------------
-// Page component
+// Stat widget component
+// ---------------------------------------------------------------------------
+
+function StatWidget({
+  icon,
+  iconBg,
+  iconColor,
+  value,
+  label
+}: {
+  icon: string;
+  iconBg: string;
+  iconColor: string;
+  value: string | number;
+  label: string;
+}): JSX.Element {
+  return (
+    <div
+      className="flex align-items-center gap-3"
+      style={{
+        padding: '0.85rem 1rem',
+        background: 'rgba(0,0,0,0.02)',
+        borderRadius: '14px',
+        minWidth: '140px'
+      }}
+    >
+      <div
+        className="flex align-items-center justify-content-center"
+        style={{
+          width: '2.5rem',
+          height: '2.5rem',
+          background: iconBg,
+          borderRadius: '12px',
+          flexShrink: 0
+        }}
+      >
+        <i className={icon} style={{ color: iconColor, fontSize: '1.05rem' }} />
+      </div>
+      <div>
+        <div style={{ fontSize: '1.35rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{value}</div>
+        <div style={{ fontSize: '0.78rem', color: '#737373', fontWeight: 500 }}>{label}</div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard card component
+// ---------------------------------------------------------------------------
+
+function DashboardCard({
+  icon,
+  iconColor,
+  title,
+  children
+}: {
+  icon: string;
+  iconColor: string;
+  title: string;
+  children: React.ReactNode;
+}): JSX.Element {
+  return (
+    <div
+      style={{
+        background: '#fff',
+        borderRadius: '20px',
+        border: '1px solid rgba(0,0,0,0.04)',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+        height: '100%',
+        overflow: 'hidden'
+      }}
+    >
+      <div
+        className="flex align-items-center gap-2"
+        style={{ padding: '1rem 1.25rem 0.75rem', borderBottom: '1px solid rgba(0,0,0,0.04)' }}
+      >
+        <i className={icon} style={{ color: iconColor, fontSize: '1rem' }} />
+        <span style={{ fontWeight: 600, fontSize: '0.95rem', letterSpacing: '-0.01em' }}>{title}</span>
+      </div>
+      <div style={{ padding: '0.75rem 1.25rem 1.25rem' }}>{children}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page
 // ---------------------------------------------------------------------------
 
 export default function CoachHomePage(): JSX.Element {
@@ -89,7 +178,6 @@ export default function CoachHomePage(): JSX.Element {
     getStatusColor
   } = useCoachHome();
 
-  // -- Column body renderers (closures over hook values) --
   const paymentStatusTemplate = (rowData: ICombinedClientData): JSX.Element => (
     <PaymentStatusTemplate rowData={rowData} intl={intl} getStatusColor={getStatusColor} />
   );
@@ -108,138 +196,158 @@ export default function CoachHomePage(): JSX.Element {
         tooltip={intl.formatMessage({ id: 'common.view' })}
         tooltipOptions={{ position: 'top' }}
         onClick={() => viewClientProfile(rowData.clientId)}
+        style={{ width: '2rem', height: '2rem' }}
       />
     </div>
   );
 
   return (
-    <div className="p-4 surface-ground min-h-screen">
+    <div style={{ padding: '1.5rem', minHeight: '100vh' }}>
       <Tooltip target=".custom-tooltip" />
 
       {/* Dashboard header */}
-      <div className="surface-card border-round-lg p-4 mb-4 shadow-2">
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: '20px',
+          padding: '1.5rem',
+          marginBottom: '1.25rem',
+          border: '1px solid rgba(0,0,0,0.04)',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.04)'
+        }}
+      >
         <div className="flex flex-column lg:flex-row justify-content-between align-items-start lg:align-items-center gap-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-900 mb-2 m-0">
+            <h1
+              style={{
+                fontSize: 'clamp(1.5rem, 3vw, 2rem)',
+                fontWeight: 800,
+                letterSpacing: '-0.03em',
+                margin: '0 0 0.25rem'
+              }}
+            >
               {intl.formatMessage({ id: 'coach.home.welcome' }, { name: coachName })}
             </h1>
-            <p className="text-600 text-lg m-0">{formattedDate}</p>
+            <p style={{ color: '#737373', fontSize: '0.95rem', margin: 0 }}>{formattedDate}</p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <div className="flex align-items-center gap-2 p-3 surface-100 border-round-lg">
-              <div className="w-3rem h-3rem bg-primary-100 border-round-3xl flex align-items-center justify-content-center">
-                <i className="pi pi-users text-primary text-xl"></i>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-900">{totalClients}</div>
-                <div className="text-sm text-600">{intl.formatMessage({ id: 'coach.home.totalStudents' })}</div>
-              </div>
-            </div>
-
-            <div className="flex align-items-center gap-2 p-3 surface-100 border-round-lg">
-              <div className="w-3rem h-3rem bg-green-100 border-round-3xl flex align-items-center justify-content-center">
-                <i className="pi pi-check-circle text-green-500 text-xl"></i>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-900">{totalPaid}</div>
-                <div className="text-sm text-600">{intl.formatMessage({ id: 'coach.home.paidUp' })}</div>
-              </div>
-            </div>
-
-            <div className="flex align-items-center gap-2 p-3 surface-100 border-round-lg">
-              <div className="w-3rem h-3rem bg-orange-100 border-round-3xl flex align-items-center justify-content-center">
-                <i className="pi pi-exclamation-triangle text-orange-500 text-xl"></i>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-900">{unpaidClients.length}</div>
-                <div className="text-sm text-600">{intl.formatMessage({ id: 'coach.home.unpaidClients' })}</div>
-              </div>
-            </div>
-
-            <div className="flex align-items-center">
-              <Button
-                label={intl.formatMessage({ id: 'coach.home.manageStudents' })}
-                icon="pi pi-user-edit"
-                className="p-button-rounded p-button-sm"
-                onClick={goToManageStudents}
-              />
-            </div>
+          <div className="flex flex-wrap gap-2 align-items-center">
+            <StatWidget
+              icon="pi pi-users"
+              iconBg="rgba(99, 102, 241, 0.1)"
+              iconColor="#6366f1"
+              value={totalClients}
+              label={intl.formatMessage({ id: 'coach.home.totalStudents' })}
+            />
+            <StatWidget
+              icon="pi pi-check-circle"
+              iconBg="rgba(34, 197, 94, 0.1)"
+              iconColor="#22c55e"
+              value={totalPaid}
+              label={intl.formatMessage({ id: 'coach.home.paidUp' })}
+            />
+            <StatWidget
+              icon="pi pi-exclamation-triangle"
+              iconBg="rgba(249, 115, 22, 0.1)"
+              iconColor="#f97316"
+              value={unpaidClients.length}
+              label={intl.formatMessage({ id: 'coach.home.unpaidClients' })}
+            />
+            <Button
+              label={intl.formatMessage({ id: 'coach.home.manageStudents' })}
+              icon="pi pi-user-edit"
+              onClick={goToManageStudents}
+              style={{
+                background: '#6366f1',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                padding: '0.55rem 1rem'
+              }}
+            />
           </div>
         </div>
       </div>
 
-      {/* Main dashboard cards */}
+      {/* Dashboard cards */}
       <div className="grid">
-        {/* Card 1: Unpaid clients */}
-        <div className="col-12 md:col-6 lg:col-3">
-          <Card
-            className="h-full"
-            title={
-              <div className="flex align-items-center gap-2">
-                <i className="pi pi-dollar text-primary"></i>
-                <span>{intl.formatMessage({ id: 'coach.home.unpaidClients' })}</span>
-              </div>
-            }
+        {/* Unpaid clients */}
+        <div className="col-12 md:col-6 lg:col-3 p-2">
+          <DashboardCard
+            icon="pi pi-dollar"
+            iconColor="#6366f1"
+            title={intl.formatMessage({ id: 'coach.home.unpaidClients' })}
           >
             {unpaidClients.length > 0 ? (
               <div className="flex flex-column gap-2">
                 {unpaidClients.map((client) => (
                   <div
                     key={client.clientId}
-                    className="flex align-items-center justify-content-between p-2 surface-100 border-round"
+                    className="flex align-items-center justify-content-between"
+                    style={{ padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.02)', borderRadius: '10px' }}
                   >
                     <div className="flex align-items-center gap-2">
-                      <i className="pi pi-user text-600"></i>
-                      <span className="text-900 font-medium">{client.clientName}</span>
+                      <i className="pi pi-user" style={{ color: '#a3a3a3', fontSize: '0.85rem' }} />
+                      <span style={{ fontWeight: 500, fontSize: '0.88rem' }}>{client.clientName}</span>
                     </div>
                     <Button
                       icon="pi pi-eye"
-                      className="p-button-rounded p-button-outlined p-button-sm"
+                      className="p-button-rounded p-button-text p-button-sm"
                       onClick={() => viewClientProfile(client.clientId)}
+                      style={{ width: '1.8rem', height: '1.8rem' }}
                     />
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex flex-column align-items-center justify-content-center p-4 text-center">
-                <i className="pi pi-check-circle text-green-500 text-4xl mb-3"></i>
-                <p className="text-600 m-0">{intl.formatMessage({ id: 'coach.home.allPaid' })}</p>
+              <div className="flex flex-column align-items-center justify-content-center p-3 text-center">
+                <i
+                  className="pi pi-check-circle"
+                  style={{ color: '#22c55e', fontSize: '2rem', marginBottom: '0.5rem' }}
+                />
+                <p style={{ color: '#737373', margin: 0, fontSize: '0.88rem' }}>
+                  {intl.formatMessage({ id: 'coach.home.allPaid' })}
+                </p>
               </div>
             )}
-          </Card>
+          </DashboardCard>
         </div>
 
-        {/* Card 2: Days left to finish cycle */}
-        <div className="col-12 md:col-6 lg:col-3">
-          <Card
-            className="h-full"
-            title={
-              <div className="flex align-items-center gap-2">
-                <i className="pi pi-calendar text-primary"></i>
-                <span>{intl.formatMessage({ id: 'coach.home.daysLeft' })}</span>
-              </div>
-            }
+        {/* Days left */}
+        <div className="col-12 md:col-6 lg:col-3 p-2">
+          <DashboardCard
+            icon="pi pi-calendar"
+            iconColor="#3b82f6"
+            title={intl.formatMessage({ id: 'coach.home.daysLeft' })}
           >
             {clientsWithDaysLeft.length > 0 ? (
               <div className="flex flex-column gap-2">
                 {clientsWithDaysLeft.map((client) => (
                   <div
                     key={client.clientId}
-                    className="flex align-items-center justify-content-between p-2 surface-100 border-round"
+                    className="flex align-items-center justify-content-between"
+                    style={{ padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.02)', borderRadius: '10px' }}
                   >
                     <div className="flex align-items-center gap-2">
-                      <i className="pi pi-user text-600"></i>
-                      <span className="text-900 font-medium">{client.clientName}</span>
+                      <i className="pi pi-user" style={{ color: '#a3a3a3', fontSize: '0.85rem' }} />
+                      <span style={{ fontWeight: 500, fontSize: '0.88rem' }}>{client.clientName}</span>
                     </div>
                     <span
-                      className={`px-2 py-1 border-round text-sm font-bold ${
-                        (client.daysLeft ?? 0) < 3
-                          ? 'bg-red-100 text-red-700'
-                          : (client.daysLeft ?? 0) < 7
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-green-100 text-green-700'
-                      }`}
+                      style={{
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '8px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        background:
+                          (client.daysLeft ?? 0) < 3
+                            ? 'rgba(239,68,68,0.1)'
+                            : (client.daysLeft ?? 0) < 7
+                              ? 'rgba(249,115,22,0.1)'
+                              : 'rgba(34,197,94,0.1)',
+                        color:
+                          (client.daysLeft ?? 0) < 3 ? '#ef4444' : (client.daysLeft ?? 0) < 7 ? '#f97316' : '#22c55e'
+                      }}
                     >
                       {client.daysLeft} {intl.formatMessage({ id: 'common.days' })}
                     </span>
@@ -247,44 +355,57 @@ export default function CoachHomePage(): JSX.Element {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-column align-items-center justify-content-center p-4 text-center">
-                <i className="pi pi-info-circle text-blue-500 text-4xl mb-3"></i>
-                <p className="text-600 m-0">{intl.formatMessage({ id: 'coach.home.noDaysLeftData' })}</p>
+              <div className="flex flex-column align-items-center justify-content-center p-3 text-center">
+                <i
+                  className="pi pi-info-circle"
+                  style={{ color: '#3b82f6', fontSize: '2rem', marginBottom: '0.5rem' }}
+                />
+                <p style={{ color: '#737373', margin: 0, fontSize: '0.88rem' }}>
+                  {intl.formatMessage({ id: 'coach.home.noDaysLeftData' })}
+                </p>
               </div>
             )}
-          </Card>
+          </DashboardCard>
         </div>
 
-        {/* Card 3: Training frequency */}
-        <div className="col-12 md:col-6 lg:col-3">
-          <Card
-            className="h-full"
-            title={
-              <div className="flex align-items-center gap-2">
-                <i className="pi pi-heart text-primary"></i>
-                <span>{intl.formatMessage({ id: 'coach.home.last7daysFrequency' })}</span>
-              </div>
-            }
+        {/* Training frequency */}
+        <div className="col-12 md:col-6 lg:col-3 p-2">
+          <DashboardCard
+            icon="pi pi-heart"
+            iconColor="#ec4899"
+            title={intl.formatMessage({ id: 'coach.home.last7daysFrequency' })}
           >
             {mostActiveClients.length > 0 ? (
               <div className="flex flex-column gap-2">
                 {mostActiveClients.map((client) => (
                   <div
                     key={client.clientId}
-                    className="flex align-items-center justify-content-between p-2 surface-100 border-round"
+                    className="flex align-items-center justify-content-between"
+                    style={{ padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.02)', borderRadius: '10px' }}
                   >
                     <div className="flex align-items-center gap-2">
-                      <i className="pi pi-user text-600"></i>
-                      <span className="text-900 font-medium">{client.clientName}</span>
+                      <i className="pi pi-user" style={{ color: '#a3a3a3', fontSize: '0.85rem' }} />
+                      <span style={{ fontWeight: 500, fontSize: '0.88rem' }}>{client.clientName}</span>
                     </div>
                     <span
-                      className={`px-2 py-1 border-round text-sm font-bold ${
-                        client.trainingSessionsLast7Days === 0
-                          ? 'bg-red-100 text-red-700'
-                          : client.trainingSessionsLast7Days < 3
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-green-100 text-green-700'
-                      }`}
+                      style={{
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '8px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        background:
+                          client.trainingSessionsLast7Days === 0
+                            ? 'rgba(239,68,68,0.1)'
+                            : client.trainingSessionsLast7Days < 3
+                              ? 'rgba(249,115,22,0.1)'
+                              : 'rgba(34,197,94,0.1)',
+                        color:
+                          client.trainingSessionsLast7Days === 0
+                            ? '#ef4444'
+                            : client.trainingSessionsLast7Days < 3
+                              ? '#f97316'
+                              : '#22c55e'
+                      }}
                     >
                       {client.trainingSessionsLast7Days} {intl.formatMessage({ id: 'coach.home.sessions' })}
                     </span>
@@ -292,30 +413,38 @@ export default function CoachHomePage(): JSX.Element {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-column align-items-center justify-content-center p-4 text-center">
-                <i className="pi pi-info-circle text-blue-500 text-4xl mb-3"></i>
-                <p className="text-600 m-0">{intl.formatMessage({ id: 'coach.home.noFrequencyData7days' })}</p>
+              <div className="flex flex-column align-items-center justify-content-center p-3 text-center">
+                <i
+                  className="pi pi-info-circle"
+                  style={{ color: '#3b82f6', fontSize: '2rem', marginBottom: '0.5rem' }}
+                />
+                <p style={{ color: '#737373', margin: 0, fontSize: '0.88rem' }}>
+                  {intl.formatMessage({ id: 'coach.home.noFrequencyData7days' })}
+                </p>
               </div>
             )}
-          </Card>
+          </DashboardCard>
         </div>
 
-        {/* Card 4: Quick actions */}
-        <div className="col-12 md:col-6 lg:col-3">
-          <Card
-            className="h-full"
-            title={
-              <div className="flex align-items-center gap-2">
-                <i className="pi pi-bolt text-primary"></i>
-                <span>{intl.formatMessage({ id: 'coach.home.quickActions' })}</span>
-              </div>
-            }
+        {/* Quick actions */}
+        <div className="col-12 md:col-6 lg:col-3 p-2">
+          <DashboardCard
+            icon="pi pi-bolt"
+            iconColor="#f59e0b"
+            title={intl.formatMessage({ id: 'coach.home.quickActions' })}
           >
             <div className="flex flex-column gap-2">
               <Button
                 label={intl.formatMessage({ id: 'coach.home.createWorkout' })}
                 icon="pi pi-plus-circle"
                 className="p-button-outlined w-full"
+                style={{
+                  borderRadius: '12px',
+                  borderColor: '#6366f1',
+                  color: '#6366f1',
+                  fontWeight: 500,
+                  fontSize: '0.88rem'
+                }}
                 onClick={() =>
                   navigate('/plans/create', {
                     state: { changeToTemplate: false, returnTo: location.pathname + location.search }
@@ -325,22 +454,45 @@ export default function CoachHomePage(): JSX.Element {
               <Button
                 label={intl.formatMessage({ id: 'coach.home.addExercise' })}
                 icon="pi pi-plus"
-                className="p-button-outlined p-button-secondary w-full"
+                className="p-button-outlined w-full"
+                style={{
+                  borderRadius: '12px',
+                  borderColor: '#737373',
+                  color: '#525252',
+                  fontWeight: 500,
+                  fontSize: '0.88rem'
+                }}
                 onClick={() => navigate('/coach/profile')}
               />
               <Button
                 label={intl.formatMessage({ id: 'coach.home.viewProfile' })}
                 icon="pi pi-user"
-                className="p-button-outlined p-button-info w-full"
+                className="p-button-outlined w-full"
+                style={{
+                  borderRadius: '12px',
+                  borderColor: '#3b82f6',
+                  color: '#3b82f6',
+                  fontWeight: 500,
+                  fontSize: '0.88rem'
+                }}
                 onClick={() => navigate('/coach/profile')}
               />
             </div>
-          </Card>
+          </DashboardCard>
         </div>
       </div>
 
       {/* Client summary table */}
-      <Card className="mt-4">
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: '20px',
+          border: '1px solid rgba(0,0,0,0.04)',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.04)',
+          marginTop: '1.25rem',
+          overflow: 'hidden'
+        }}
+      >
         <DataTable
           value={combinedClientData}
           responsiveLayout="stack"
@@ -349,14 +501,15 @@ export default function CoachHomePage(): JSX.Element {
           rowsPerPageOptions={[5, 10, 20]}
           emptyMessage={intl.formatMessage({ id: 'coach.home.noClientsData' })}
           header={
-            <div className="flex justify-content-between align-items-center">
-              <h3 className="m-0 text-2xl font-bold text-900">
+            <div className="flex justify-content-between align-items-center" style={{ padding: '0.25rem 0' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.015em' }}>
                 {intl.formatMessage({ id: 'coach.home.clientsSummary' })}
               </h3>
               <Button
                 label={intl.formatMessage({ id: 'coach.home.viewAll' })}
                 icon="pi pi-external-link"
                 className="p-button-text"
+                style={{ fontSize: '0.85rem', fontWeight: 500, color: '#6366f1' }}
                 onClick={goToManageStudents}
               />
             </div>
@@ -394,10 +547,10 @@ export default function CoachHomePage(): JSX.Element {
           <Column
             header={intl.formatMessage({ id: 'common.actions' })}
             body={clientActionsTemplate}
-            style={{ width: '120px', textAlign: 'center' }}
+            style={{ width: '100px', textAlign: 'center' }}
           />
         </DataTable>
-      </Card>
+      </div>
     </div>
   );
 }
