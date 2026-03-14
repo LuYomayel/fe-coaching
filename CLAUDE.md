@@ -52,12 +52,62 @@ src/
 - Hooks: toda la lógica, llamadas API, estado, validaciones
 - Ejemplo: `CoachHome.tsx` usa `useCoachHome.ts`
 
-## UI Design Direction
-- The UI is being progressively redesigned to a **minimalist iOS-style** aesthetic.
-- Design principles: clean whitespace, rounded corners (16px+), subtle shadows, soft colors, glassmorphism effects.
-- Typography: modern sans-serif (Inter or similar).
-- No heavy borders, no harsh contrasts, prefer soft transitions and blur effects.
-- Prefer CSS custom properties (variables) for theming changes.
+## UI Design Direction - iOS Style System
+
+The UI follows a **minimalist iOS-style** aesthetic. All new frontend development MUST follow these guidelines.
+
+### Design Principles
+- Clean whitespace, rounded corners, subtle shadows, soft colors, glassmorphism effects
+- Typography: Inter font, tight letter-spacing (`-0.01em` to `-0.03em`), font-weight 600-800 for headings
+- No heavy borders, no harsh contrasts, prefer soft transitions and blur effects
+- Use CSS custom properties (variables) defined in `index.css` for ALL theming
+
+### CSS Custom Properties (use these, do NOT hardcode colors)
+```css
+/* Radius */
+--ios-radius-sm: 8px;   --ios-radius-md: 12px;
+--ios-radius-lg: 16px;  --ios-radius-xl: 20px;  --ios-radius-pill: 9999px;
+
+/* Shadows */
+--ios-shadow-sm / --ios-shadow-md / --ios-shadow-lg / --ios-shadow-xl
+
+/* Colors (auto dark-mode via body.dark) */
+--ios-bg / --ios-card-bg / --ios-card-border / --ios-card-shadow
+--ios-text / --ios-text-secondary / --ios-text-tertiary
+--ios-divider / --ios-surface-subtle / --ios-surface-muted
+--ios-glass-bg / --ios-glass-border (for glassmorphism)
+--ios-input-border / --ios-input-border-hover
+
+/* Transitions */
+--ios-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+--ios-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+```
+
+### Brand Colors (OK to hardcode these)
+- **Primary**: `#6366f1` (indigo)
+- **Success**: `#22c55e` (green)
+- **Warning**: `#f59e0b` (amber) / `#f97316` (orange)
+- **Danger**: `#ef4444` (red)
+
+### Component Patterns
+- **Cards**: `background: var(--ios-card-bg)`, `border-radius: var(--ios-radius-lg)`, `border: 1px solid var(--ios-card-border)`, `box-shadow: var(--ios-card-shadow)`
+- **Glass bars** (sticky footers, floating bars): `background: var(--ios-glass-bg)`, `backdrop-filter: blur(24px)`, `border: 1px solid var(--ios-glass-border)`, `box-shadow: var(--ios-shadow-xl)`
+- **Input labels**: uppercase, `font-size: 0.72rem`, `font-weight: 600`, `letter-spacing: 0.03em`, `color: var(--ios-text-secondary)`
+- **Badges/Pills**: `border-radius: var(--ios-radius-pill)`, `background: rgba(99,102,241,0.1)`, `color: #6366f1`
+- **Status indicators**: colored left-border (3px) + subtle background tint (`rgba(color, 0.1)`)
+
+### Responsive Breakpoints
+- `768px` — tablet/mobile split (PrimeFlex `md:`)
+- `480px` — extra-small screens (full-screen dialogs)
+- Use `clamp()` for responsive font sizes: e.g., `clamp(0.88rem, 2.5vw, 1rem)`
+- Mobile padding: `0.5rem–0.75rem` (not `1.5rem`)
+- Use `dvh` instead of `vh` for mobile-safe viewport heights
+
+### Page Layout Convention
+- Max width: `720px–900px`, centered with `margin: 0 auto`
+- Page padding: `0.75rem`
+- Sticky/fixed bars: `position: fixed`, `bottom: 0.75rem`, centered with `left: 50%; transform: translateX(-50%)`
+- Add `paddingBottom: '5rem'` to page content when using fixed bottom bars
 
 ## Stack Tecnológico
 - React 18 + TypeScript

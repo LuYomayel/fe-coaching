@@ -41,8 +41,8 @@ const Features = ({ featuresRef }: FeaturesProps) => {
   ];
 
   return (
-    <div ref={featuresRef} style={{ padding: '4rem 0 3rem' }}>
-      <div className="px-4 sm:px-6" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div ref={featuresRef} style={{ padding: '2.5rem 0 2rem' }}>
+      <div className="px-3 sm:px-6" style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div className="text-center mb-6">
           <h2
             style={{

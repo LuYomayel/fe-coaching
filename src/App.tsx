@@ -54,8 +54,9 @@ const AppContent = ({ sidebarExpanded, setSidebarExpanded, isMobile }: AppConten
         style={{
           marginLeft: isMobile ? '0' : isHomePage ? '0' : sidebarExpanded ? '250px' : '70px',
           transition: 'margin-left 0.3s ease',
-          height: '100vh',
-          overflow: 'auto'
+          height: '100dvh',
+          overflow: 'auto',
+          paddingTop: isMobile && !isHomePage ? '3rem' : '0'
         }}
       >
         <Routes>

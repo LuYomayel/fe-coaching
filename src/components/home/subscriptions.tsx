@@ -28,8 +28,8 @@ const Subscriptions = ({ pricingRef, onSignUpClick }: SubscriptionsProps) => {
   }, [showToast]);
 
   return (
-    <div ref={pricingRef} style={{ background: 'var(--ios-surface-subtle)', padding: '4rem 0' }}>
-      <div className="px-4 sm:px-6" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <div ref={pricingRef} style={{ background: 'var(--ios-surface-subtle)', padding: '2.5rem 0' }}>
+      <div className="px-3 sm:px-6" style={{ maxWidth: '1100px', margin: '0 auto' }}>
         <div className="text-center mb-6">
           <h2
             style={{
@@ -62,7 +62,7 @@ const Subscriptions = ({ pricingRef, onSignUpClick }: SubscriptionsProps) => {
                 style={{
                   background: 'var(--ios-card-bg)',
                   borderRadius: '24px',
-                  padding: '2rem 1.5rem',
+                  padding: '1.5rem 1.25rem',
                   border: '1px solid var(--ios-card-border)',
                   boxShadow: 'var(--ios-card-shadow)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

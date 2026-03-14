@@ -22,7 +22,7 @@ export default function StudentHome() {
   } = useStudentHome();
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ padding: '0.75rem', maxWidth: '800px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h1

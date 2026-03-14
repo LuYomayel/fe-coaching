@@ -27,8 +27,8 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
       </div>
 
       <div
-        className="relative z-2 w-full px-4 py-8"
-        style={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '6rem' }}
+        className="relative z-2 w-full px-3 sm:px-4 py-6 sm:py-8"
+        style={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '5rem' }}
       >
         <div className="grid align-items-center">
           {/* Left Content */}
@@ -36,7 +36,7 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
             <h1
               className="mb-4 text-left"
               style={{
-                fontSize: 'clamp(2.5rem, 5vw, 4.2rem)',
+                fontSize: 'clamp(1.75rem, 5vw, 4.2rem)',
                 fontWeight: 800,
                 lineHeight: 1.05,
                 letterSpacing: '-0.04em',
@@ -53,8 +53,8 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
             <p
               className="mb-5 text-left"
               style={{
-                fontSize: '1.15rem',
-                lineHeight: 1.7,
+                fontSize: 'clamp(0.9rem, 2.5vw, 1.15rem)',
+                lineHeight: 1.6,
                 color: 'var(--ios-text)',
                 maxWidth: '28rem'
               }}
@@ -96,17 +96,20 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
               />
             </div>
 
-            <div className="flex align-items-center gap-4" style={{ fontSize: '0.88rem', color: '#737373' }}>
+            <div
+              className="flex align-items-center flex-wrap gap-2 sm:gap-4"
+              style={{ fontSize: '0.82rem', color: 'var(--ios-text-secondary)' }}
+            >
               <div className="flex align-items-center gap-1">
-                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.8rem' }} />
+                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.75rem' }} />
                 <FormattedMessage id="home.hero.easyToUse" />
               </div>
               <div className="flex align-items-center gap-1">
-                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.8rem' }} />
+                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.75rem' }} />
                 <FormattedMessage id="home.hero.safeAndReliable" />
               </div>
               <div className="flex align-items-center gap-1">
-                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.8rem' }} />
+                <i className="pi pi-check" style={{ color: '#22c55e', fontSize: '0.75rem' }} />
                 <FormattedMessage id="home.hero.support" />
               </div>
             </div>
@@ -119,8 +122,8 @@ const Hero = ({ onSignUpClick, onScrollToFeatures }: HeroProps) => {
                 background: 'var(--ios-glass-bg)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
-                borderRadius: '24px',
-                padding: '2rem',
+                borderRadius: '20px',
+                padding: '1.25rem',
                 border: '1px solid var(--ios-glass-border)',
                 boxShadow: 'var(--ios-shadow-lg)'
               }}
