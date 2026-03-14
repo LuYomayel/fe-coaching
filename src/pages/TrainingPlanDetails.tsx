@@ -1,4 +1,3 @@
-import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { RadioButton } from 'primereact/radiobutton';
 import { InputText } from 'primereact/inputtext';
@@ -18,6 +17,171 @@ import {
 } from '../hooks/useTrainingPlanDetails';
 import { IExerciseGroup } from 'types/workout/exercise-group';
 import { IExerciseInstance } from 'types/workout/exercise-instance';
+
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
+
+const styles = {
+  page: {
+    padding: '0.75rem',
+    maxWidth: '720px',
+    margin: '0 auto',
+    paddingBottom: '5rem'
+  } as React.CSSProperties,
+  headerCard: {
+    background: 'var(--ios-card-bg)',
+    borderRadius: 'var(--ios-radius-xl)',
+    border: '1px solid var(--ios-card-border)',
+    boxShadow: 'var(--ios-card-shadow)',
+    padding: '1.25rem',
+    marginBottom: '1rem',
+    textAlign: 'center' as const
+  } as React.CSSProperties,
+  planTitle: {
+    fontSize: 'clamp(1.1rem, 3vw, 1.5rem)',
+    fontWeight: 700,
+    letterSpacing: '-0.02em',
+    margin: '0 0 0.15rem',
+    color: 'var(--ios-text)'
+  } as React.CSSProperties,
+  planSubtitle: {
+    fontSize: 'clamp(0.82rem, 2vw, 0.95rem)',
+    color: 'var(--ios-text-secondary)',
+    fontWeight: 500,
+    margin: 0
+  } as React.CSSProperties,
+  statusBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.35rem',
+    fontSize: '0.78rem',
+    color: 'var(--ios-text-tertiary)',
+    marginTop: '0.5rem'
+  } as React.CSSProperties,
+  exerciseCard: (completed: boolean) =>
+    ({
+      background: 'var(--ios-card-bg)',
+      borderRadius: 'var(--ios-radius-lg)',
+      border: completed ? '1px solid rgba(34,197,94,0.25)' : '1px solid var(--ios-card-border)',
+      boxShadow: completed ? '0 0 0 1px rgba(34,197,94,0.08), var(--ios-shadow-sm)' : 'var(--ios-card-shadow)',
+      padding: '0.85rem',
+      transition: 'all 0.25s ease'
+    }) as React.CSSProperties,
+  exerciseName: {
+    fontSize: 'clamp(0.88rem, 2.5vw, 1rem)',
+    fontWeight: 600,
+    margin: 0,
+    letterSpacing: '-0.01em',
+    color: 'var(--ios-text)'
+  } as React.CSSProperties,
+  videoThumb: {
+    borderRadius: '8px',
+    overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    width: '3.5rem',
+    height: '2.5rem',
+    cursor: 'pointer',
+    flexShrink: 0
+  } as React.CSSProperties,
+  setRow: (completed: boolean | null | undefined) =>
+    ({
+      padding: '0.5rem 0.65rem',
+      background: completed === true
+        ? 'rgba(34, 197, 94, 0.04)'
+        : completed === false
+          ? 'rgba(239, 68, 68, 0.03)'
+          : 'var(--ios-surface-subtle)',
+      borderRadius: 'var(--ios-radius-md)',
+      border: completed === true
+        ? '1px solid rgba(34,197,94,0.12)'
+        : completed === false
+          ? '1px solid rgba(239,68,68,0.08)'
+          : '1px solid transparent',
+      transition: 'all 0.2s ease'
+    }) as React.CSSProperties,
+  inputLabel: {
+    display: 'block',
+    fontSize: '0.72rem',
+    fontWeight: 600,
+    marginBottom: '0.2rem',
+    color: 'var(--ios-text-secondary)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.03em'
+  } as React.CSSProperties,
+  stickyBar: {
+    position: 'fixed' as const,
+    bottom: '0.75rem',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: 100,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 0.75rem',
+    background: 'var(--ios-glass-bg)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    borderRadius: 'var(--ios-radius-xl)',
+    boxShadow: 'var(--ios-shadow-xl)',
+    border: '1px solid var(--ios-glass-border)',
+    maxWidth: '95vw',
+    width: 'auto'
+  } as React.CSSProperties,
+  timerPill: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.35rem',
+    background: '#6366f1',
+    color: '#fff',
+    padding: '0.35rem 0.6rem',
+    borderRadius: 'var(--ios-radius-md)'
+  } as React.CSSProperties,
+  groupHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '0.75rem'
+  } as React.CSSProperties,
+  groupTitle: {
+    fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
+    fontWeight: 700,
+    color: '#6366f1',
+    margin: 0
+  } as React.CSSProperties,
+  groupBadge: {
+    background: 'rgba(99,102,241,0.1)',
+    color: '#6366f1',
+    padding: '0.15rem 0.5rem',
+    borderRadius: 'var(--ios-radius-pill)',
+    fontSize: '0.75rem',
+    fontWeight: 600
+  } as React.CSSProperties,
+  navButton: (disabled: boolean) =>
+    ({
+      width: '2.2rem',
+      height: '2.2rem',
+      color: disabled ? 'var(--ios-text-tertiary)' : '#6366f1',
+      flexShrink: 0
+    }) as React.CSSProperties,
+  groupDot: (active: boolean, completed: boolean) =>
+    ({
+      width: active ? '2rem' : '1.5rem',
+      height: '0.3rem',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      background: completed ? '#22c55e' : active ? '#6366f1' : 'var(--ios-surface-muted)'
+    }) as React.CSSProperties,
+  actionBtn: (bg: string, border?: string) =>
+    ({
+      width: '2.2rem',
+      height: '2.2rem',
+      background: border ? 'transparent' : bg,
+      border: border ? `1.5px solid ${border}` : 'none',
+      color: border || '#fff'
+    }) as React.CSSProperties
+};
 
 // ---------------------------------------------------------------------------
 // Render helpers
@@ -52,27 +216,18 @@ function RenderExerciseGroup({
   currentCycle: ReturnType<typeof useTrainingPlanDetails>['currentCycle'];
   intl: ReturnType<typeof useTrainingPlanDetails>['intl'];
 }): JSX.Element {
-  const isCompleted = isGroupCompleted(group);
+  const completed = isGroupCompleted(group);
+  const completedCount = group.exercises.filter((ex: IExerciseInstance) => exerciseProgress[ex.id]?.completed).length;
 
   return (
-    <div key={group.id} style={{ opacity: isCompleted ? 0.7 : 1, transition: 'opacity 0.3s ease' }}>
+    <div style={{ opacity: completed ? 0.7 : 1, transition: 'opacity 0.3s ease' }}>
       {/* Group Header */}
-      <div className="flex align-items-center justify-content-between mb-3">
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#6366f1', margin: 0 }}>
+      <div style={styles.groupHeader}>
+        <h3 style={styles.groupTitle}>
           <FormattedMessage id="training.group" values={{ number: group.groupNumber }} />
         </h3>
-        <span
-          style={{
-            background: '#6366f1',
-            color: '#fff',
-            padding: '0.2rem 0.6rem',
-            borderRadius: '8px',
-            fontSize: '0.78rem',
-            fontWeight: 600
-          }}
-        >
-          {group.exercises.filter((ex: IExerciseInstance) => exerciseProgress[ex.id]?.completed).length}/
-          {group.exercises.length}
+        <span style={styles.groupBadge}>
+          {completedCount}/{group.exercises.length}
         </span>
       </div>
 
@@ -87,77 +242,40 @@ function RenderExerciseGroup({
           const exerciseCompleted = isExerciseCompleted(exercise);
 
           return (
-            <Card
-              key={exercise.id}
-              className={exerciseCompleted ? 'completed' : ''}
-              style={{
-                borderRadius: '16px',
-                border: exerciseCompleted ? '1px solid rgba(34,197,94,0.2)' : '1px solid var(--ios-card-border)',
-                boxShadow: 'var(--ios-card-shadow)'
-              }}
-            >
+            <div key={exercise.id} style={styles.exerciseCard(exerciseCompleted)}>
               {/* Exercise Header */}
-              <div className="mb-2 w-full">
-                <div className="flex flex-column sm:flex-row align-items-start sm:align-items-center justify-content-between gap-2">
-                  <div className="flex-grow-1 w-full sm:w-auto">
-                    <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0, letterSpacing: '-0.01em' }}>
-                      {exercise.exercise.name}
-                    </h3>
+              <div className="flex align-items-center justify-content-between gap-2 mb-2">
+                <div className="flex align-items-center gap-2 flex-grow-1 min-w-0">
+                  <div style={styles.videoThumb} onClick={() => handleVideoClick(exercise.exercise.multimedia)}>
+                    <img
+                      className="w-full h-full"
+                      style={{ objectFit: 'cover' }}
+                      src={getYouTubeThumbnail(exercise.exercise.multimedia)}
+                      alt="Video"
+                    />
                   </div>
-                  <div className="flex align-items-center justify-content-between sm:justify-content-end gap-2 w-full sm:w-auto">
-                    <div
-                      className="cursor-pointer overflow-hidden"
-                      style={{
-                        borderRadius: '10px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                        width: '4rem',
-                        height: '3rem'
-                      }}
-                      onClick={() => handleVideoClick(exercise.exercise.multimedia)}
-                    >
-                      <img
-                        className="w-full h-full"
-                        style={{ objectFit: 'cover' }}
-                        src={getYouTubeThumbnail(exercise.exercise.multimedia)}
-                        alt="Video"
-                      />
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        icon="pi pi-check"
-                        size="small"
-                        className="p-button-rounded p-button-outlined"
-                        onClick={() => handleToggleAll(true, exercise.id)}
-                        tooltip={intl.formatMessage(
-                          { id: 'training.markAllCompleted' },
-                          { default: 'Mark All Completed' }
-                        )}
-                        tooltipOptions={{ position: 'top' }}
-                        style={{
-                          width: '1.75rem',
-                          height: '1.75rem',
-                          padding: '0.25rem',
-                          borderColor: '#22c55e',
-                          color: '#22c55e'
-                        }}
-                      />
-                      <Button
-                        icon="pi pi-times"
-                        size="small"
-                        className="p-button-rounded p-button-outlined"
-                        onClick={() => handleToggleAll(false, exercise.id)}
-                        tooltip={intl.formatMessage({ id: 'training.markAllSkipped' }, { default: 'Mark All Skipped' })}
-                        tooltipOptions={{ position: 'top' }}
-                        style={{
-                          width: '1.75rem',
-                          height: '1.75rem',
-                          padding: '0.25rem',
-                          borderColor: '#ef4444',
-                          color: '#ef4444'
-                        }}
-                      />
-                    </div>
-                  </div>
+                  <h3 style={styles.exerciseName}>{exercise.exercise.name}</h3>
+                </div>
+
+                <div className="flex gap-1 flex-shrink-0">
+                  <Button
+                    icon="pi pi-check"
+                    size="small"
+                    className="p-button-rounded p-button-text"
+                    onClick={() => handleToggleAll(true, exercise.id)}
+                    tooltip={intl.formatMessage({ id: 'training.markAllCompleted', defaultMessage: 'Mark All Completed' })}
+                    tooltipOptions={{ position: 'top' }}
+                    style={{ width: '1.65rem', height: '1.65rem', color: '#22c55e' }}
+                  />
+                  <Button
+                    icon="pi pi-times"
+                    size="small"
+                    className="p-button-rounded p-button-text"
+                    onClick={() => handleToggleAll(false, exercise.id)}
+                    tooltip={intl.formatMessage({ id: 'training.markAllSkipped', defaultMessage: 'Mark All Skipped' })}
+                    tooltipOptions={{ position: 'top' }}
+                    style={{ width: '1.65rem', height: '1.65rem', color: '#ef4444' }}
+                  />
                 </div>
               </div>
 
@@ -166,16 +284,12 @@ function RenderExerciseGroup({
                 {Array.from({ length: parseInt(exercise.sets as string) || group.set || 1 }).map((_, index) => {
                   const setData = progress.sets?.[index] || {};
                   return (
-                    <div
-                      key={index}
-                      style={{
-                        padding: '0.6rem 0.75rem',
-                        background: 'var(--ios-surface-subtle)',
-                        borderRadius: '12px'
-                      }}
-                    >
-                      <div className="flex align-items-center justify-content-between mb-1">
-                        <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Set {index + 1}</span>
+                    <div key={index} style={styles.setRow(setData.completed)}>
+                      {/* Set header with radio buttons */}
+                      <div className="flex align-items-center justify-content-between mb-2">
+                        <span style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--ios-text)' }}>
+                          Set {index + 1}
+                        </span>
                         <div className="flex align-items-center gap-2">
                           <div className="flex align-items-center gap-1">
                             <RadioButton
@@ -187,7 +301,7 @@ function RenderExerciseGroup({
                             />
                             <label
                               htmlFor={`completed-yes-${exercise.id}-${index + 1}`}
-                              style={{ fontSize: '0.85rem', color: '#22c55e', fontWeight: 600 }}
+                              style={{ fontSize: '0.8rem', color: '#22c55e', fontWeight: 700, cursor: 'pointer' }}
                             >
                               &#10003;
                             </label>
@@ -202,7 +316,7 @@ function RenderExerciseGroup({
                             />
                             <label
                               htmlFor={`completed-no-${exercise.id}-${index + 1}`}
-                              style={{ fontSize: '0.85rem', color: '#ef4444', fontWeight: 600 }}
+                              style={{ fontSize: '0.8rem', color: '#ef4444', fontWeight: 700, cursor: 'pointer' }}
                             >
                               &#10007;
                             </label>
@@ -210,13 +324,14 @@ function RenderExerciseGroup({
                         </div>
                       </div>
 
+                      {/* Input fields grid */}
                       <div className="grid">
                         {exercise.repetitions && (
-                          <div className="col-6 sm:col-6 md:col-4">
-                            <label className="block text-xs font-medium mb-1" style={{ color: '#737373' }}>
+                          <div className="col-4 sm:col-4 md:col-3">
+                            <label style={styles.inputLabel}>
                               {intl.formatMessage({ id: 'training.exercise.reps' })}
                             </label>
-                            <div className="p-inputgroup">
+                            <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.repetitions || ''}
                                 onChange={(e) =>
@@ -224,104 +339,125 @@ function RenderExerciseGroup({
                                 }
                                 className="p-inputtext-sm text-center"
                                 placeholder="0"
+                                style={{ borderRadius: '8px 0 0 8px' }}
                               />
-                              <span className="p-inputgroup-addon text-xs">{propertyUnits.repetitions || ''}</span>
+                              <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
+                                {propertyUnits.repetitions || ''}
+                              </span>
                             </div>
                           </div>
                         )}
                         {exercise.weight && (
-                          <div className="col-6 sm:col-6 md:col-4">
-                            <label className="block text-xs font-medium mb-1" style={{ color: '#737373' }}>
+                          <div className="col-4 sm:col-4 md:col-3">
+                            <label style={styles.inputLabel}>
                               {intl.formatMessage({ id: 'training.exercise.weight' })}
                             </label>
-                            <div className="p-inputgroup">
+                            <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.weight || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'weight', e.target.value)}
                                 className="p-inputtext-sm text-center"
                                 placeholder="0"
+                                style={{ borderRadius: '8px 0 0 8px' }}
                               />
-                              <span className="p-inputgroup-addon text-xs">{propertyUnits?.weight || 'kg'}</span>
+                              <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
+                                {propertyUnits?.weight || 'kg'}
+                              </span>
                             </div>
                           </div>
                         )}
                         {exercise.time && (
-                          <div className="col-6 sm:col-6 md:col-4">
-                            <label className="block text-xs font-medium mb-1" style={{ color: '#737373' }}>
+                          <div className="col-4 sm:col-4 md:col-3">
+                            <label style={styles.inputLabel}>
                               {intl.formatMessage({ id: 'training.exercise.time' })}
                             </label>
-                            <div className="p-inputgroup">
+                            <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.time || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'time', e.target.value)}
                                 className="p-inputtext-sm text-center"
                                 placeholder="0"
+                                style={{ borderRadius: '8px 0 0 8px' }}
                               />
-                              <span className="p-inputgroup-addon text-xs">{propertyUnits?.time || 's'}</span>
+                              <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
+                                {propertyUnits?.time || 's'}
+                              </span>
                             </div>
                           </div>
                         )}
                         {exercise.distance && (
-                          <div className="col-6 sm:col-6 md:col-4">
-                            <label className="block text-xs font-medium mb-1" style={{ color: '#737373' }}>
+                          <div className="col-4 sm:col-4 md:col-3">
+                            <label style={styles.inputLabel}>
                               {intl.formatMessage({ id: 'training.exercise.distance' })}
                             </label>
-                            <div className="p-inputgroup">
+                            <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.distance || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'distance', e.target.value)}
                                 className="p-inputtext-sm text-center"
                                 placeholder="0"
+                                style={{ borderRadius: '8px 0 0 8px' }}
                               />
-                              <span className="p-inputgroup-addon text-xs">{propertyUnits?.distance || 'km'}</span>
+                              <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
+                                {propertyUnits?.distance || 'km'}
+                              </span>
                             </div>
                           </div>
                         )}
                         {exercise.duration && (
-                          <div className="col-6 sm:col-6 md:col-4">
-                            <label className="block text-xs font-medium mb-1" style={{ color: '#737373' }}>
+                          <div className="col-4 sm:col-4 md:col-3">
+                            <label style={styles.inputLabel}>
                               {intl.formatMessage({ id: 'training.exercise.duration' })}
                             </label>
-                            <div className="p-inputgroup">
+                            <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.duration || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'duration', e.target.value)}
                                 className="p-inputtext-sm text-center"
                                 placeholder="0"
+                                style={{ borderRadius: '8px 0 0 8px' }}
                               />
-                              <span className="p-inputgroup-addon text-xs">{propertyUnits?.duration || 's'}</span>
+                              <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
+                                {propertyUnits?.duration || 's'}
+                              </span>
                             </div>
                           </div>
                         )}
                         {exercise.difficulty && (
-                          <div className="col-6 sm:col-6 md:col-4">
-                            <label className="block text-xs font-medium mb-1" style={{ color: '#737373' }}>
+                          <div className="col-4 sm:col-4 md:col-3">
+                            <label style={styles.inputLabel}>
                               {intl.formatMessage({ id: 'training.exercise.difficulty' })}
                             </label>
-                            <div className="p-inputgroup">
+                            <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.difficulty || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'difficulty', e.target.value)}
                                 className="p-inputtext-sm text-center"
                                 placeholder="0"
+                                style={{ borderRadius: '8px 0 0 8px' }}
                               />
-                              <span className="p-inputgroup-addon text-xs">{propertyUnits?.difficulty || ''}</span>
+                              <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
+                                {propertyUnits?.difficulty || ''}
+                              </span>
                             </div>
                           </div>
                         )}
                         {exercise.tempo && (
-                          <div className="col-6 sm:col-6 md:col-4">
-                            <label className="block text-xs font-medium mb-1" style={{ color: '#737373' }}>
+                          <div className="col-4 sm:col-4 md:col-3">
+                            <label style={styles.inputLabel}>
                               {intl.formatMessage({ id: 'training.exercise.tempo' })}
                             </label>
-                            <div className="p-inputgroup">
+                            <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.tempo || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'tempo', e.target.value)}
                                 className="p-inputtext-sm text-center"
                                 placeholder="0"
+                                style={{ borderRadius: '8px 0 0 8px' }}
                               />
-                              <span className="p-inputgroup-addon text-xs">{propertyUnits?.tempo || 's'}</span>
+                              <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
+                                {propertyUnits?.tempo || 's'}
+                              </span>
                             </div>
                           </div>
                         )}
@@ -345,28 +481,34 @@ function RenderExerciseGroup({
 
               {/* Notes & Comments */}
               <div className="grid mt-2">
-                <div className="col-12 sm:col-6">
-                  <label
-                    htmlFor={`notes-${exercise.id}`}
-                    className="block text-sm font-medium mb-1"
-                    style={{ color: 'var(--ios-text)' }}
-                  >
-                    <FormattedMessage id="training.notes" defaultMessage="Notes" />
-                  </label>
-                  <InputTextarea
-                    id={`notes-${exercise.id}`}
-                    rows={2}
-                    value={exercise.notes || ''}
-                    disabled
-                    className="w-full text-sm"
-                    style={{ resize: 'none', borderRadius: '10px' }}
-                  />
-                </div>
-                <div className="col-12 sm:col-6">
+                {exercise.notes && (
+                  <div className="col-12 sm:col-6">
+                    <label
+                      htmlFor={`notes-${exercise.id}`}
+                      style={{ ...styles.inputLabel, textTransform: 'none', fontSize: '0.78rem' }}
+                    >
+                      <FormattedMessage id="training.notes" defaultMessage="Notes" />
+                    </label>
+                    <InputTextarea
+                      id={`notes-${exercise.id}`}
+                      rows={2}
+                      value={exercise.notes || ''}
+                      disabled
+                      className="w-full text-sm"
+                      style={{
+                        resize: 'none',
+                        borderRadius: 'var(--ios-radius-md)',
+                        background: 'var(--ios-surface-subtle)',
+                        border: '1px solid var(--ios-divider)',
+                        opacity: 0.8
+                      }}
+                    />
+                  </div>
+                )}
+                <div className={exercise.notes ? 'col-12 sm:col-6' : 'col-12'}>
                   <label
                     htmlFor={`comments-${exercise.id}`}
-                    className="block text-sm font-medium mb-1"
-                    style={{ color: 'var(--ios-text)' }}
+                    style={{ ...styles.inputLabel, textTransform: 'none', fontSize: '0.78rem' }}
                   >
                     <FormattedMessage id="training.comments" defaultMessage="Comments" />
                   </label>
@@ -380,11 +522,15 @@ function RenderExerciseGroup({
                       id: 'training.comments.placeholder',
                       defaultMessage: 'Add your comments here...'
                     })}
-                    style={{ resize: 'none', borderRadius: '10px' }}
+                    style={{
+                      resize: 'none',
+                      borderRadius: 'var(--ios-radius-md)',
+                      border: '1px solid var(--ios-divider)'
+                    }}
                   />
                 </div>
               </div>
-            </Card>
+            </div>
           );
         })}
       </div>
@@ -436,9 +582,9 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
 
   if (loading || !plan) {
     return (
-      <div className="flex flex-column align-items-center justify-content-center min-h-screen p-4">
-        <ProgressSpinner className="mb-3" />
-        <span style={{ color: 'var(--ios-text-secondary)', fontSize: '1rem' }}>
+      <div className="flex flex-column align-items-center justify-content-center" style={{ minHeight: '60vh' }}>
+        <ProgressSpinner style={{ width: '2.5rem', height: '2.5rem' }} />
+        <span style={{ color: 'var(--ios-text-secondary)', fontSize: '0.9rem', marginTop: '0.75rem' }}>
           <FormattedMessage id="training.loading" />
         </span>
       </div>
@@ -446,121 +592,77 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
   }
 
   return (
-    <div style={{ padding: '0.5rem', maxWidth: '900px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '1.25rem', textAlign: 'center' }}>
-        <h1
-          style={{
-            fontSize: 'clamp(1.3rem, 3vw, 1.75rem)',
-            fontWeight: 800,
-            letterSpacing: '-0.03em',
-            margin: '0 0 0.25rem'
-          }}
-        >
+    <div style={styles.page}>
+      {/* Header Card */}
+      <div style={styles.headerCard}>
+        <h1 style={styles.planTitle}>
           <FormattedMessage id="training.title" />
         </h1>
-        <h2 style={{ fontSize: '1rem', color: 'var(--ios-text-secondary)', fontWeight: 500, margin: '0 0 0.5rem' }}>
-          {plan.instanceName ? plan.instanceName : plan.workout.planName}
-        </h2>
+        <p style={styles.planSubtitle}>{plan.instanceName || plan.workout.planName}</p>
         {!plan.isTemplate && (
-          <div className="flex align-items-center justify-content-center gap-2">
-            <i className={getStatusIcon(plan.status)} style={{ fontSize: '0.85rem' }} />
-            <span style={{ fontSize: '0.85rem', color: '#737373' }}>
+          <div style={styles.statusBadge}>
+            <i className={getStatusIcon(plan.status)} style={{ fontSize: '0.8rem' }} />
+            <span>
               <FormattedMessage id="training.status" />: {plan.status}
             </span>
           </div>
         )}
       </div>
 
-      {/* Exercise Groups */}
-      <div>
-        <div className="flex align-items-center gap-2 sm:gap-3">
-          <Button
-            icon="pi pi-chevron-left"
-            className="p-button-rounded p-button-text flex-shrink-0"
-            onClick={navigateToPreviousGroup}
-            disabled={currentGroupIndex === 0}
-            style={{ width: '2.5rem', height: '2.5rem', color: currentGroupIndex === 0 ? '#d4d4d4' : '#6366f1' }}
-          />
+      {/* Group Navigation + Content */}
+      <div className="flex align-items-start gap-1">
+        <Button
+          icon="pi pi-chevron-left"
+          className="p-button-rounded p-button-text flex-shrink-0 mt-5"
+          onClick={navigateToPreviousGroup}
+          disabled={currentGroupIndex === 0}
+          style={styles.navButton(currentGroupIndex === 0)}
+        />
 
-          <div className="flex-grow-1">
-            <RenderExerciseGroup
-              group={plan.groups[currentGroupIndex]!}
-              exerciseProgress={exerciseProgress}
-              isGroupCompleted={isGroupCompleted}
-              isExerciseCompleted={isExerciseCompleted}
-              handleToggleAll={handleToggleAll}
-              handleVideoClick={handleVideoClick}
-              handleSetCompletedChange={handleSetCompletedChange}
-              handleExerciseChange={handleExerciseChange}
-              propertyUnits={propertyUnits}
-              client={client}
-              clientId={clientId}
-              currentCycle={currentCycle}
-              intl={intl}
-            />
-          </div>
-
-          <Button
-            icon="pi pi-chevron-right"
-            className="p-button-rounded p-button-text flex-shrink-0"
-            onClick={navigateToNextGroup}
-            disabled={!canNavigateToNextGroup()}
-            style={{ width: '2.5rem', height: '2.5rem', color: !canNavigateToNextGroup() ? '#d4d4d4' : '#6366f1' }}
+        <div className="flex-grow-1 min-w-0">
+          <RenderExerciseGroup
+            group={plan.groups[currentGroupIndex]!}
+            exerciseProgress={exerciseProgress}
+            isGroupCompleted={isGroupCompleted}
+            isExerciseCompleted={isExerciseCompleted}
+            handleToggleAll={handleToggleAll}
+            handleVideoClick={handleVideoClick}
+            handleSetCompletedChange={handleSetCompletedChange}
+            handleExerciseChange={handleExerciseChange}
+            propertyUnits={propertyUnits}
+            client={client}
+            clientId={clientId}
+            currentCycle={currentCycle}
+            intl={intl}
           />
         </div>
 
-        {/* Group Indicators */}
-        <div className="flex justify-content-center gap-2 mt-3">
-          {plan.groups.map((_: IExerciseGroup, index: number) => (
-            <div
-              key={index}
-              onClick={() => navigateToGroup(index)}
-              style={{
-                width: '2.5rem',
-                height: '0.35rem',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                background: isGroupCompleted(plan.groups[index]!)
-                  ? '#22c55e'
-                  : index === currentGroupIndex
-                    ? '#6366f1'
-                    : 'var(--ios-surface-muted)'
-              }}
-            />
-          ))}
-        </div>
+        <Button
+          icon="pi pi-chevron-right"
+          className="p-button-rounded p-button-text flex-shrink-0 mt-5"
+          onClick={navigateToNextGroup}
+          disabled={!canNavigateToNextGroup()}
+          style={styles.navButton(!canNavigateToNextGroup())}
+        />
       </div>
 
-      {/* Action Buttons */}
-      <div
-        className="flex justify-content-center align-items-center gap-1 sm:gap-2 mt-3"
-        style={{
-          position: 'sticky',
-          bottom: '0.5rem',
-          zIndex: 10,
-          padding: '0.5rem 0.75rem',
-          background: 'var(--ios-glass-bg)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderRadius: '16px',
-          boxShadow: 'var(--ios-shadow-lg)',
-          border: '1px solid var(--ios-glass-border)'
-        }}
-      >
-        {/* Timer */}
-        <div
-          className="flex align-items-center gap-2"
-          style={{
-            background: '#6366f1',
-            color: '#fff',
-            padding: '0.4rem 0.65rem',
-            borderRadius: '10px'
-          }}
-        >
-          <i className="pi pi-clock" style={{ fontSize: '0.8rem' }} />
-          <span style={{ fontWeight: 700, fontSize: '0.85rem', fontVariantNumeric: 'tabular-nums' }}>
+      {/* Group Indicators */}
+      <div className="flex justify-content-center align-items-center gap-2 mt-3 mb-3">
+        {plan.groups.map((_: IExerciseGroup, index: number) => (
+          <div
+            key={index}
+            onClick={() => navigateToGroup(index)}
+            style={styles.groupDot(index === currentGroupIndex, isGroupCompleted(plan.groups[index]!))}
+          />
+        ))}
+      </div>
+
+      {/* Sticky Action Bar */}
+      <div style={styles.stickyBar}>
+        {/* Timer Pill */}
+        <div style={styles.timerPill}>
+          <i className="pi pi-stopwatch" style={{ fontSize: '0.75rem' }} />
+          <span style={{ fontWeight: 700, fontSize: '0.82rem', fontVariantNumeric: 'tabular-nums' }}>
             {formatSessionTime(sessionTimer)}
           </span>
           <Button
@@ -570,9 +672,10 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
             style={{
               color: 'white',
               border: '1px solid rgba(255,255,255,0.3)',
-              width: '1.6rem',
-              height: '1.6rem',
-              borderRadius: '8px'
+              width: '1.4rem',
+              height: '1.4rem',
+              borderRadius: '6px',
+              padding: 0
             }}
           />
         </div>
@@ -583,23 +686,23 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
           onClick={handleSaveProgress}
           tooltip={intl.formatMessage({ id: 'training.buttons.saveProgress' })}
           tooltipOptions={{ position: 'top' }}
-          style={{ width: '2.5rem', height: '2.5rem', background: '#6366f1', border: 'none' }}
+          style={styles.actionBtn('#6366f1')}
         />
         <Button
           icon="pi pi-trash"
           className="p-button-rounded p-button-outlined"
           onClick={handleClearProgress}
-          tooltip="Limpiar Progreso"
+          tooltip={intl.formatMessage({ id: 'training.buttons.clearProgress', defaultMessage: 'Clear Progress' })}
           tooltipOptions={{ position: 'top' }}
-          style={{ width: '2.5rem', height: '2.5rem', borderColor: '#ef4444', color: '#ef4444' }}
+          style={styles.actionBtn('transparent', '#ef4444')}
         />
         <Button
-          icon="pi pi-check"
+          icon="pi pi-flag-fill"
           className="p-button-rounded"
           onClick={() => setFinishDialogVisible(true)}
           tooltip={intl.formatMessage({ id: 'training.buttons.finishTraining' })}
           tooltipOptions={{ position: 'top' }}
-          style={{ width: '2.5rem', height: '2.5rem', background: '#22c55e', border: 'none' }}
+          style={styles.actionBtn('#22c55e')}
         />
       </div>
 
