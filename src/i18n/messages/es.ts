@@ -547,6 +547,7 @@ const messages: Record<string, string> = {
   'training.plan.status': 'Estado',
 
   'training.buttons.save': 'Guardar Progreso',
+  'training.buttons.clearProgress': 'Limpiar Progreso',
   'training.buttons.finish': 'Finalizar Entrenamiento',
 
   'training.error.fillFields': 'Todos los campos relevantes deben estar completos.',
@@ -848,6 +849,7 @@ const messages: Record<string, string> = {
   'home.signup.validation.emailInvalid': 'Ingresa un correo electrónico válido',
   'home.signup.validation.passwordRequired': 'La contraseña es obligatoria',
   'home.signup.validation.confirmPasswordRequired': 'Confirma tu contraseña',
+  'home.signup.validation.passwordTooShort': 'La contraseña debe tener al menos 6 caracteres',
   'home.signup.validation.passwordMismatch': 'Las contraseñas no coinciden',
   'home.signup.success': '¡Cuenta creada! Revisa tu correo para verificarla.',
   'home.signup.error.generic': 'No pudimos completar el registro. Intenta nuevamente.',
@@ -1491,6 +1493,12 @@ const messages: Record<string, string> = {
   'training.finish.additionalNotes.placeholder': '¿Algo más que quieras anotar sobre esta sesión?',
   'training.markAllCompleted': 'Completar todo',
   'training.markAllSkipped': 'Saltar todo',
+  'training.finish.incomplete': 'Incompleto',
+  'training.finish.completeMeasurements': 'Completá los inputs de medición subjetiva para cada set antes de finalizar.',
+  'training.confirm.title': '¿Lograste terminar todo?',
+  'training.confirm.message': 'No marcaste todos los ejercicios. ¿Pudiste terminar todo?',
+  'training.confirm.markAllDone': 'Marcar todo como finalizado',
+  'training.confirm.goBack': 'Volver a marcar lo que no logré hacer',
 
   'coach.exercise.upload.updated': 'Ejercicios actualizados',
   'exercise.exerciseType': 'Tipo de Ejercicio',

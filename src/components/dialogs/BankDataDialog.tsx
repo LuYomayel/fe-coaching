@@ -38,10 +38,9 @@ const EMPTY_BANK_DATA: IBankData = {
 interface IBankDataDialogProps {
   visible: boolean;
   onHide: () => void;
-  coachId: number;
 }
 
-export default function BankDataDialog({ visible, onHide, coachId }: IBankDataDialogProps) {
+export default function BankDataDialog({ visible, onHide }: IBankDataDialogProps) {
   const intl = useIntl();
   const { showToast } = useToast();
   const { setLoading } = useSpinner();
@@ -55,15 +54,15 @@ export default function BankDataDialog({ visible, onHide, coachId }: IBankDataDi
   ];
 
   useEffect(() => {
-    if (visible && coachId) {
+    if (visible) {
       fetchBankData();
     }
-  }, [visible, coachId]); // eslint-disable-line
+  }, [visible]); // eslint-disable-line
 
   const fetchBankData = async () => {
     try {
       setLoading(true);
-      const { data } = await api.payment.getCoachBankData(coachId);
+      const { data } = await api.payment.getMyCoachBankData();
 
       if (data) {
         setBankData({
@@ -99,7 +98,7 @@ export default function BankDataDialog({ visible, onHide, coachId }: IBankDataDi
             ? 'MERCADO_PAGO'
             : ''
       };
-      await api.payment.updateCoachBankData(coachId, dataToSave);
+      await api.payment.updateCoachBankData(dataToSave);
       showToast('success', intl.formatMessage({ id: 'payment.success.bankDataUpdated' }));
       setIsEditing(false);
       onHide();

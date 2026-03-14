@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useIntl } from 'react-intl';
-import { useUser } from '../../contexts/UserContext';
 import { useSpinner } from '../../utils/GlobalSpinner';
 import { useConfirmationDialog } from '../../utils/ConfirmationDialogContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -20,7 +19,6 @@ export function useTrainingCycleTemplateDialog(workouts: any[], deletedWorkoutTe
 
   const intl = useIntl();
   const { setLoading } = useSpinner();
-  const { coach } = useUser();
   const { showConfirmationDialog } = useConfirmationDialog();
   const { showToast } = useToast();
 
@@ -126,7 +124,6 @@ export function useTrainingCycleTemplateDialog(workouts: any[], deletedWorkoutTe
       name: templateName,
       duration: templateDuration,
       isDurationInMonths: !isDurationInWeeks,
-      coachId: coach?.id ?? 0,
       trainingWeeks: templateWeeks.map((week: any) => ({
         weekNumber: week.weekNumber,
         trainingSessions: week.trainingSessions.map((session: any) => ({

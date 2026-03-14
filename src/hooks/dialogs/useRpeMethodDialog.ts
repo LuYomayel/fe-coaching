@@ -19,7 +19,7 @@ export interface RpeMethodForm {
 
 export type DialogMode = 'create' | 'edit';
 
-export const useRpeMethodDialog = (userId: number) => {
+export const useRpeMethodDialog = () => {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<DialogMode>('create');
@@ -88,7 +88,7 @@ export const useRpeMethodDialog = (userId: number) => {
     } finally {
       setLoading(false);
     }
-  }, [form, mode, userId]);
+  }, [form, mode]);
 
   return {
     // state

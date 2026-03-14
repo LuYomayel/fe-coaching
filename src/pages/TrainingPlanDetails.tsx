@@ -3,6 +3,7 @@ import { RadioButton } from 'primereact/radiobutton';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { Dialog } from 'primereact/dialog';
 import { FormattedMessage } from 'react-intl';
 
 import FinishTrainingDialog from '../components/dialogs/FinishTrainingDialog';
@@ -17,6 +18,26 @@ import {
 } from '../hooks/useTrainingPlanDetails';
 import { IExerciseGroup } from 'types/workout/exercise-group';
 import { IExerciseInstance } from 'types/workout/exercise-instance';
+import { IExerciseSetConfiguration } from 'types/workout/exercise-set-configuration';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+type MeasurableField = 'repetitions' | 'weight' | 'time' | 'distance' | 'duration' | 'difficulty' | 'tempo';
+
+/** Returns true if the field should be shown for this exercise + set index */
+function hasField(exercise: IExerciseInstance, setIndex: number, field: MeasurableField): boolean {
+  if (exercise[field]) return true;
+  const config = (exercise.setConfiguration || []).find((c: IExerciseSetConfiguration) => c.setNumber === setIndex + 1);
+  return !!(config && config[field]);
+}
+
+/** Gets the template value for this set (from setConfiguration or exercise-level) */
+function getSetTemplateValue(exercise: IExerciseInstance, setIndex: number, field: MeasurableField): string {
+  const config = (exercise.setConfiguration || []).find((c: IExerciseSetConfiguration) => c.setNumber === setIndex + 1);
+  return config?.[field] || exercise[field] || '';
+}
 
 // ---------------------------------------------------------------------------
 // Styles
@@ -199,9 +220,7 @@ function RenderExerciseGroup({
   handleSetCompletedChange,
   handleExerciseChange,
   propertyUnits,
-  client,
-  clientId,
-  currentCycle,
+  getExerciseRpeMethod,
   intl
 }: {
   group: IExerciseGroup;
@@ -213,9 +232,7 @@ function RenderExerciseGroup({
   handleSetCompletedChange: ReturnType<typeof useTrainingPlanDetails>['handleSetCompletedChange'];
   handleExerciseChange: ReturnType<typeof useTrainingPlanDetails>['handleExerciseChange'];
   propertyUnits: ReturnType<typeof useTrainingPlanDetails>['propertyUnits'];
-  client: ReturnType<typeof useTrainingPlanDetails>['client'];
-  clientId: ReturnType<typeof useTrainingPlanDetails>['clientId'];
-  currentCycle: ReturnType<typeof useTrainingPlanDetails>['currentCycle'];
+  getExerciseRpeMethod: ReturnType<typeof useTrainingPlanDetails>['getExerciseRpeMethod'];
   intl: ReturnType<typeof useTrainingPlanDetails>['intl'];
 }): JSX.Element {
   const completed = isGroupCompleted(group);
@@ -329,9 +346,46 @@ function RenderExerciseGroup({
                         </div>
                       </div>
 
+                      {/* Set template info (when setConfiguration has per-set values) */}
+                      {exercise.setConfiguration && exercise.setConfiguration.length > 0 && (
+                        <div
+                          className="flex flex-wrap gap-2 mb-2"
+                          style={{ fontSize: '0.72rem', color: 'var(--ios-text-tertiary)' }}
+                        >
+                          {(() => {
+                            const tmpl = getSetTemplateValue;
+                            const fields: { key: MeasurableField; unit: string }[] = [
+                              { key: 'repetitions', unit: propertyUnits.repetitions || 'reps' },
+                              { key: 'weight', unit: propertyUnits?.weight || 'kg' },
+                              { key: 'time', unit: propertyUnits?.time || 's' },
+                              { key: 'distance', unit: propertyUnits?.distance || 'km' },
+                              { key: 'duration', unit: propertyUnits?.duration || 's' },
+                              { key: 'difficulty', unit: propertyUnits?.difficulty || '' },
+                              { key: 'tempo', unit: propertyUnits?.tempo || '' }
+                            ];
+                            return fields
+                              .filter((f) => tmpl(exercise, index, f.key))
+                              .map((f) => (
+                                <span
+                                  key={f.key}
+                                  style={{
+                                    background: 'rgba(99,102,241,0.08)',
+                                    padding: '0.1rem 0.4rem',
+                                    borderRadius: 'var(--ios-radius-sm)',
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  {tmpl(exercise, index, f.key)}
+                                  {f.unit ? ` ${f.unit}` : ''}
+                                </span>
+                              ));
+                          })()}
+                        </div>
+                      )}
+
                       {/* Input fields grid */}
                       <div className="grid">
-                        {exercise.repetitions && (
+                        {hasField(exercise, index, 'repetitions') && (
                           <div className="col-4 sm:col-4 md:col-3">
                             <label style={styles.inputLabel}>
                               {intl.formatMessage({ id: 'training.exercise.reps' })}
@@ -343,7 +397,7 @@ function RenderExerciseGroup({
                                   handleExerciseChange(exercise.id, index, 'repetitions', e.target.value)
                                 }
                                 className="p-inputtext-sm text-center"
-                                placeholder="0"
+                                placeholder={getSetTemplateValue(exercise, index, 'repetitions') || '0'}
                                 style={{ borderRadius: '8px 0 0 8px' }}
                               />
                               <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
@@ -352,17 +406,20 @@ function RenderExerciseGroup({
                             </div>
                           </div>
                         )}
-                        {exercise.weight && (
+                        {hasField(exercise, index, 'weight') && (
                           <div className="col-4 sm:col-4 md:col-3">
                             <label style={styles.inputLabel}>
-                              {intl.formatMessage({ id: 'training.exercise.weight' })}
+                              {intl.formatMessage(
+                                { id: 'training.exercise.weight' },
+                                { unit: propertyUnits?.weight || 'kg' }
+                              )}
                             </label>
                             <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.weight || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'weight', e.target.value)}
                                 className="p-inputtext-sm text-center"
-                                placeholder="0"
+                                placeholder={getSetTemplateValue(exercise, index, 'weight') || '0'}
                                 style={{ borderRadius: '8px 0 0 8px' }}
                               />
                               <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
@@ -371,17 +428,20 @@ function RenderExerciseGroup({
                             </div>
                           </div>
                         )}
-                        {exercise.time && (
+                        {hasField(exercise, index, 'time') && (
                           <div className="col-4 sm:col-4 md:col-3">
                             <label style={styles.inputLabel}>
-                              {intl.formatMessage({ id: 'training.exercise.time' })}
+                              {intl.formatMessage(
+                                { id: 'training.exercise.time' },
+                                { unit: propertyUnits?.time || 's' }
+                              )}
                             </label>
                             <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.time || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'time', e.target.value)}
                                 className="p-inputtext-sm text-center"
-                                placeholder="0"
+                                placeholder={getSetTemplateValue(exercise, index, 'time') || '0'}
                                 style={{ borderRadius: '8px 0 0 8px' }}
                               />
                               <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
@@ -390,17 +450,20 @@ function RenderExerciseGroup({
                             </div>
                           </div>
                         )}
-                        {exercise.distance && (
+                        {hasField(exercise, index, 'distance') && (
                           <div className="col-4 sm:col-4 md:col-3">
                             <label style={styles.inputLabel}>
-                              {intl.formatMessage({ id: 'training.exercise.distance' })}
+                              {intl.formatMessage(
+                                { id: 'training.exercise.distance' },
+                                { unit: propertyUnits?.distance || 'km' }
+                              )}
                             </label>
                             <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.distance || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'distance', e.target.value)}
                                 className="p-inputtext-sm text-center"
-                                placeholder="0"
+                                placeholder={getSetTemplateValue(exercise, index, 'distance') || '0'}
                                 style={{ borderRadius: '8px 0 0 8px' }}
                               />
                               <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
@@ -409,17 +472,20 @@ function RenderExerciseGroup({
                             </div>
                           </div>
                         )}
-                        {exercise.duration && (
+                        {hasField(exercise, index, 'duration') && (
                           <div className="col-4 sm:col-4 md:col-3">
                             <label style={styles.inputLabel}>
-                              {intl.formatMessage({ id: 'training.exercise.duration' })}
+                              {intl.formatMessage(
+                                { id: 'training.exercise.duration' },
+                                { unit: propertyUnits?.duration || 's' }
+                              )}
                             </label>
                             <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.duration || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'duration', e.target.value)}
                                 className="p-inputtext-sm text-center"
-                                placeholder="0"
+                                placeholder={getSetTemplateValue(exercise, index, 'duration') || '0'}
                                 style={{ borderRadius: '8px 0 0 8px' }}
                               />
                               <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
@@ -428,17 +494,20 @@ function RenderExerciseGroup({
                             </div>
                           </div>
                         )}
-                        {exercise.difficulty && (
+                        {hasField(exercise, index, 'difficulty') && (
                           <div className="col-4 sm:col-4 md:col-3">
                             <label style={styles.inputLabel}>
-                              {intl.formatMessage({ id: 'training.exercise.difficulty' })}
+                              {intl.formatMessage(
+                                { id: 'training.exercise.difficulty' },
+                                { unit: propertyUnits?.difficulty || '' }
+                              )}
                             </label>
                             <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.difficulty || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'difficulty', e.target.value)}
                                 className="p-inputtext-sm text-center"
-                                placeholder="0"
+                                placeholder={getSetTemplateValue(exercise, index, 'difficulty') || '0'}
                                 style={{ borderRadius: '8px 0 0 8px' }}
                               />
                               <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
@@ -447,17 +516,20 @@ function RenderExerciseGroup({
                             </div>
                           </div>
                         )}
-                        {exercise.tempo && (
+                        {hasField(exercise, index, 'tempo') && (
                           <div className="col-4 sm:col-4 md:col-3">
                             <label style={styles.inputLabel}>
-                              {intl.formatMessage({ id: 'training.exercise.tempo' })}
+                              {intl.formatMessage(
+                                { id: 'training.exercise.tempo' },
+                                { unit: propertyUnits?.tempo || '' }
+                              )}
                             </label>
                             <div className="p-inputgroup p-inputgroup-sm">
                               <InputText
                                 value={setData.tempo || ''}
                                 onChange={(e) => handleExerciseChange(exercise.id, index, 'tempo', e.target.value)}
                                 className="p-inputtext-sm text-center"
-                                placeholder="0"
+                                placeholder={getSetTemplateValue(exercise, index, 'tempo') || '0'}
                                 style={{ borderRadius: '8px 0 0 8px' }}
                               />
                               <span className="p-inputgroup-addon" style={{ fontSize: '0.7rem' }}>
@@ -466,18 +538,18 @@ function RenderExerciseGroup({
                             </div>
                           </div>
                         )}
-                        {(client || clientId) && currentCycle && (
-                          <div className="col-12 sm:col-6 md:col-4">
-                            <RpeDropdownComponent
-                              selectedRpe={setData.rating ?? 0}
-                              onChange={(e) => handleExerciseChange(exercise.id, index, 'rating', e.value)}
-                              cycleId={
-                                currentCycle !== -1 ? (currentCycle as { id: number }).id : (currentCycle as number)
-                              }
-                              clientId={client ? client.id : clientId}
-                            />
-                          </div>
-                        )}
+                        {(() => {
+                          const resolvedRpe = getExerciseRpeMethod(exercise);
+                          return resolvedRpe ? (
+                            <div className="col-12 sm:col-6 md:col-4">
+                              <RpeDropdownComponent
+                                selectedRpe={setData.rating ?? 0}
+                                onChange={(e) => handleExerciseChange(exercise.id, index, 'rating', e.value)}
+                                rpeMethod={resolvedRpe}
+                              />
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                   );
@@ -556,16 +628,16 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
     videoDialogVisible,
     currentVideoUrl,
     finishDialogVisible,
-    currentCycle,
+    confirmFinishVisible,
     currentGroupIndex,
     sessionTimer,
     isTimerPaused,
     propertyUnits,
     loading,
-    clientId,
-    client,
+    hasSubjectiveMeasurement,
     setVideoDialogVisible,
     setFinishDialogVisible,
+    setConfirmFinishVisible,
     handleSaveProgress,
     handleClearProgress,
     handleSubmitFeedback,
@@ -574,6 +646,8 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
     handleVideoClick,
     handleSetCompletedChange,
     handleExerciseChange,
+    handleFinishClick,
+    markAllAsCompleted,
     navigateToNextGroup,
     navigateToPreviousGroup,
     navigateToGroup,
@@ -581,6 +655,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
     getStatusIcon,
     isExerciseCompleted,
     isGroupCompleted,
+    getExerciseRpeMethod,
     formatSessionTime,
     intl
   } = hook;
@@ -635,9 +710,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
             handleSetCompletedChange={handleSetCompletedChange}
             handleExerciseChange={handleExerciseChange}
             propertyUnits={propertyUnits}
-            client={client}
-            clientId={clientId}
-            currentCycle={currentCycle}
+            getExerciseRpeMethod={getExerciseRpeMethod}
             intl={intl}
           />
         </div>
@@ -704,12 +777,80 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
         <Button
           icon="pi pi-flag-fill"
           className="p-button-rounded"
-          onClick={() => setFinishDialogVisible(true)}
+          onClick={handleFinishClick}
           tooltip={intl.formatMessage({ id: 'training.buttons.finishTraining' })}
           tooltipOptions={{ position: 'top' }}
           style={styles.actionBtn('#22c55e')}
         />
       </div>
+
+      {/* Confirmation Dialog: "Did you finish everything?" */}
+      <Dialog
+        visible={confirmFinishVisible}
+        onHide={() => setConfirmFinishVisible(false)}
+        header={
+          <div className="flex align-items-center gap-2">
+            <i className="pi pi-question-circle" style={{ color: '#f59e0b', fontSize: '1.1rem' }} />
+            <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>
+              <FormattedMessage id="training.confirm.title" defaultMessage="Did you finish everything?" />
+            </span>
+          </div>
+        }
+        style={{ width: 'min(92vw, 420px)', borderRadius: 'var(--ios-radius-xl)' }}
+        draggable={false}
+        resizable={false}
+        dismissableMask
+        footer={
+          <div className="flex flex-column gap-2" style={{ padding: '0.25rem 0' }}>
+            <Button
+              label={intl.formatMessage({
+                id: 'training.confirm.markAllDone',
+                defaultMessage: 'Mark all as finished'
+              })}
+              icon="pi pi-check-circle"
+              onClick={() => {
+                markAllAsCompleted();
+                setConfirmFinishVisible(false);
+                if (hasSubjectiveMeasurement) {
+                  // After marking all, measurements may still be needed
+                  // Let the user fill them, then click finish again
+                } else {
+                  setFinishDialogVisible(true);
+                }
+              }}
+              style={{
+                background: '#22c55e',
+                border: 'none',
+                borderRadius: 'var(--ios-radius-md)',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                width: '100%'
+              }}
+            />
+            <Button
+              label={intl.formatMessage({
+                id: 'training.confirm.goBack',
+                defaultMessage: 'Go back and mark what you missed'
+              })}
+              icon="pi pi-arrow-left"
+              className="p-button-text"
+              onClick={() => setConfirmFinishVisible(false)}
+              style={{
+                fontSize: '0.85rem',
+                color: 'var(--ios-text-secondary)',
+                width: '100%'
+              }}
+            />
+          </div>
+        }
+      >
+        <p style={{ fontSize: '0.9rem', color: 'var(--ios-text)', lineHeight: 1.5, margin: '0.5rem 0' }}>
+          <FormattedMessage
+            id="training.confirm.message"
+            defaultMessage="You haven't marked all exercises. Did you finish everything?"
+          />
+        </p>
+      </Dialog>
 
       <FinishTrainingDialog
         visible={finishDialogVisible}

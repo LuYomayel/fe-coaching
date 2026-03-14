@@ -58,16 +58,19 @@ export const usePlanDetails = ({
   useEffect(() => {
     const fetchClientData = async () => {
       try {
-        const { data } = await api.user.fetchClientByClientId(Number(clientId));
+        const { data } =
+          user?.userType === 'client'
+            ? await api.user.fetchMyClientProfile()
+            : await api.user.fetchClientByClientId(Number(clientId));
         setClientData(data);
       } catch (error) {
         console.error('Error fetching client data:', error);
       }
     };
-    if (clientId) {
+    if (clientId || user?.userType === 'client') {
       fetchClientData();
     }
-  }, [clientId]);
+  }, [clientId, user?.userType]);
 
   // Fetch plan details
   useEffect(() => {
@@ -128,7 +131,10 @@ export const usePlanDetails = ({
   useEffect(() => {
     const fetchRpeMethods = async () => {
       try {
-        const { data } = await api.rpe.getRpeMethodAssigned(Number(clientId), planId, currentCycle?.id || -1);
+        const { data } =
+          user?.userType === 'client'
+            ? await api.rpe.getMyRpeMethod(planId, currentCycle?.id || -1)
+            : await api.rpe.getRpeMethodAssigned(Number(clientId), planId, currentCycle?.id || -1);
 
         if (data) {
           setRpeMethod(data);

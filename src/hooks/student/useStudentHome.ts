@@ -38,10 +38,10 @@ export const useStudentHome = () => {
       try {
         setLoading(true);
 
-        const { data: streakData } = await api.user.fetchClientStreak(client!.id);
+        const { data: streakData } = await api.user.fetchMyStreak();
         setStreak(streakData);
 
-        const { data: todayWorkoutsData } = await api.user.fetchAmIWorkingOutToday(client!.id);
+        const { data: todayWorkoutsData } = await api.user.fetchAmITrainingToday();
         const transformedWorkouts: ITodayWorkout[] = (todayWorkoutsData || []).map(
           (workout: Record<string, unknown>) => ({
             id: workout.workoutInstanceId,

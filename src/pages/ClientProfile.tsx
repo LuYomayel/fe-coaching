@@ -571,9 +571,7 @@ export default function ClientProfile() {
         visible={isPaymentDialogVisible}
         onHide={handlePaymentDialogClose}
         subscription={subscription}
-        clientId={client!.id}
         coachId={client?.coach?.id as number}
-        coachPlanId={subscription?.coachPlan?.id as number}
       />
     </div>
   );

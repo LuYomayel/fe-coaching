@@ -517,6 +517,7 @@ const messages: Record<string, string> = {
   'training.plan.status': 'Status',
 
   'training.buttons.save': 'Save Progress',
+  'training.buttons.clearProgress': 'Clear Progress',
   'training.buttons.finish': 'Finish Training',
 
   'training.error.fillFields': 'All relevant fields must be filled out.',
@@ -643,6 +644,12 @@ const messages: Record<string, string> = {
   'training.dialog.videoTitle': 'Exercise Video',
   'training.markAllCompleted': 'Mark all as completed',
   'training.markAllSkipped': 'Mark all as skipped',
+  'training.finish.incomplete': 'Incomplete',
+  'training.finish.completeMeasurements': 'Complete the subjective measurement inputs for each set before finishing.',
+  'training.confirm.title': 'Did you finish everything?',
+  'training.confirm.message': "You haven't marked all exercises. Did you finish everything?",
+  'training.confirm.markAllDone': 'Mark all as finished',
+  'training.confirm.goBack': 'Go back and mark what I missed',
 
   // NewClientDashboard - Additional
   'dashboard.calendar.viewDetails': 'View Workout Details',
@@ -849,6 +856,7 @@ const messages: Record<string, string> = {
   'home.signup.validation.emailInvalid': 'Enter a valid email address',
   'home.signup.validation.passwordRequired': 'Password is required',
   'home.signup.validation.confirmPasswordRequired': 'Confirm your password',
+  'home.signup.validation.passwordTooShort': 'Password must be at least 6 characters',
   'home.signup.validation.passwordMismatch': 'Passwords do not match',
   'home.signup.success': 'Account created! Check your email to verify it.',
   'home.signup.error.generic': 'Unable to sign up. Please try again.',

@@ -19,10 +19,11 @@ import { IExerciseGroup } from '../../types/workout/exercise-group';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface UseNewCreatePlanProps {
-  coachId?: number;
   planId?: number;
   isTemplate?: boolean;
   isEdit?: boolean;
+  clientId?: string;
+  sessionDate?: string;
 }
 
 interface UseNewCreatePlanReturn {
@@ -303,10 +304,11 @@ const transformWorkoutInstanceToState = (
 };
 
 export const useNewCreatePlan = ({
-  coachId,
   planId,
   isTemplate = true,
-  isEdit = false
+  isEdit = false,
+  clientId,
+  sessionDate
 }: UseNewCreatePlanProps = {}): UseNewCreatePlanReturn => {
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -710,7 +712,7 @@ export const useNewCreatePlan = ({
     });
 
     const workoutPayload: IUpsertWorkoutTemplatePayload['workout'] = {
-      planName: plan.planName
+      planName: isTemplate ? plan.planName : plan.instanceName || plan.planName
     };
 
     if (plan.workoutId) {
@@ -721,33 +723,34 @@ export const useNewCreatePlan = ({
       workoutPayload.workoutInstanceTemplates = [{ id: plan.workoutInstanceTemplateId }];
     }
 
-    if (!plan.workoutId && coachId) {
-      workoutPayload.coach = { id: coachId };
-    }
-
-    return {
+    const result: IUpsertWorkoutTemplatePayload = {
       workout: workoutPayload,
       instanceName: plan.instanceName ?? '',
       personalizedNotes: plan.personalizedNotes ?? '',
       groups: normalizedGroups,
-      isTemplate,
-      coachId
+      isTemplate
     };
+
+    // When creating a one-off instance for a specific training session
+    if (!isTemplate && sessionDate) {
+      result.sessionDate = sessionDate;
+    }
+    if (!isTemplate && clientId) {
+      result.clientId = clientId;
+    }
+
+    return result;
   };
 
   const handleSavePlan = async () => {
-    if (!plan.planName || !plan.planName.trim()) {
+    const nameToValidate = isTemplate ? plan.planName : plan.instanceName || plan.planName;
+    if (!nameToValidate || !nameToValidate.trim()) {
       showToast('warn', 'Campos incompletos', 'El plan debe tener un nombre');
       return;
     }
 
     if (!groupsState.length) {
       showToast('warn', 'Campos incompletos', 'El plan debe tener al menos un grupo');
-      return;
-    }
-
-    if (!plan.workoutId && !coachId) {
-      showToast('error', 'Error', 'No se identificó el coach para asociar el plan.');
       return;
     }
 

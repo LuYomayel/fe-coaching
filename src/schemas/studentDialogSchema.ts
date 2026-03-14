@@ -14,8 +14,7 @@ export const studentDialogSchema = z
     customFitnessGoal: z.string().optional(),
     location: z.string().optional(),
     contactMethod: z.string().optional(),
-    sessionMode: z.enum(['presencial', 'virtual_sincronico', 'virtual_asincronico', 'hibrido']).optional(),
-    coachId: z.string().min(1, 'ID del coach es requerido')
+    sessionMode: z.enum(['presencial', 'virtual_sincronico', 'virtual_asincronico', 'hibrido']).optional().nullable()
   })
   .refine(
     (data) => {

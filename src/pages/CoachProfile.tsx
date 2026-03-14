@@ -185,9 +185,7 @@ export default function CoachProfilePage() {
 
       {/* Diálogo para crear/editar un ejercicio */}
 
-      {coach?.id && (
-        <BankDataDialog visible={isBankDataDialogVisible} onHide={handleBankDataDialogClose} coachId={coach.id} />
-      )}
+      <BankDataDialog visible={isBankDataDialogVisible} onHide={handleBankDataDialogClose} />
     </div>
   );
 }

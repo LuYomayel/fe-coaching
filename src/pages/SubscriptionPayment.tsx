@@ -4,8 +4,6 @@ import { Button } from 'primereact/button';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useToast } from '../contexts/ToastContext';
 import { api } from '../services/api-client';
-import { useUser } from '../contexts/UserContext';
-
 interface ISubscriptionPlan {
   id: number;
   name: string;
@@ -24,7 +22,6 @@ export default function SubscriptionPaymentPage({ onPlanConfirmed, onClose }: IS
   const stripe = useStripe();
   const elements = useElements();
   const { showToast } = useToast();
-  const { user } = useUser();
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -75,7 +72,6 @@ export default function SubscriptionPaymentPage({ onPlanConfirmed, onClose }: IS
 
       if (data?.message === 'success') {
         await api.subscription.updateCoachSubscription({
-          userId: user?.userId,
           planId: selectedPlan.id
         });
         if (onPlanConfirmed) {

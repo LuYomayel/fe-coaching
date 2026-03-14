@@ -27,19 +27,12 @@ interface ICoachPlan {
 
 interface IRegisterPaymentDialogProps {
   studentId: number;
-  coachId: number;
   onClose: () => void;
   oldSubscription: ISubscription;
   oldCoachPlan: ICoachPlan;
 }
 
-const RegisterPaymentDialog = ({
-  studentId,
-  coachId,
-  onClose,
-  oldSubscription,
-  oldCoachPlan
-}: IRegisterPaymentDialogProps) => {
+const RegisterPaymentDialog = ({ studentId, onClose, oldSubscription, oldCoachPlan }: IRegisterPaymentDialogProps) => {
   const intl = useIntl();
   const { user } = useUser();
   const { showToast } = useToast();
@@ -81,7 +74,6 @@ const RegisterPaymentDialog = ({
 
   const onClickRegisterPayment = () => {
     const body = {
-      coachId,
       clientId: studentId,
       startDate: startDate ? formatDateToApi(startDate) : null,
       endDate: endDate ? formatDateToApi(endDate) : null,

@@ -10,8 +10,6 @@ import { useConfirmationDialog } from '../../utils/ConfirmationDialogContext';
 import { api } from '../../services/api-client';
 import { ICoachPlan } from '../../types/coach/coach-plan';
 
-const apiUrl: string | undefined = process.env.REACT_APP_API_URL;
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface IStudent {
   id: number;
@@ -84,7 +82,7 @@ export const useManageStudents = () => {
     setLoading(true);
     const loadClientsSubscribed = async () => {
       try {
-        const { data } = await api.coach.fetchClientsSubscribed(coach!.id);
+        const { data } = await api.coach.fetchClientsSubscribed();
         const response = data as unknown as IClientsSubscribedResponse;
         setMaxClients(response.total);
         setTotalClientsSubscribed(
@@ -118,26 +116,12 @@ export const useManageStudents = () => {
   const handleResendVerification = async (email?: string) => {
     try {
       setLoading(true);
-
-      const response = await fetch(`${apiUrl}/auth/send-verification-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.message || 'Something went wrong');
-      } else {
-        showToast(
-          'success',
-          intl.formatMessage({ id: 'student.success' }),
-          intl.formatMessage({ id: 'student.verificationEmailSent' })
-        );
-      }
+      await api.auth.sendVerificationEmail(email ?? '');
+      showToast(
+        'success',
+        intl.formatMessage({ id: 'student.success' }),
+        intl.formatMessage({ id: 'student.verificationEmailSent' })
+      );
     } catch (error) {
       showToast('error', 'Error', (error as Error).message);
     } finally {

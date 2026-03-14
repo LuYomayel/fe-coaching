@@ -9,16 +9,14 @@ import { useRpeMethodDialog } from '../../hooks/dialogs/useRpeMethodDialog';
 import { useRpeAssignmentDialog } from '../../hooks/dialogs/useRpeAssignmentDialog';
 import { RpeMethodDialog } from '../dialogs/RpeMethodDialog';
 import { RpeAssignmentDialog } from '../dialogs/RpeAssignmentDialog';
-import { useUser } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
 
 export function RpeTab() {
   const intl = useIntl();
   const { showToast } = useToast();
   const state = useRpeTab();
-  const { user } = useUser();
-  const rpeMethodDialog = useRpeMethodDialog(user?.userId || 0);
-  const rpeAssignDialog = useRpeAssignmentDialog(user?.userId || 0);
+  const rpeMethodDialog = useRpeMethodDialog();
+  const rpeAssignDialog = useRpeAssignmentDialog();
 
   return (
     <div className="p-3">

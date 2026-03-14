@@ -103,16 +103,14 @@ export const useCoachHome = (): IUseCoachHomeReturn => {
   useEffect(() => {
     if (!coach?.id) return;
 
-    const coachId = coach.id;
-
     const fetchData = async (): Promise<void> => {
       setLoading(true);
       try {
         const [lastTimeTrained, howLongToFinishCycle, trainingFrequency, clientsPaymentStatus] = await Promise.all([
-          api.workout.fetchLastTimeTrained(coachId),
-          api.workout.fetchHowLongToFinishCycle(coachId),
-          api.workout.fetchTrainingFrequency(coachId),
-          api.subscription.fetchClientsPaymentStatus(coachId)
+          api.workout.fetchLastTimeTrained(),
+          api.workout.fetchHowLongToFinishCycle(),
+          api.workout.fetchTrainingFrequency(),
+          api.subscription.fetchClientsPaymentStatus()
         ]);
 
         const ltData: ILastTimeTrainedItem[] = lastTimeTrained.data ?? [];

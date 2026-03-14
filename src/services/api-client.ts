@@ -181,9 +181,15 @@ async function fetchAPI<T = unknown>(endpoint: string, options: RequestInit = {}
 
     return (await response.json()) as T;
   } catch (error) {
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      console.error('Error de conexión con el servidor:', error);
+      throw new Error(
+        'No se pudo conectar con el servidor. Verificá tu conexión a internet o intentá de nuevo en unos minutos.'
+      );
+    }
     console.error('Error:', error);
     if (error instanceof Error) throw error;
-    throw new Error('Error de conexión. Verifica tu conexión a internet.');
+    throw new Error('Ocurrió un error inesperado. Intentá de nuevo.');
   }
 }
 
@@ -244,24 +250,28 @@ export const api = {
   },
   coach: {
     fetchStudents: () => apiClient.get<IClient[]>(`/users/coach/allStudents`),
-    fetchClientsSubscribed: (coachId: number) => apiClient.get<any[]>(`/users/coach/clients-subscribed/${coachId}`)
+    fetchClientsSubscribed: () => apiClient.get<any[]>(`/users/coach/clients-subscribed`)
   },
   user: {
     fetchUser: (userId: number) => apiClient.get<any>(`/users/${userId}`),
     fetchCoach: (userId: number) => apiClient.get<any>(`/users/coach/${userId}`),
     fetchClient: (userId: number) => apiClient.get<any>(`/users/client/${userId}`),
     fetchClientByClientId: (clientId: number) => apiClient.get<any>(`/users/client/clientId/${clientId}`),
+    fetchMyClientProfile: () => apiClient.get<any>(`/users/client/me`),
     fetchClientActivitiesByUserId: (userId: number) => apiClient.get<any[]>(`/users/userId/activities/${userId}`),
+    fetchMyActivities: () => apiClient.get<any[]>(`/users/my/activities`),
     saveStudent: (body: any) => apiClient.post<any>(`/users/client`, body),
     updateStudent: (studentId: number, body: any) => apiClient.put<any>(`/users/client/${studentId}`, body),
-    updateCoach: (userId: number, body: any) => apiClient.post<any>(`/users/coach/${userId}`, body),
+    updateCoach: (body: any) => apiClient.post<any>(`/users/coach`, body),
     updatePersonalInfo: (personalInfoId: number, body: any) =>
       apiClient.put<any>(`/users/client/${personalInfoId}`, body),
     updateClient: (clientId: number, body: any) => apiClient.put<any>(`/students/${clientId}`, body),
     deleteClient: (clientId: number) => apiClient.delete<any>(`/users/client/${clientId}`),
     fetchClientStreak: (clientId: number) => apiClient.get<any>(`/workout-streaks/client/${clientId}/active`),
+    fetchMyStreak: () => apiClient.get<any>(`/workout-streaks/my/active`),
     fetchClientDailyStreak: (clientId: number) => apiClient.get<any>(`/workout-streaks/client/${clientId}/daily`),
     fetchAmIWorkingOutToday: (clientId: number) => apiClient.get<any>(`/workout/am-i-traning-today/${clientId}`),
+    fetchAmITrainingToday: () => apiClient.get<any>(`/workout/am-i-training-today`),
     registerCoach: (body: any) => apiClient.post<any>(`/auth/register`, body)
   },
   message: {
@@ -278,14 +288,15 @@ export const api = {
     getUserNotifications: (userId: number) => apiClient.get<any[]>(`/notifications/all/${userId}`)
   },
   payment: {
-    createMercadoPagoPayment: (paymentData: any) => apiClient.post<any>(`/payment/mercado-pago/create`, paymentData),
+    createMercadoPagoPayment: (coachId: number, paymentData: any) =>
+      apiClient.post<any>(`/payment/mercado-pago/create-payment/${coachId}`, paymentData),
     checkMercadoPagoPaymentStatus: (paymentId: string) =>
       apiClient.get<any>(`/payment/mercado-pago/status/${paymentId}`),
-    notifyBankTransfer: (transferData: any, coachId: number) =>
+    notifyBankTransfer: (coachId: number, transferData: any) =>
       apiClient.post<any>(`/payment/bank-transfer/notify/${coachId}`, transferData),
     getCoachBankData: (coachId: number) => apiClient.get<any>(`/payment/coach-bank-data/${coachId}`),
-    updateCoachBankData: (coachId: number, bankData: any) =>
-      apiClient.post<any>(`/payment/coach-bank-data/${coachId}`, bankData)
+    getMyCoachBankData: () => apiClient.get<any>(`/payment/coach-bank-data/my`),
+    updateCoachBankData: (bankData: any) => apiClient.post<any>(`/payment/coach-bank-data`, bankData)
   },
   exercise: {
     processImportExercises: (importData: any) => apiClient.post<any>(`/exercise/process-import`, importData),
@@ -403,10 +414,10 @@ export const api = {
 
     // Client workouts
     fetchWorkoutsByClientId: (clientId: number) => apiClient.get<any[]>(`/workout/client/${clientId}`),
-    fetchTrainingCyclesForClientByUserId: (userId: number) =>
-      apiClient.get<any[]>(`/workout/training-cycles/client/userId/${userId}`),
+    fetchMyTrainingCycles: () => apiClient.get<any[]>(`/workout/training-cycles/client/userId`),
     fetchTrainingSessionWithNoWeekByClientId: (clientId: number) =>
       apiClient.get<any[]>(`/workout/training-session-with-no-weeks/clientId/${clientId}`),
+    fetchMyTrainingSessionWithNoWeek: () => apiClient.get<any[]>(`/workout/training-session-with-no-weeks/my`),
 
     // Excel view
     fetchAssignedWorkoutsForCycleDay: (cycleId: number, dayNumber: number) =>
@@ -417,9 +428,9 @@ export const api = {
     createNewTrainingFromExcelView: (plan: any) => apiClient.post<any>(`/workout/from-excel-view`, plan),
 
     // Coach dashboard stats
-    fetchLastTimeTrained: (coachId: number) => apiClient.get<any>(`/workout/last-time-trained/${coachId}`),
-    fetchHowLongToFinishCycle: (coachId: number) => apiClient.get<any>(`/workout/how-long-to-finish-cycle/${coachId}`),
-    fetchTrainingFrequency: (coachId: number) => apiClient.get<any>(`/workout/training-frequency/${coachId}`),
+    fetchLastTimeTrained: () => apiClient.get<any>(`/workout/last-time-trained`),
+    fetchHowLongToFinishCycle: () => apiClient.get<any>(`/workout/how-long-to-finish-cycle`),
+    fetchTrainingFrequency: () => apiClient.get<any>(`/workout/training-frequency`),
 
     // Training cycles (non-template)
     createTrainingCycle: (body: any) => apiClient.post<any>(`/workout/training-cycles`, body),
@@ -461,6 +472,7 @@ export const api = {
     // Feedback
     submitFeedback: (planId: number, body: any, clientId: number) =>
       apiClient.post<any>(`/workout/feedback/${planId}/clientId/${clientId}`, body),
+    submitMyFeedback: (planId: number, body: any) => apiClient.post<any>(`/workout/feedback/${planId}/my`, body),
 
     // Session details
     updateWorkoutInstance: (workoutInstanceId: number, body: any) =>
@@ -473,7 +485,7 @@ export const api = {
     fetchCoachSubscriptionPlans: () => apiClient.get<any[]>('/subscription/coach-subscription-plans'),
     fetchCoachPlans: () => apiClient.get<ICoachPlan[]>(`/users/coach/coachPlan`),
     createOrUpdateCoachPlan: (
-      plan: { name: string; price: number; paymentFrequency: 'monthly' | 'weekly' | 'per_session'; coachId: number },
+      plan: { name: string; price: number; paymentFrequency: 'monthly' | 'weekly' | 'per_session' },
       planId: number | undefined,
       mode: 'create' | 'edit'
     ) => {
@@ -486,18 +498,20 @@ export const api = {
     fetchSubscriptionForStudent: (studentId: number) => apiClient.get<any>(`/subscription/client/${studentId}`),
     fetchSubscriptionDetails: (userId: number) =>
       apiClient.get<any>(`/subscription/client-subscription/details/${userId}`),
+    fetchMySubscriptionDetails: () => apiClient.get<any>(`/subscription/client-subscription/my/details`),
     assignSubscription: (body: any) => apiClient.post<any>(`/subscription/client`, body),
     makePayment: (body: any) => apiClient.post<any>(`/payment/create-payment-intent`, body),
     updateCoachSubscription: (body: any) => apiClient.put<any>(`/subscription/coach-subscription`, body),
     registerPayment: (body: any) => apiClient.put<any>(`/subscription/update`, body),
     cancelSubscription: (clientSubscriptionId: number) =>
       apiClient.delete<any>(`/subscription/clientSubscription/${clientSubscriptionId}`),
-    fetchClientsPaymentStatus: (coachId: number) =>
-      apiClient.get<any>(`/subscription/clients-payment-status/${coachId}`)
+    fetchClientsPaymentStatus: () => apiClient.get<any>(`/subscription/clients-payment-status`)
   },
   rpe: {
     getRpeMethodAssigned: (clientId: number, planId: number, cycleId: number) =>
       apiClient.get<IRpeMethod>(`/workout/rpe/get-by-client-id/${clientId}/${planId}/${cycleId}`),
+    getMyRpeMethod: (planId: number, cycleId: number) =>
+      apiClient.get<IRpeMethod>(`/workout/rpe/my/${planId}/${cycleId}`),
 
     // RPE - Métodos y asignaciones (migrado desde services/workoutService.js)
     getRpeMethods: () => apiClient.get<any>(`/workout/rpe/all`),
@@ -509,10 +523,10 @@ export const api = {
     },
     setDefault: (rpeId: number) => apiClient.put<any>(`/workout/rpe/update/${rpeId}`, { isDefault: true }),
     deleteRpe: (rpeId: number) => apiClient.delete<any>(`/workout/rpe/delete/${rpeId}`),
-    assignRpeToTarget: (rpeMethodId: number, targetType: string, targetId: number, userId: number) =>
-      apiClient.post<any>(`/workout/rpe/assign/${userId}`, { rpeMethodId, targetType, targetId }),
-    removeRpeAssignment: (assignmentId: number, targetType: string, userId: number) =>
-      apiClient.delete<any>(`/workout/rpe/remove-assignment/${assignmentId}/${targetType}/${userId}`)
+    assignRpeToTarget: (rpeMethodId: number, targetType: string, targetId: number) =>
+      apiClient.post<any>(`/workout/rpe/assign`, { rpeMethodId, targetType, targetId }),
+    removeRpeAssignment: (assignmentId: number, targetType: string) =>
+      apiClient.delete<any>(`/workout/rpe/remove-assignment/${assignmentId}/${targetType}`)
   }
 };
 

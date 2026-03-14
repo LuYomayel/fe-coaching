@@ -10,7 +10,6 @@ export type CoachPlanForm = {
   name: string;
   price: number;
   paymentFrequency: PaymentFrequency;
-  coachId: number;
 };
 
 export function useCoachPlanDialog(onSaved?: () => void) {
@@ -22,15 +21,14 @@ export function useCoachPlanDialog(onSaved?: () => void) {
   const [form, setForm] = useState<CoachPlanForm>({
     name: '',
     price: 0,
-    paymentFrequency: 'monthly',
-    coachId: user?.id ?? 0
+    paymentFrequency: 'monthly'
   });
   const [loading, setLoading] = useState(false);
 
   const openCreate = useCallback(() => {
     if (!user) return;
     setMode('create');
-    setForm({ name: '', price: 0, paymentFrequency: 'monthly', coachId: user.id });
+    setForm({ name: '', price: 0, paymentFrequency: 'monthly' });
     setVisible(true);
   }, [user]);
 
@@ -42,8 +40,7 @@ export function useCoachPlanDialog(onSaved?: () => void) {
         id: plan.id,
         name: plan.name,
         price: Number(plan.price) || 0,
-        paymentFrequency: plan.paymentFrequency || 'monthly',
-        coachId: user.id
+        paymentFrequency: plan.paymentFrequency || 'monthly'
       });
       setVisible(true);
     },

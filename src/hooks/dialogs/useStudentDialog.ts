@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { useIntl } from 'react-intl';
-import { useUser } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirmationDialog } from '../../utils/ConfirmationDialogContext';
 import { api } from '../../services/api-client';
@@ -30,7 +29,6 @@ export const useStudentDialog = (
 ) => {
   const intl = useIntl();
   const { showToast } = useToast();
-  const { user } = useUser();
   const { showConfirmationDialog } = useConfirmationDialog();
 
   const [formData, setFormData] = useState<IStudentFormData>({
@@ -129,8 +127,7 @@ export const useStudentDialog = (
 
       const dataToValidate = {
         ...formData,
-        fitnessGoal: processedFitnessGoals,
-        coachId: String(user!.userId)
+        fitnessGoal: processedFitnessGoals
       };
 
       studentDialogSchema.parse(dataToValidate);
@@ -219,8 +216,7 @@ export const useStudentDialog = (
       contactMethod:
         formData.sessionMode === 'virtual_sincronico' || formData.sessionMode === 'hibrido'
           ? formData.contactMethod
-          : undefined,
-      coachId: user!.userId
+          : undefined
     };
 
     showConfirmationDialog({

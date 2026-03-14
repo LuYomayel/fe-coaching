@@ -234,7 +234,7 @@ export const useCoachProfileForm = () => {
         email: user?.email
       };
 
-      const { data } = await api.user.updateCoach(user.userId, body);
+      const { data } = await api.user.updateCoach(body);
       setCoach(data);
       showToast(
         'success',

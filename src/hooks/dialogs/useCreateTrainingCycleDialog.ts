@@ -33,7 +33,6 @@ interface IWorkoutOption {
 
 interface IBodyCycle {
   name: string;
-  coachId: number;
   startDate: string;
   clientId: number;
   durationInMonths: number | null;
@@ -167,7 +166,6 @@ export function useCreateTrainingCycleDialog({
 
     const body = {
       name: cycleName,
-      coachId: user?.userId ?? 0,
       startDate: formatDateToApi(startDate as Date),
       clientId: parseInt(String(clientId)),
       durationInMonths,
@@ -186,7 +184,6 @@ export function useCreateTrainingCycleDialog({
     setActiveIndex(1);
     const body: IBodyCycle = {
       name: cycleName,
-      coachId: user?.userId ?? 0,
       startDate: formatDateToApi(startDate as Date),
       clientId: parseInt(String(clientId)),
       durationInMonths,

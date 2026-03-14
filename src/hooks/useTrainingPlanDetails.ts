@@ -12,6 +12,7 @@ import { extractYouTubeVideoId } from '../utils/UtilFunctions';
 import { IExerciseGroup } from 'types/workout/exercise-group';
 import { IExerciseInstance } from 'types/workout/exercise-instance';
 import { ITrainingCycle } from 'types/training-cycle/training-cycle';
+import { IRpeMethod } from 'types/rpe/rpe-method-assigned';
 
 // ---------------------------------------------------------------------------
 // Interfaces
@@ -91,7 +92,7 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
   const navigate = useNavigate();
   const { state } = useLocation();
   const { clientId } = (state || {}) as { clientId: number };
-  const { user, client, coach } = useUser();
+  const { user, client } = useUser();
   const { showToast } = useToast();
   const { loading, setLoading } = useSpinner();
   const intl = useIntl();
@@ -107,7 +108,11 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
   const [sessionTimer, setSessionTimer] = useState(0);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [workoutRpeMethod, setWorkoutRpeMethod] = useState<IRpeMethod | null>(null);
+  const [confirmFinishVisible, setConfirmFinishVisible] = useState(false);
   const propertyUnits: IPropertyUnits = JSON.parse(localStorage.getItem('propertyUnits') || '{}');
+
+  const hasSubjectiveMeasurement = workoutRpeMethod !== null;
 
   // ---------------------------------------------------------------------------
   // Helpers
@@ -201,20 +206,25 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
             group.exercises.forEach((exercise: IExerciseInstance) => {
               const numSets = parseInt(exercise.sets as string) || group.set || 1;
 
+              const setConfigs = exercise.setConfiguration || [];
+
               const exerciseData: IExerciseProgressEntry = {
-                sets: Array.from({ length: numSets }).map(() => ({
-                  repetitions: exercise.repetitions || null,
-                  weight: exercise.weight || null,
-                  time: exercise.time || null,
-                  distance: exercise.distance || null,
-                  tempo: exercise.tempo || null,
-                  notes: exercise.notes || null,
-                  difficulty: exercise.difficulty || null,
-                  duration: exercise.duration || null,
-                  restInterval: exercise.restInterval || null,
-                  completed: null,
-                  rating: null
-                })),
+                sets: Array.from({ length: numSets }).map((_, i) => {
+                  const config = setConfigs.find((c) => c.setNumber === i + 1);
+                  return {
+                    repetitions: config?.repetitions || exercise.repetitions || null,
+                    weight: config?.weight || exercise.weight || null,
+                    time: config?.time || exercise.time || null,
+                    distance: config?.distance || exercise.distance || null,
+                    tempo: config?.tempo || exercise.tempo || null,
+                    notes: config?.notes || exercise.notes || null,
+                    difficulty: config?.difficulty || exercise.difficulty || null,
+                    duration: config?.duration || exercise.duration || null,
+                    restInterval: config?.restInterval || exercise.restInterval || null,
+                    completed: null,
+                    rating: null
+                  };
+                }),
                 completed: null,
                 comments: ''
               };
@@ -361,6 +371,32 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
     };
   }, [exerciseProgress, planId, plan]); // eslint-disable-line
 
+  // Fetch RPE method once for the workout
+  useEffect(() => {
+    if (!plan || !currentCycle) return;
+
+    const cycleId =
+      currentCycle !== -1 && typeof currentCycle === 'object' ? currentCycle.id : (currentCycle as number);
+
+    let rpePromise;
+
+    if (user?.userType === 'client') {
+      rpePromise = api.rpe.getMyRpeMethod(Number(planId) || -1, Number(cycleId) || -1);
+    } else {
+      const resolvedClientId = client ? client.id : clientId;
+      if (!resolvedClientId) return;
+      rpePromise = api.rpe.getRpeMethodAssigned(resolvedClientId, Number(planId) || -1, Number(cycleId) || -1);
+    }
+
+    rpePromise
+      .then(({ data }) => {
+        setWorkoutRpeMethod(data || null);
+      })
+      .catch(() => {
+        setWorkoutRpeMethod(null);
+      });
+  }, [plan, currentCycle, client, clientId, planId, user]); // eslint-disable-line
+
   // ---------------------------------------------------------------------------
   // Handlers
   // ---------------------------------------------------------------------------
@@ -414,20 +450,24 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
 
       if (!newProgress[exerciseId]?.sets) {
         const numSets = parseInt(exercise.sets as string) || group.set;
+        const setConfigs = exercise.setConfiguration || [];
 
-        const initialSets: ISetProgress[] = Array.from({ length: numSets || 1 }).map(() => ({
-          repetitions: exercise.repetitions || null,
-          weight: exercise.weight || null,
-          time: exercise.time || null,
-          distance: exercise.distance || null,
-          tempo: exercise.tempo || null,
-          notes: exercise.notes || null,
-          difficulty: exercise.difficulty || null,
-          duration: exercise.duration || null,
-          restInterval: exercise.restInterval || null,
-          completed: exercise.completed ?? null,
-          rating: null
-        }));
+        const initialSets: ISetProgress[] = Array.from({ length: numSets || 1 }).map((_, i) => {
+          const config = setConfigs.find((c) => c.setNumber === i + 1);
+          return {
+            repetitions: config?.repetitions || exercise.repetitions || null,
+            weight: config?.weight || exercise.weight || null,
+            time: config?.time || exercise.time || null,
+            distance: config?.distance || exercise.distance || null,
+            tempo: config?.tempo || exercise.tempo || null,
+            notes: config?.notes || exercise.notes || null,
+            difficulty: config?.difficulty || exercise.difficulty || null,
+            duration: config?.duration || exercise.duration || null,
+            restInterval: config?.restInterval || exercise.restInterval || null,
+            completed: exercise.completed ?? null,
+            rating: null
+          };
+        });
 
         newProgress[exerciseId] = {
           ...newProgress[exerciseId],
@@ -570,22 +610,21 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
 
     const body = {
       exerciseFeedbackArray,
-      userId: user?.userId,
       sessionTime: formatSessionTime(sessionTimer),
       generalFeedback,
       energyLevel,
       mood,
       perceivedDifficulty,
       additionalNotes,
-      isCoachFeedback: user?.userType === 'coach',
-      providedBy: user?.userType === 'coach' ? coach?.id : client?.id
+      isCoachFeedback: user?.userType === 'coach'
     };
 
-    console.log(body);
-
     setLoading(true);
-    api.workout
-      .submitFeedback(Number(planId), body, client ? client.id : clientId)
+    const feedbackPromise =
+      user?.userType === 'client'
+        ? api.workout.submitMyFeedback(Number(planId), body)
+        : api.workout.submitFeedback(Number(planId), body, client ? client.id : clientId);
+    feedbackPromise
       .then(() => {
         setExerciseProgress({});
         setSessionTimer(0);
@@ -632,6 +671,11 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
     }
   };
 
+  /** Resolve RPE method: instance-level → catalog exercise-level → workout-level fallback */
+  const getExerciseRpeMethod = (exercise: IExerciseInstance): IRpeMethod | null => {
+    return exercise.rpeMethod || exercise.exercise?.rpeMethod || workoutRpeMethod;
+  };
+
   const isExerciseCompleted = (exercise: IExerciseInstance): boolean => {
     const progress = exerciseProgress[exercise.id];
     if (!progress || !progress.sets) return false;
@@ -644,10 +688,15 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
       return false;
     }
 
-    const completedSets = sets.filter((set) => set.completed === true);
-    const allCompletedSetsHaveRpe = completedSets.every((set) => set.rating !== null && set.rating !== undefined);
+    // If this exercise has a measurement method (exercise-level or workout-level), completed sets must have a rating
+    const exerciseRpe = getExerciseRpeMethod(exercise);
+    if (exerciseRpe) {
+      const completedSets = sets.filter((set) => set.completed === true);
+      const allCompletedSetsHaveRpe = completedSets.every((set) => set.rating !== null && set.rating !== undefined);
+      return allCompletedSetsHaveRpe;
+    }
 
-    return allCompletedSetsHaveRpe;
+    return true;
   };
 
   const isGroupCompleted = (group: IExerciseGroup): boolean => {
@@ -679,6 +728,67 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
     }
   };
 
+  /** Check if all measurement (RPE) inputs are filled for completed sets across all exercises */
+  const areAllMeasurementsFilled = (): boolean => {
+    if (!plan) return true;
+    for (const group of plan.groups) {
+      for (const exercise of group.exercises) {
+        const progress = exerciseProgress[exercise.id];
+        if (!progress?.sets) continue;
+        for (const set of progress.sets) {
+          if (set.completed === true && (set.rating === null || set.rating === undefined)) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  };
+
+  /** Mark ALL sets in ALL exercises as completed */
+  const markAllAsCompleted = () => {
+    if (!plan) return;
+    setExerciseProgress((prev) => {
+      const newProgress = { ...prev };
+      plan.groups.forEach((group) => {
+        group.exercises.forEach((exercise) => {
+          const existing = newProgress[exercise.id] || { sets: [], completed: null, comments: '' };
+          const sets = (existing.sets || []).map((s) => ({ ...s, completed: true }));
+          newProgress[exercise.id] = { ...existing, sets, completed: true };
+        });
+      });
+      return newProgress;
+    });
+  };
+
+  /** Handle "Finish Training" button click with validation flow */
+  const handleFinishClick = () => {
+    const allComplete = plan ? plan.groups.every((g) => isGroupCompleted(g)) : false;
+
+    if (allComplete) {
+      // Everything is done (marked + measurements if applicable) → show feedback dialog
+      setFinishDialogVisible(true);
+      return;
+    }
+
+    if (hasSubjectiveMeasurement && !areAllMeasurementsFilled()) {
+      // Has measurement method but not all filled → tell user to complete measurements
+      showToast(
+        'warn',
+        intl.formatMessage({ id: 'training.finish.incomplete', defaultMessage: 'Incompleto' }),
+        intl.formatMessage({
+          id: 'training.finish.completeMeasurements',
+          defaultMessage: 'Completá los inputs de medición subjetiva para cada set antes de finalizar.'
+        })
+      );
+      return;
+    }
+
+    // Not everything marked, but measurements are OK (or no measurement method)
+    // → show confirmation: "Did you finish?" with options
+    setConfirmFinishVisible(true);
+  };
+
   const handleToggleAll = (flag: boolean, exerciseId: number) => {
     setExerciseProgress((prevProgress) => {
       const newProgress = { ...prevProgress };
@@ -705,6 +815,7 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
     videoDialogVisible,
     currentVideoUrl,
     finishDialogVisible,
+    confirmFinishVisible,
     currentCycle,
     currentGroupIndex,
     sessionTimer,
@@ -713,10 +824,13 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
     loading,
     clientId,
     client,
+    workoutRpeMethod,
+    hasSubjectiveMeasurement,
 
     // Setters
     setVideoDialogVisible,
     setFinishDialogVisible,
+    setConfirmFinishVisible,
 
     // Handlers
     handleExerciseChange,
@@ -727,6 +841,8 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
     handleSubmitFeedback,
     handleToggleTimer,
     handleToggleAll,
+    handleFinishClick,
+    markAllAsCompleted,
 
     // Navigation
     navigateToNextGroup,
@@ -738,6 +854,7 @@ export const useTrainingPlanDetails = ({ setPlanDetailsVisible, setRefreshKey }:
     getStatusIcon,
     isExerciseCompleted,
     isGroupCompleted,
+    getExerciseRpeMethod,
     formatSessionTime,
 
     // Intl

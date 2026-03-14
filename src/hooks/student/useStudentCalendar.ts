@@ -56,7 +56,7 @@ export const useStudentCalendar = () => {
       if (!user || !client) return;
       try {
         setLoading(true);
-        const { data } = await api.workout.fetchTrainingCyclesForClientByUserId(user.userId);
+        const { data } = await api.workout.fetchMyTrainingCycles();
         const cycles = data || [];
         const events: ICalendarEvent[] = cycles.flatMap((cycle: Record<string, unknown>) =>
           ((cycle.trainingWeeks as Record<string, unknown>[]) || []).flatMap((week: Record<string, unknown>) =>
@@ -91,7 +91,7 @@ export const useStudentCalendar = () => {
           )
         );
 
-        const trainingSessionWithNoWeek = await api.workout.fetchTrainingSessionWithNoWeekByClientId(client.id);
+        const trainingSessionWithNoWeek = await api.workout.fetchMyTrainingSessionWithNoWeek();
         const noWeekData = trainingSessionWithNoWeek.data || [];
         const noWeekEvents: ICalendarEvent[] = noWeekData.map((session: Record<string, unknown>) => {
           const workoutInstances = session.workoutInstances as Record<string, unknown>[];

@@ -111,6 +111,8 @@ export interface IUpsertWorkoutTemplatePayload {
   }>;
   isTemplate: boolean;
   coachId?: number;
+  sessionDate?: string;
+  clientId?: string;
 }
 
 /**

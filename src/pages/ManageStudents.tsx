@@ -18,7 +18,6 @@ import { useManageStudents } from '../hooks/coach/useManageStudents';
 
 export default function ManageStudentsPage() {
   const {
-    user,
     toast,
     intl,
     selectedStudent,
@@ -507,7 +506,6 @@ export default function ManageStudentsPage() {
         {selectedStudent?.user?.subscription && selectedStudent?.user?.subscription?.clientSubscription?.coachPlan && (
           <RegisterPaymentDialog
             studentId={selectedStudent.id}
-            coachId={user?.userId ?? 0}
             onClose={handleRegisterPaymentDialogHide}
             oldSubscription={selectedStudent.user.subscription}
             oldCoachPlan={selectedStudent.user.subscription.clientSubscription.coachPlan}

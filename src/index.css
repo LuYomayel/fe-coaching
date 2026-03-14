@@ -209,6 +209,10 @@ p {
   border-color: var(--ios-input-border-hover) !important;
 }
 
+.p-dropdown .p-dropdown-label.p-inputtext {
+  border: none !important;
+}
+
 .p-dropdown-panel {
   border-radius: var(--ios-radius-md) !important;
   box-shadow: var(--ios-shadow-lg) !important;

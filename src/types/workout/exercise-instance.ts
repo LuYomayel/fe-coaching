@@ -2,6 +2,7 @@ import { IExercise } from './exercise';
 import { IExerciseGroup } from './exercise-group';
 import { IExerciseSetLog } from './exercise-set-log';
 import { IExerciseSetConfiguration } from './exercise-set-configuration';
+import { IRpeMethod } from '../rpe/rpe-method-assigned';
 export interface IExerciseInstance {
   id: number;
   exercise: IExercise;
@@ -23,5 +24,6 @@ export interface IExerciseInstance {
   completedNotAsPlanned: boolean;
   comments?: string;
   rpe?: string;
+  rpeMethod?: IRpeMethod;
   setConfiguration?: IExerciseSetConfiguration[];
 }

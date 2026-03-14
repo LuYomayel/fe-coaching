@@ -1,13 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 
 import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
-import { useParams } from 'react-router-dom';
-import { useToast } from '../contexts/ToastContext';
-import { useUser } from '../contexts/UserContext';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { api } from 'services/api-client';
-//import { IWorkoutInstance } from 'types/workout/workout-instance';
 import { IRpeMethod } from 'types/rpe/rpe-method-assigned';
 
 export interface RpeOptionProps {
@@ -39,67 +33,10 @@ const RpeOption = ({ color, value, emoji }: RpeOptionProps) => (
 export interface RpeDropdownComponentProps {
   selectedRpe: number;
   onChange: (e: { value: number | null }) => void;
-  cycleId: number;
-  clientId: number;
+  rpeMethod: IRpeMethod;
 }
-export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, clientId }: RpeDropdownComponentProps) {
-  const { showToast } = useToast();
-  const { planId } = useParams();
-  const { user } = useUser();
-
-  //const [workout, setWorkout] = useState<IWorkoutInstance | null>(null);
-  const [selectedRpeMethod, setSelectedRpeMethod] = useState<IRpeMethod | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchRpeMethods = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data } = await api.rpe.getRpeMethodAssigned(clientId, Number(planId) || -1, Number(cycleId) || -1);
-
-      if (data) {
-        setSelectedRpeMethod(data);
-      } else {
-        console.warn('No se encontró un método RPE asignado');
-        setSelectedRpeMethod(null);
-      }
-    } catch (error) {
-      console.error('Error al cargar los métodos RPE:', error);
-      setError('Error al cargar los métodos RPE');
-      showToast('error', 'Error', 'No se pudieron cargar los métodos RPE');
-    } finally {
-      setLoading(false);
-    }
-  }, [clientId, showToast, planId, user?.userId]);
-
-  const fetchWorkoutData = useCallback(async () => {
-    if (!selectedRpeMethod) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const { data } = await api.workout.fetchWorkoutInstance(Number(planId) || -1);
-      console.log('data', data);
-    } catch (error) {
-      console.error('Error al cargar el entrenamiento:', error);
-      setError('Error al cargar el entrenamiento');
-      showToast('error', 'Error', (error as Error).message || 'Error al cargar el entrenamiento');
-    } finally {
-      setLoading(false);
-    }
-  }, [planId, selectedRpeMethod, showToast]);
-
-  useEffect(() => {
-    fetchRpeMethods();
-  }, [fetchRpeMethods]);
-
-  useEffect(() => {
-    if (selectedRpeMethod) {
-      fetchWorkoutData();
-    }
-  }, [selectedRpeMethod, fetchWorkoutData]);
+export default function RpeDropdownComponent({ selectedRpe, onChange, rpeMethod }: RpeDropdownComponentProps) {
+  const selectedRpeMethod = rpeMethod;
 
   const getRpeOptions = useMemo(() => {
     if (!selectedRpeMethod) return [];
@@ -172,18 +109,6 @@ export default function RpeDropdownComponent({ selectedRpe, onChange, cycleId, c
     }
     return <RpeOption color={option.color} value={option.value} emoji={option.emoji} />;
   };
-
-  if (loading) {
-    return <ProgressSpinner style={{ width: '50px', height: '50px' }} />;
-  }
-
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
-
-  if (!selectedRpeMethod) {
-    return <div className="warning-message">No hay método RPE seleccionado</div>;
-  }
 
   const shouldUseInputNumber = (selectedRpeMethod?.valuesMeta?.length || 0) > 10 || (getRpeOptions?.length || 0) > 10;
 

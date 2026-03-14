@@ -26,19 +26,10 @@ interface IPaymentDialogProps {
   visible: boolean;
   onHide: () => void;
   subscription: ISubscription | null;
-  clientId: number;
   coachId: number;
-  coachPlanId: number;
 }
 
-export default function PaymentDialog({
-  visible,
-  onHide,
-  subscription,
-  clientId,
-  coachId,
-  coachPlanId
-}: IPaymentDialogProps) {
+export default function PaymentDialog({ visible, onHide, subscription, coachId }: IPaymentDialogProps) {
   const intl = useIntl();
   const { showToast } = useToast();
   const { client } = useUser();
@@ -112,16 +103,10 @@ export default function PaymentDialog({
       setLoading(true);
       const paymentData = {
         amount: parsedAmount,
-        currency: 'ARS',
-        description: `Pago de suscripcion - ${subscription?.coachPlan?.name}`,
-        payerEmail: subscription?.client?.email,
-        payerName: `${subscription?.client?.firstName} ${subscription?.client?.lastName}`,
-        coachId,
-        clientId,
-        coachPlanId
+        description: `Pago de suscripcion - ${subscription?.coachPlan?.name}`
       };
 
-      const response = await api.payment.createMercadoPagoPayment(paymentData);
+      const response = await api.payment.createMercadoPagoPayment(coachId, paymentData);
       setPaymentId(response.data?.paymentId);
       setPaymentStatus('pending');
       if (response.data?.initPoint) {
@@ -152,12 +137,11 @@ export default function PaymentDialog({
         amount: parsedAmount,
         currency: 'ARS',
         reference: transferReference,
-        clientId,
         coachPlanId: subscription?.coachPlan?.id,
         description: `Pago de suscripcion - ${subscription?.coachPlan?.name}. Cliente: ${client?.name}. Referencia: ${transferReference}`
       };
 
-      await api.payment.notifyBankTransfer(transferData, coachId);
+      await api.payment.notifyBankTransfer(coachId, transferData);
       showToast('success', intl.formatMessage({ id: 'payment.success.transferNotified' }));
       onHide();
     } catch {

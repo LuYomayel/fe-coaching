@@ -12,7 +12,8 @@
 7. **Internacionalización** - TODO el texto visible debe usar react-intl (`useIntl`, `FormattedMessage`). El código (variables, funciones) en inglés.
 
 ### NUNCA
-1. NO crear archivos `.css` adicionales
+1. NO enviar el ID del usuario autenticado (coachId, userId) como parámetro en llamadas API - el backend lo obtiene del JWT token. Sí se puede enviar el ID de OTRA entidad (ej: clientId de un alumno)
+2. NO crear archivos `.css` adicionales
 2. NO llamar directamente a `fetch` desde hooks o componentes
 3. NO poner lógica de negocio en componentes de página
 4. NO usar HTML nativo cuando existe un componente shared

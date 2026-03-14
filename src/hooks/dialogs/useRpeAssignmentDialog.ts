@@ -9,7 +9,7 @@ export interface RpeAssignmentState {
   rpeMethodId: number | null;
 }
 
-export const useRpeAssignmentDialog = (userId: number) => {
+export const useRpeAssignmentDialog = () => {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [state, setState] = useState<RpeAssignmentState>({ type: null, targetId: null, rpeMethodId: null });
@@ -26,7 +26,7 @@ export const useRpeAssignmentDialog = (userId: number) => {
       return { success: false, error: 'Missing fields' } as const;
     setLoading(true);
     try {
-      await api.rpe.assignRpeToTarget(state.rpeMethodId, state.type, state.targetId, userId);
+      await api.rpe.assignRpeToTarget(state.rpeMethodId, state.type, state.targetId);
       setVisible(false);
       return { success: true } as const;
     } catch (e) {
@@ -34,7 +34,7 @@ export const useRpeAssignmentDialog = (userId: number) => {
     } finally {
       setLoading(false);
     }
-  }, [state.rpeMethodId, state.targetId, state.type, userId]);
+  }, [state.rpeMethodId, state.targetId, state.type]);
 
   return { visible, loading, state, open, close, setType, setTargetId, setRpeMethodId, assign };
 };

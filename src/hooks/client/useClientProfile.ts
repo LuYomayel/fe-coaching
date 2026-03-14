@@ -103,7 +103,7 @@ export const useClientProfile = () => {
         setLoading(true);
 
         // Fetch personal information
-        const { data: dataClient } = await api.user.fetchClient(user!.userId);
+        const { data: dataClient } = await api.user.fetchMyClientProfile();
 
         setPersonalInfo(dataClient);
         setActivityLevel(dataClient.activityLevel);
@@ -116,11 +116,11 @@ export const useClientProfile = () => {
         }
 
         // Fetch activities
-        const { data: dataActivities } = await api.user.fetchClientActivitiesByUserId(user!.userId);
+        const { data: dataActivities } = await api.user.fetchMyActivities();
         setActivities(dataActivities || []);
 
         // Fetch subscription details
-        const { data: subscriptionData } = await api.subscription.fetchSubscriptionDetails(user!.userId);
+        const { data: subscriptionData } = await api.subscription.fetchMySubscriptionDetails();
         setSubscription(subscriptionData);
 
         console.log('subscriptionData', subscriptionData);

@@ -6,7 +6,6 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { FaGripVertical } from 'react-icons/fa';
 import { Button } from 'primereact/button';
 
-import { useUser } from '../../contexts/UserContext';
 import { useNewCreatePlan } from '../../hooks/coach/useNewCreatePlan';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 import { useSetConfigDialog } from '../../hooks/dialogs/useSetConfigDialog';
@@ -18,10 +17,13 @@ import { IPlanGroup, IPlanExercise } from '../../types/workout/plan-state';
 interface LocationState {
   planId?: number;
   isTemplate?: boolean;
+  clientId?: number;
+  sessionDate?: string;
+  changeToTemplate?: boolean;
+  returnTo?: string;
 }
 
 export const NewCreatePlan: React.FC = () => {
-  const { coach } = useUser();
   const { planId: planIdParam } = useParams<{ planId?: string }>();
   const location = useLocation();
   const state = location.state as LocationState | undefined;
@@ -31,7 +33,12 @@ export const NewCreatePlan: React.FC = () => {
   const paramPlanId = Number.isNaN(parsedParamId) ? undefined : parsedParamId;
   const statePlanId = state?.planId ? Number(state.planId) : undefined;
   const planId = !Number.isNaN(paramPlanId) && paramPlanId !== undefined ? paramPlanId : statePlanId;
-  const isTemplate = state?.isTemplate ?? true;
+
+  // When navigating from "add training to this day", changeToTemplate is false and clientId/sessionDate are set
+  const hasAssignmentContext = state?.clientId !== undefined && state?.sessionDate !== undefined;
+  const isTemplate = hasAssignmentContext ? (state?.changeToTemplate ?? false) : (state?.isTemplate ?? true);
+  const clientId = state?.clientId?.toString();
+  const sessionDate = state?.sessionDate;
 
   const {
     plan,
@@ -69,10 +76,11 @@ export const NewCreatePlan: React.FC = () => {
     setEditingGroupName,
     updateGroupName
   } = useNewCreatePlan({
-    coachId: coach?.id ?? 0,
     planId,
     isTemplate,
-    isEdit
+    isEdit,
+    clientId,
+    sessionDate
   });
 
   const [isEditing, setIsEditing] = useState(false);

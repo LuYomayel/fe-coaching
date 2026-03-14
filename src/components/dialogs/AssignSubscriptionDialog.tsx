@@ -21,7 +21,7 @@ interface IAssignSubscriptionDialogProps {
 
 const AssignSubscriptionDialog = ({ studentId, onClose }: IAssignSubscriptionDialogProps) => {
   const intl = useIntl();
-  const { user, coach } = useUser();
+  const { user } = useUser();
   const { showToast } = useToast();
   const { showConfirmationDialog } = useConfirmationDialog();
 
@@ -48,12 +48,10 @@ const AssignSubscriptionDialog = ({ studentId, onClose }: IAssignSubscriptionDia
 
   const handleAssign = () => {
     const body = {
-      coachId: coach!.id,
       clientId: studentId,
       startDate: startDate ? formatDateToApi(startDate) : null,
       endDate: endDate ? formatDateToApi(endDate) : null,
-      coachPlanId: selectedCoachPlan,
-      userId: user!.userId
+      coachPlanId: selectedCoachPlan
     };
 
     const { isValid, message } = validateDates(startDate, endDate, intl);
