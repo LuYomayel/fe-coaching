@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Card } from 'primereact/card';
+import React from 'react';
 import { Button } from 'primereact/button';
 import { Badge } from 'primereact/badge';
 import FullCalendar from '@fullcalendar/react';
@@ -13,7 +12,6 @@ import AssignWorkoutToSessionDialog from '../dialogs/AssignWorkoutToSessionDialo
 import CreateTrainingCycleDialog from '../dialogs/CreateTrainingCycleDialog';
 import PlanDetails from '../dialogs/PlanDetails';
 import { useCalendarTab } from '../../hooks/client/useCalendarTab';
-import '../../App.css';
 import { contactMethodOptions } from '../../types/coach/dropdown-options';
 import { ClientData } from '../../pages/ClientDashboard';
 
@@ -26,15 +24,6 @@ interface CalendarTabProps {
 
 export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, refreshKey, setRefreshKey }) => {
   const intl = useIntl();
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const {
     // Calendar
@@ -73,205 +62,187 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
     setLoading
   } = useCalendarTab({ clientId, clientData, refreshKey, setRefreshKey });
 
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return { icon: 'pi pi-check-circle', color: '#22c55e', className: 'status-completed' };
+      case 'expired':
+        return { icon: 'pi pi-times-circle', color: '#ef4444', className: 'status-expired' };
+      case 'current':
+        return { icon: 'pi pi-bolt', color: '#6366f1', className: 'status-current' };
+      default:
+        return { icon: 'pi pi-clock', color: '#f97316', className: 'status-pending' };
+    }
+  };
+
+  const getGoogleMapsUrl = (loc: string) => {
+    if (!loc) return null;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
+  };
+
+  const formatTime = (time: string) => {
+    try {
+      const date = new Date(time);
+      return isNaN(date.getTime())
+        ? time
+        : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return time;
+    }
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderEventContent = (eventInfo: any) => {
-    if (!eventInfo || !eventInfo.event) {
-      return null;
-    }
+    if (!eventInfo || !eventInfo.event) return null;
 
     const { title, extendedProps } = eventInfo.event;
     const { status, workoutInstanceId, sessionId, sessionMode, location, sessionTime, notes, contactMethod } =
       extendedProps || {};
-    // Determinar la severidad según el estado
-    let statusIcon = 'pi pi-calendar';
-    let statusTooltip = intl.formatMessage({ id: 'dashboard.calendar.pendingStatus' }, { defaultMessage: 'Pendiente' });
 
-    if (status === 'completed') {
-      statusIcon = 'pi pi-check-circle';
-      statusTooltip = intl.formatMessage(
-        { id: 'dashboard.calendar.completedStatus' },
-        { defaultMessage: 'Completado' }
-      );
-    } else if (status === 'expired') {
-      statusIcon = 'pi pi-times-circle';
-      statusTooltip = intl.formatMessage({ id: 'dashboard.calendar.expiredStatus' }, { defaultMessage: 'Expirado' });
-    } else if (status === 'current') {
-      statusIcon = 'pi pi-sync';
-      statusTooltip = intl.formatMessage({ id: 'dashboard.calendar.currentStatus' }, { defaultMessage: 'En progreso' });
-    } else {
-      statusIcon = 'pi pi-exclamation-circle';
-      statusTooltip = intl.formatMessage(
-        { id: 'dashboard.calendar.warningStatus' },
-        { defaultMessage: 'Atención requerida' }
-      );
-    }
-
-    const getGoogleMapsUrl = (location: string) => {
-      if (!location) return null;
-      const encodedLocation = encodeURIComponent(location);
-      return `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
-    };
-
-    const handleLocationClick = (e: React.MouseEvent, location: string) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const mapsUrl = getGoogleMapsUrl(location);
-      if (mapsUrl) {
-        window.open(mapsUrl, '_blank');
-      }
-    };
-
-    const handleTrainingSessionClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      navigateToTrainingSession(workoutInstanceId);
-    };
-
-    const formatTime = (time: string) => {
-      try {
-        const date = new Date(time);
-        return isNaN(date.getTime())
-          ? time
-          : date.toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-      } catch (error) {
-        return time;
-      }
-    };
-
+    const statusConfig = getStatusConfig(status);
     const showLocation = (sessionMode === 'presencial' || sessionMode === 'hibrido') && location;
     const showTime =
       (sessionMode === 'presencial' || sessionMode === 'hibrido' || sessionMode === 'virtual_sincronico') &&
       sessionTime;
     const showMeetingLink = (sessionMode === 'virtual_sincronico' || sessionMode === 'hibrido') && notes;
-
     const showTrainingSessionButton = sessionMode === 'presencial' && workoutInstanceId && status !== 'completed';
-
     const locationToShow = location || (sessionMode === 'presencial' ? clientData?.location : null);
 
-    const textColorClass =
-      status === 'completed'
-        ? 'text-success'
-        : status === 'expired'
-          ? 'text-danger'
-          : status === 'current'
-            ? 'text-primary'
-            : 'text-warning';
-
-    const bgColorClass =
-      status === 'completed'
-        ? 'bg-green-500'
-        : status === 'expired'
-          ? 'bg-red-500'
-          : status === 'current'
-            ? 'bg-blue-500'
-            : 'bg-orange-500';
-
-    // Si es un evento sin título (sesión sin workout asignado)
+    // Unassigned session
     if (title === 'no title') {
       return (
         <div
-          className={`p-2 border-round-md bg-primary font-medium cursor-pointer transition-all transition-duration-200 flex align-items-center gap-2 w-full shadow-2 hover:shadow-4 ${
-            isMobile ? 'text-xs' : 'text-sm'
-          } ${bgColorClass} ${textColorClass}`}
+          className="calendar-event-ios status-assign"
+          style={{ cursor: 'pointer' }}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             handleAssignDayWorkout(sessionId);
           }}
         >
-          <i className={`pi pi-calendar-plus ${isMobile ? 'text-sm' : 'text-base'}`} />
-          <span className="flex-1 overflow-hidden text-overflow-ellipsis white-space-nowrap">
-            {intl.formatMessage(
-              { id: 'dashboard.calendar.assignWorkoutTo' },
-              { defaultMessage: 'Asignar entrenamiento' }
-            )}
-          </span>
+          <div className="flex align-items-center gap-1">
+            <i className="pi pi-plus-circle" style={{ color: '#6366f1', fontSize: '0.72rem' }} />
+            <span
+              style={{
+                fontSize: '0.74rem',
+                fontWeight: 500,
+                color: '#6366f1',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {intl.formatMessage(
+                { id: 'dashboard.calendar.assignWorkoutTo' },
+                { defaultMessage: 'Asignar entrenamiento' }
+              )}
+            </span>
+          </div>
         </div>
       );
     }
 
-    // Evento con workout asignado
+    // Assigned workout event
     return (
       <div
-        className={`p-2 border-round-md cursor-pointer transition-all transition-duration-200 w-full shadow-2 hover:shadow-4  ${bgColorClass}
-          ${isMobile ? 'text-xs' : 'text-sm'}
-        `}
+        className={`calendar-event-ios ${statusConfig.className}`}
+        style={{ cursor: 'pointer' }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           handleViewWorkoutDetails(workoutInstanceId);
         }}
       >
-        {/* Header con título y estado */}
-        <div
-          className={`flex align-items-center gap-2 ${
-            showLocation || showTime || showMeetingLink || showTrainingSessionButton ? 'mb-2' : 'mb-0'
-          }`}
-          data-pr-tooltip={statusTooltip}
-        >
-          <i className={`${statusIcon} ${isMobile ? 'text-sm' : 'text-base'} ${bgColorClass} ${textColorClass}`} />
+        {/* Title row */}
+        <div className="flex align-items-center gap-1" style={{ marginBottom: '0.15rem' }}>
+          <i className={statusConfig.icon} style={{ color: statusConfig.color, fontSize: '0.7rem', flexShrink: 0 }} />
           <span
-            className={`flex-1 overflow-hidden text-overflow-ellipsis white-space-nowrap font-semibold ${textColorClass}`}
+            style={{
+              fontSize: '0.76rem',
+              fontWeight: 600,
+              color: 'var(--ios-text)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              letterSpacing: '-0.01em'
+            }}
             title={title}
           >
             {title}
           </span>
         </div>
 
-        {/* Detalles adicionales */}
+        {/* Details */}
         {(showLocation || showTime || showMeetingLink || showTrainingSessionButton) && (
-          <div
-            className={`pt-2 border-top-1 border-200 flex flex-column gap-1 ${isMobile ? 'text-xs' : 'text-sm'} text-500`}
-          >
+          <div style={{ fontSize: '0.7rem', color: 'var(--ios-text-secondary)' }}>
             {showTime && sessionTime && (
-              <div className="flex align-items-center gap-2">
-                <i className={`pi pi-clock text-xs ${textColorClass}`} />
+              <div className="flex align-items-center gap-1" style={{ marginBottom: '0.1rem' }}>
+                <i className="pi pi-clock" style={{ fontSize: '0.62rem', color: statusConfig.color }} />
                 <span>{formatTime(sessionTime)}</span>
               </div>
             )}
             {showLocation && locationToShow && (
-              <div className="flex align-items-center gap-2">
-                <i className={`pi pi-map-marker text-xs ${textColorClass}`} />
+              <div className="flex align-items-center gap-1" style={{ marginBottom: '0.1rem' }}>
+                <i className="pi pi-map-marker" style={{ fontSize: '0.62rem', color: statusConfig.color }} />
                 <a
                   href={getGoogleMapsUrl(locationToShow) || ''}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => handleLocationClick(e, locationToShow)}
-                  className={`flex-1 overflow-hidden text-overflow-ellipsis white-space-nowrap no-underline hover:underline ${textColorClass}`}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    color: 'var(--ios-text-secondary)',
+                    textDecoration: 'none',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
                 >
                   {locationToShow}
                 </a>
               </div>
             )}
             {showMeetingLink && (
-              <div className="flex align-items-center gap-2">
-                <i className={`pi pi-link text-xs ${textColorClass}`} />
+              <div className="flex align-items-center gap-1" style={{ marginBottom: '0.1rem' }}>
+                <i className="pi pi-link" style={{ fontSize: '0.62rem', color: statusConfig.color }} />
                 <a
                   href={notes}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className={`flex-1 overflow-hidden text-overflow-ellipsis white-space-nowrap no-underline hover:underline ${textColorClass}`}
+                  style={{
+                    color: 'var(--ios-text-secondary)',
+                    textDecoration: 'none',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
                 >
                   {contactMethodOptions.find((option) => option.value === contactMethod)?.label || contactMethod}
                 </a>
               </div>
             )}
             {showTrainingSessionButton && (
-              <div className="mt-2">
-                <Button
-                  icon="pi pi-play"
-                  label={intl.formatMessage(
-                    { id: 'dashboard.calendar.startTrainingSession' },
-                    { defaultMessage: 'Iniciar sesión' }
-                  )}
-                  className={`p-button-success ${isMobile ? 'p-button-sm text-xs p-1' : 'p-button-sm text-sm p-2'} w-full  border-round-md`}
-                  onClick={handleTrainingSessionClick}
-                />
-              </div>
+              <Button
+                icon="pi pi-play"
+                label={intl.formatMessage(
+                  { id: 'dashboard.calendar.startTrainingSession' },
+                  { defaultMessage: 'Iniciar sesión' }
+                )}
+                className="p-button-text p-button-sm w-full"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigateToTrainingSession(workoutInstanceId);
+                }}
+                style={{
+                  color: '#22c55e',
+                  fontSize: '0.72rem',
+                  padding: '0.25rem 0.5rem',
+                  marginTop: '0.2rem',
+                  borderRadius: '6px',
+                  background: 'rgba(34, 197, 94, 0.08)'
+                }}
+              />
             )}
           </div>
         )}
@@ -281,7 +252,6 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderDayCellContent = (dayInfo: any) => {
-    // Verificar si hay eventos para este día
     const hasEvents = calendarEvents.some((event) => {
       const eventDate = new Date(event.start).toISOString().split('T')[0];
       const dayDate = dayInfo.date.toISOString().split('T')[0];
@@ -310,6 +280,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
               e.stopPropagation();
               handleAddDayWorkout(dayInfo.date.toISOString().split('T')[0]);
             }}
+            style={{ width: '1.5rem', height: '1.5rem', color: 'var(--ios-text-tertiary)' }}
           />
         )}
       </>
@@ -339,7 +310,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
         />
       </div>
 
-      <Card className="calendar-card">
+      <div className="calendar-card" style={{ padding: '1rem' }}>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
           initialView={window.innerWidth > 768 ? 'dayGridMonth' : 'listMonth'}
@@ -375,7 +346,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
             }
           }}
         />
-      </Card>
+      </div>
 
       {/* Dialogs */}
       <AssignWorkoutToCycleDialog

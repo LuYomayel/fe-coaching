@@ -92,10 +92,11 @@ function StatWidget({
     <div
       className="flex align-items-center gap-3"
       style={{
-        padding: '0.85rem 1rem',
+        padding: '0.65rem 0.85rem',
         background: 'var(--ios-surface-subtle)',
         borderRadius: '14px',
-        minWidth: '140px'
+        flex: '1 1 auto',
+        minWidth: '0'
       }}
     >
       <div
@@ -202,16 +203,16 @@ export default function CoachHomePage(): JSX.Element {
   );
 
   return (
-    <div style={{ padding: '1.5rem', minHeight: '100vh' }}>
+    <div style={{ padding: '0.75rem', minHeight: '100vh' }}>
       <Tooltip target=".custom-tooltip" />
 
       {/* Dashboard header */}
       <div
         style={{
           background: 'var(--ios-card-bg)',
-          borderRadius: '20px',
-          padding: '1.5rem',
-          marginBottom: '1.25rem',
+          borderRadius: '16px',
+          padding: '1rem',
+          marginBottom: '0.75rem',
           border: '1px solid var(--ios-card-border)',
           boxShadow: 'var(--ios-card-shadow)'
         }}

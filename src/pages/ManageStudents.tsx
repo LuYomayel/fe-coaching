@@ -321,7 +321,7 @@ export default function ManageStudentsPage() {
   };
 
   return (
-    <div style={{ padding: '1.5rem' }}>
+    <div style={{ padding: '0.75rem' }}>
       <Toast ref={toast} />
       <ConfirmDialog />
 
@@ -331,8 +331,8 @@ export default function ManageStudentsPage() {
           <div
             style={{
               background: 'var(--ios-card-bg)',
-              borderRadius: '20px',
-              padding: '1.5rem',
+              borderRadius: '16px',
+              padding: '1rem',
               border: '1px solid var(--ios-card-border)',
               boxShadow: 'var(--ios-card-shadow)',
               height: '100%'
@@ -340,7 +340,7 @@ export default function ManageStudentsPage() {
           >
             <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between gap-3">
               <div>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 0.25rem' }}>
+                <h1 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 0.25rem' }}>
                   <FormattedMessage id="students.title" values={{ count: totalClientsSubscribed, total: maxClients }} />
                 </h1>
                 <p style={{ color: 'var(--ios-text-secondary)', margin: 0, fontSize: '0.9rem' }}>
@@ -369,8 +369,8 @@ export default function ManageStudentsPage() {
           <div
             style={{
               background: 'var(--ios-card-bg)',
-              borderRadius: '20px',
-              padding: '1.5rem',
+              borderRadius: '16px',
+              padding: '1rem',
               border: '1px solid var(--ios-card-border)',
               boxShadow: 'var(--ios-card-shadow)',
               height: '100%',

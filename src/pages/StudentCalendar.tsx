@@ -31,51 +31,87 @@ export default function StudentCalendar() {
     formatDate
   } = useStudentCalendar();
 
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return { icon: 'pi pi-check-circle', color: '#22c55e', className: 'status-completed' };
+      case 'expired':
+        return { icon: 'pi pi-times-circle', color: '#ef4444', className: 'status-expired' };
+      case 'current':
+        return { icon: 'pi pi-bolt', color: '#6366f1', className: 'status-current' };
+      default:
+        return { icon: 'pi pi-clock', color: '#f97316', className: 'status-pending' };
+    }
+  };
+
   const renderEventContent = (eventInfo: EventContentArg) => {
     const { title, extendedProps } = eventInfo.event;
     const { status, workoutInstanceId } = extendedProps || {};
+    const statusConfig = getStatusConfig(status as string);
+
+    if (title === 'no title') return null;
 
     return (
-      <div style={{ padding: '0.35rem 0.5rem' }}>
-        {title !== 'no title' && (
-          <>
-            <div style={{ fontSize: '0.78rem', fontWeight: 600, marginBottom: '0.25rem', letterSpacing: '-0.01em' }}>
-              {title}
-            </div>
-            <div className="flex gap-1">
-              <Button
-                icon="pi pi-eye"
-                className="p-button-rounded p-button-sm p-button-outlined"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewWorkoutDetails(workoutInstanceId);
-                }}
-                tooltip={intl.formatMessage({ id: 'studentHome.calendar.viewDetails' })}
-                tooltipOptions={{ position: 'top' }}
-                style={{ width: '1.6rem', height: '1.6rem', borderColor: '#3b82f6', color: '#3b82f6' }}
-              />
-              {status !== 'completed' && (
-                <Button
-                  icon="pi pi-play"
-                  className="p-button-rounded p-button-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStartTrainingSession(workoutInstanceId);
-                  }}
-                  tooltip={intl.formatMessage({ id: 'studentHome.calendar.startTraining' })}
-                  tooltipOptions={{ position: 'top' }}
-                  style={{ width: '1.6rem', height: '1.6rem', background: '#22c55e', border: 'none' }}
-                />
-              )}
-            </div>
-          </>
-        )}
+      <div
+        className={`calendar-event-ios ${statusConfig.className}`}
+        style={{ cursor: 'pointer' }}
+      >
+        <div className="flex align-items-center gap-1" style={{ marginBottom: '0.2rem' }}>
+          <i className={statusConfig.icon} style={{ color: statusConfig.color, fontSize: '0.7rem' }} />
+          <span
+            style={{
+              fontSize: '0.76rem',
+              fontWeight: 600,
+              color: 'var(--ios-text)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              letterSpacing: '-0.01em'
+            }}
+          >
+            {title}
+          </span>
+        </div>
+        <div className="flex gap-1">
+          <Button
+            icon="pi pi-eye"
+            className="p-button-rounded p-button-text p-button-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewWorkoutDetails(workoutInstanceId);
+            }}
+            tooltip={intl.formatMessage({ id: 'studentHome.calendar.viewDetails' })}
+            tooltipOptions={{ position: 'top' }}
+            style={{
+              width: '1.5rem',
+              height: '1.5rem',
+              color: statusConfig.color
+            }}
+          />
+          {status !== 'completed' && (
+            <Button
+              icon="pi pi-play"
+              className="p-button-rounded p-button-text p-button-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStartTrainingSession(workoutInstanceId);
+              }}
+              tooltip={intl.formatMessage({ id: 'studentHome.calendar.startTraining' })}
+              tooltipOptions={{ position: 'top' }}
+              style={{
+                width: '1.5rem',
+                height: '1.5rem',
+                color: '#22c55e'
+              }}
+            />
+          )}
+        </div>
       </div>
     );
   };
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ padding: '0.75rem', maxWidth: '1000px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h1
@@ -113,7 +149,37 @@ export default function StudentCalendar() {
             options={monthOptions}
             onChange={(e) => handleMonthChange(e.value)}
             placeholder={intl.formatMessage({ id: 'studentHome.calendar.filterMonth' })}
+            style={{
+              borderRadius: '10px',
+              fontSize: '0.85rem',
+              border: '1px solid var(--ios-divider)'
+            }}
           />
+        </div>
+
+        {/* Status Legend */}
+        <div
+          className="flex flex-wrap gap-3 mb-3"
+          style={{ fontSize: '0.75rem', color: 'var(--ios-text-secondary)' }}
+        >
+          {[
+            { color: '#6366f1', labelId: 'dashboard.calendar.currentStatus' },
+            { color: '#f97316', labelId: 'dashboard.calendar.pendingStatus' },
+            { color: '#22c55e', labelId: 'dashboard.calendar.completedStatus' },
+            { color: '#ef4444', labelId: 'dashboard.calendar.expiredStatus' }
+          ].map((item) => (
+            <div key={item.labelId} className="flex align-items-center gap-1">
+              <div
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: item.color
+                }}
+              />
+              <span><FormattedMessage id={item.labelId} /></span>
+            </div>
+          ))}
         </div>
 
         {loading ? (
