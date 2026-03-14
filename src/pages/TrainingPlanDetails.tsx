@@ -87,17 +87,19 @@ const styles = {
   setRow: (completed: boolean | null | undefined) =>
     ({
       padding: '0.5rem 0.65rem',
-      background: completed === true
-        ? 'rgba(34, 197, 94, 0.04)'
-        : completed === false
-          ? 'rgba(239, 68, 68, 0.03)'
-          : 'var(--ios-surface-subtle)',
+      background:
+        completed === true
+          ? 'rgba(34, 197, 94, 0.04)'
+          : completed === false
+            ? 'rgba(239, 68, 68, 0.03)'
+            : 'var(--ios-surface-subtle)',
       borderRadius: 'var(--ios-radius-md)',
-      border: completed === true
-        ? '1px solid rgba(34,197,94,0.12)'
-        : completed === false
-          ? '1px solid rgba(239,68,68,0.08)'
-          : '1px solid transparent',
+      border:
+        completed === true
+          ? '1px solid rgba(34,197,94,0.12)'
+          : completed === false
+            ? '1px solid rgba(239,68,68,0.08)'
+            : '1px solid transparent',
       transition: 'all 0.2s ease'
     }) as React.CSSProperties,
   inputLabel: {
@@ -263,7 +265,10 @@ function RenderExerciseGroup({
                     size="small"
                     className="p-button-rounded p-button-text"
                     onClick={() => handleToggleAll(true, exercise.id)}
-                    tooltip={intl.formatMessage({ id: 'training.markAllCompleted', defaultMessage: 'Mark All Completed' })}
+                    tooltip={intl.formatMessage({
+                      id: 'training.markAllCompleted',
+                      defaultMessage: 'Mark All Completed'
+                    })}
                     tooltipOptions={{ position: 'top' }}
                     style={{ width: '1.65rem', height: '1.65rem', color: '#22c55e' }}
                   />

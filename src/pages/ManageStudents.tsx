@@ -340,7 +340,14 @@ export default function ManageStudentsPage() {
           >
             <div className="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between gap-3">
               <div>
-                <h1 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 0.25rem' }}>
+                <h1
+                  style={{
+                    fontSize: 'clamp(1.1rem, 3vw, 1.5rem)',
+                    fontWeight: 800,
+                    letterSpacing: '-0.03em',
+                    margin: '0 0 0.25rem'
+                  }}
+                >
                   <FormattedMessage id="students.title" values={{ count: totalClientsSubscribed, total: maxClients }} />
                 </h1>
                 <p style={{ color: 'var(--ios-text-secondary)', margin: 0, fontSize: '0.9rem' }}>
