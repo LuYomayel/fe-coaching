@@ -640,6 +640,78 @@ p {
 }
 
 /* ============================================
+   TRAINING SESSION - iOS STYLE
+   ============================================ */
+
+/* --- PrimeReact Slider iOS override --- */
+.p-slider {
+  background: var(--ios-surface-muted) !important;
+  border-radius: var(--ios-radius-pill) !important;
+  height: 6px !important;
+}
+
+.p-slider .p-slider-range {
+  background: #6366f1 !important;
+  border-radius: var(--ios-radius-pill) !important;
+}
+
+.p-slider .p-slider-handle {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  background: #fff !important;
+  border: 2px solid #6366f1 !important;
+  box-shadow: var(--ios-shadow-md) !important;
+  transition: transform 0.15s ease !important;
+}
+
+.p-slider .p-slider-handle:hover {
+  transform: scale(1.1) !important;
+}
+
+/* --- PrimeReact RadioButton iOS override --- */
+.p-radiobutton .p-radiobutton-box {
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  border: 2px solid var(--ios-divider) !important;
+  border-radius: 50% !important;
+  transition: var(--ios-transition-fast) !important;
+}
+
+.p-radiobutton .p-radiobutton-box.p-highlight {
+  border-color: #6366f1 !important;
+  background: #6366f1 !important;
+}
+
+/* --- PrimeReact InputGroup iOS override --- */
+.p-inputgroup-addon {
+  background: var(--ios-surface-subtle) !important;
+  border-color: var(--ios-divider) !important;
+  color: var(--ios-text-secondary) !important;
+  font-size: 0.72rem !important;
+  padding: 0.35rem 0.5rem !important;
+  min-width: 0 !important;
+}
+
+/* --- PrimeReact Checkbox iOS override --- */
+.p-checkbox .p-checkbox-box {
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  border-radius: 4px !important;
+  border: 2px solid var(--ios-divider) !important;
+  transition: var(--ios-transition-fast) !important;
+}
+
+.p-checkbox .p-checkbox-box.p-highlight {
+  background: #6366f1 !important;
+  border-color: #6366f1 !important;
+}
+
+/* --- Finish Training Dialog sections --- */
+.finish-training-dialog .p-dialog-content {
+  padding: 0.75rem !important;
+}
+
+/* ============================================
    FULLCALENDAR - iOS STYLE THEMING
    ============================================ */
 
