@@ -36,7 +36,7 @@ export function CoachPlansTab() {
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div style={{ padding: '0.75rem' }}>
       <div className="flex gap-2 mb-4">
         <Button
           label={intl.formatMessage({ id: 'common.add' }, { item: intl.formatMessage({ id: 'coach.plan.title' }) })}

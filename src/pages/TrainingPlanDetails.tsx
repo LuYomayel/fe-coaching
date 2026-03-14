@@ -446,7 +446,7 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
   }
 
   return (
-    <div style={{ padding: '1rem', maxWidth: '900px', margin: '0 auto' }}>
+    <div style={{ padding: '0.5rem', maxWidth: '900px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '1.25rem', textAlign: 'center' }}>
         <h1
@@ -535,12 +535,12 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
 
       {/* Action Buttons */}
       <div
-        className="flex justify-content-center align-items-center gap-2 mt-3"
+        className="flex justify-content-center align-items-center gap-1 sm:gap-2 mt-3"
         style={{
           position: 'sticky',
-          bottom: '1rem',
+          bottom: '0.5rem',
           zIndex: 10,
-          padding: '0.75rem',
+          padding: '0.5rem 0.75rem',
           background: 'var(--ios-glass-bg)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -555,12 +555,12 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
           style={{
             background: '#6366f1',
             color: '#fff',
-            padding: '0.5rem 0.85rem',
-            borderRadius: '12px'
+            padding: '0.4rem 0.65rem',
+            borderRadius: '10px'
           }}
         >
-          <i className="pi pi-clock" style={{ fontSize: '0.9rem' }} />
-          <span style={{ fontWeight: 700, fontSize: '0.95rem', fontVariantNumeric: 'tabular-nums' }}>
+          <i className="pi pi-clock" style={{ fontSize: '0.8rem' }} />
+          <span style={{ fontWeight: 700, fontSize: '0.85rem', fontVariantNumeric: 'tabular-nums' }}>
             {formatSessionTime(sessionTimer)}
           </span>
           <Button
@@ -570,8 +570,8 @@ export default function TrainingPlanDetails({ setPlanDetailsVisible, setRefreshK
             style={{
               color: 'white',
               border: '1px solid rgba(255,255,255,0.3)',
-              width: '1.8rem',
-              height: '1.8rem',
+              width: '1.6rem',
+              height: '1.6rem',
               borderRadius: '8px'
             }}
           />

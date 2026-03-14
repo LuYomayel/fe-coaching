@@ -120,6 +120,7 @@ const Header = ({
               <Button
                 label={intl.formatMessage({ id: 'home.hero.getStarted' })}
                 onClick={onSignUpClick}
+                className="hidden sm:inline-flex"
                 style={{
                   background: '#6366f1',
                   border: 'none',
