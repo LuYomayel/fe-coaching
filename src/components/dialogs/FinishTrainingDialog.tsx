@@ -163,7 +163,14 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback, sessionTimer }:
               }}
             >
               <i className="pi pi-clock" style={{ color: '#6366f1', fontSize: '0.85rem' }} />
-              <span style={{ fontWeight: 700, fontSize: '1.1rem', fontVariantNumeric: 'tabular-nums', color: 'var(--ios-text)' }}>
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  fontVariantNumeric: 'tabular-nums',
+                  color: 'var(--ios-text)'
+                }}
+              >
                 {sessionTime ? formatTime(sessionTime) : '00:00:00'}
               </span>
             </div>
@@ -286,7 +293,10 @@ const FinishTrainingDialog = ({ visible, onHide, submitFeedback, sessionTimer }:
                 checked={isPerceivedDifficultyEnabled}
                 onChange={(e: CheckboxChangeEvent) => setIsPerceivedDifficultyEnabled(!!e.checked)}
               />
-              <label htmlFor="enablePerceivedDifficulty" style={{ fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer' }}>
+              <label
+                htmlFor="enablePerceivedDifficulty"
+                style={{ fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer' }}
+              >
                 <FormattedMessage id="training.finish.difficulty.enable" defaultMessage="Track Difficulty" />
               </label>
             </div>

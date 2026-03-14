@@ -52,10 +52,7 @@ export default function StudentCalendar() {
     if (title === 'no title') return null;
 
     return (
-      <div
-        className={`calendar-event-ios ${statusConfig.className}`}
-        style={{ cursor: 'pointer' }}
-      >
+      <div className={`calendar-event-ios ${statusConfig.className}`} style={{ cursor: 'pointer' }}>
         <div className="flex align-items-center gap-1" style={{ marginBottom: '0.2rem' }}>
           <i className={statusConfig.icon} style={{ color: statusConfig.color, fontSize: '0.7rem' }} />
           <span
@@ -158,10 +155,7 @@ export default function StudentCalendar() {
         </div>
 
         {/* Status Legend */}
-        <div
-          className="flex flex-wrap gap-3 mb-3"
-          style={{ fontSize: '0.75rem', color: 'var(--ios-text-secondary)' }}
-        >
+        <div className="flex flex-wrap gap-3 mb-3" style={{ fontSize: '0.75rem', color: 'var(--ios-text-secondary)' }}>
           {[
             { color: '#6366f1', labelId: 'dashboard.calendar.currentStatus' },
             { color: '#f97316', labelId: 'dashboard.calendar.pendingStatus' },
@@ -177,7 +171,9 @@ export default function StudentCalendar() {
                   background: item.color
                 }}
               />
-              <span><FormattedMessage id={item.labelId} /></span>
+              <span>
+                <FormattedMessage id={item.labelId} />
+              </span>
             </div>
           ))}
         </div>

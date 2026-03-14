@@ -83,9 +83,7 @@ export const CalendarTab: React.FC<CalendarTabProps> = ({ clientId, clientData, 
   const formatTime = (time: string) => {
     try {
       const date = new Date(time);
-      return isNaN(date.getTime())
-        ? time
-        : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return isNaN(date.getTime()) ? time : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch {
       return time;
     }
