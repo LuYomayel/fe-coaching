@@ -674,6 +674,8 @@ const messages: Record<string, string> = {
   'dashboard.exercise.status.notCompleted': '✘',
 
   'dashboard.dialog.planDetails': 'Plan Details',
+  'plan.details.sessionInfo': 'Session information',
+  'plan.details.editExercises': 'Edit exercises',
 
   'dashboard.chart.expectedReps': 'Expected Repetitions',
   'dashboard.chart.completedReps': 'Completed Repetitions',

@@ -4,7 +4,7 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { formatDate, getYouTubeThumbnail } from '../../utils/UtilFunctions';
 import VideoDialog from './VideoDialog';
 import { contactMethodOptions, sessionModeOptions } from '../../types/coach/dropdown-options';
@@ -33,6 +33,7 @@ const PlanDetails: React.FC<PlanDetailsProps> = ({
   isTemplate,
   clientId
 }) => {
+  const intl = useIntl();
   const propertyUnits = JSON.parse(localStorage.getItem('propertyUnits') || '{}');
 
   const {
@@ -444,29 +445,58 @@ const PlanDetails: React.FC<PlanDetailsProps> = ({
               ? workoutPlan.workoutTemplate?.planName
               : workoutPlan.instanceName || workoutPlan.workoutTemplate?.planName}
           </h2>
-
-          {/* Botones de edición y guardado */}
-          {!isTemplate && user && user.userType === 'coach' && (
-            <div className="flex gap-2">
-              {!isEditing ? (
-                <Button
-                  label="Edit"
-                  icon="pi pi-pencil"
-                  className="p-button-primary"
-                  onClick={() => setIsEditing(true)}
-                />
-              ) : (
-                <>
-                  <Button label="Save" icon="pi pi-check" className="p-button-success" onClick={handleSaveChanges} />
-                  <Button label="Cancel" icon="pi pi-times" className="p-button-secondary" onClick={handleCancelEdit} />
-                </>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Información de la sesión */}
         <div className="mt-3">
+          <div className="flex justify-content-between align-items-center mb-2">
+            <span
+              className="text-sm font-semibold"
+              style={{
+                color: 'var(--ios-text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+                fontSize: '0.72rem'
+              }}
+            >
+              <i className="pi pi-cog mr-1" style={{ fontSize: '0.7rem' }} />
+              <FormattedMessage id="plan.details.sessionInfo" defaultMessage="Información de la sesión" />
+            </span>
+            {!isTemplate && user && user.userType === 'coach' && (
+              <div className="flex gap-2">
+                {!isEditing ? (
+                  <Button
+                    label={undefined}
+                    icon="pi pi-pencil"
+                    className="p-button-text p-button-rounded p-button-sm"
+                    tooltip="Editar sesión (modo, ubicación, notas)"
+                    tooltipOptions={{ position: 'top' }}
+                    onClick={() => setIsEditing(true)}
+                    style={{ width: '2rem', height: '2rem' }}
+                  />
+                ) : (
+                  <>
+                    <Button
+                      icon="pi pi-check"
+                      className="p-button-text p-button-rounded p-button-success p-button-sm"
+                      onClick={handleSaveChanges}
+                      tooltip="Guardar cambios"
+                      tooltipOptions={{ position: 'top' }}
+                      style={{ width: '2rem', height: '2rem' }}
+                    />
+                    <Button
+                      icon="pi pi-times"
+                      className="p-button-text p-button-rounded p-button-secondary p-button-sm"
+                      onClick={handleCancelEdit}
+                      tooltip="Cancelar"
+                      tooltipOptions={{ position: 'top' }}
+                      style={{ width: '2rem', height: '2rem' }}
+                    />
+                  </>
+                )}
+              </div>
+            )}
+          </div>
           {isEditing ? (
             <div className="grid">
               <div className="col-12 mb-3">
@@ -608,7 +638,17 @@ const PlanDetails: React.FC<PlanDetailsProps> = ({
           {user && user.userType === 'coach' && (
             <>
               {(isTemplate || workoutPlan.status === 'pending') && !isEditing && (
-                <Button label="Editar" icon="pi pi-pencil" className="p-button-primary" onClick={handleEdit} />
+                <Button
+                  label={intl.formatMessage({ id: 'plan.details.editExercises', defaultMessage: 'Editar ejercicios' })}
+                  icon="pi pi-list"
+                  className="p-button-primary"
+                  onClick={handleEdit}
+                  tooltip={intl.formatMessage({
+                    id: 'plan.details.editExercises.tooltip',
+                    defaultMessage: 'Modificar ejercicios, series, repeticiones'
+                  })}
+                  tooltipOptions={{ position: 'top' }}
+                />
               )}
               {(isTemplate || workoutPlan.status === 'pending') && !isEditing && (
                 <Button label="Eliminar" icon="pi pi-trash" className="p-button-danger" onClick={handleDelete} />
